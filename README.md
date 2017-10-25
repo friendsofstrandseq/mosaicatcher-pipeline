@@ -1,5 +1,7 @@
 # Strand-seq pipeline
 
+> **Ongoing work**
+
 Preliminary SV calling using Strand-seq data - summarized in a [Snakemake](https://bitbucket.org/snakemake/snakemake) pipeline.
 
 ### How to use it
