@@ -15,7 +15,13 @@ rule all:
         expand("plots/" + config["sample"] + ".{window}_variable.pdf", window = [50000, 100000]),
         expand("segmentation2/" + config["sample"] + ".{window}_fixed.{bpdens}.txt", window = [50000, 100000, 200000, 500000], bpdens = ["few","many"]),
         expand("segmentation2/" + config["sample"] + ".{window}_variable.{bpdens}.txt", window = [50000, 100000], bpdens = ["few","many"]),
-        "strand_states/" + config["sample"] + ".txt"
+        "strand_states/" + config["sample"] + ".final.txt"
+
+
+
+################################################################################
+# Plots                                                                        #
+################################################################################
 
 rule plot_mosaic_counts:
     input:
@@ -29,6 +35,13 @@ rule plot_mosaic_counts:
         """
         {params.plot_command} {input.counts} {input.info} {output}
         """
+
+
+
+
+################################################################################
+# Read counting                                                                #
+################################################################################
 
 rule mosaic_count_fixed:
     input:
@@ -73,19 +86,6 @@ rule mosaic_count_variable:
 
 
 
-rule determine_strand_states:
-    input:
-        "counts/" + config["sample"] + "_500000_fixed.txt.gz"
-    output:
-        "strand_states/" + config["sample"] + ".txt"
-    params:
-        sce_command = "Rscript " + config["sce_script"]
-    shell:
-        """
-        {params.sce_command} {input} {output}
-        """
-
-
 
 
 ################################################################################
@@ -124,7 +124,7 @@ rule run_sv_classification:
     input:
         counts = "counts/" + config["sample"] + ".{windows}.txt.gz",
         info   = "counts/" + config["sample"] + ".{windows}.info",
-        states = "strand_states/" + config["sample"] + ".txt",
+        states = "strand_states/" + config["sample"] + ".final.txt",
         bp     = "segmentation2/" + config["sample"] + ".{windows}.{bpdens}.txt"
     output:
         outdir = "sv_probabilities/{file_name}.{bpdens}/",
@@ -134,6 +134,7 @@ rule run_sv_classification:
         class_command = "Rscript " + config["class_script"]
     shell:
         """
+        # set haplotype
         cd {params.class_dir}
         {params.class_command} \
             binRCfile={input.counts} \
@@ -142,8 +143,52 @@ rule run_sv_classification:
             stateFile={input.states} \
             K=22 \
             maxCN= 4 \
+            haplotypeInfo \
             outputDir={output.outdir}
         """
 
 
 
+################################################################################
+# Strand states & phasing                                                      #
+################################################################################
+
+rule determine_initial_strand_states:
+    input:
+        "counts/" + config["sample"] + "_500000_fixed.txt.gz"
+    output:
+        "strand_states/" + config["sample"] + ".txt"
+    params:
+        sce_command = "Rscript " + config["sce_script"]
+    shell:
+        """
+        {params.sce_command} {input} {output}
+        """
+
+
+# Strandphaser needs a different input format which contains the path names to 
+# the bam files. This rule extracts this information and prepares an input file.
+rule convert_strandphaser_input:
+    input:
+        states = "strand_states/" + config["sample"] + ".txt",
+        info   = "counts/" + config["sample"] + "_500000_fixed.info"
+    output:
+        "strand_states/" + config["sample"] + ".strandphaser_input.txt"
+    script:
+        "utils/helper.convert_strandphaser_input.R"
+
+
+# Dummy rule - this will be replaced by strand-phaser
+rule run_strandphaser:
+    output:
+        "strand_states/" + config["sample"] + ".strandphaser_output.txt"
+
+rule convert_strandphaser_output:
+    input:
+        phased_states  = "strand_states/" + config["sample"] + ".strandphaser_output.txt",
+        initial_states = "strand_states/" + config["sample"] + ".txt",
+        info           = "counts/" + config["sample"] + "_500000_fixed.info"
+    output:
+        "strand_states/" + config["sample"] + ".final.txt"
+    script:
+        "utils/helper.convert_strandphaser_output.R"
