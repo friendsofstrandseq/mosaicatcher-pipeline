@@ -6,11 +6,20 @@
     "plot_script"   : "/g/korbel/meiers/tools/mosaicatcher/mosaicatcher/R/qc.R",
     "sce_script"    : "/g/korbel/meiers/tools/mosaicatcher/strandsequtils/sce_utils/SCE.R",
     "samtools"      : "module load SAMtools && samtools",
+    "class_script"  : "finalCall_cmd.R",
+    "class_dir"     : "/g/korbel/meiers/tools/mosaicatcher/strandsequtils/maryamCode",
 
 
     "exclude_file"  : "/g/korbel/meiers/tools/mosaicatcher/mosaicatcher/data/exclude/hg19.exclude",
     "variable_bins" : {
         "50000"     : "utils/variable_bins.GRCh38.50kb.bed",
         "100000"    : "utils/variable_bins.GRCh38.100kb.bed"
+    },
+
+
+    "bp_density"    : {
+        "few"       : 0.1,
+        "medium"    : 0.33,
+        "many"      : 0.9
     }
 }
