@@ -171,7 +171,7 @@ rule determine_initial_strand_states:
 rule convert_strandphaser_input:
     input:
         states = "strand_states/" + config["sample"] + ".txt",
-        info   = "counts/" + config["sample"] + "_500000_fixed.info"
+        info   = "counts/" + config["sample"] + ".500000_fixed.info"
     output:
         "strand_states/" + config["sample"] + ".strandphaser_input.txt"
     script:
@@ -191,7 +191,7 @@ rule convert_strandphaser_output:
     input:
         phased_states  = "strand_states/" + config["sample"] + ".strandphaser_output.txt",
         initial_states = "strand_states/" + config["sample"] + ".txt",
-        info           = "counts/" + config["sample"] + "_500000_fixed.info"
+        info           = "counts/" + config["sample"] + ".500000_fixed.info"
     output:
         "strand_states/" + config["sample"] + ".final.txt"
     script:
