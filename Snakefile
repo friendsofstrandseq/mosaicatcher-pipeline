@@ -11,18 +11,18 @@ BAM, = glob_wildcards("bam/{bam}.bam")
 
 rule all:
     input:
-        expand("plots/" + config["sample"] + "_{window}_fixed.pdf", window = [50000, 100000, 200000, 500000]),
-        expand("plots/" + config["sample"] + "_{window}_variable.pdf", window = [50000, 100000]),
-        expand("segmentation/" + config["sample"] + "_{window}_fixed.txt", window = [50000, 100000, 200000, 500000]),
-        expand("segmentation/" + config["sample"] + "_{window}_variable.txt", window = [50000, 100000]),
+        expand("plots/" + config["sample"] + ".{window}_fixed.pdf", window = [50000, 100000, 200000, 500000]),
+        expand("plots/" + config["sample"] + ".{window}_variable.pdf", window = [50000, 100000]),
+        expand("segmentation2/" + config["sample"] + ".{window}_fixed.{bpdens}.txt", window = [50000, 100000, 200000, 500000], bpdens = ["few","many"]),
+        expand("segmentation2/" + config["sample"] + ".{window}_variable.{bpdens}.txt", window = [50000, 100000], bpdens = ["few","many"]),
         "strand_states/" + config["sample"] + ".txt"
 
 rule plot_mosaic_counts:
     input:
-        counts = "counts/" + config["sample"] + "_{file_name}.txt.gz",
-        info   = "counts/" + config["sample"] + "_{file_name}.info"
+        counts = "counts/" + config["sample"] + ".{file_name}.txt.gz",
+        info   = "counts/" + config["sample"] + ".{file_name}.info"
     output:
-        "plots/" + config["sample"] + "_{file_name}.pdf"
+        "plots/" + config["sample"] + ".{file_name}.pdf"
     params: 
         plot_command = "Rscript " + config["plot_script"]
     shell:
@@ -32,8 +32,8 @@ rule plot_mosaic_counts:
 
 rule mosaic_count_fixed:
     input:
-        bam = expand("bam/" + config["sample"] + "_{bam}.bam", bam = BAM),
-        bai = expand("bam/" + config["sample"] + "_{bam}.bam.bai", bam = BAM)
+        bam = expand("bam/{bam}.bam", bam = BAM),
+        bai = expand("bam/{bam}.bam.bai", bam = BAM)
     output:
         counts = "counts/" + config["sample"] + "_{window}_fixed.txt.gz",
         info   = "counts/" + config["sample"] + "_{window}_fixed.info"
@@ -86,11 +86,17 @@ rule determine_strand_states:
         """
 
 
+
+
+################################################################################
+# Segmentation                                                                 #
+################################################################################
+
 rule segmentation:
     input:
-        "counts/" + config["sample"] + "_{file_name}.txt.gz"
+        "counts/" + config["sample"] + ".{file_name}.txt.gz"
     output:
-        "segmentation/" + config["sample"] + "_{file_name}.txt"
+        "segmentation/" + config["sample"] + ".{file_name}.txt"
     params:
         mc_command = config["mosaicatcher"]
     shell:
@@ -99,3 +105,45 @@ rule segmentation:
         -o {output} \
         {input}
         """
+
+# Pick a few segmentations and prepare the input files for SV classification
+rule prepare_segments:
+    input:
+        "segmentation/" + config["sample"] + ".{windows}.txt"
+    output:
+        "segmentation2/" + config["sample"] + ".{windows}.{bpdens}.txt"
+    params:
+        quantile = lambda wc: config["bp_density"][wc.bpdens]
+    script:
+        "utils/helper.prepare_segments.R"
+
+
+
+# Run SV classification
+rule run_sv_classification:
+    input:
+        counts = "counts/" + config["sample"] + ".{windows}.txt.gz",
+        info   = "counts/" + config["sample"] + ".{windows}.info",
+        states = "strand_states/" + config["sample"] + ".txt",
+        bp     = "segmentation2/" + config["sample"] + ".{windows}.{bpdens}.txt"
+    output:
+        outdir = "sv_probabilities/{file_name}.{bpdens}/",
+        outfile1 = "sv_probabilities/{file_name}.{bpdens}/YYY"
+    params:
+        class_dir     = config["class_dir"],
+        class_command = "Rscript " + config["class_script"]
+    shell:
+        """
+        cd {params.class_dir}
+        {params.class_command} \
+            binRCfile={input.counts} \
+            BRfile={input.bp} \
+            infoFile={input.info} \
+            stateFile={input.states} \
+            K=22 \
+            maxCN= 4 \
+            outputDir={output.outdir}
+        """
+
+
+
