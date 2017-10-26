@@ -155,7 +155,7 @@ rule run_sv_classification:
 
 rule determine_initial_strand_states:
     input:
-        "counts/" + config["sample"] + "_500000_fixed.txt.gz"
+        "counts/" + config["sample"] + ".500000_fixed.txt.gz"
     output:
         "strand_states/" + config["sample"] + ".txt"
     params:
