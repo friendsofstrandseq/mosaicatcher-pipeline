@@ -178,10 +178,14 @@ rule convert_strandphaser_input:
         "utils/helper.convert_strandphaser_input.R"
 
 
-# Dummy rule - this will be replaced by strand-phaser
+### Dummy rule - this will be replaced by strand-phaser
 rule run_strandphaser:
+    input: 
+        "phased_haps.txt"
     output:
         "strand_states/" + config["sample"] + ".strandphaser_output.txt"
+    shell:
+        "cp {input} {output}"
 
 rule convert_strandphaser_output:
     input:
