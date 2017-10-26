@@ -48,8 +48,8 @@ rule mosaic_count_fixed:
         bam = expand("bam/{bam}.bam", bam = BAM),
         bai = expand("bam/{bam}.bam.bai", bam = BAM)
     output:
-        counts = "counts/" + config["sample"] + "_{window}_fixed.txt.gz",
-        info   = "counts/" + config["sample"] + "_{window}_fixed.info"
+        counts = "counts/" + config["sample"] + ".{window}_fixed.txt.gz",
+        info   = "counts/" + config["sample"] + ".{window}_fixed.info"
     params:
         mc_command = config["mosaicatcher"],
         mc_exclfile = config["exclude_file"]
@@ -70,8 +70,8 @@ rule mosaic_count_variable:
         bai = expand("bam/{bam}.bam.bai", bam = BAM),
         bed = lambda wc: config["variable_bins"][str(wc.window)]
     output:
-        counts = "counts/" + config["sample"] + "_{window}_variable.txt.gz",
-        info   = "counts/" + config["sample"] + "_{window}_variable.info"
+        counts = "counts/" + config["sample"] + ".{window}_variable.txt.gz",
+        info   = "counts/" + config["sample"] + ".{window}_variable.info"
     params:
         mc_command = config["mosaicatcher"]
     shell:
