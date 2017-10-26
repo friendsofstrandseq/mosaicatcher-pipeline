@@ -10,7 +10,8 @@ Preliminary SV calling using Strand-seq data - summarized in a [Snakemake](https
   
     * Install [mosaicatcher](https://github.com/friendsofstrandseq/mosaicatcher) (*currently you will need the `develop` branch*)
     * Get the R-scripts from [strandsequtils](https://github.com/friendsofstrandseq/strandsequtils)
-  
+    * Install [Strand-Phaser](https://github.com/daewoooo/StrandPhaseR)
+
   2. **Set up the configuration of the smakemake pipeline**
   
     * Open `Snake.config.json` and specify the path to the executatables (such as Mosaicatcher) and to the R scripts.
