@@ -1,0 +1,16 @@
+{
+    "sample"        : "D2Rfb",
+
+
+    "mosaicatcher"  : "/g/korbel/meiers/tools/mosaicatcher/mosaicatcher/build/mosaicatcher",
+    "plot_script"   : "/g/korbel/meiers/tools/mosaicatcher/mosaicatcher/R/qc.R",
+    "sce_script"    : "/g/korbel/meiers/tools/mosaicatcher/strandsequtils/sce_utils/SCE.R",
+    "samtools"      : "module load SAMtools && samtools",
+
+
+    "exclude_file"  : "/g/korbel/meiers/tools/mosaicatcher/mosaicatcher/data/exclude/hg19.exclude",
+    "variable_bins" : {
+        "50000"     : "utils/variable_bins.GRCh38.50kb.bed",
+        "100000"    : "utils/variable_bins.GRCh38.100kb.bed"
+    }
+}
