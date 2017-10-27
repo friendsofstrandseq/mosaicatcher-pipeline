@@ -15,7 +15,11 @@ rule all:
         expand("plots/" + config["sample"] + ".{window}_variable.pdf", window = [50000, 100000]),
         expand("segmentation2/" + config["sample"] + ".{window}_fixed.{bpdens}.txt", window = [50000, 100000, 200000, 500000], bpdens = ["few","many"]),
         expand("segmentation2/" + config["sample"] + ".{window}_variable.{bpdens}.txt", window = [50000, 100000], bpdens = ["few","many"]),
-        "strand_states/" + config["sample"] + ".final.txt"
+        "strand_states/" + config["sample"] + ".final.txt",
+        expand("sv_probabilities/" + config["sample"] + ".{window}_fixed.{bpdens}/allSegCellProbs.table", 
+               window = [50000, 100000, 200000, 500000], bpdens = ["few","many"]),
+        expand("sv_probabilities/" + config["sample"] + ".{window}_variable.{bpdens}/allSegCellProbs.table",
+               window = [50000, 100000], bpdens = ["few","many"])
 
 
 
@@ -118,8 +122,10 @@ rule prepare_segments:
         "utils/helper.prepare_segments.R"
 
 
+################################################################################
+# SV classification                                                            #
+################################################################################
 
-# Run SV classification
 rule run_sv_classification:
     input:
         counts = "counts/" + config["sample"] + ".{windows}.txt.gz",
@@ -127,22 +133,23 @@ rule run_sv_classification:
         states = "strand_states/" + config["sample"] + ".final.txt",
         bp     = "segmentation2/" + config["sample"] + ".{windows}.{bpdens}.txt"
     output:
-        outdir = "sv_probabilities/{file_name}.{bpdens}/",
-        outfile1 = "sv_probabilities/{file_name}.{bpdens}/YYY"
+        outdir = "sv_probabilities/" + config["sample"] + ".{windows}.{bpdens}/",
+        out1   = "sv_probabilities/" + config["sample"] + ".{windows}.{bpdens}/allSegCellProbs.table"
     params:
         class_dir     = config["class_dir"],
-        class_command = "Rscript " + config["class_script"]
+        class_command = "Rscript " + config["class_dir"] + "/" + config["class_script"]
     shell:
         """
-        # set haplotype
-        cd {params.class_dir}
+		set -x
+        # set haplotypeInfo if phasing info is available
         {params.class_command} \
+            Rdirectory={params.class_dir} \
             binRCfile={input.counts} \
             BRfile={input.bp} \
             infoFile={input.info} \
             stateFile={input.states} \
             K=22 \
-            maxCN= 4 \
+            maximumCN=4 \
             haplotypeInfo \
             outputDir={output.outdir}
         """
