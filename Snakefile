@@ -16,9 +16,9 @@ rule all:
         expand("segmentation2/" + config["sample"] + ".{window}_fixed.{bpdens}.txt", window = [50000, 100000, 200000, 500000], bpdens = ["few","many"]),
         expand("segmentation2/" + config["sample"] + ".{window}_variable.{bpdens}.txt", window = [50000, 100000], bpdens = ["few","many"]),
         "strand_states/" + config["sample"] + ".final.txt",
-        expand("sv_probabilities/" + config["sample"] + ".{window}_fixed.{bpdens}/allSegCellProbs.table", 
+        expand("sv_calls/" + config["sample"] + ".{window}_fixed.{bpdens}.SV_probs.pdf", 
                window = [50000, 100000, 200000, 500000], bpdens = ["few","many"]),
-        expand("sv_probabilities/" + config["sample"] + ".{window}_variable.{bpdens}/allSegCellProbs.table",
+        expand("sv_calls/" + config["sample"] + ".{window}_variable.{bpdens}.SV_probs.pdf", 
                window = [50000, 100000], bpdens = ["few","many"])
 
 
@@ -40,7 +40,19 @@ rule plot_mosaic_counts:
         {params.plot_command} {input.counts} {input.info} {output}
         """
 
-
+rule plot_SV_calls:
+    input:
+        counts = "counts/" + config["sample"] + ".{windows}.txt.gz",
+        probs  = "sv_probabilities/" + config["sample"] + ".{windows}.{bpdens}/probabilities.txt"
+    output:
+        "sv_calls/" + config["sample"] + ".{windows}.{bpdens}.SV_probs.pdf"
+    params:
+        plot_command = "Rscript " + config["sv_plot_script"]
+    shell:
+        """
+        {params.plot_command} {input.counts} {input.probs} {output}
+        touch {output}
+        """
 
 
 ################################################################################
@@ -137,10 +149,11 @@ rule run_sv_classification:
         out1   = "sv_probabilities/" + config["sample"] + ".{windows}.{bpdens}/allSegCellProbs.table"
     params:
         class_dir     = config["class_dir"],
-        class_command = "Rscript " + config["class_dir"] + "/" + config["class_script"]
+        class_command = "Rscript " + config["class_dir"] + "/" + config["class_script"],
+        windowsize    = lambda wc: wc.windows.split("_")[0]
     shell:
         """
-		set -x
+        set -x
         # set haplotypeInfo if phasing info is available
         {params.class_command} \
             Rdirectory={params.class_dir} \
@@ -150,10 +163,19 @@ rule run_sv_classification:
             stateFile={input.states} \
             K=22 \
             maximumCN=4 \
+            bin.size={params.windowsize} \
             haplotypeInfo \
             outputDir={output.outdir}
         """
 
+rule convert_SVprob_output:
+    input:
+        probs = "sv_probabilities/" + config["sample"] + ".{windows}.{bpdens}/allSegCellProbs.table",
+        info  = "counts/" + config["sample"] + ".{windows}.info"
+    output:
+        "sv_probabilities/" + config["sample"] + ".{windows}.{bpdens}/probabilities.txt"
+    script:
+        "utils/helper.convert_svprob_output.R"
 
 
 ################################################################################
