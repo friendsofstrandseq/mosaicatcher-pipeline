@@ -4,6 +4,7 @@
 
     "mosaicatcher"  : "/g/korbel/meiers/tools/mosaicatcher/mosaicatcher/build/mosaicatcher",
     "plot_script"   : "/g/korbel/meiers/tools/mosaicatcher/mosaicatcher/R/qc.R",
+    "sv_plot_script": "/g/korbel/meiers/tools/mosaicatcher/mosaicatcher/R/svs.R",
     "sce_script"    : "/g/korbel/meiers/tools/mosaicatcher/strandsequtils/sce_utils/SCE.R",
     "samtools"      : "module load SAMtools && samtools",
     "class_script"  : "finalCall_cmd.R",
@@ -15,7 +16,6 @@
         "50000"     : "utils/variable_bins.GRCh38.50kb.bed",
         "100000"    : "utils/variable_bins.GRCh38.100kb.bed"
     },
-
 
     "bp_density"    : {
         "few"       : 0.1,
