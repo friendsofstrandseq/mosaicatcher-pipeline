@@ -11,6 +11,7 @@ BAM, = glob_wildcards("bam/{bam}.bam")
 
 rule all:
     input:
+        "log/StrandPhaseR.config",
         expand("plots/" + config["sample"] + ".{window}_fixed.pdf", window = [50000, 100000, 200000, 500000]),
         expand("plots/" + config["sample"] + ".{window}_variable.pdf", window = [50000, 100000]),
         expand("segmentation2/" + config["sample"] + ".{window}_fixed.{bpdens}.txt", window = [50000, 100000, 200000, 500000], bpdens = ["few","many"]),
@@ -215,12 +216,50 @@ rule install_StrandPhaseR:
         Rscript  utils/install_strandphaser.R > {log} 2>&1
         """
 
+rule prepare_strandphaser_config:
+    input:
+        "strand_states/" + config["sample"] + ".txt"
+    output:
+        "log/StrandPhaseR.config"
+    run:
+        # Get chromosomes
+        chroms = set()
+        with open(input[0]) as f:
+            skipfirst = True
+            for line in f:
+                if skipfirst:
+                    skipfirst = False
+                    continue
+                chroms.add(line.split()[0])
+        with open(output[0], "w") as f:
+            print("[General]",                    file = f)
+            print("numCPU           = 1",         file = f)
+            print("chromosomes      = c(", ",".join(["'" + chrom + "'" for chrom in chroms]), ")", file = f)
+            print("pairedEndReads   = TRUE",      file = f)
+            print("min.mapq         = 10",        file = f)
+            print("",                             file = f)
+            print("[StrandPhaseR]",               file = f)
+            print("positions        = NULL",      file = f)
+            print("WCregions        = NULL",      file = f)
+            print("min.baseq        = 20",       file = f)
+            print("num.iterations   = 2",        file = f)
+            print("translateBases   = TRUE",     file = f)
+            print("fillMissAllele   = NULL",     file = f)
+            print("splitPhasedReads = TRUE",     file = f)
+            print("callBreaks       = FALSE",    file = f)
+            print("exportVCF        = '", config["sample"], ".txt'", sep = "", file = f)
+            print("bsGenome         = 'BSgenome.Hsapiens.UCSC.hg19'", file = f)
+
+
+
+
+
 rule run_strandphaser:
     input:
         mergedbam    = "snv_calls/merged.bam",
         wcregions    = "strand_states/" + config["sample"] + ".strandphaser_input.txt",
         snppositions = "snv_calls/" + config["sample"] + ".vcf",
-        configfile   = "utils/StrandPhaseR.config",
+        configfile   = "log/StrandPhaseR.config",
         strandphaser = "utils/R-packages/StrandPhaseR/R/StrandPhaseR",
         bamfolder    = "bam"
     output:
@@ -237,7 +276,7 @@ rule run_strandphaser:
                 {input.snppositions} \
                 $(pwd)/utils/R-packages/ \
                 > {log} 2>&1
-        touch {output}
+        cp log/StrandPhaseR_analysis/Phased/phased_haps.txt {output}
         """
 
 
