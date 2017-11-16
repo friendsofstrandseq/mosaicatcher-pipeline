@@ -2,11 +2,13 @@
     "sample"        : "D2Rfb",
 
 
+    "reference"     : "/g/korbel/shared/datasets/refgenomes/human/hg19_chr1_22XYM.fa",
     "mosaicatcher"  : "/g/korbel/meiers/tools/mosaicatcher/mosaicatcher/build/mosaicatcher",
     "plot_script"   : "/g/korbel/meiers/tools/mosaicatcher/mosaicatcher/R/qc.R",
     "sv_plot_script": "/g/korbel/meiers/tools/mosaicatcher/mosaicatcher/R/svs.R",
     "sce_script"    : "/g/korbel/meiers/tools/mosaicatcher/strandsequtils/sce_utils/SCE.R",
-    "samtools"      : "module load SAMtools && samtools",
+    "samtools"      : "samtools",
+    "bcftools"      : "bcftools",
     "class_script"  : "finalCall_cmd.R",
     "class_dir"     : "/g/korbel/meiers/tools/mosaicatcher/strandsequtils/maryamCode",
 
