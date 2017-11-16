@@ -16,9 +16,9 @@ rule all:
         expand("segmentation2/" + config["sample"] + ".{window}_fixed.{bpdens}.txt", window = [50000, 100000, 200000, 500000], bpdens = ["few","many"]),
         expand("segmentation2/" + config["sample"] + ".{window}_variable.{bpdens}.txt", window = [50000, 100000], bpdens = ["few","many"]),
         "strand_states/" + config["sample"] + ".final.txt",
-        expand("sv_calls/" + config["sample"] + ".{window}_fixed.{bpdens}.SV_probs.pdf", 
+        expand("sv_calls/" + config["sample"] + ".{window}_fixed.{bpdens}.SV_probs.pdf",
                window = [50000, 100000, 200000, 500000], bpdens = ["few","many"]),
-        expand("sv_calls/" + config["sample"] + ".{window}_variable.{bpdens}.SV_probs.pdf", 
+        expand("sv_calls/" + config["sample"] + ".{window}_variable.{bpdens}.SV_probs.pdf",
                window = [50000, 100000], bpdens = ["few","many"])
 
 
@@ -33,7 +33,7 @@ rule plot_mosaic_counts:
         info   = "counts/" + config["sample"] + ".{file_name}.info"
     output:
         "plots/" + config["sample"] + ".{file_name}.pdf"
-    params: 
+    params:
         plot_command = "Rscript " + config["plot_script"]
     shell:
         """
@@ -194,8 +194,7 @@ rule determine_initial_strand_states:
         {params.sce_command} {input} {output}
         """
 
-
-# Strandphaser needs a different input format which contains the path names to 
+# Strandphaser needs a different input format which contains the path names to
 # the bam files. This rule extracts this information and prepares an input file.
 rule convert_strandphaser_input:
     input:
@@ -206,15 +205,41 @@ rule convert_strandphaser_input:
     script:
         "utils/helper.convert_strandphaser_input.R"
 
+rule install_StrandPhaseR:
+    output:
+        "utils/R-packages/StrandPhaseR/R/StrandPhaseR"
+    log:
+        "log/strandphaser-install.log"
+    shell:
+        """
+        Rscript  utils/install_strandphaser.R > {log} 2>&1
+        """
 
-### Dummy rule - this will be replaced by strand-phaser
 rule run_strandphaser:
-    input: 
-        "phased_haps.txt"
+    input:
+        mergedbam    = "snv_calls/merged.bam",
+        wcregions    = "strand_states/" + config["sample"] + ".strandphaser_input.txt",
+        snppositions = "snv_calls/" + config["sample"] + ".vcf",
+        configfile   = "utils/StrandPhaseR.config",
+        strandphaser = "utils/R-packages/StrandPhaseR/R/StrandPhaseR",
+        bamfolder    = "bam"
     output:
         "strand_states/" + config["sample"] + ".strandphaser_output.txt"
+    log:
+        "log/phased_haps.txt.log"
     shell:
-        "cp {input} {output}"
+        """
+        Rscript utils/StrandPhaseR_pipeline.R \
+                {input.bamfolder} \
+                log/StrandPhaseR_analysis \
+                {input.configfile} \
+                {input.wcregions} \
+                {input.snppositions} \
+                $(pwd)/utils/R-packages/ \
+                > {log} 2>&1
+        touch {output}
+        """
+
 
 rule convert_strandphaser_output:
     input:
@@ -225,3 +250,61 @@ rule convert_strandphaser_output:
         "strand_states/" + config["sample"] + ".final.txt"
     script:
         "utils/helper.convert_strandphaser_output.R"
+
+
+################################################################################
+# Call SNVs                                                                    #
+################################################################################
+
+rule mergeBams:
+    input:
+        expand("bam/{bam}.bam", bam=BAM)
+    output:
+        "snv_calls/merged.bam"
+    shell:
+        config["samtools"] + " merge {output} {input}"
+
+rule indexMergedBam:
+    input:
+        "snv_calls/merged.bam"
+    output:
+        "snv_calls/merged.bam.bai"
+    shell:
+        config["samtools"] + " index {input}"
+
+
+rule call_SNVs_bcftools_chrom:
+    input:
+        fa    = config["reference"],
+        chrom = "chroms/{chrom}",
+        bam   = "snv_calls/merged.bam",
+        bai   = "snv_calls/merged.bam.bai"
+    output:
+        "snv_calls/D2Rfb.{chrom}.vcf"
+    params:
+        samtools = config["samtools"],
+        bcftools = config["bcftools"]
+    shell:
+        """
+        {params.samtools} mpileup -r {wildcards.chrom} -g -f {input.fa} {input.bam} \
+        | {params.bcftools} call -mv - > {output}
+        """
+
+# Write one file per chromosome that should be analysed.
+rule prepare_chromosomes:
+    input:
+        "strand_states/" + config["sample"] + ".txt"
+    output:
+        dynamic("chroms/{chrom}")
+    shell:
+        """
+        tail -n+2 {input} | cut -f1 | sort | uniq | awk '{{print "chroms/" $1}}' | xargs touch
+        """
+
+rule merge_SNV_calls:
+    input:
+        dynamic("snv_calls/" + config["sample"] + ".{chrom}.vcf")
+    output:
+        expand("snv_calls/" + config["sample"] + ".vcf")
+    shell:
+        config["bcftools"] + " concat -O v -o {output} {input}"
