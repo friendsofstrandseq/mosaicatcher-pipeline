@@ -192,7 +192,10 @@ rule determine_initial_strand_states:
         sce_command = "Rscript " + config["sce_script"]
     shell:
         """
-        {params.sce_command} {input} {output}
+        echo "[Note] This is a dirty hack to remove chrX and chrY."
+        tmp=$(mktemp)
+        {params.sce_command} {input} $tmp
+        grep -vP '^Y|^chrY' $tmp | grep -vP '^X|^chrX' > {output}
         """
 
 # Strandphaser needs a different input format which contains the path names to
