@@ -7,7 +7,7 @@
 #' @export
 #' 
 
-read.bams <- function(directory, bamFilenames = "", unq = TRUE)
+readBams <- function(directory, bamFilenames = "", unq = TRUE)
 {
   setwd(directory) #TODO !!! 
   files = list.files(pattern = "\\.bam$")  

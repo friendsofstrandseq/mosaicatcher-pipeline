@@ -27,14 +27,14 @@ WCreadCounts <- function(segments, cells.alignments)
 
 #' Splits a \code{data.frame} of read counts based on chromosomes and returns a \code{list} containing the splited dataframes.
 #' 
-#' @inheritParams nonzero.cov.bins
+#' @inheritParams nonzeroCovBins
 #' @author Maryam Ghareghani
 #' @export
 #'
 
 #TODO Not sure how the counts object looks like but I think this can be done using: split(counts, <chromosome>); Split returns list of data.frames splited based on chromosome ID. Please check.  
 
-split.chromosomes <- function(counts)
+splitChromosomes <- function(counts)
 {
   chr = unique(counts$chromosome)
   list.counts = list()

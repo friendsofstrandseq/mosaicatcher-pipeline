@@ -1,7 +1,7 @@
 #' Estimates p parameter and saves the empirical mean-var plot in the \code{directory}.
 #' 
-#' @inheritParams read.bams
-#' @inheritParams nonzero.cov.bins 
+#' @inheritParams readBams
+#' @inheritParams nonzeroCovBins 
 #' @author Maryam Ghareghani
 #' @export
 #' 
@@ -41,7 +41,7 @@ estimateP <- function(counts, directory = NULL)
 
 #' Estimates r parameters
 #' 
-#' @inheritParams nonzero.cov.bins 
+#' @inheritParams nonzeroCovBins 
 #' @inheritParams getCNprob
 #' @author Maryam Ghareghani
 #' @export

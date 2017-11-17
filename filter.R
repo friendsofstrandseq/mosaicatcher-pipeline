@@ -25,7 +25,7 @@ filt <- function(list.df, list.idx)
 #' @export
 #' 
 
-nonzero.cov.bins <- function(counts)
+nonzeroCovBins <- function(counts)
 {
   idx = list()
   for (i in 1:length(counts))
@@ -39,14 +39,14 @@ nonzero.cov.bins <- function(counts)
 
 #' Outputs the list of indices of the bins having the fraction of low mapq reads less than alpha.
 #'
-#' @inheritParams nonzero.cov.bins
+#' @inheritParams nonzeroCovBins
 #' @inheritParams getCNprob
 #' @param uniqe.counts A \code{data.frame} containing W and C unique read counts in segments.
 #' @author Maryam Ghareghani
 #' @export
 #' 
 
-unique.mappable.bins <- function(counts, unique.counts, alpha = 0.05)
+uniqueMappableBins <- function(counts, unique.counts, alpha = 0.05)
 {
   idx = list()
   for (i in 1:length(counts))

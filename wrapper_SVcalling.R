@@ -27,7 +27,7 @@
 
 # there is a bug: segmentCounts[224,] is all NA --> check the getSegReadCounts file later...
 
-SVcalling.wrapper.func = function(bin.size, K, maximumCN, segmentsCounts, r, p, cellTypes, outputDir, hapMode)
+SVcalling_wrapperFunc = function(bin.size, K, maximumCN, segmentsCounts, r, p, cellTypes, outputDir, hapMode)
 {
   # blacklisting chr X and Y
   #segmentsCounts = segmentsCounts[which(sapply(segmentsCounts$chromosome, chrNumber) < 23),]

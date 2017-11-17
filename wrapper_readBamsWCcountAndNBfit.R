@@ -18,14 +18,14 @@
 #bin.size = 100000
 #K = 22 # number of chromosomes
 
-countAndNBfit.wrapper.func = function(segmentsFile, tempDir, bamDir, directory, bin.size, K = 22)
+countAndNBfit_wrapperFunc = function(segmentsFile, tempDir, bamDir, directory, bin.size, K = 22)
 {
   # get length of chromosomes
   chrLens = utils::read.table(paste0(tempDir,"chrLens.data"))[,1]
   
   # read bam files
   start.time = Sys.time()
-  cell.alignments = read.bams(bamDir, paste0(directory,"bamFilenames.data"), FALSE)
+  cell.alignments = readBams(bamDir, paste0(directory,"bamFilenames.data"), FALSE)
   print(Sys.time() - start.time)
   numCells = length(cell.alignments)
   
@@ -60,15 +60,15 @@ countAndNBfit.wrapper.func = function(segmentsFile, tempDir, bamDir, directory, 
   utils::write.table(counts, file = paste0(directory,"binReadCounts.data"), quote = FALSE, row.names = FALSE)
   utils::write.table(unique.counts, file = paste0(directory,"binUniqeReadCounts.data"), quote = FALSE, row.names = FALSE)
   
-  counts = split.chromosomes(counts)
-  unique.counts = split.chromosomes(unique.counts)
+  counts = splitChromosomes(counts)
+  unique.counts = splitChromosomes(unique.counts)
   
   # blacklisting
-  nonzeroIndex = nonzero.cov.bins(counts)
+  nonzeroIndex = nonzeroCovBins(counts)
   counts = filt(counts, nonzeroIndex)
   unique.counts = filt(unique.counts, nonzeroIndex)
   
-  mappable.bins.index = unique.mappable.bins(counts, unique.counts)
+  mappable.bins.index = uniqueMappableBins(counts, unique.counts)
   counts = filt(counts, mappable.bins.index)
   unique.counts = filt(unique.counts, mappable.bins.index)
   
