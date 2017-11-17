@@ -8,7 +8,7 @@
 #' @export
 #' 
 
-read.plotR <- function(input.reads, bin.size=2000, col_a=rgb(243,165,97, max=255), col_b=rgb(103,139,139, max=255))
+readPlotR <- function(input.reads, bin.size=2000, col_a=rgb(243,165,97, max=255), col_b=rgb(103,139,139, max=255))
 {  
   
   # bin the data for plotting as histogram
@@ -52,9 +52,9 @@ read.plotR <- function(input.reads, bin.size=2000, col_a=rgb(243,165,97, max=255
 
 #' Create seperate PDF files for different chromosomes and in each file, create plots for W, C, and total read coverage in all cells with the fitted NB distribution.
 #' 
-#' @inheritParams read.bams
+#' @inheritParams readBams
 #' @inheritParams estimateR
-#' @inheritParams read.plotR
+#' @inheritParams readPlotR
 #' @param cellTypes TODO ...
 #' @param dispersion The estimated dispersion parameters.
 #' @author Maryam Ghareghani
