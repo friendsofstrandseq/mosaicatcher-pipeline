@@ -9,7 +9,7 @@
 #' @export
 #' 
 
-newgetCellStatProbabilities = function(hapStatus, counts, chrCellTypes, p, chrCellsDispPars, binLen, alpha, haplotypeMode = FALSE)
+newgetCellStatProbabilities = function(hapStatus, counts, chrCellTypes, p, chrCellsDispPars, binLength, alpha, haplotypeMode = FALSE)
 {
   numCells = length(chrCellTypes)
   pr = matrix(, nrow = length(hapStatus), ncol = numCells)
@@ -22,7 +22,7 @@ newgetCellStatProbabilities = function(hapStatus, counts, chrCellTypes, p, chrCe
     for (j in 1:numCells)
     {
       segType = getSegType(chrCellTypes[j], hapStatus[i])
-      disp = dispersionPar(segType, chrCellsDispPars[j], segLen, binLen, alpha)
+      disp = dispersionPar(segType, chrCellsDispPars[j], segLen, binLength, alpha)
       pr[i,j] = dnbinom(as.integer(counts[,2*j+2]), size = disp[1], prob = p)*dnbinom(as.integer(counts[,2*j+3]), size = disp[2], prob = p)
     }
   }

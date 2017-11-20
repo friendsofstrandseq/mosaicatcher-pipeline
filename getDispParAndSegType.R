@@ -6,12 +6,12 @@
 #' @export
 #' 
 
-dispersionPar = function(segType, r, segLen = binLen, binLen, alpha = 0.05)
+dispersionPar = function(segType, r, segLen = binLength, binLength, alpha = 0.05)
 {
   CNw = str_count(segType, "w")
   CNc = str_count(segType, "c")
   
-  disp = rep(r/2,2)*(segLen/binLen)*c(CNw, CNc)
+  disp = rep(r/2,2)*(segLen/binLength)*c(CNw, CNc)
   
   for (i in which(disp == 0))
   {
