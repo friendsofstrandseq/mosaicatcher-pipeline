@@ -47,18 +47,18 @@ SVcalling_wrapperFunc = function(bin.size, K, maximumCN, segmentsCounts, r, p, c
     nonSCEcells[[i]] = which(cellTypes[i,] != "?")
   }
   
-  hapStates = NULL
+  hapStatus = NULL
   for (j in 0:maximumCN)
   {
-    hapStates = c(hapStates, allStatus(3,j))
+    hapStatus = c(hapStatus, allStatus(3,j))
   }
-  for (j in 1:length(hapStates))
+  for (j in 1:length(hapStatus))
   {
-    hapStates[j] = paste(decodeStatus(hapStates[j]), collapse = '')
+    hapStatus[j] = paste(decodeStatus(hapStatus[j]), collapse = '')
   }
   
-  aggProbTable = matrix(, nrow = nrow(segmentsCounts), ncol = length(hapStates))
-  colnames(aggProbTable) = hapStates
+  aggProbTable = matrix(, nrow = nrow(segmentsCounts), ncol = length(hapStatus))
+  colnames(aggProbTable) = hapStatus
   
   for (i in 1:nrow(segmentsCounts))
   {
@@ -69,11 +69,11 @@ SVcalling_wrapperFunc = function(bin.size, K, maximumCN, segmentsCounts, r, p, c
     if (length(CN) > 0 && CN[1] < maximumCN)
     {
       # computing haplotype probabilities
-      hapProbTables[[i]] = newgetCellStatProbabilities(hapStatus = hapStates, segCounts, as.character(cellTypes[chr,]), p, as.numeric(r[chr,]), binLength = bin.size, alpha = 0.05, haplotypeMode = hapMode)
+      hapProbTables[[i]] = newgetCellStatProbabilities(hapStatus, segCounts, as.character(cellTypes[chr,]), p, as.numeric(r[chr,]), binLength = bin.size, alpha = 0.05, haplotypeMode = hapMode)
       # regularization
       hapProbTables[[i]] = regularizeProbTable(hapProbTables[[i]])
       # computing aggregate Probabilities (based on non SCE cells only), I think it doesn't matter if we do it after normalization as well
-      for (h in 1:length(hapStates))
+      for (h in 1:length(hapStatus))
       {
         aggProbTable[i,h] = sum(log(hapProbTables[[i]][h,nonSCEcells[[chr]]]))
       }
@@ -138,7 +138,7 @@ SVcalling_wrapperFunc = function(bin.size, K, maximumCN, segmentsCounts, r, p, c
     }
     
     aggProbVec = as.data.frame(c(segmentsCounts[i,1:3], ncol(cellTypes) + 1, "all", sum(df[,3]), sum(df[,4]), aggProbTable[i,]))
-    names(aggProbVec) = c("chr", "start", "end", "cells", "types", "Wcount", "Ccount", hapStates)
+    names(aggProbVec) = c("chr", "start", "end", "cells", "types", "Wcount", "Ccount", hapStatus)
     aggProbDF = rbind(aggProbDF, aggProbVec)
     #print(paste("nrow =", nrow(aggProbDF)))
     
