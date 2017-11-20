@@ -29,10 +29,10 @@ newgetCellStatProbabilities = function(hapStatus, counts, chrCellTypes, p, chrCe
   
   if (! haplotypeMode)
   {
-    for (i in 1:length(hapStates))
+    for (i in 1:length(hapStatus))
     {
-      sisterHapSt = sisterHaplotype(hapStates[i])
-      i2 = match(sisterHapSt, hapStates)
+      sisterHapSt = sisterHaplotype(hapStatus[i])
+      i2 = match(sisterHapSt, hapStatus)
       if (i < i2)
       {
         pr[i,] = (pr[i,]+pr[i2,])/2
