@@ -19,9 +19,6 @@ changeRCformat = function(RCfile, outputDir, bamNamesFile = "bamNames.txt")
   # newFormat is the table with all w counts first and then all the c counts
   newFormat = data.table::dcast(counts, chrom + start + end ~ cell, value.var = c("w", "c"))
   
-  # debugging:
-  print(colnames(newFormat))
-  
   # exclude the extra chromosomes
   newFormat <- newFormat[grepl('^chr[0-9XY][0-9]?$', newFormat$chrom),]
   numcells = (ncol(newFormat)-3)/2
