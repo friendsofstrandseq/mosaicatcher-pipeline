@@ -23,7 +23,7 @@ changeRCformat = function(RCfile, outputDir, bamNamesFile = "bamNames.txt")
   print(colnames(newFormat))
   
   # exclude the extra chromosomes
-  newFormat <- newFormat[grepl('^chr[0-9XY][0-9]?$', chrom),]
+  newFormat <- newFormat[grepl('^chr[0-9XY][0-9]?$', newFormat$chrom),]
   numcells = (ncol(newFormat)-3)/2
   ord = NULL
   for (i in 1:numcells) (ord = c(ord, i, i+numcells))
@@ -62,7 +62,7 @@ changeCellTypesFormat = function(stateFile)
   x = data.table::dcast(d, chrom + start + end ~ sample + cell, value.var = "class")
   
   # exclude the extra chromosomes
-  x <- x[grepl('^chr[0-9XY][0-9]?$', chrom),]
+  x <- x[grepl('^chr[0-9XY][0-9]?$', x$chrom),]
   
   # sorting rows and exclude X and Y
   # order the chromosomes numerically
