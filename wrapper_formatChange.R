@@ -54,9 +54,9 @@ changeCellTypesFormat = function(stateFile)
 {
   #cellType = read.table(cellType, stringsAsFactors = F, header = T)
   d = data.table::fread(stateFile)
-  #d = merge(d, d[, .(chrom_start = min(start), chrom_end = max(end)), by = chrom], by = "chrom")
-  d %>% group_by(chrom) %>% summarize(chrom_start = min(start), chrom_end = max(end))
-  merge(d, d %>% ..., by= "chrom")
+  d = merge(d, d[, .(chrom_start = min(start), chrom_end = max(end)), by = chrom], by = "chrom")
+  #d %>% group_by(chrom) %>% summarize(chrom_start = min(start), chrom_end = max(end))
+  #merge(d, d %>% ..., by= "chrom")
   d = d[start == chrom_start & end == chrom_end,]
   x = data.table::dcast(d, chrom + start + end ~ sample + cell, value.var = "class")
   
