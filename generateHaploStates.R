@@ -10,7 +10,7 @@
 
 initialState = function(n, m)
 {
-  paste0(str_dup("0",n), str_dup("1",m))
+  paste0(stringr::str_dup("0",n), stringr::str_dup("1",m))
 }
 
 
