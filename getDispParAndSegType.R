@@ -8,8 +8,8 @@
 
 dispersionPar = function(segType, r, segLen = binLength, binLength, alpha = 0.05)
 {
-  CNw = str_count(segType, "w")
-  CNc = str_count(segType, "c")
+  CNw = stringr::str_count(segType, "w")
+  CNc = stringr::str_count(segType, "c")
   
   disp = rep(r/2,2)*(segLen/binLength)*c(CNw, CNc)
   
@@ -53,7 +53,7 @@ getSegType = function(cellType, status)
       Nc = Nc + as.integer(substr(status, i, i))*(1-as.integer(substr(Wstatus, i, i)))
     }
     
-    segType = paste0(str_dup("w",Nw),str_dup("c",Nc))
+    segType = paste0(stringr::str_dup("w",Nw),stringr::str_dup("c",Nc))
   }
   
   segType
