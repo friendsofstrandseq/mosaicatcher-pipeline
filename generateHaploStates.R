@@ -24,7 +24,7 @@ initialState = function(n, m)
 getNextState = function(currentState)#, n, m)
 {
   nextState = currentState
-  pos = str_locate_all(currentState, "01")[[1]][,1]
+  pos = stringr::str_locate_all(currentState, "01")[[1]][,1]
   if (length(pos) == 0)
   {
     return(FALSE) # can't be incremented
