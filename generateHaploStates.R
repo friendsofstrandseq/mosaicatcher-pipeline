@@ -37,7 +37,7 @@ getNextState = function(currentState)#, n, m)
     
     if (pos + 1 < nchar(nextState))
     {
-      c1 = str_count(substr(nextState, pos+2, nchar(nextState)),"1")
+      c1 = stringr::str_count(substr(nextState, pos+2, nchar(nextState)),"1")
       c0 = nchar(nextState) - pos - 1 - c1
       nextState = paste0(substr(nextState,1,pos+1), initialState(c0,c1))
     }
