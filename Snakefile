@@ -159,8 +159,6 @@ rule run_sv_classification:
         outdir = "sv_probabilities/" + config["sample"] + ".{windows}.{bpdens}/",
         out1   = "sv_probabilities/" + config["sample"] + ".{windows}.{bpdens}/allSegCellProbs.table"
     params:
-        class_dir     = config["class_dir"],
-        class_command = "Rscript " + config["class_dir"] + "/" + config["class_script"],
         windowsize    = lambda wc: wc.windows.split("_")[0]
     shell:
         """
