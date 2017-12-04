@@ -9,8 +9,6 @@
     "sce_script"    : "/g/korbel/meiers/tools/mosaicatcher/strandsequtils/sce_utils/SCE.R",
     "samtools"      : "samtools",
     "bcftools"      : "bcftools",
-    "class_script"  : "finalCall_cmd.R",
-    "class_dir"     : "/g/korbel/meiers/tools/mosaicatcher/strandsequtils/maryamCode",
 
 
     "exclude_file"  : "/g/korbel/meiers/tools/mosaicatcher/mosaicatcher/data/exclude/hg19.exclude",
