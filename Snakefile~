@@ -174,8 +174,7 @@ rule run_sv_classification:
                 outputDir={output.outdir} \
                 bin.size={params.windowsize} \
                 K=22 \
-                maximumCN=4 \
-                $(pwd)/utils/R-packages/ \
+                maximumCN=4
         """
 
 rule convert_SVprob_output:
