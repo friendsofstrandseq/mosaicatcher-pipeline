@@ -151,6 +151,7 @@ rule install_MaRyam:
 
 rule run_sv_classification:
     input:
+        maryam = "utils/R-packages/MaRyam/R/MaRyam",
         counts = "counts/" + config["sample"] + ".{windows}.txt.gz",
         info   = "counts/" + config["sample"] + ".{windows}.info",
         states = "strand_states/" + config["sample"] + ".final.txt",
@@ -164,16 +165,16 @@ rule run_sv_classification:
         """
         set -x
         # set haplotypeInfo if phasing info is available		
-        Rscript utils/MaRyam_pipeline.R \ 
+        Rscript utils/MaRyam_pipeline.R \
                 binRCfile={input.counts} \
                 BRfile={input.bp} \
-                infoFile={input.info} \ 
+                infoFile={input.info} \
                 stateFile={input.states} \
                 outputDir={output.outdir} \
                 bin.size={params.windowsize} \
                 K=22 \
                 maximumCN=4 \
-                $(pwd)/utils/R-packages/ \
+                utils/R-packages/
         """
 
 rule convert_SVprob_output:
