@@ -19,4 +19,4 @@ d <- d[, .(chrom = chr, start, end, sample, cell, type = types, w = Wcount, c = 
            p_inv_hom = `0101`, p_inv_h1 = `0110`, p_inv_h2 = `1001`,
            p_dup_hom = `2020`, p_dup_h1 = `2010`, p_dup_h2 = `1020`,
            p_idup_h1 = `1110`, p_idup_h2 = `1011`)]
-write.table(d, file = snakemake@output[[1]], quote=F, col.names = T, row.names = F, sep = "\")
+write.table(d, file = snakemake@output[[1]], quote=F, col.names = T, row.names = F, sep = "\t")
