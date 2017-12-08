@@ -183,6 +183,8 @@ rule convert_SVprob_output:
         info  = "counts/" + config["sample"] + ".{windows}.info"
     output:
         "sv_probabilities/" + config["sample"] + ".{windows}.{bpdens}/probabilities.txt"
+    params:
+        sample_name = config["sample"]
     script:
         "utils/helper.convert_svprob_output.R"
 
