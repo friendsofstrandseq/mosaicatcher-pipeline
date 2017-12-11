@@ -330,7 +330,7 @@ rule call_SNVs_bcftools_chrom:
         bam   = "snv_calls/merged.bam",
         bai   = "snv_calls/merged.bam.bai"
     output:
-        "snv_calls/D2Rfb.{chrom}.vcf"
+        "snv_calls/" + config["sample"] + ".{chrom}.vcf"
     params:
         samtools = config["samtools"],
         bcftools = config["bcftools"]
