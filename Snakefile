@@ -141,7 +141,7 @@ rule prepare_segments:
 
 rule install_MaRyam:
     output:
-        "utils/R-packages/MaRyam/R/MaRyam"
+        "utils/R-packages2/MaRyam/R/MaRyam"
     log:
         "log/maryam-install.log"
     shell:
@@ -151,7 +151,7 @@ rule install_MaRyam:
 
 rule run_sv_classification:
     input:
-        maryam = "utils/R-packages/MaRyam/R/MaRyam",
+        maryam = "utils/R-packages2/MaRyam/R/MaRyam",
         counts = "counts/" + config["sample"] + ".{windows}.txt.gz",
         info   = "counts/" + config["sample"] + ".{windows}.info",
         states = "strand_states/" + config["sample"] + ".final.txt",
@@ -174,7 +174,7 @@ rule run_sv_classification:
                 bin.size={params.windowsize} \
                 K=22 \
                 maximumCN=4 \
-                utils/R-packages/
+                utils/R-packages2/
         """
 
 rule convert_SVprob_output:
