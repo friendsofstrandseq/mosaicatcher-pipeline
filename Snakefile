@@ -14,13 +14,15 @@ rule all:
         "log/StrandPhaseR.config",
         expand("plots/" + config["sample"] + ".{window}_fixed.pdf", window = [50000, 100000, 200000, 500000]),
         expand("plots/" + config["sample"] + ".{window}_variable.pdf", window = [50000, 100000]),
-        expand("segmentation2/" + config["sample"] + ".{window}_fixed.{bpdens}.txt", window = [50000, 100000, 200000, 500000], bpdens = ["few","many"]),
-        expand("segmentation2/" + config["sample"] + ".{window}_variable.{bpdens}.txt", window = [50000, 100000], bpdens = ["few","many"]),
+        expand("segmentation2/" + config["sample"] + ".{window}_fixed.{bpdens}.txt",
+               window = [50000, 100000, 200000, 500000], bpdens = ["few","medium","many"]),
+        expand("segmentation2/" + config["sample"] + ".{window}_variable.{bpdens}.txt",
+               window = [50000, 100000], bpdens = ["few","medium","many"]),
         "strand_states/" + config["sample"] + ".final.txt",
         expand("sv_calls/" + config["sample"] + ".{window}_fixed.{bpdens}.SV_probs.pdf",
-               window = [50000, 100000, 200000, 500000], bpdens = ["few","many"]),
+               window = [50000, 100000, 200000, 500000], bpdens = ["few","medium","many"]),
         expand("sv_calls/" + config["sample"] + ".{window}_variable.{bpdens}.SV_probs.pdf",
-               window = [50000, 100000], bpdens = ["few","many"])
+               window = [50000, 100000], bpdens = ["few","medium","many"])
 
 
 
