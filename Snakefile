@@ -36,11 +36,13 @@ rule plot_mosaic_counts:
         info   = "counts/" + config["sample"] + ".{file_name}.info"
     output:
         "plots/" + config["sample"] + ".{file_name}.pdf"
+    log:
+        "log/plot_mosaic_counts.{file_name}.txt"
     params:
         plot_command = "Rscript " + config["plot_script"]
     shell:
         """
-        {params.plot_command} {input.counts} {input.info} {output}
+        {params.plot_command} {input.counts} {input.info} {output} > {log} 2>&1
         """
 
 rule plot_SV_calls:
@@ -49,12 +51,13 @@ rule plot_SV_calls:
         probs  = "sv_probabilities/" + config["sample"] + ".{windows}.{bpdens}/probabilities.txt"
     output:
         "sv_calls/" + config["sample"] + ".{windows}.{bpdens}.SV_probs.pdf"
+    log:
+        "log/plot_SV_call.{windows}.{bpdens}.txt"
     params:
         plot_command = "Rscript " + config["sv_plot_script"]
     shell:
         """
-        {params.plot_command} {input.counts} {input.probs} {output}
-        touch {output}
+        {params.plot_command} {input.counts} {input.probs} {output}  > {log} 2>&1
         """
 
 
@@ -69,17 +72,21 @@ rule mosaic_count_fixed:
     output:
         counts = "counts/" + config["sample"] + ".{window}_fixed.txt.gz",
         info   = "counts/" + config["sample"] + ".{window}_fixed.info"
+    log:
+        "log/mosaic_count_fixed.{window}.txt"
     params:
         mc_command = config["mosaicatcher"],
         mc_exclfile = config["exclude_file"]
     shell:
         """
         {params.mc_command} count \
+            --verbose \
             -o {output.counts} \
             -i {output.info} \
             -x {params.mc_exclfile} \
             -w {wildcards.window} \
-            {input.bam}
+            {input.bam} \
+        > {log} 2>&1
         """
 
 
@@ -91,15 +98,19 @@ rule mosaic_count_variable:
     output:
         counts = "counts/" + config["sample"] + ".{window}_variable.txt.gz",
         info   = "counts/" + config["sample"] + ".{window}_variable.info"
+    log:
+        "log/mosaic_count_variable.{window}.txt"
     params:
         mc_command = config["mosaicatcher"]
     shell:
         """
         {params.mc_command} count \
+            --verbose \
             -o {output.counts} \
             -i {output.info} \
             -b {input.bed} \
-            {input.bam}
+            {input.bam} \
+        > {log} 2>&1
         """
 
 
@@ -116,13 +127,15 @@ rule segmentation:
         "counts/" + config["sample"] + ".{file_name}.txt.gz"
     output:
         "segmentation/" + config["sample"] + ".{file_name}.txt"
+    log:
+        "log/segmentation.{file_name}.txt"
     params:
         mc_command = config["mosaicatcher"]
     shell:
         """
         {params.mc_command} segment \
         -o {output} \
-        {input}
+        {input} > {log} 2>&1
         """
 
 # Pick a few segmentations and prepare the input files for SV classification
@@ -131,6 +144,8 @@ rule prepare_segments:
         "segmentation/" + config["sample"] + ".{windows}.txt"
     output:
         "segmentation2/" + config["sample"] + ".{windows}.{bpdens}.txt"
+    log:
+        "log/prepare_segments.{windows}.{bpdens}.txt"
     params:
         quantile = lambda wc: config["bp_density"][wc.bpdens]
     script:
@@ -145,10 +160,10 @@ rule install_MaRyam:
     output:
         "utils/R-packages2/MaRyam/R/MaRyam"
     log:
-        "log/maryam-install.log"
+        "log/install_MaRyam.log"
     shell:
         """
-        Rscript  utils/install_maryam.R > {log} 2>&1
+        Rscript utils/install_maryam.R > {log} 2>&1
         """
 
 rule run_sv_classification:
@@ -161,12 +176,14 @@ rule run_sv_classification:
     output:
         outdir = "sv_probabilities/" + config["sample"] + ".{windows}.{bpdens}/",
         out1   = "sv_probabilities/" + config["sample"] + ".{windows}.{bpdens}/allSegCellProbs.table"
+    log:
+        "run_sv_classification.{windows}.{bpdens}.txt"
     params:
         windowsize    = lambda wc: wc.windows.split("_")[0]
     shell:
         """
         set -x
-        # set haplotypeInfo if phasing info is available		
+        # set haplotypeInfo if phasing info is available
         Rscript utils/MaRyam_pipeline.R \
                 binRCfile={input.counts} \
                 BRfile={input.bp} \
@@ -176,7 +193,7 @@ rule run_sv_classification:
                 bin.size={params.windowsize} \
                 K=22 \
                 maximumCN=4 \
-                utils/R-packages2/
+                utils/R-packages2/ > {log} 2>&1
         """
 
 rule convert_SVprob_output:
@@ -185,6 +202,8 @@ rule convert_SVprob_output:
         info  = "counts/" + config["sample"] + ".{windows}.info"
     output:
         "sv_probabilities/" + config["sample"] + ".{windows}.{bpdens}/probabilities.txt"
+    log:
+        "log/convert_SVprob_output.{windows}.{bpdens}.txt"
     script:
         "utils/helper.convert_svprob_output.R"
 
@@ -198,13 +217,15 @@ rule determine_initial_strand_states:
         "counts/" + config["sample"] + ".500000_fixed.txt.gz"
     output:
         "strand_states/" + config["sample"] + ".txt"
+    log:
+        "log/determine_initial_strand_states.txt"
     params:
         sce_command = "Rscript " + config["sce_script"]
     shell:
         """
         echo "[Note] This is a dirty hack to remove chrX and chrY."
         tmp=$(mktemp)
-        {params.sce_command} {input} $tmp
+        {params.sce_command} {input} $tmp > {log} 2>&1
         grep -vP '^Y|^chrY' $tmp | grep -vP '^X|^chrX' > {output}
         """
 
@@ -216,6 +237,8 @@ rule convert_strandphaser_input:
         info   = "counts/" + config["sample"] + ".500000_fixed.info"
     output:
         "strand_states/" + config["sample"] + ".strandphaser_input.txt"
+    log:
+        "log/convert_strandphaser_input.txt"
     script:
         "utils/helper.convert_strandphaser_input.R"
 
@@ -226,7 +249,7 @@ rule install_StrandPhaseR:
         "log/strandphaser-install.log"
     shell:
         """
-        Rscript  utils/install_strandphaser.R > {log} 2>&1
+        Rscript utils/install_strandphaser.R > {log} 2>&1
         """
 
 rule prepare_strandphaser_config:
@@ -259,7 +282,7 @@ rule prepare_strandphaser_config:
             print("translateBases   = TRUE",     file = f)
             print("fillMissAllele   = NULL",     file = f)
             print("splitPhasedReads = TRUE",     file = f)
-	    print("compareSingleCells = TRUE",     file = f)	
+            print("compareSingleCells = TRUE",     file = f)
             print("callBreaks       = FALSE",    file = f)
             print("exportVCF        = '", config["sample"], ".txt'", sep = "", file = f)
             print("bsGenome         = 'BSgenome.Hsapiens.UCSC.hg19'", file = f)
@@ -278,7 +301,7 @@ rule run_strandphaser:
     output:
         "strand_states/" + config["sample"] + ".strandphaser_output.txt"
     log:
-        "log/phased_haps.txt.log"
+        "log/run_strandphaser.txt"
     shell:
         """
         Rscript utils/StrandPhaseR_pipeline.R \
@@ -300,8 +323,11 @@ rule convert_strandphaser_output:
         info           = "counts/" + config["sample"] + ".500000_fixed.info"
     output:
         "strand_states/" + config["sample"] + ".final.txt"
+    log:
+        "log/convert_strandphaser_output.txt"
     script:
         "utils/helper.convert_strandphaser_output.R"
+
 
 
 ################################################################################
@@ -333,13 +359,15 @@ rule call_SNVs_bcftools_chrom:
         bai   = "snv_calls/merged.bam.bai"
     output:
         "snv_calls/" + config["sample"] + ".{chrom}.vcf"
+    log:
+        "log/call_SNVs_bcftools_chrom.{chrom}.txt"
     params:
         samtools = config["samtools"],
         bcftools = config["bcftools"]
     shell:
         """
         {params.samtools} mpileup -r {wildcards.chrom} -g -f {input.fa} {input.bam} \
-        | {params.bcftools} call -mv - > {output}
+        | {params.bcftools} call -mv - > {output} > {log} 2>&1
         """
 
 # Write one file per chromosome that should be analysed.
@@ -360,3 +388,4 @@ rule merge_SNV_calls:
         expand("snv_calls/" + config["sample"] + ".vcf")
     shell:
         config["bcftools"] + " concat -O v -o {output} {input}"
+
