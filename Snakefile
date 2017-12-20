@@ -367,7 +367,7 @@ rule call_SNVs_bcftools_chrom:
     shell:
         """
         {params.samtools} mpileup -r {wildcards.chrom} -g -f {input.fa} {input.bam} \
-        | {params.bcftools} call -mv - > {output} > {log} 2>&1
+        | {params.bcftools} call -mv - | {params.bcftools} view --genotype het --types snps - > {output} > {log} 2>&1
         """
 
 # Write one file per chromosome that should be analysed.
