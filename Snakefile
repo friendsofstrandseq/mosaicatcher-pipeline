@@ -177,7 +177,7 @@ rule run_sv_classification:
         outdir = "sv_probabilities/" + config["sample"] + ".{windows}.{bpdens}/",
         out1   = "sv_probabilities/" + config["sample"] + ".{windows}.{bpdens}/allSegCellProbs.table"
     log:
-        "run_sv_classification.{windows}.{bpdens}.txt"
+        "log/run_sv_classification.{windows}.{bpdens}.txt"
     params:
         windowsize    = lambda wc: wc.windows.split("_")[0]
     shell:
