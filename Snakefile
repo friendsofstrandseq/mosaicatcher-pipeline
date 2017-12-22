@@ -360,7 +360,7 @@ rule call_SNVs_bcftools_chrom:
         bam   = "snv_calls/merged.bam",
         bai   = "snv_calls/merged.bam.bai"
     output:
-        "snv_calls/" + config["sample"] + ".{chrom}.vcf"
+        temp("snv_calls/" + config["sample"] + ".{chrom}.vcf")
     log:
         "log/call_SNVs_bcftools_chrom.{chrom}.txt"
     params:
