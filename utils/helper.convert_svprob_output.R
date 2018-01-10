@@ -20,7 +20,11 @@ d$cell = f$cell[d$cells]
 d$sample = sample
 d
 
-d <- d[, .(chrom = chr, start, end, sample, cell, type = types, w = Wcount, c = Ccount,
+d <- d[, .(chrom = chr,
+           start = format(start,scientific=F),
+           end   = format(end,scientific=F),
+           sample, cell, 
+           type = toupper(types), w = Wcount, c = Ccount,
            p_cn0 = CN0, p_cn1 = CN1, p_cn2 = CN2, p_cn3 = CN3, p_cn4 = CN4,
            p_ref = `1010`, p_del_hom = `0000`, p_del_h1 = `0010`, p_del_h2 = `1000`,
            p_inv_hom = `0101`, p_inv_h1 = `0110`, p_inv_h2 = `1001`,
