@@ -6,11 +6,11 @@
 #' @param K The number of chromosomes (autosomes). #TODO I suggest that user can define what chromosome wants to analyze. So this parameter should take vector of chromosome IDs => c(1:22,'X') or paste0('chr', c(1:22,'X'))
 #' @param maximumCN Maximum CN in the segments for SV calling. #TODO make sure parameters correspond to maxCN paramter in getCNprob
 #' @param segmentsCounts TODO ...
-#' @param r TODO ...
-#' @param p TODO ...
-#' @param cellTypes TODO ... In function getSegType there is a parameter cellType. Are these paramters expecting the same thing? If not please use bit more informative name.
+#' @param r The matrix of dispersion parameters of chromosomes(rows) and cells(columns) for CN=2 for a segment of size bin.size
+#' @param p The p parameter of the NB distribution
+#' @param cellTypes The matrix of cell types of chromosomes(rows) and cells(columns) TODO ... In function getSegType there is a parameter cellType. Are these paramters expecting the same thing? If not please use bit more informative name.
 #' @param outputDir The outputDir containing the input and output files.
-#' @param hapMode TODO ... #There is a haplotypeMode parameter in newSVcalling function. I guess they point to the same parameter.
+#' @param hapMode a binary parameter showing wether we have the haplotype of WC cell types TODO ... #There is a haplotypeMode parameter in newSVcalling function. I guess they point to the same parameter.
 #' @author Maryam Ghareghani
 #' @export
 
