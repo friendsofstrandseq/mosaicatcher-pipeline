@@ -16,6 +16,7 @@
         "50000"     : "utils/variable_bins.GRCh38.50kb.bed",
         "100000"    : "utils/variable_bins.GRCh38.100kb.bed"
     },
+    "R_reference"   : "BSgenome.Hsapiens.UCSC.hg38",
 
     "bp_density"    : {
         "few"       : 0.1,
