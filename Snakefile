@@ -254,11 +254,11 @@ rule install_StrandPhaseR:
         Rscript utils/install_strandphaser.R > {log} 2>&1
         """
 
-rule prepare_strandphaser_config:
+rule prepare_strandphaser_config_per_chrom:
     input:
         "strand_states/" + config["sample"] + ".txt"
     output:
-        "log/StrandPhaseR.config"
+        dynamic("log/StrandPhaseR.{chrom}.config")
     run:
         # Get chromosomes
         chroms = set()
@@ -272,7 +272,7 @@ rule prepare_strandphaser_config:
         with open(output[0], "w") as f:
             print("[General]",                    file = f)
             print("numCPU           = 1",         file = f)
-            print("chromosomes      = c(", ",".join(["'" + chrom + "'" for chrom in chroms]), ")", file = f)
+            print("chromosomes      = '" + wildcards.chrom + "'", file = f)
             print("pairedEndReads   = TRUE",      file = f)
             print("min.mapq         = 10",        file = f)
             print("",                             file = f)
@@ -292,18 +292,18 @@ rule prepare_strandphaser_config:
 
 
 
-rule run_strandphaser:
+rule run_strandphaser_per_chrom:
     input:
         mergedbam    = "snv_calls/merged.bam",
         wcregions    = "strand_states/" + config["sample"] + ".strandphaser_input.txt",
-        snppositions = "snv_calls/" + config["sample"] + ".vcf",
-        configfile   = "log/StrandPhaseR.config",
+        snppositions = "snv_calls/" + config["sample"] + ".{chrom}.vcf",
+        configfile   = "log/StrandPhaseR.{chrom}.config",
         strandphaser = "utils/R-packages/StrandPhaseR/R/StrandPhaseR",
         bamfolder    = "bam"
     output:
-        "strand_states/" + config["sample"] + ".strandphaser_output.txt"
+        "strand_states/" + config["sample"] + ".strandphaser_output.{chrom}.txt"
     log:
-        "log/run_strandphaser.txt"
+        "log/run_strandphaser.{chrom}.txt"
     shell:
         """
         Rscript utils/StrandPhaseR_pipeline.R \
@@ -315,6 +315,18 @@ rule run_strandphaser:
                 $(pwd)/utils/R-packages/ \
                 > {log} 2>&1
         cp log/StrandPhaseR_analysis/Phased/phased_haps.txt {output}
+        """
+
+
+rule combine_strandphaser_output:
+    input:
+        dynamic("strand_states/" + config["sample"] + ".strandphaser_output.{chrom}.txt")
+    output:
+        "strand_states/" + config["sample"] + ".strandphaser_output.txt"
+    shell:
+        """
+        cat {input} | head -n1 > {output}
+        for x in {input}; do tail -n+2 $x >> {output}; done
         """
 
 
