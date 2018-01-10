@@ -10,7 +10,7 @@
 #' @param p The p parameter of the NB distribution
 #' @param cellTypes The matrix of cell types of chromosomes(rows) and cells(columns) TODO ... In function getSegType there is a parameter cellType. Are these paramters expecting the same thing? If not please use bit more informative name.
 #' @param outputDir The outputDir containing the input and output files.
-#' @param hapMode a binary parameter showing wether we have the haplotype of WC cell types TODO ... #There is a haplotypeMode parameter in newSVcalling function. I guess they point to the same parameter.
+#' @param haplotypeMode a binary parameter showing wether we have the haplotype of WC cell types TODO ... #There is a haplotypeMode parameter in newSVcalling function. I guess they point to the same parameter.
 #' @author Maryam Ghareghani
 #' @export
 
@@ -27,7 +27,7 @@
 
 # there is a bug: segmentCounts[224,] is all NA --> check the getSegReadCounts file later...
 
-SVcalling_wrapperFunc = function(bin.size, K, maximumCN, segmentsCounts, r, p, cellTypes, outputDir, hapMode)
+SVcalling_wrapperFunc = function(bin.size, K, maximumCN, segmentsCounts, r, p, cellTypes, outputDir, haplotypeMode)
 {
   # blacklisting chr X and Y
   #segmentsCounts = segmentsCounts[which(sapply(segmentsCounts$chromosome, chrNumber) < 23),]
@@ -69,7 +69,7 @@ SVcalling_wrapperFunc = function(bin.size, K, maximumCN, segmentsCounts, r, p, c
     if (length(CN) > 0 && CN[1] < maximumCN)
     {
       # computing haplotype probabilities
-      hapProbTables[[i]] = newgetCellStatProbabilities(hapStatus, segCounts, as.character(cellTypes[chr,]), p, as.numeric(r[chr,]), binLength = bin.size, alpha = 0.05, haplotypeMode = hapMode)
+      hapProbTables[[i]] = newgetCellStatProbabilities(hapStatus, segCounts, as.character(cellTypes[chr,]), p, as.numeric(r[chr,]), binLength = bin.size, alpha = 0.05, haplotypeMode = haplotypeMode)
       # regularization
       hapProbTables[[i]] = regularizeProbTable(hapProbTables[[i]])
       # computing aggregate Probabilities (based on non SCE cells only), I think it doesn't matter if we do it after normalization as well
