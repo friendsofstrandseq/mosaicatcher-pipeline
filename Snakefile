@@ -11,7 +11,6 @@ BAM, = glob_wildcards("bam/{bam}.bam")
 
 rule all:
     input:
-        "log/StrandPhaseR.config",
         expand("plots/" + config["sample"] + ".{window}_fixed.pdf", window = [50000, 100000, 200000, 500000]),
         expand("plots/" + config["sample"] + ".{window}_variable.pdf", window = [50000, 100000]),
         expand("segmentation2/" + config["sample"] + ".{window}_fixed.{bpdens}.txt",
@@ -287,7 +286,7 @@ rule prepare_strandphaser_config_per_chrom:
             print("compareSingleCells = TRUE",     file = f)
             print("callBreaks       = FALSE",    file = f)
             print("exportVCF        = '", config["sample"], ".txt'", sep = "", file = f)
-            print("bsGenome         = 'BSgenome.Hsapiens.UCSC.hg19'", file = f)
+            print("bsGenome         = '", config["R_reference"], "'", file = f)
 
 
 
