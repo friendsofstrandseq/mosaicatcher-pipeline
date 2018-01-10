@@ -19,9 +19,9 @@ rule all:
         expand("segmentation2/" + config["sample"] + ".{window}_variable.{bpdens}.txt",
                window = [50000, 100000], bpdens = ["few","medium","many"]),
         "strand_states/" + config["sample"] + ".final.txt",
-        expand("sv_calls/" + config["sample"] + ".{window}_fixed.{bpdens}.SV_probs.pdf",
+        expand("sv_calls/" + config["sample"] + ".{window}_fixed.{bpdens}.SV_probs.chr1.pdf",
                window = [50000, 100000, 200000, 500000], bpdens = ["few","medium","many"]),
-        expand("sv_calls/" + config["sample"] + ".{window}_variable.{bpdens}.SV_probs.pdf",
+        expand("sv_calls/" + config["sample"] + ".{window}_variable.{bpdens}.SV_probs.chr1.pdf",
                window = [50000, 100000], bpdens = ["few","medium","many"])
 
 
@@ -50,7 +50,7 @@ rule plot_SV_calls:
         counts = "counts/" + config["sample"] + ".{windows}.txt.gz",
         probs  = "sv_probabilities/" + config["sample"] + ".{windows}.{bpdens}/probabilities.txt"
     output:
-        "sv_calls/" + config["sample"] + ".{windows}.{bpdens}.SV_probs.pdf"
+        dynamic("sv_calls/" + config["sample"] + ".{windows}.{bpdens}.SV_probs.{chrom}.pdf")
     log:
         "log/plot_SV_call.{windows}.{bpdens}.txt"
     params:
