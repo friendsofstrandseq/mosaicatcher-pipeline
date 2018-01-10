@@ -286,7 +286,7 @@ rule prepare_strandphaser_config_per_chrom:
             print("compareSingleCells = TRUE",     file = f)
             print("callBreaks       = FALSE",    file = f)
             print("exportVCF        = '", config["sample"], ".txt'", sep = "", file = f)
-            print("bsGenome         = '", config["R_reference"], "'", file = f)
+            print("bsGenome         = '", config["R_reference"], "'", sep = "", file = f)
 
 
 
