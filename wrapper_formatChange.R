@@ -1,8 +1,8 @@
 #' Changes the format of all files to the format used in the SV calling wrapper function.
 #'
-#' @param RCfile TODO ...
+#' @param RCfile The name of the file containing bin read counts
 #' @param outputDir The directory containing the output files.
-#' @param bamNamesFile TODO ...
+#' @param bamNamesFile Outputs the names of the bam files in the order they are used in the tool
 #' @author Maryam Ghareghani
 #' @export
 
@@ -44,9 +44,9 @@ changeRCformat = function(RCfile, outputDir, bamNamesFile = "bamNames.txt")
   newFormat
 }
 
-#' TODO Write function description or remove from the file!!!
+#' Changes the format of the cell types file and gives as output the cell types matrix
 #'
-#' @param stateFile TODO ...
+#' @param stateFile The name of the file containing the cell types
 #' @author Maryam Ghareghani
 #' @export
 
@@ -75,9 +75,9 @@ changeCellTypesFormat = function(stateFile)
   tolower(cellTypes)
 }
 
-#' TODO Write function description or remove from the file!!!
+#' Changes the format of the NB parameters and gives as output p parameter and a matrix containing r parameters
 #'
-#' @param infoFile TODO ...
+#' @param infoFile The name of the file containing the NB parameters
 #' @param K The number of chromosomes (autosomes).
 #' @author Maryam Ghareghani
 #' @export
@@ -96,10 +96,10 @@ changeNBparamsFormat = function(infoFile, K)
 }
 
 
-#' TODO Write function description or remove from the file!!!
+#' TODO outputs the segment counts
 #'
-#' @param binRC TODO ...
-#' @param breakpointsFile TODO ...
+#' @param binRC The name of the bin read counts file
+#' @param breakpointsFile The name of the breakpoint file
 #' @param K The number of chromosomes (autosomes).
 #' @param bin.size The size of the bins.
 #' @author Maryam Ghareghani
