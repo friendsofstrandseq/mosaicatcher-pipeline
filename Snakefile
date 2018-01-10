@@ -304,6 +304,7 @@ rule run_strandphaser:
         "strand_states/" + config["sample"] + ".strandphaser_output.txt"
     log:
         "log/run_strandphaser.txt"
+    threads: 8
     shell:
         """
         Rscript utils/StrandPhaseR_pipeline.R \
@@ -313,6 +314,7 @@ rule run_strandphaser:
                 {input.wcregions} \
                 {input.snppositions} \
                 $(pwd)/utils/R-packages/ \
+                {threads} \
                 > {log} 2>&1
         cp log/StrandPhaseR_analysis/Phased/phased_haps.txt {output}
         """
