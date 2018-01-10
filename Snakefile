@@ -271,7 +271,6 @@ rule prepare_strandphaser_config:
                 chroms.add(line.split()[0])
         with open(output[0], "w") as f:
             print("[General]",                    file = f)
-            print("numCPU           = 1",         file = f)
             print("chromosomes      = c(", ",".join(["'" + chrom + "'" for chrom in chroms]), ")", file = f)
             print("pairedEndReads   = TRUE",      file = f)
             print("min.mapq         = 10",        file = f)
