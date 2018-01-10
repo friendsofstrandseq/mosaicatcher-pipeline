@@ -96,18 +96,16 @@ changeNBparamsFormat = function(infoFile, K)
 }
 
 
-#' TODO outputs the segment counts
+#' outputs the segment counts
 #'
-#' @param binRC The name of the bin read counts file
+#' @param binRC bin read counts splitted by chromosomes
 #' @param breakpointsFile The name of the breakpoint file
 #' @param K The number of chromosomes (autosomes).
 #' @param bin.size The size of the bins.
 #' @author Maryam Ghareghani
 #' @export
 
-#TODO binRC should be splitted based on chromosome here
-
-getSegReadCounts = function(binRC, breakpointsFile, K, bin.size) # binRC sould be splited based on chromosome
+getSegReadCounts = function(binRC, breakpointsFile, K, bin.size)
 {
   seg = utils::read.table(breakpointsFile, stringsAsFactors = F, colClasses = c("integer", "character", "integer"), header = T)[,2:3]
   colnames(seg) = c("chromosome", "breakpoint")
