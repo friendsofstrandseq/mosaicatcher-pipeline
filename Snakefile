@@ -271,6 +271,7 @@ rule prepare_strandphaser_config:
                 chroms.add(line.split()[0])
         with open(output[0], "w") as f:
             print("[General]",                    file = f)
+            print("numCPU           = 1",         file = f)
             print("chromosomes      = c(", ",".join(["'" + chrom + "'" for chrom in chroms]), ")", file = f)
             print("pairedEndReads   = TRUE",      file = f)
             print("min.mapq         = 10",        file = f)
@@ -303,7 +304,6 @@ rule run_strandphaser:
         "strand_states/" + config["sample"] + ".strandphaser_output.txt"
     log:
         "log/run_strandphaser.txt"
-    threads: 8
     shell:
         """
         Rscript utils/StrandPhaseR_pipeline.R \
@@ -313,7 +313,6 @@ rule run_strandphaser:
                 {input.wcregions} \
                 {input.snppositions} \
                 $(pwd)/utils/R-packages/ \
-                {threads} \
                 > {log} 2>&1
         cp log/StrandPhaseR_analysis/Phased/phased_haps.txt {output}
         """
@@ -361,7 +360,7 @@ rule call_SNVs_bcftools_chrom:
         bam   = "snv_calls/merged.bam",
         bai   = "snv_calls/merged.bam.bai"
     output:
-        temp("snv_calls/" + config["sample"] + ".{chrom}.vcf")
+        "snv_calls/" + config["sample"] + ".{chrom}.vcf"
     log:
         "log/call_SNVs_bcftools_chrom.{chrom}.txt"
     params:
