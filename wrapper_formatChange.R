@@ -89,8 +89,6 @@ changeNBparamsFormat = function(infoFile, K)
   p = info$nb_p[1]
   r = info$nb_r
   numcells = length(r)
-  # remove the next line later
-  r = r*2
   r = matrix(rep(r,K), ncol = numcells, byrow = T)
   
   list(p,r)
@@ -126,11 +124,8 @@ getSegReadCounts = function(binRC, breakpointsFile, K, bin.size)
       end.bin.idx = chrSegs$breakpoint[i]
       
       df = data.frame(chromosome = paste0("chr",k), start = bin.size*(start.bin.idx), end = bin.size*(end.bin.idx+1),stringsAsFactors = F)
-      subRows = (start.bin.idx:end.bin.idx)+1
-      if (i == nrow(chrSegs))
-      {
-        subRows = subRows[1:(length(subRows)-1)]
-      }
+      subRows = (start.bin.idx:end.bin.idx)
+
       df = cbind(df, t(as.data.frame(colSums(as.matrix(binRC[[k]][subRows, 4:ncol(binRC[[k]])])))))
       rownames(df)  = NULL
       
