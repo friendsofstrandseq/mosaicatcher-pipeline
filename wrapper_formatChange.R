@@ -18,10 +18,12 @@ changeRCformat = function(RCfile, outputDir, bamNamesFile = "bamNames.txt")
   counts = data.table::fread(paste("zcat", RCfile))
   # newFormat is the table with all w counts first and then all the c counts
   newFormat = data.table::dcast(counts, chrom + start + end ~ cell, value.var = c("w", "c"))
+  oldFormat = colnames(newFormat)[4:length(colnames(newFormat))]
   
   # exclude the extra chromosomes
   newFormat <- newFormat[grepl('^chr[0-9XY][0-9]?$', newFormat$chrom),]
   numcells = (ncol(newFormat)-3)/2
+  # get the order of the columns to have W and C counts of the single cells together
   ord = NULL
   for (i in 1:numcells) (ord = c(ord, i, i+numcells))
   ord = c(1:3, ord + 3)
@@ -37,9 +39,11 @@ changeRCformat = function(RCfile, outputDir, bamNamesFile = "bamNames.txt")
   #naming
   colnames(newFormat)[1] = "chromosome"
   colnames(newFormat)[4:ncol(newFormat)] = paste0(rep(c("W", "C"), numcells), ceiling(1:(numcells*2)/2))
-  cellNames = sapply(colnames(newFormat)[4:(numcells+3)], substr, start = 3, stop = sapply(colnames(newFormat)[4:(numcells+3)], nchar))
-  utils::write.table(cellNames, file = paste0(outputDir, bamNamesFile), quote = F, sep = "\n", row.names = F)
-  # ! writes an extra x in the first line!
+  
+  # write mapping of cell name to cell number into file "bamNamesFile"
+  oldColumOrder = data.frame(cell_id = 1:numcells,
+                             cell_name = substr(oldFormat[1:numCells],3,nchar(oldFormat[1:numCells])))
+  write.table(oldColumOrder, file = paste0(outputDir, bamNamesFile), quote = F, sep = "\t", row.names = F)
   
   newFormat
 }
