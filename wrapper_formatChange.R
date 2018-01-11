@@ -94,6 +94,10 @@ changeCellTypesFormat = function(stateFile, cellNames)
 changeNBparamsFormat = function(infoFile, K, cellNames)
 {
   info = data.table::fread(infoFile)
+  # order the columns based on the order of the cellNames
+  names <- colnames(x)[4:ncol(x)]
+  m <- match(cellNames, names)
+  x <- x[,c(1:3, m+3),with = F]
   p = info$nb_p[1]
   r = info$nb_r
   numCells = length(r)
