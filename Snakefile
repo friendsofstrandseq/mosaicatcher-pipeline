@@ -324,8 +324,9 @@ rule combine_strandphaser_output:
         "strand_states/" + config["sample"] + ".strandphaser_output.txt"
     shell:
         """
-        cat {input} | head -n1 > {output}
-        for x in {input}; do tail -n+2 $x >> {output}; done
+        set +o pipefail
+        cat {input} | head -n1 > {output};
+        for x in {input}; do tail -n+2 $x >> {output}; done;
         """
 
 
