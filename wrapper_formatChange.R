@@ -45,7 +45,7 @@ changeRCformat = function(RCfile, outputDir, bamNamesFile = "bamNames.txt")
                              cell_name = substr(oldFormat[1:numCells],3,nchar(oldFormat[1:numCells])))
   write.table(oldColumOrder, file = paste0(outputDir, bamNamesFile), quote = F, sep = "\t", row.names = F)
   
-  newFormat
+  list(binRC=newFormat, cellNames = as.character(oldColumOrder$cell_name))
 }
 
 #' Changes the format of the cell types file and gives as output the cell types matrix
@@ -54,16 +54,25 @@ changeRCformat = function(RCfile, outputDir, bamNamesFile = "bamNames.txt")
 #' @author Maryam Ghareghani
 #' @export
 
-changeCellTypesFormat = function(stateFile)
+changeCellTypesFormat = function(stateFile, cellNames)
 {
   #cellType = read.table(cellType, stringsAsFactors = F, header = T)
   d = data.table::fread(stateFile)
   d = unique(d)
+  # adding two columns to the end including the start and end of chromosomes
   d = merge(d, d[, .(chrom_start = min(start), chrom_end = max(end)), by = chrom], by = "chrom")
-  #d %>% group_by(chrom) %>% summarize(chrom_start = min(start), chrom_end = max(end))
-  #merge(d, d %>% ..., by= "chrom")
+  # kick out the SCE cells
   d = d[start == chrom_start & end == chrom_end,]
-  x = data.table::dcast(d, chrom + start + end ~ sample + cell, value.var = "class")
+  x = data.table::dcast(d, chrom + start + end ~ cell, value.var = "class")
+  
+  # make sure if all cells are reported
+  stopifnot(unique(sort(d$cell)) == unique(sort(cellNames)))
+  
+  # order the columns based on the order of the cellNames
+  names <- colnames(x)[4:ncol(x)]
+  m <- match(cellNames, names)
+  x <- x[,c(1:3, m+3)]
+  
   
   # exclude the extra chromosomes
   x <- x[grepl('^chr[0-9XY][0-9]?$', x$chrom),]
