@@ -289,13 +289,16 @@ rule prepare_strandphaser_config_per_chrom:
             print("bsGenome         = '", config["R_reference"], "'", sep = "", file = f)
 
 
-
+def locate_snv_vcf(wildcards):
+	if config["snv_calls"] == "":
+		return "snv_calls/{}.{}.vcf".format(config["sample"], wildcards.chrom)
+	else:
+		return "external_snv_calls/{}.{}.vcf".format(config["sample"], wildcards.chrom)
 
 rule run_strandphaser_per_chrom:
     input:
-        mergedbam    = "snv_calls/merged.bam",
         wcregions    = "strand_states/" + config["sample"] + ".strandphaser_input.txt",
-        snppositions = "snv_calls/" + config["sample"] + ".{chrom}.vcf",
+        snppositions = locate_snv_vcf,
         configfile   = "log/StrandPhaseR.{chrom}.config",
         strandphaser = "utils/R-packages/StrandPhaseR/R/StrandPhaseR",
         bamfolder    = "bam"
@@ -402,4 +405,16 @@ rule merge_SNV_calls:
         expand("snv_calls/" + config["sample"] + ".vcf")
     shell:
         config["bcftools"] + " concat -O v -o {output} {input}"
+
+rule split_external_snv_calls:
+    input:
+        vcf = config["snv_calls"]
+    output:
+        vcf = "external_snv_calls/" + config["sample"] + ".{chrom}.vcf"
+    log: "external_snv_calls/" + config["sample"] + ".{chrom}.vcf.log"
+    params:
+        bcftools = config["bcftools"],
+        #sample = config["sample"]
+    shell:
+        "({params.bcftools} view --samples " + config["sample"] + " --types snps {input.vcf} {wildcards.chrom} | bcftools view --genotype het - > {output.vcf}) > {log} 2>&1"
 
