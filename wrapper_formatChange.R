@@ -71,7 +71,7 @@ changeCellTypesFormat = function(stateFile, cellNames)
   # order the columns based on the order of the cellNames
   names <- colnames(x)[4:ncol(x)]
   m <- match(cellNames, names)
-  x <- x[,c(1:3, m+3)]
+  x <- x[,c(1:3, m+3),with = F]
   
   
   # exclude the extra chromosomes
