@@ -328,7 +328,7 @@ rule run_strandphaser_per_chrom:
         strandphaser = "utils/R-packages/StrandPhaseR/R/StrandPhaseR",
         bamfolder    = "bam/{sample}/"
     output:
-        "strand_states/{sample}/StrandPhaseR_analysis.{chrom}/phased_haps.txt"
+        "strand_states/{sample}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt"
     log:
         "log/{sample}/run_strandphaser.{chrom}.txt"
     shell:
@@ -347,7 +347,7 @@ rule run_strandphaser_per_chrom:
 
 rule combine_strandphaser_output:
     input:
-        expand("strand_states/{{sample}}/StrandPhaseR_analysis.{chrom}/phased_haps.txt",
+        expand("strand_states/{{sample}}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt",
                 chrom = config["chromosomes"])
     output:
         "strand_states/{sample}/strandphaser_output.txt"
