@@ -296,7 +296,7 @@ rule prepare_strandphaser_config_per_chrom:
         with open(output[0], "w") as f:
             print("[General]",                    file = f)
             print("numCPU           = 1",         file = f)
-            print("chromosomes      = '{wildcards.chrom}'", file = f)
+            print("chromosomes      = '" + wildcards.chrom + "'", file = f)
             print("pairedEndReads   = TRUE",      file = f)
             print("min.mapq         = 10",        file = f)
             print("",                             file = f)
@@ -310,7 +310,7 @@ rule prepare_strandphaser_config_per_chrom:
             print("splitPhasedReads = TRUE",     file = f)
             print("compareSingleCells = TRUE",     file = f)
             print("callBreaks       = FALSE",    file = f)
-            print("exportVCF        = '{sample}.txt'", sep = "", file = f)
+            print("exportVCF        = '" + wildcards.sample + ".txt'", sep = "", file = f)
             print("bsGenome         = '", config["R_reference"], "'", sep = "", file = f)
 
 
