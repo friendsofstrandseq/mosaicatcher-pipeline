@@ -425,9 +425,9 @@ rule split_external_snv_calls:
         vcf = lambda wc: config["snv_calls"][wc.sample]
     output:
         vcf = "external_snv_calls/{sample}/{chrom}.vcf"
-    log: "external_snv_calls/{sample}/{chrom}.vcf.log"
+    log: "log/{sample}/external_snv_calls.{chrom}.vcf.log"
     params:
         bcftools = config["bcftools"]
     shell:
-        "({params.bcftools} view --samples {wildcards.sample} --types snps {input.vcf} {wildcards.chrom} | bcftools view --genotype het - > {output.vcf}) > {log} 2>&1"
+        "({params.bcftools} view --samples {wildcards.sample} --types snps {input.vcf} {wildcards.chrom} | {params.bcftools} view --genotype het - > {output.vcf}) > {log} 2>&1"
 
