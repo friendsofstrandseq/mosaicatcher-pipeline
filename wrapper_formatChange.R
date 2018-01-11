@@ -3,15 +3,8 @@
 #' @param RCfile The name of the file containing bin read counts
 #' @param outputDir The directory containing the output files.
 #' @param bamNamesFile Outputs the names of the bam files in the order they are used in the tool
-#' @author Maryam Ghareghani
+#' @author Maryam Ghareghani, Sascha Meiers
 #' @export
-
-# outputDir = "/local/home/mgharegh/research/HDhackathon/simulatedData/"
-# RCfile = "/local/home/mgharegh/research/HDhackathon/simulatedData/counts.cov5.vaf0.5.small.p0.3.txt.gz"
-# stateFile = "/local/home/mgharegh/research/HDhackathon/simulatedData/sces.cov5.vaf0.5.small.p0.3.txt" # "D2Rfb.strand_states.txt"
-# bamNamesFile = "bamNames.txt"
-# infoFile = "/local/home/mgharegh/research/HDhackathon/simulatedData/D2Rfb.50kb_fixed.info"
-# breakpointsFile = "/local/home/mgharegh/research/HDhackathon/simulatedData/breakpoints.cov5.vaf0.5.small.p0.3.txt"
 
 changeRCformat = function(RCfile, outputDir, bamNamesFile = "bamNames.txt")
 {
@@ -22,10 +15,10 @@ changeRCformat = function(RCfile, outputDir, bamNamesFile = "bamNames.txt")
   
   # exclude the extra chromosomes
   newFormat <- newFormat[grepl('^chr[0-9XY][0-9]?$', newFormat$chrom),]
-  numcells = (ncol(newFormat)-3)/2
+  numCells = (ncol(newFormat)-3)/2
   # get the order of the columns to have W and C counts of the single cells together
   ord = NULL
-  for (i in 1:numcells) (ord = c(ord, i, i+numcells))
+  for (i in 1:numCells) (ord = c(ord, i, i+numCells))
   ord = c(1:3, ord + 3)
   data.table::setcolorder(newFormat, ord)
   
@@ -38,10 +31,10 @@ changeRCformat = function(RCfile, outputDir, bamNamesFile = "bamNames.txt")
   
   #naming
   colnames(newFormat)[1] = "chromosome"
-  colnames(newFormat)[4:ncol(newFormat)] = paste0(rep(c("W", "C"), numcells), ceiling(1:(numcells*2)/2))
+  colnames(newFormat)[4:ncol(newFormat)] = paste0(rep(c("W", "C"), numCells), ceiling(1:(numCells*2)/2))
   
   # write mapping of cell name to cell number into file "bamNamesFile"
-  oldColumOrder = data.frame(cell_id = 1:numcells,
+  oldColumOrder = data.frame(cell_id = 1:numCells,
                              cell_name = substr(oldFormat[1:numCells],3,nchar(oldFormat[1:numCells])))
   write.table(oldColumOrder, file = paste0(outputDir, bamNamesFile), quote = F, sep = "\t", row.names = F)
   
@@ -51,7 +44,8 @@ changeRCformat = function(RCfile, outputDir, bamNamesFile = "bamNames.txt")
 #' Changes the format of the cell types file and gives as output the cell types matrix
 #'
 #' @param stateFile The name of the file containing the cell types
-#' @author Maryam Ghareghani
+#' @param cellNames The names of the single cells in the correct order
+#' @author Maryam Ghareghani, Sascha Meiers
 #' @export
 
 changeCellTypesFormat = function(stateFile, cellNames)
@@ -93,16 +87,17 @@ changeCellTypesFormat = function(stateFile, cellNames)
 #'
 #' @param infoFile The name of the file containing the NB parameters
 #' @param K The number of chromosomes (autosomes).
+#' @param cellNames The names of the single cells in the correct order
 #' @author Maryam Ghareghani
 #' @export
 
-changeNBparamsFormat = function(infoFile, K)
+changeNBparamsFormat = function(infoFile, K, cellNames)
 {
   info = data.table::fread(infoFile)
   p = info$nb_p[1]
   r = info$nb_r
-  numcells = length(r)
-  r = matrix(rep(r,K), ncol = numcells, byrow = T)
+  numCells = length(r)
+  r = matrix(rep(r,K), ncol = numCells, byrow = T)
   
   list(p,r)
 }
@@ -114,7 +109,7 @@ changeNBparamsFormat = function(infoFile, K)
 #' @param breakpointsFile The name of the breakpoint file
 #' @param K The number of chromosomes (autosomes).
 #' @param bin.size The size of the bins.
-#' @author Maryam Ghareghani
+#' @author Maryam Ghareghani, Sascha Meiers
 #' @export
 
 getSegReadCounts = function(binRC, breakpointsFile, K, bin.size)
@@ -148,11 +143,3 @@ getSegReadCounts = function(binRC, breakpointsFile, K, bin.size)
   
   segRC
 }
-
-
-# testing wether the names of the single cells have the same order in the RC file and the cell types file
-# cellNames = as.numeric(sapply(colnames(newFormat)[4:(numcells+3)], substr, start = 3, stop = sapply(colnames(newFormat)[4:(numcells+3)], nchar)))
-# cellNames2 = as.numeric(sapply(colnames(x)[4:(numcells+3)], substr, start = 7, stop = sapply(colnames(x)[4:(numcells+3)], nchar))) 
-# table(cellNames == cellNames2)
-# table(cellNames == info$cell)
-# the order is the same
