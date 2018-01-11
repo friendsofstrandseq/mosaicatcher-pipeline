@@ -15,17 +15,17 @@ Preliminary SV calling using Strand-seq data - summarized in a [Snakemake](https
       source("https://bioconductor.org/biocLite.R")
       biocLite('BSgenome.Hsapiens.UCSC.hg38')
       ```
-    * [Strand-Phaser](https://github.com/daewoooo/StrandPhaseR) is installed automagically
+    * [Strand-Phaser](https://github.com/daewoooo/StrandPhaseR) is installed automatically
 
   2. **Set up the configuration of the smakemake pipeline**
 
     * Open `Snake.config.json` and specify the path to the executatables
       (such as Mosaicatcher) and to the R scripts.
     * Create a subdirectory `bam/` and another subdirectory per sample (e.g.
-      `bam/NA12878`). **Multiple samples can be run together not**.
+      `bam/NA12878/`). **Multiple samples can be run together not**.
       Then copy (or soft-link) the Strand-seq single-cell libraries (one BAM
-      file per cell) in there. Note that bam files need to contain a read group
-      and should have duplicates marked.
+      file per cell) in there. Note that bam files need to be sorted and indexed,
+      contain a read group and should have duplicates marked.
 
   3. **Run Snakemake**
 
@@ -37,3 +37,16 @@ Preliminary SV calling using Strand-seq data - summarized in a [Snakemake](https
         --cluster-config Snake.cluster.json \
         --cluster "???"
       ```
+
+### SNV calls
+
+  The pipeline will run simple SNV calling using [samtools](https://github.com/samtools/samtools)
+  and [bcftools](https://github.com/samtools/bcftools). If you **already have
+  SNV calls**, you can avoid that by entering your VCF files into the pipeline.
+  To so, make sure the files are [tabix](https://github.com/samtools/tabix)-indexed
+  and specifigy them inside the `Snake.config.json` file:
+  ```
+  "snv_calls"     : {
+        "NA12878" : "path/to/snp/calls.vcf.gz"
+    },
+  ```
