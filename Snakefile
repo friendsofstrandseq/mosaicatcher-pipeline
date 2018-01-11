@@ -290,10 +290,10 @@ rule prepare_strandphaser_config_per_chrom:
 
 
 def locate_snv_vcf(wildcards):
-	if config["snv_calls"] == "":
-		return "snv_calls/{}.{}.vcf".format(config["sample"], wildcards.chrom)
-	else:
-		return "external_snv_calls/{}.{}.vcf".format(config["sample"], wildcards.chrom)
+    if config["snv_calls"] == "":
+        return "snv_calls/{}.{}.vcf".format(config["sample"], wildcards.chrom)
+    else:
+        return "external_snv_calls/{}.{}.vcf".format(config["sample"], wildcards.chrom)
 
 rule run_strandphaser_per_chrom:
     input:
