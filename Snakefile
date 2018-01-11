@@ -64,25 +64,53 @@ rule plot_SV_calls:
 # Read counting                                                                #
 ################################################################################
 
+rule generate_exclude_file_1:
+    output:
+        temp("log/exclude_file.temp")
+    input:
+        bam = expand("bam/{bam}.bam", bam = BAM[0]),
+    params:
+        samtools = config["samtools"]
+    shell:
+        """
+        {params.samtools} view -H {input.bam} | awk '/^@SQ/ {{print substr($2,4)}}' > {output}
+        """
+
+rule generate_exclude_file_2:
+    output:
+        "log/exclude_file"
+    input:
+        "log/exclude_file.temp"
+    params:
+        chroms = config["chromosomes"]
+    run:
+        with open(input[0]) as f:
+            with open(output[0],"w") as out:
+                for line in f:
+                    if line.strip() not in params.chroms:
+                        print(line.strip(), file = out)
+
+
+
 rule mosaic_count_fixed:
     input:
         bam = expand("bam/{bam}.bam", bam = BAM),
-        bai = expand("bam/{bam}.bam.bai", bam = BAM)
+        bai = expand("bam/{bam}.bam.bai", bam = BAM),
+        excl = "log/exclude_file"
     output:
         counts = "counts/" + config["sample"] + ".{window}_fixed.txt.gz",
         info   = "counts/" + config["sample"] + ".{window}_fixed.info"
     log:
         "log/mosaic_count_fixed.{window}.txt"
     params:
-        mc_command = config["mosaicatcher"],
-        mc_exclfile = config["exclude_file"]
+        mc_command = config["mosaicatcher"]
     shell:
         """
         {params.mc_command} count \
             --verbose \
             -o {output.counts} \
             -i {output.info} \
-            -x {params.mc_exclfile} \
+            -x {input.excl} \
             -w {wildcards.window} \
             {input.bam} \
         > {log} 2>&1
@@ -93,7 +121,8 @@ rule mosaic_count_variable:
     input:
         bam = expand("bam/{bam}.bam", bam = BAM),
         bai = expand("bam/{bam}.bam.bai", bam = BAM),
-        bed = lambda wc: config["variable_bins"][str(wc.window)]
+        bed = lambda wc: config["variable_bins"][str(wc.window)],
+        excl = "log/exclude_file"
     output:
         counts = "counts/" + config["sample"] + ".{window}_variable.txt.gz",
         info   = "counts/" + config["sample"] + ".{window}_variable.info"
@@ -103,6 +132,7 @@ rule mosaic_count_variable:
         mc_command = config["mosaicatcher"]
     shell:
         """
+        echo "NOTE: Exclude file not used in variable-width bins"
         {params.mc_command} count \
             --verbose \
             -o {output.counts} \
