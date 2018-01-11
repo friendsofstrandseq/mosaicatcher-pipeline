@@ -261,7 +261,7 @@ rule determine_initial_strand_states:
         sce_command = "Rscript " + config["sce_script"]
     shell:
         """
-        {params.sce_command} {input} $tmp > {output}
+        {params.sce_command} {input} {output}
         """
 
 # Strandphaser needs a different input format which contains the path names to
