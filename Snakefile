@@ -422,7 +422,8 @@ rule merge_SNV_calls:
 
 rule split_external_snv_calls:
     input:
-        vcf = lambda wc: config["snv_calls"][wc.sample]
+        vcf = lambda wc: config["snv_calls"][wc.sample],
+        tbi = lambda wc: config["snv_calls"][wc.sample] + ".tbi"
     output:
         vcf = "external_snv_calls/{sample}/{chrom}.vcf"
     log: "log/{sample}/external_snv_calls.{chrom}.vcf.log"
