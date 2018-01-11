@@ -1,4 +1,17 @@
+#!/usr/bin/env Rscript
+
 library(data.table)
+
+args = commandArgs(trailingOnly=TRUE)
+if (length(args)!=6) {
+  stop("usage: ./simulate_SVs.R <seed> <sv-count> <min-size> <max-size> <min-distance> <output.tsv> \n")
+}
+
+set.seed(as.integer(args[1]))
+sv.count <- as.integer(args[2])
+SV_size_limits <- c(as.integer(args[3]), as.integer(args[4]))
+min.distance <- as.integer(args[5])
+output.file = args[6]
 
 # GRCh38
 chrom_sizes = data.table(
@@ -24,7 +37,7 @@ get_SVs = function(chrom_sizes, SV_num, SV_size_limits, SV_types, buffer=1e6) {
         chrom_ = sample(chrom_sizes$chrom, 1, prob = chrom_sizes$size / sum(chrom_sizes$size), replace = T)
         
         # sample SV size
-        SV_size = as.integer(runif(1, SV_size_limits[1], SV_size_limits[2]))
+        SV_size = as.integer(exp(runif(1, log(SV_size_limits[1]), log(SV_size_limits[2]))))
             
         # sample position
         new_s = as.integer(runif(1, 1, chrom_sizes[chrom == chrom_]$size - SV_size))
@@ -50,19 +63,6 @@ get_SVs = function(chrom_sizes, SV_num, SV_size_limits, SV_types, buffer=1e6) {
 
 SV_types  = c("het_del", "hom_del", "het_dup", "hom_dup", "het_inv", "hom_inv", "inv_dup", "false_del")
 
-SVs_small = get_SVs(chrom_sizes, 150, c(50e3,200e3), SV_types, buffer=1e6)
-SVs_large = get_SVs(chrom_sizes, 150, c(200e3,800e3), SV_types, buffer=1e6)
+SVs = get_SVs(chrom_sizes, sv.count, SV_size_limits, SV_types, buffer=min.distance)
 
-
-write.table(SVs_small, file = "data/sv_file.small.txt", quote=F, row.names = F, col.names = F, sep = "\t")
-write.table(SVs_large, file = "data/sv_file.large.txt", quote=F, row.names = F, col.names = F, sep = "\t")
-
-# Then run:
-# ../segmentation/scripts/simul -w 50000 -n 100 -o simulation.n200.txt.gz -c 4 -C 20 -s 3 -S simulation.sces.txt simulation.input.txt
-
-# Then segment with MC:
-# ../segmentation/scripts/segmentation -m 0.2 -o simulation.n100.segments_mc.txt2 simulation.n100.txt.gz
-
-# Then reformat that table a bit and finally plot it:
-# Rscript plot_segmentation.R simulation.n100.txt.gz simulation.input.txt simulation.n100.segments_mc.txt 50000 simulation.n100.segments_tA.pdf
-
+write.table(SVs, file = output.file, quote=F, row.names = F, col.names = F, sep = "\t")
