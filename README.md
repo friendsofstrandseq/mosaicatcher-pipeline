@@ -10,7 +10,12 @@ Preliminary SV calling using Strand-seq data - summarized in a [Snakemake](https
   
     * Install [mosaicatcher](https://github.com/friendsofstrandseq/mosaicatcher) (*currently you will need the `develop` branch*)
     * Get the R-scripts from [strandsequtils](https://github.com/friendsofstrandseq/strandsequtils)
-    * Install [Strand-Phaser](https://github.com/daewoooo/StrandPhaseR)
+    * Install BSgenome.Hsapiens.UCSC.hg38:
+      ```
+      source("https://bioconductor.org/biocLite.R")
+      biocLite('BSgenome.Hsapiens.UCSC.hg38')
+      ```
+    * [Strand-Phaser](https://github.com/daewoooo/StrandPhaseR) is installed automagically
 
   2. **Set up the configuration of the smakemake pipeline**
   

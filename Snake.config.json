@@ -10,6 +10,7 @@
     "samtools"      : "samtools",
     "bcftools"      : "bcftools",
 
+    "snv_calls"     : "",
 
     "exclude_file"  : "/g/korbel/meiers/tools/mosaicatcher/mosaicatcher/data/exclude/hg19.exclude",
     "variable_bins" : {
