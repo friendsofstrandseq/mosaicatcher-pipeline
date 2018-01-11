@@ -1,6 +1,13 @@
 configfile: "Snake.config.json"
 
-BAM, = glob_wildcards("bam/{bam}.bam")
+SAMPLE,BAM = glob_wildcards("bam/{sample}/{bam}.bam")
+BAM_PER_SAMPLE = dict([(s,[]) for s in SAMPLE])
+for i in range(len(SAMPLE)):
+    BAM_PER_SAMPLE[SAMPLE[i]].append(BAM[i])
+print("Detected {} samples:".format(len(set(SAMPLE))))
+for s in set(SAMPLE):
+    print("  {}:\t{} cells".format(s, len(BAM_PER_SAMPLE[s])))
+
 
 # Current state of the pipeline:
 # ==============================
@@ -11,16 +18,16 @@ BAM, = glob_wildcards("bam/{bam}.bam")
 
 rule all:
     input:
-        expand("plots/" + config["sample"] + ".{window}_fixed.pdf", window = [50000, 100000, 200000, 500000]),
-        expand("plots/" + config["sample"] + ".{window}_variable.pdf", window = [50000, 100000]),
-        expand("segmentation2/" + config["sample"] + ".{window}_fixed.{bpdens}.txt",
+        expand("plots/{sample}/{window}_fixed.pdf", sample = SAMPLE, window = [50000, 100000, 200000, 500000]),
+        expand("plots/{sample}/{window}_variable.pdf", sample = SAMPLE, window = [50000, 100000]),
+        expand("segmentation2/{sample}/{window}_fixed.{bpdens}.txt", sample = SAMPLE,
                window = [50000, 100000, 200000, 500000], bpdens = ["few","medium","many"]),
-        #expand("segmentation2/" + config["sample"] + ".{window}_variable.{bpdens}.chr1.txt",
+        #expand("segmentation2/{sample}/{window}_variable.{bpdens}.chr1.txt", sample = SAMPLE,
         #       window = [50000, 100000], bpdens = ["few","medium","many"]),
-        "strand_states/" + config["sample"] + ".final.txt",
-        expand("sv_calls/" + config["sample"] + ".{window}_fixed.{bpdens}.SV_probs.chr1.pdf",
+        expand("strand_states/{sample}/final.txt", sample = SAMPLE),
+        expand("sv_calls/{sample}/{window}_fixed.{bpdens}.SV_probs.chr1.pdf", sample = SAMPLE,
                window = [50000, 100000, 200000, 500000], bpdens = ["few","medium","many"]),
-        #expand("sv_calls/" + config["sample"] + ".{window}_variable.{bpdens}.SV_probs.chr1.pdf",
+        #expand("sv_calls/{sample}/{window}_variable.{bpdens}.SV_probs.chr1.pdf", sample = SAMPLE,
         #       window = [50000, 100000], bpdens = ["few","medium","many"])
 
 
@@ -31,12 +38,12 @@ rule all:
 
 rule plot_mosaic_counts:
     input:
-        counts = "counts/" + config["sample"] + ".{file_name}.txt.gz",
-        info   = "counts/" + config["sample"] + ".{file_name}.info"
+        counts = "counts/{sample}/{file_name}.txt.gz",
+        info   = "counts/{sample}/{file_name}.info"
     output:
-        "plots/" + config["sample"] + ".{file_name}.pdf"
+        "plots/{sample}/{file_name}.pdf"
     log:
-        "log/plot_mosaic_counts.{file_name}.txt"
+        "log/plot_mosaic_counts/{sample}.{file_name}.txt"
     params:
         plot_command = "Rscript " + config["plot_script"]
     shell:
@@ -46,12 +53,12 @@ rule plot_mosaic_counts:
 
 rule plot_SV_calls:
     input:
-        counts = "counts/" + config["sample"] + ".{windows}.txt.gz",
-        probs  = "sv_probabilities/" + config["sample"] + ".{windows}.{bpdens}/probabilities.txt"
+        counts = "counts/{sample}/{windows}.txt.gz",
+        probs  = "sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.txt"
     output:
-        dynamic("sv_calls/" + config["sample"] + ".{windows}.{bpdens}.SV_probs.{chrom}.pdf")
+        dynamic("sv_calls/{sample}/{windows}.{bpdens}.SV_probs.{chrom}.pdf")
     log:
-        "log/plot_SV_call.{windows}.{bpdens}.txt"
+        "log/plot_SV_call/{sample}.{windows}.{bpdens}.txt"
     params:
         plot_command = "Rscript " + config["sv_plot_script"]
     shell:
@@ -68,7 +75,7 @@ rule generate_exclude_file_1:
     output:
         temp("log/exclude_file.temp")
     input:
-        bam = expand("bam/{bam}.bam", bam = BAM[0]),
+        bam = expand("bam/{sample}/{bam}.bam", sample = SAMPLE[0], bam = BAM[0]),
     params:
         samtools = config["samtools"]
     shell:
@@ -94,14 +101,14 @@ rule generate_exclude_file_2:
 
 rule mosaic_count_fixed:
     input:
-        bam = expand("bam/{bam}.bam", bam = BAM),
-        bai = expand("bam/{bam}.bam.bai", bam = BAM),
+        bam = lambda wc: expand("bam/" + wc.sample + "/{bam}.bam", bam = BAM_PER_SAMPLE[wc.sample]),
+        bai = lambda wc: expand("bam/" + wc.sample + "/{bam}.bam.bai", bam = BAM_PER_SAMPLE[wc.sample]),
         excl = "log/exclude_file"
     output:
-        counts = "counts/" + config["sample"] + ".{window}_fixed.txt.gz",
-        info   = "counts/" + config["sample"] + ".{window}_fixed.info"
+        counts = "counts/{sample}/{window}_fixed.txt.gz",
+        info   = "counts/{sample}/{window}_fixed.info"
     log:
-        "log/mosaic_count_fixed.{window}.txt"
+        "log/{sample}/mosaic_count_fixed.{window}.txt"
     params:
         mc_command = config["mosaicatcher"]
     shell:
@@ -119,15 +126,15 @@ rule mosaic_count_fixed:
 
 rule mosaic_count_variable:
     input:
-        bam = expand("bam/{bam}.bam", bam = BAM),
-        bai = expand("bam/{bam}.bam.bai", bam = BAM),
+        bam = lambda wc: expand("bam/" + wc.sample + "/{bam}.bam", bam = BAM_PER_SAMPLE[wc.sample]),
+        bai = lambda wc: expand("bam/" + wc.sample + "/{bam}.bam.bai", bam = BAM_PER_SAMPLE[wc.sample]),
         bed = lambda wc: config["variable_bins"][str(wc.window)],
         excl = "log/exclude_file"
     output:
-        counts = "counts/" + config["sample"] + ".{window}_variable.txt.gz",
-        info   = "counts/" + config["sample"] + ".{window}_variable.info"
+        counts = "counts/{sample}/{window}_variable.txt.gz",
+        info   = "counts/{sample}/{window}_variable.info"
     log:
-        "log/mosaic_count_variable.{window}.txt"
+        "log/{sample}/mosaic_count_variable.{window}.txt"
     params:
         mc_command = config["mosaicatcher"]
     shell:
@@ -153,11 +160,11 @@ rule mosaic_count_variable:
 
 rule segmentation:
     input:
-        "counts/" + config["sample"] + ".{file_name}.txt.gz"
+        "counts/{sample}/{file_name}.txt.gz"
     output:
-        "segmentation/" + config["sample"] + ".{file_name}.txt"
+        "segmentation/{sample}/{file_name}.txt"
     log:
-        "log/segmentation.{file_name}.txt"
+        "log/{sample}/segmentation.{file_name}.txt"
     params:
         mc_command = config["mosaicatcher"]
     shell:
@@ -170,11 +177,11 @@ rule segmentation:
 # Pick a few segmentations and prepare the input files for SV classification
 rule prepare_segments:
     input:
-        "segmentation/" + config["sample"] + ".{windows}.txt"
+        "segmentation/{sample}/{windows}.txt"
     output:
-        "segmentation2/" + config["sample"] + ".{windows}.{bpdens}.txt"
+        "segmentation2/{sample}/{windows}.{bpdens}.txt"
     log:
-        "log/prepare_segments.{windows}.{bpdens}.txt"
+        "log/{sample}/prepare_segments.{windows}.{bpdens}.txt"
     params:
         quantile = lambda wc: config["bp_density"][wc.bpdens]
     script:
@@ -198,15 +205,15 @@ rule install_MaRyam:
 rule run_sv_classification:
     input:
         maryam = "utils/R-packages2/MaRyam/R/MaRyam",
-        counts = "counts/" + config["sample"] + ".{windows}.txt.gz",
-        info   = "counts/" + config["sample"] + ".{windows}.info",
-        states = "strand_states/" + config["sample"] + ".final.txt",
-        bp     = "segmentation2/" + config["sample"] + ".{windows}.{bpdens}.txt"
+        counts = "counts/{sample}/{windows}.txt.gz",
+        info   = "counts/{sample}/{windows}.info",
+        states = "strand_states/{sample}/final.txt",
+        bp     = "segmentation2/{sample}/{windows}.{bpdens}.txt"
     output:
-        outdir = "sv_probabilities/" + config["sample"] + ".{windows}.{bpdens}/",
-        out1   = "sv_probabilities/" + config["sample"] + ".{windows}.{bpdens}/allSegCellProbs.table"
+        outdir = "sv_probabilities/{sample}/{windows}.{bpdens}/",
+        out1   = "sv_probabilities/{sample}/{windows}.{bpdens}/allSegCellProbs.table"
     log:
-        "log/run_sv_classification.{windows}.{bpdens}.txt"
+        "log/{sample}/run_sv_classification.{windows}.{bpdens}.txt"
     params:
         windowsize    = lambda wc: wc.windows.split("_")[0]
     shell:
@@ -227,14 +234,14 @@ rule run_sv_classification:
 
 rule convert_SVprob_output:
     input:
-        probs = "sv_probabilities/" + config["sample"] + ".{windows}.{bpdens}/allSegCellProbs.table",
-        info  = "counts/" + config["sample"] + ".{windows}.info"
+        probs = "sv_probabilities/{sample}/{windows}.{bpdens}/allSegCellProbs.table",
+        info  = "counts/{sample}/{windows}.info"
     output:
-        "sv_probabilities/" + config["sample"] + ".{windows}.{bpdens}/probabilities.txt"
+        "sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.txt"
     params:
-        sample_name = config["sample"]
+        sample_name = "{wildcards.sample}"
     log:
-        "log/convert_SVprob_output.{windows}.{bpdens}.txt"
+        "log/{sample}/convert_SVprob_output.{windows}.{bpdens}.txt"
     script:
         "utils/helper.convert_svprob_output.R"
 
@@ -245,31 +252,28 @@ rule convert_SVprob_output:
 
 rule determine_initial_strand_states:
     input:
-        "counts/" + config["sample"] + ".500000_fixed.txt.gz"
+        "counts/{sample}/500000_fixed.txt.gz"
     output:
-        "strand_states/" + config["sample"] + ".txt"
+        "strand_states/{sample}/intitial_strand_state"
     log:
-        "log/determine_initial_strand_states.txt"
+        "log/{sample}/determine_initial_strand_states.txt"
     params:
         sce_command = "Rscript " + config["sce_script"]
     shell:
         """
-        echo "[Note] This is a dirty hack to remove chrX and chrY."
-        tmp=$(mktemp)
-        {params.sce_command} {input} $tmp > {log} 2>&1
-        grep -vP '^Y|^chrY' $tmp | grep -vP '^X|^chrX' > {output}
+        {params.sce_command} {input} $tmp > {output}
         """
 
 # Strandphaser needs a different input format which contains the path names to
 # the bam files. This rule extracts this information and prepares an input file.
 rule convert_strandphaser_input:
     input:
-        states = "strand_states/" + config["sample"] + ".txt",
-        info   = "counts/" + config["sample"] + ".500000_fixed.info"
+        states = "strand_states/{sample}/intitial_strand_state",
+        info   = "counts/{sample}/500000_fixed.info"
     output:
-        "strand_states/" + config["sample"] + ".strandphaser_input.txt"
+        "strand_states/{sample}/strandphaser_input.txt"
     log:
-        "log/convert_strandphaser_input.txt"
+        "log/{sample}/convert_strandphaser_input.txt"
     script:
         "utils/helper.convert_strandphaser_input.R"
 
@@ -285,23 +289,14 @@ rule install_StrandPhaseR:
 
 rule prepare_strandphaser_config_per_chrom:
     input:
-        "strand_states/" + config["sample"] + ".txt"
+        "strand_states/{sample}/intitial_strand_state"
     output:
-        dynamic("log/StrandPhaseR.{chrom}.config")
+        "strand_states/{sample}/StrandPhaseR.{chrom}.config"
     run:
-        # Get chromosomes
-        chroms = set()
-        with open(input[0]) as f:
-            skipfirst = True
-            for line in f:
-                if skipfirst:
-                    skipfirst = False
-                    continue
-                chroms.add(line.split()[0])
         with open(output[0], "w") as f:
             print("[General]",                    file = f)
             print("numCPU           = 1",         file = f)
-            print("chromosomes      = '" + wildcards.chrom + "'", file = f)
+            print("chromosomes      = '{wildcards.chrom}'", file = f)
             print("pairedEndReads   = TRUE",      file = f)
             print("min.mapq         = 10",        file = f)
             print("",                             file = f)
@@ -315,46 +310,47 @@ rule prepare_strandphaser_config_per_chrom:
             print("splitPhasedReads = TRUE",     file = f)
             print("compareSingleCells = TRUE",     file = f)
             print("callBreaks       = FALSE",    file = f)
-            print("exportVCF        = '", config["sample"], ".txt'", sep = "", file = f)
+            print("exportVCF        = '{sample}.txt'", sep = "", file = f)
             print("bsGenome         = '", config["R_reference"], "'", sep = "", file = f)
 
 
 def locate_snv_vcf(wildcards):
-    if config["snv_calls"] == "":
-        return "snv_calls/{}.{}.vcf".format(config["sample"], wildcards.chrom)
+    if "snv_calls" not in config or wildcards.sample not in config["snv_calls"] or config["snv_calls"][wildcards.sample] == "":
+        return "snv_calls/{}/{}.vcf".format(wildcards.sample, wildcards.chrom)
     else:
-        return "external_snv_calls/{}.{}.vcf".format(config["sample"], wildcards.chrom)
+        return "external_snv_calls/{}/{}.vcf".format(wildcards.sample, wildcards.chrom)
 
 rule run_strandphaser_per_chrom:
     input:
-        wcregions    = "strand_states/" + config["sample"] + ".strandphaser_input.txt",
+        wcregions    = "strand_states/{sample}/strandphaser_input.txt",
         snppositions = locate_snv_vcf,
-        configfile   = "log/StrandPhaseR.{chrom}.config",
+        configfile   = "strand_states/{sample}/StrandPhaseR.{chrom}.config",
         strandphaser = "utils/R-packages/StrandPhaseR/R/StrandPhaseR",
-        bamfolder    = "bam"
+        bamfolder    = "bam/{sample}/"
     output:
-        "strand_states/" + config["sample"] + ".strandphaser_output.{chrom}.txt"
+        "strand_states/{sample}/StrandPhaseR_analysis.{chrom}/phased_haps.txt"
     log:
-        "log/run_strandphaser.{chrom}.txt"
+        "log/{sample}/run_strandphaser.{chrom}.txt"
     shell:
         """
         Rscript utils/StrandPhaseR_pipeline.R \
                 {input.bamfolder} \
-                log/StrandPhaseR_analysis \
+                strand_states/{wildcards.sample}/StrandPhaseR_analysis.{wildcards.chrom} \
                 {input.configfile} \
                 {input.wcregions} \
                 {input.snppositions} \
                 $(pwd)/utils/R-packages/ \
                 > {log} 2>&1
-        cp log/StrandPhaseR_analysis/Phased/phased_haps.txt {output}
         """
+
 
 
 rule combine_strandphaser_output:
     input:
-        dynamic("strand_states/" + config["sample"] + ".strandphaser_output.{chrom}.txt")
+        expand("strand_states/{{sample}}/StrandPhaseR_analysis.{chrom}/phased_haps.txt",
+                chrom = config["chromosomes"])
     output:
-        "strand_states/" + config["sample"] + ".strandphaser_output.txt"
+        "strand_states/{sample}/strandphaser_output.txt"
     shell:
         """
         set +o pipefail
@@ -365,13 +361,13 @@ rule combine_strandphaser_output:
 
 rule convert_strandphaser_output:
     input:
-        phased_states  = "strand_states/" + config["sample"] + ".strandphaser_output.txt",
-        initial_states = "strand_states/" + config["sample"] + ".txt",
-        info           = "counts/" + config["sample"] + ".500000_fixed.info"
+        phased_states  = "strand_states/{sample}/strandphaser_output.txt",
+        initial_states = "strand_states/{sample}/intitial_strand_state",
+        info           = "counts/{sample}/500000_fixed.info"
     output:
-        "strand_states/" + config["sample"] + ".final.txt"
+        "strand_states/{sample}/final.txt"
     log:
-        "log/convert_strandphaser_output.txt"
+        "log/{sample}/convert_strandphaser_output.txt"
     script:
         "utils/helper.convert_strandphaser_output.R"
 
@@ -383,17 +379,17 @@ rule convert_strandphaser_output:
 
 rule mergeBams:
     input:
-        expand("bam/{bam}.bam", bam=BAM)
+        lambda wc: expand("bam/" + wc.sample + "/{bam}.bam", bam = BAM_PER_SAMPLE[wc.sample])
     output:
-        "snv_calls/merged.bam"
+        "snv_calls/{sample}/merged.bam"
     shell:
         config["samtools"] + " merge {output} {input}"
 
 rule indexMergedBam:
     input:
-        "snv_calls/merged.bam"
+        "snv_calls/{sample}/merged.bam"
     output:
-        "snv_calls/merged.bam.bai"
+        "snv_calls/{sample}/merged.bam.bai"
     shell:
         config["samtools"] + " index {input}"
 
@@ -401,13 +397,12 @@ rule indexMergedBam:
 rule call_SNVs_bcftools_chrom:
     input:
         fa    = config["reference"],
-        chrom = "chroms/{chrom}",
-        bam   = "snv_calls/merged.bam",
-        bai   = "snv_calls/merged.bam.bai"
+        bam   = "snv_calls/{sample}/merged.bam",
+        bai   = "snv_calls/{sample}/merged.bam.bai"
     output:
-        "snv_calls/" + config["sample"] + ".{chrom}.vcf"
+        "snv_calls/{sample}/{chrom}.vcf"
     log:
-        "log/call_SNVs_bcftools_chrom.{chrom}.txt"
+        "log/{sample}/call_SNVs_bcftools_chrom.{chrom}.txt"
     params:
         samtools = config["samtools"],
         bcftools = config["bcftools"]
@@ -417,34 +412,22 @@ rule call_SNVs_bcftools_chrom:
         | {params.bcftools} call -mv - | {params.bcftools} view --genotype het --types snps - > {output} 2> {log}
         """
 
-# Write one file per chromosome that should be analysed.
-rule prepare_chromosomes:
-    input:
-        "strand_states/" + config["sample"] + ".txt"
-    output:
-        dynamic("chroms/{chrom}")
-    shell:
-        """
-        tail -n+2 {input} | cut -f1 | sort | uniq | awk '{{print "chroms/" $1}}' | xargs touch
-        """
-
 rule merge_SNV_calls:
     input:
-        dynamic("snv_calls/" + config["sample"] + ".{chrom}.vcf")
+        expand("snv_calls/{{sample}}/{chrom}.vcf", chrom = config['chromosomes'])
     output:
-        expand("snv_calls/" + config["sample"] + ".vcf")
+        "snv_calls/{sample}/all.vcf"
     shell:
         config["bcftools"] + " concat -O v -o {output} {input}"
 
 rule split_external_snv_calls:
     input:
-        vcf = config["snv_calls"]
+        vcf = lambda wc: config["snv_calls"][wc.sample]
     output:
-        vcf = "external_snv_calls/" + config["sample"] + ".{chrom}.vcf"
-    log: "external_snv_calls/" + config["sample"] + ".{chrom}.vcf.log"
+        vcf = "external_snv_calls/{sample}/{chrom}.vcf"
+    log: "external_snv_calls/{sample}/{chrom}.vcf.log"
     params:
-        bcftools = config["bcftools"],
-        #sample = config["sample"]
+        bcftools = config["bcftools"]
     shell:
-        "({params.bcftools} view --samples " + config["sample"] + " --types snps {input.vcf} {wildcards.chrom} | bcftools view --genotype het - > {output.vcf}) > {log} 2>&1"
+        "({params.bcftools} view --samples {wildcards.sample} --types snps {input.vcf} {wildcards.chrom} | bcftools view --genotype het - > {output.vcf}) > {log} 2>&1"
 
