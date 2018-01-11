@@ -25,8 +25,6 @@
 # K = 22 # number of chromosomes
 # maximumCN = 5
 
-# there is a bug: segmentCounts[224,] is all NA --> check the getSegReadCounts file later...
-
 SVcalling_wrapperFunc = function(bin.size, K, maximumCN, segmentsCounts, r, p, cellTypes, outputDir, haplotypeMode)
 {
   # blacklisting chr X and Y
