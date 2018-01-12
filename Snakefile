@@ -25,7 +25,7 @@ rule all:
         #expand("segmentation2/{sample}/{window}_variable.{bpdens}.chr1.txt", sample = SAMPLE,
         #       window = [50000, 100000], bpdens = ["few","medium","many"]),
         expand("strand_states/{sample}/final.txt", sample = SAMPLE),
-        expand("sv_calls/{sample}/{window}_fixed.{bpdens}.SV_probs.chr1.pdf", sample = SAMPLE,
+        expand("sv_calls/{sample}/{window}_fixed.{bpdens}.SV_probs.{chrom}.pdf", sample = SAMPLE, chrom = config['chromosomes'],
                window = [50000, 100000, 200000, 500000], bpdens = ["few","medium","many"]),
         #expand("sv_calls/{sample}/{window}_variable.{bpdens}.SV_probs.chr1.pdf", sample = SAMPLE,
         #       window = [50000, 100000], bpdens = ["few","medium","many"])
@@ -80,7 +80,7 @@ rule plot_SV_calls:
         plot_command = "Rscript " + config["sv_plot_script"]
     shell:
         """
-        {params.plot_command} {input.counts} {input.probs} {output}  > {log} 2>&1
+        {params.plot_command} {input.counts} {input.probs} sv_calls/{wildcards.sample}/{wildcards.windows}.{wildcards.bpdens}.SV_probs > {log} 2>&1
         """
 
 
