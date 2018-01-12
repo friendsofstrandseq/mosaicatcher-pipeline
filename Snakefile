@@ -8,6 +8,7 @@ print("Detected {} samples:".format(len(set(SAMPLE))))
 for s in set(SAMPLE):
     print("  {}:\t{} cells".format(s, len(BAM_PER_SAMPLE[s])))
 
+import os.path
 
 # Current state of the pipeline:
 # ==============================
@@ -38,7 +39,7 @@ rule all:
 
 rule simulate_genome:
     output:
-        tsv="simulation/genome{seed}.tsv"
+        tsv="simulation/genome/genome{seed}.tsv"
     log:
         "log/simulate_genome/genome{seed}.tsv"
     params:
@@ -48,6 +49,77 @@ rule simulate_genome:
         mindistance=1000000,
     shell:
         "utils/simulate_SVs.R {wildcards.seed} {params.svcount} {params.minsize} {params.maxsize} {params.mindistance} {output.tsv} > {log} 2>&1"
+
+rule add_vafs_to_simulated_genome:
+    input:
+        tsv="simulation/genome/genome{seed}.tsv"
+    output:
+        tsv="simulation/genome-with-vafs/genome{seed}.tsv"
+    params:
+        min_vaf = config["simulation_min_vaf"],
+        max_vaf = config["simulation_max_vaf"],
+    shell:
+        """
+        awk -v min_vaf={params.min_vaf} -v max_vaf={params.max_vaf} -v seed={wildcards.seed} \
+        'BEGIN {{srand(seed); OFS="\\t"}} {{vaf=min_vaf+rand()*(max_vaf-min_vaf); print $0, vaf}}' {input.tsv} > {output.tsv}
+        """
+
+def min_coverage(wildcards):
+    return round(float(config["simulation_min_reads_per_library"]) * int(wildcards.window_size) / float(config["genome_size"]))
+
+def max_coverage(wildcards):
+    return round(float(config["simulation_max_reads_per_library"]) * int(wildcards.window_size) / float(config["genome_size"]))
+
+def neg_binom_p(wildcards):
+    return float(config["simulation_neg_binom_p"][wildcards.window_size])
+
+rule simulate_counts:
+    input:
+        config="simulation/genome-with-vafs/genome{seed}.tsv",
+    output:
+        counts="simulation/counts/genome{seed}-{window_size}.txt.gz",
+        segments="simulation/segments/genome{seed}-{window_size}.txt",
+        phases="simulation/phases/genome{seed}-{window_size}.txt",
+        info="simulation/info/genome{seed}-{window_size}.txt",
+        sce="simulation/sce/genome{seed}-{window_size}.txt",
+        variants="simulation/variants/genome{seed}-{window_size}.txt",
+    params:
+        mc_command   = config["mosaicatcher"],
+        neg_binom_p  = neg_binom_p,
+        min_coverage = min_coverage,
+        max_coverage = max_coverage,
+        cell_count   = config["simulation_cell_count"],
+    log:
+        "log/simulate_counts/genome{seed}-{window_size}.txt"
+    shell:
+        """
+            {params.mc_command} simulate \
+            -w {wildcards.window_size} \
+            -n {params.cell_count} \
+            -p {params.neg_binom_p} \
+            -c {params.min_coverage} \
+            -C {params.max_coverage} \
+            -V {output.variants} \
+            -i {output.info} \
+            -o {output.counts} \
+            -U {output.segments} \
+            -P {output.phases} \
+            -S {output.sce} \
+            {input.config} > {log} 2>&1
+        """
+
+rule link_to_simulated_counts:
+    input:
+        counts="simulation/counts/genome{seed}-{window_size}.txt.gz",
+        info="simulation/info/genome{seed}-{window_size}.txt",
+    output:
+        counts = "counts/simulation{seed}-{window_size}/{window_size}_fixed.txt.gz",
+        info   = "counts/simulation{seed}-{window_size}/{window_size}_fixed.info"
+    run:
+        d = os.path.dirname(output.counts)
+        count_file = os.path.basename(output.counts)
+        info_file = os.path.basename(output.info)
+        shell("cd {d} && ln -s ../../{input.counts} {count_file} && ln -s ../../{input.info} {info_file} && cd ../..")
 
 ################################################################################
 # Plots                                                                        #
