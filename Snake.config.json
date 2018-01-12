@@ -35,6 +35,7 @@
     "simulation_max_reads_per_library" : 1000000,
     "simulation_window_sizes" : [50000, 100000],
     "simulation_cell_count" : 200,
+    "simulation_alpha" : 0.02,
 
     "genome_size" : 3e9
 
