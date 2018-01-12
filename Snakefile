@@ -33,6 +33,23 @@ rule all:
 
 
 ################################################################################
+# Simulation of count data                                                     #
+################################################################################
+
+rule simulate_genome:
+    output:
+        tsv="simulation/genome{seed}.tsv"
+    log:
+        "log/simulate_genome/genome{seed}.tsv"
+    params:
+        svcount=200,
+        minsize=1000,
+        maxsize=2000000,
+        mindistance=1000000,
+    shell:
+        "utils/simulate_SVs.R {wildcards.seed} {params.svcount} {params.minsize} {params.maxsize} {params.mindistance} {output.tsv} > {log} 2>&1"
+
+################################################################################
 # Plots                                                                        #
 ################################################################################
 
