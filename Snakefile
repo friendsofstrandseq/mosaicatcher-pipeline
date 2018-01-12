@@ -328,7 +328,7 @@ rule convert_SVprob_output:
     output:
         "sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.txt"
     params:
-        sample_name = wildcards.sample
+        sample_name = lambda wc: wc.sample
     log:
         "log/{sample}/convert_SVprob_output.{windows}.{bpdens}.txt"
     script:
