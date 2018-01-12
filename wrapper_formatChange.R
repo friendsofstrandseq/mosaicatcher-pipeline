@@ -52,7 +52,6 @@ changeCellTypesFormat = function(stateFile, cellNames)
 {
   #cellType = read.table(cellType, stringsAsFactors = F, header = T)
   d = data.table::fread(stateFile)
-  d = unique(d)
   # adding two columns to the end including the start and end of chromosomes
   d = merge(d, d[, .(chrom_start = min(start), chrom_end = max(end)), by = chrom], by = "chrom")
   # kick out the SCE cells
