@@ -60,10 +60,11 @@ SVcalling_wrapperFunc = function(bin.size, K, maximumCN, segmentsCounts, r, p, c
   
   for (i in 1:nrow(segmentsCounts))
   {
-    print(i)
     segCounts = segmentsCounts[i,]
     chr = chrNumber(segCounts[1,1])
     CN = getPossibleCNs(segCounts, p, as.numeric(r[chr,]), bin.size)
+    print(paste("computing probabilities for", segCounts$chromosome, segCounts$start, segCounts$end))
+    # filtering out all segments with weird CN (CN > maxCN)
     if (length(CN) > 0 && CN[1] < maximumCN)
     {
       # computing haplotype probabilities
@@ -96,9 +97,10 @@ SVcalling_wrapperFunc = function(bin.size, K, maximumCN, segmentsCounts, r, p, c
   
   aggProbDF = data.frame()
 
+  print("Making the dataframe for the heatmap...")
   for (i in filterSeg)
   {
-    print(i)
+    #print(i)
     if (is.null(hapProbTables[[i]])) # CN >= maxCN
     {
       next()
