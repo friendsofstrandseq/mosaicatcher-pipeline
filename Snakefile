@@ -75,7 +75,7 @@ rule plot_SV_calls:
     output:
         dynamic("sv_calls/{sample}/{windows}.{bpdens}.SV_probs.{chrom}.pdf")
     log:
-        "log/plot_SV_call/{sample}.{windows}.{bpdens}.txt"
+        "log/{sample}/plot_SV_call.{windows}.{bpdens}.txt"
     params:
         plot_command = "Rscript " + config["sv_plot_script"]
     shell:
@@ -256,7 +256,7 @@ rule convert_SVprob_output:
     output:
         "sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.txt"
     params:
-        sample_name = "{wildcards.sample}"
+        sample_name = wildcards.sample
     log:
         "log/{sample}/convert_SVprob_output.{windows}.{bpdens}.txt"
     script:
