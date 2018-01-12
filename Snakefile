@@ -89,16 +89,19 @@ rule simulate_counts:
         min_coverage = min_coverage,
         max_coverage = max_coverage,
         cell_count   = config["simulation_cell_count"],
+        alpha        = config["simulation_alpha"],
     log:
         "log/simulate_counts/genome{seed}-{window_size}.txt"
     shell:
         """
             {params.mc_command} simulate \
             -w {wildcards.window_size} \
+            --seed {wildcards.seed} \
             -n {params.cell_count} \
             -p {params.neg_binom_p} \
             -c {params.min_coverage} \
             -C {params.max_coverage} \
+            -a {params.alpha} \
             -V {output.variants} \
             -i {output.info} \
             -o {output.counts} \
@@ -120,6 +123,20 @@ rule link_to_simulated_counts:
         count_file = os.path.basename(output.counts)
         info_file = os.path.basename(output.info)
         shell("cd {d} && ln -s ../../{input.counts} {count_file} && ln -s ../../{input.info} {info_file} && cd ../..")
+
+
+rule link_to_simulated_strand_states:
+    input:
+        sce="simulation/sce/genome{seed}-{window_size}.txt",
+    output:
+        states="strand_states/simulation{seed}-{window_size}/final.txt",
+    run:
+        d = os.path.dirname(output.states)
+        f = os.path.basename(output.states)
+        shell("cd {d} && ln -s ../../{input.sce} {f} && cd ../..")
+
+ruleorder: link_to_simulated_counts > mosaic_count_fixed
+ruleorder: link_to_simulated_strand_states > convert_strandphaser_output
 
 ################################################################################
 # Plots                                                                        #
@@ -187,11 +204,10 @@ rule generate_exclude_file_2:
                         print(line.strip(), file = out)
 
 
-
 rule mosaic_count_fixed:
     input:
-        bam = lambda wc: expand("bam/" + wc.sample + "/{bam}.bam", bam = BAM_PER_SAMPLE[wc.sample]),
-        bai = lambda wc: expand("bam/" + wc.sample + "/{bam}.bam.bai", bam = BAM_PER_SAMPLE[wc.sample]),
+        bam = lambda wc: expand("bam/" + wc.sample + "/{bam}.bam", bam = BAM_PER_SAMPLE[wc.sample]) if wc.sample in BAM_PER_SAMPLE else "FOOBAR",
+        bai = lambda wc: expand("bam/" + wc.sample + "/{bam}.bam.bai", bam = BAM_PER_SAMPLE[wc.sample]) if wc.sample in BAM_PER_SAMPLE else "FOOBAR",
         excl = "log/exclude_file"
     output:
         counts = "counts/{sample}/{window}_fixed.txt.gz",
@@ -237,10 +253,6 @@ rule mosaic_count_variable:
             {input.bam} \
         > {log} 2>&1
         """
-
-
-
-
 
 
 ################################################################################
