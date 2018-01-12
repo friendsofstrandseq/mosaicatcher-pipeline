@@ -60,8 +60,9 @@ countAndNBfit_wrapperFunc = function(segmentsFile, tempDir, bamDir, directory, b
   utils::write.table(counts, file = paste0(directory,"binReadCounts.data"), quote = FALSE, row.names = FALSE)
   utils::write.table(unique.counts, file = paste0(directory,"binUniqeReadCounts.data"), quote = FALSE, row.names = FALSE)
   
-  counts = splitChromosomes(counts)
-  unique.counts = splitChromosomes(unique.counts)
+  
+  counts = split(counts, factor(counts$chromosome, levels=unique(counts$chromosome)))
+  unique.counts = split(unique.counts, factor(unique.counts$chromosome, levels=unique(unique.counts$chromosome)))
   
   # blacklisting
   nonzeroIndex = nonzeroCovBins(counts)
