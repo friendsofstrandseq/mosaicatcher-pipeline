@@ -126,18 +126,25 @@ getSegReadCounts = function(binRC, breakpointsFile, K, bin.size)
   
   for (k in 1:K)
   {
-    print(paste("k =", k))
+    print(paste("getSegReadCounts for chrom ", k))
     chrSegs = seg[seg$chromosome == paste0("chr",k),]
+    
+    # add a dummy number 0 for the very first segment
+    chrSegs = rbind(data.frame(chromosome = paste0("chr",k), breakpoint = 0), chrSegs)
     if (nrow(chrSegs) < 2)
       next()
     
+    binRC_chrom = binRC[[k]]
     
     for (i in 2:nrow(chrSegs)) # assumption: there are at least two breakpoints in each chromosome
     {
       start.bin.idx = chrSegs$breakpoint[i-1] + 1
       end.bin.idx = chrSegs$breakpoint[i]
       
-      df = data.frame(chromosome = paste0("chr",k), start = bin.size*(start.bin.idx), end = bin.size*(end.bin.idx+1),stringsAsFactors = F)
+      df = data.frame(chromosome = paste0("chr",k), 
+                      start = binRC_chrom[start.bin.idx]$start, 
+                      end   = binRC_chrom[end.bin.idx]$end,
+                      stringsAsFactors = F)
       subRows = (start.bin.idx:end.bin.idx)
 
       df = cbind(df, t(as.data.frame(colSums(as.matrix(binRC[[k]][subRows, 4:ncol(binRC[[k]])])))))
