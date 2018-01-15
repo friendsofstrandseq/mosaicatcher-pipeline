@@ -8,6 +8,7 @@ print("Detected {} samples:".format(len(set(SAMPLE))))
 for s in set(SAMPLE):
     print("  {}:\t{} cells".format(s, len(BAM_PER_SAMPLE[s])))
 
+import os.path
 
 # Current state of the pipeline:
 # ==============================
@@ -25,12 +26,117 @@ rule all:
         #expand("segmentation2/{sample}/{window}_variable.{bpdens}.chr1.txt", sample = SAMPLE,
         #       window = [50000, 100000], bpdens = ["few","medium","many"]),
         expand("strand_states/{sample}/final.txt", sample = SAMPLE),
-        expand("sv_calls/{sample}/{window}_fixed.{bpdens}.SV_probs.chr1.pdf", sample = SAMPLE,
+        expand("sv_calls/{sample}/{window}_fixed.{bpdens}.SV_probs.{chrom}.pdf", sample = SAMPLE, chrom = config['chromosomes'],
                window = [50000, 100000, 200000, 500000], bpdens = ["few","medium","many"]),
         #expand("sv_calls/{sample}/{window}_variable.{bpdens}.SV_probs.chr1.pdf", sample = SAMPLE,
         #       window = [50000, 100000], bpdens = ["few","medium","many"])
 
 
+
+################################################################################
+# Simulation of count data                                                     #
+################################################################################
+
+rule simulate_genome:
+    output:
+        tsv="simulation/genome/genome{seed}.tsv"
+    log:
+        "log/simulate_genome/genome{seed}.tsv"
+    params:
+        svcount=200,
+        minsize=1000,
+        maxsize=2000000,
+        mindistance=1000000,
+    shell:
+        "utils/simulate_SVs.R {wildcards.seed} {params.svcount} {params.minsize} {params.maxsize} {params.mindistance} {output.tsv} > {log} 2>&1"
+
+rule add_vafs_to_simulated_genome:
+    input:
+        tsv="simulation/genome/genome{seed}.tsv"
+    output:
+        tsv="simulation/genome-with-vafs/genome{seed}.tsv"
+    params:
+        min_vaf = config["simulation_min_vaf"],
+        max_vaf = config["simulation_max_vaf"],
+    shell:
+        """
+        awk -v min_vaf={params.min_vaf} -v max_vaf={params.max_vaf} -v seed={wildcards.seed} \
+        'BEGIN {{srand(seed); OFS="\\t"}} {{vaf=min_vaf+rand()*(max_vaf-min_vaf); print $0, vaf}}' {input.tsv} > {output.tsv}
+        """
+
+def min_coverage(wildcards):
+    return round(float(config["simulation_min_reads_per_library"]) * int(wildcards.window_size) / float(config["genome_size"]))
+
+def max_coverage(wildcards):
+    return round(float(config["simulation_max_reads_per_library"]) * int(wildcards.window_size) / float(config["genome_size"]))
+
+def neg_binom_p(wildcards):
+    return float(config["simulation_neg_binom_p"][wildcards.window_size])
+
+rule simulate_counts:
+    input:
+        config="simulation/genome-with-vafs/genome{seed}.tsv",
+    output:
+        counts="simulation/counts/genome{seed}-{window_size}.txt.gz",
+        segments="simulation/segments/genome{seed}-{window_size}.txt",
+        phases="simulation/phases/genome{seed}-{window_size}.txt",
+        info="simulation/info/genome{seed}-{window_size}.txt",
+        sce="simulation/sce/genome{seed}-{window_size}.txt",
+        variants="simulation/variants/genome{seed}-{window_size}.txt",
+    params:
+        mc_command   = config["mosaicatcher"],
+        neg_binom_p  = neg_binom_p,
+        min_coverage = min_coverage,
+        max_coverage = max_coverage,
+        cell_count   = config["simulation_cell_count"],
+        alpha        = config["simulation_alpha"],
+    log:
+        "log/simulate_counts/genome{seed}-{window_size}.txt"
+    shell:
+        """
+            {params.mc_command} simulate \
+            -w {wildcards.window_size} \
+            --seed {wildcards.seed} \
+            -n {params.cell_count} \
+            -p {params.neg_binom_p} \
+            -c {params.min_coverage} \
+            -C {params.max_coverage} \
+            -a {params.alpha} \
+            -V {output.variants} \
+            -i {output.info} \
+            -o {output.counts} \
+            -U {output.segments} \
+            -P {output.phases} \
+            -S {output.sce} \
+            {input.config} > {log} 2>&1
+        """
+
+rule link_to_simulated_counts:
+    input:
+        counts="simulation/counts/genome{seed}-{window_size}.txt.gz",
+        info="simulation/info/genome{seed}-{window_size}.txt",
+    output:
+        counts = "counts/simulation{seed}-{window_size}/{window_size}_fixed.txt.gz",
+        info   = "counts/simulation{seed}-{window_size}/{window_size}_fixed.info"
+    run:
+        d = os.path.dirname(output.counts)
+        count_file = os.path.basename(output.counts)
+        info_file = os.path.basename(output.info)
+        shell("cd {d} && ln -s ../../{input.counts} {count_file} && ln -s ../../{input.info} {info_file} && cd ../..")
+
+
+rule link_to_simulated_strand_states:
+    input:
+        sce="simulation/sce/genome{seed}-{window_size}.txt",
+    output:
+        states="strand_states/simulation{seed}-{window_size}/final.txt",
+    run:
+        d = os.path.dirname(output.states)
+        f = os.path.basename(output.states)
+        shell("cd {d} && ln -s ../../{input.sce} {f} && cd ../..")
+
+ruleorder: link_to_simulated_counts > mosaic_count_fixed
+ruleorder: link_to_simulated_strand_states > convert_strandphaser_output
 
 ################################################################################
 # Plots                                                                        #
@@ -58,12 +164,12 @@ rule plot_SV_calls:
     output:
         dynamic("sv_calls/{sample}/{windows}.{bpdens}.SV_probs.{chrom}.pdf")
     log:
-        "log/plot_SV_call/{sample}.{windows}.{bpdens}.txt"
+        "log/{sample}/plot_SV_call.{windows}.{bpdens}.txt"
     params:
         plot_command = "Rscript " + config["sv_plot_script"]
     shell:
         """
-        {params.plot_command} {input.counts} {input.probs} {output}  > {log} 2>&1
+        {params.plot_command} {input.counts} {input.probs} sv_calls/{wildcards.sample}/{wildcards.windows}.{wildcards.bpdens}.SV_probs > {log} 2>&1
         """
 
 
@@ -98,11 +204,10 @@ rule generate_exclude_file_2:
                         print(line.strip(), file = out)
 
 
-
 rule mosaic_count_fixed:
     input:
-        bam = lambda wc: expand("bam/" + wc.sample + "/{bam}.bam", bam = BAM_PER_SAMPLE[wc.sample]),
-        bai = lambda wc: expand("bam/" + wc.sample + "/{bam}.bam.bai", bam = BAM_PER_SAMPLE[wc.sample]),
+        bam = lambda wc: expand("bam/" + wc.sample + "/{bam}.bam", bam = BAM_PER_SAMPLE[wc.sample]) if wc.sample in BAM_PER_SAMPLE else "FOOBAR",
+        bai = lambda wc: expand("bam/" + wc.sample + "/{bam}.bam.bai", bam = BAM_PER_SAMPLE[wc.sample]) if wc.sample in BAM_PER_SAMPLE else "FOOBAR",
         excl = "log/exclude_file"
     output:
         counts = "counts/{sample}/{window}_fixed.txt.gz",
@@ -148,10 +253,6 @@ rule mosaic_count_variable:
             {input.bam} \
         > {log} 2>&1
         """
-
-
-
-
 
 
 ################################################################################
@@ -239,7 +340,7 @@ rule convert_SVprob_output:
     output:
         "sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.txt"
     params:
-        sample_name = "{wildcards.sample}"
+        sample_name = lambda wc: wc.sample
     log:
         "log/{sample}/convert_SVprob_output.{windows}.{bpdens}.txt"
     script:
