@@ -22,5 +22,21 @@
         "few"       : 0.1,
         "medium"    : 0.33,
         "many"      : 0.9
-    }
+    },
+    
+    "simulation_min_vaf" : 0.01,
+    "simulation_max_vaf" : 1.0,
+    "simulation_neg_binom_p" : {
+        "50000" : 0.4,
+        "100000" : 0.3,
+        "500000" : 0.1,
+    },
+    "simulation_min_reads_per_library" : 250000,
+    "simulation_max_reads_per_library" : 1000000,
+    "simulation_window_sizes" : [50000, 100000],
+    "simulation_cell_count" : 200,
+    "simulation_alpha" : 0.02,
+
+    "genome_size" : 3e9
+
 }

@@ -1,9 +1,13 @@
-#!/usr/bin/Rscript
-args = commandArgs(trailingOnly=TRUE)
+#!/usr/bin/env Rscript
 
-#add user defined path to load needed libraries
-.libPaths( c( .libPaths(), args[9]) )
+print(.libPaths())
+sessionInfo()
+
+
+args = commandArgs(trailingOnly=TRUE)
+.libPaths( c( args[9],.libPaths()) )
 suppressPackageStartupMessages(library(MaRyam))
+
 
 args = as.data.frame(strsplit(args, split = "="), stringsAsFactors = F)
 
@@ -15,8 +19,9 @@ outputDir = args[2,match("outputDir", as.character(args[1,]))]
 bin.size = as.numeric(args[2,match("bin.size", as.character(args[1,]))])
 K = as.numeric(args[2,match("K", as.character(args[1,]))])
 maximumCN = as.numeric(args[2,match("maximumCN", as.character(args[1,]))])
-haplotypInfo=F
-if (any(as.character(args[1,])=="haplotypeInfo")){haplotypInfo = T}
+
+haplotypeMode=F
+if (any(as.character(args[1,])=="haplotypeMode")){haplotypeMode = T}
 
 print(paste("binRCfile =", binRCfile))
 print(paste("BRfile =", BRfile))
@@ -27,11 +32,17 @@ print(paste("bin.size =", bin.size))
 print(paste("K =", K))
 print(paste("maximumCN =", maximumCN))
 
-binRC = splitChromosomes(changeRCformat(binRCfile, outputDir))
-cellTypes = changeCellTypesFormat(stateFile)
-NBparams = changeNBparamsFormat(infoFile, K)
+l <- changeRCformat(binRCfile, outputDir)
+cellNames <- l$cellNames
+initial.binRC <- l$binRC
+f <- factor(initial.binRC$chromosome, levels=unique(initial.binRC$chromosome))
+binRC <- split(initial.binRC, f)
+
+cellTypes = changeCellTypesFormat(stateFile, cellNames)
+NBparams = changeNBparamsFormat(infoFile, K, cellNames)
 p = NBparams[[1]]
 r = NBparams[[2]]
 segmentsCounts = getSegReadCounts(binRC, BRfile, K, bin.size)
 
-SVcalling_wrapperFunc(bin.size, K, maximumCN, segmentsCounts, r, p, cellTypes, outputDir, hapMode = haplotypInfo)
+SVcalling_wrapperFunc(bin.size, K, maximumCN, segmentsCounts, r, p, cellTypes, outputDir, haplotypeMode = haplotypeMode)
+
