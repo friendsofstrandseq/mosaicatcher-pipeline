@@ -430,5 +430,5 @@ rule split_external_snv_calls:
     params:
         bcftools = config["bcftools"]
     shell:
-        "({params.bcftools} view --samples {wildcards.sample} --types snps {input.vcf} {wildcards.chrom} | {params.bcftools} view --genotype het - > {output.vcf}) > {log} 2>&1"
+        "({params.bcftools} view --samples {wildcards.sample} --types snps --exclude-uncalled --trim-alt-alleles -m 2 -M 2 {input.vcf} {wildcards.chrom} | {params.bcftools} view --genotype het - > {output.vcf}) > {log} 2>&1"
 
