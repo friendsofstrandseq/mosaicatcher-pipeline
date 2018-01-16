@@ -480,7 +480,7 @@ rule convert_strandphaser_output:
 
 rule mergeBams:
     input:
-        lambda wc: expand("bam/" + wc.sample + "/{bam}.bam", bam = BAM_PER_SAMPLE[wc.sample])
+        lambda wc: expand("bam/" + wc.sample + "/{bam}.bam", bam = BAM_PER_SAMPLE[wc.sample]) if wc.sample in BAM_PER_SAMPLE else "FOOBAR",
     output:
         "snv_calls/{sample}/merged.bam"
     shell:
