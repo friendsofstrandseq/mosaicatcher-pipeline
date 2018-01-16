@@ -300,7 +300,7 @@ rule install_MaRyam:
         "log/install_MaRyam.log"
     shell:
         """
-        Rscript utils/install_maryam.R > {log} 2>&1
+        TAR=$(which tar) Rscript utils/install_maryam.R > {log} 2>&1
         """
 
 rule run_sv_classification:
@@ -385,7 +385,7 @@ rule install_StrandPhaseR:
         "log/strandphaser-install.log"
     shell:
         """
-        Rscript utils/install_strandphaser.R > {log} 2>&1
+        TAR=$(which tar) Rscript utils/install_strandphaser.R > {log} 2>&1
         """
 
 rule prepare_strandphaser_config_per_chrom:
