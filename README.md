@@ -12,10 +12,12 @@ To install the correct environment, you can use Bioconda.
     In case you do not have Conda yet, it is easiest to just install [MiniConda](https://conda.io/miniconda.html).
 
   2. **Create environment:**
+
     ```
     conda env create -n strandseqnation -f conda-environment.yml
     source activate strandseqnation
     ```
+
     That's it, you are ready to go.
 
 ### How to use it
