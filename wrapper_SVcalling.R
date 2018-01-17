@@ -58,6 +58,8 @@ SVcalling_wrapperFunc = function(bin.size, K, maximumCN, segmentsCounts, r, p, c
   aggProbTable = matrix(, nrow = nrow(segmentsCounts), ncol = length(hapStatus))
   colnames(aggProbTable) = hapStatus
   
+  filterSeg <- NULL
+  
   for (i in 1:nrow(segmentsCounts))
   {
     segCounts = segmentsCounts[i,]
@@ -65,8 +67,9 @@ SVcalling_wrapperFunc = function(bin.size, K, maximumCN, segmentsCounts, r, p, c
     CN = getPossibleCNs(segCounts, p, as.numeric(r[chr,]), bin.size)
     print(paste("computing probabilities for", segCounts$chromosome, segCounts$start, segCounts$end))
     # filtering out all segments with weird CN (CN > maxCN)
-    if (length(CN) > 0 && CN[1] < maximumCN)
+    if (length(CN) > 0 && CN[1] <= maximumCN)
     {
+      filterSeg <- c(filterSeg, i)
       # computing haplotype probabilities
       hapProbTables[[i]] = newgetCellStatProbabilities(hapStatus, segCounts, as.character(cellTypes[chr,]), p, as.numeric(r[chr,]), binLength = bin.size, alpha = 0.05, haplotypeMode = haplotypeMode)
       # regularization
@@ -85,7 +88,7 @@ SVcalling_wrapperFunc = function(bin.size, K, maximumCN, segmentsCounts, r, p, c
   }
   
   # filter out small segments
-  filterSeg = which(as.numeric(segmentsCounts$end) - as.numeric(segmentsCounts$start) > 100)
+  filterSeg = intersect(filterSeg, which(as.numeric(segmentsCounts$end) - as.numeric(segmentsCounts$start) > 100))
   
   
   # sort cells based on type in each chr
@@ -159,7 +162,7 @@ SVcalling_wrapperFunc = function(bin.size, K, maximumCN, segmentsCounts, r, p, c
   
   GTprobDF = getGenotypeProbDataFrame(probTables)
 
-  
+  print("writing the probabilities to the output files...")
   write.table(probTables, file = paste0(outputDir,"allSegCellProbs.table"), sep = "\t", quote = FALSE, row.names = FALSE)
   write.table(GTprobDF, file = paste0(outputDir,"allSegCellGTprobs.table"), sep = "\t", quote = FALSE, row.names = FALSE)
   SVs = newSVcalling(aggProbDF)
