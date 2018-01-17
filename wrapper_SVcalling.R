@@ -5,7 +5,7 @@
 #' @param bin.size the size of the bins
 #' @param K The number of chromosomes (autosomes). #TODO I suggest that user can define what chromosome wants to analyze. So this parameter should take vector of chromosome IDs => c(1:22,'X') or paste0('chr', c(1:22,'X'))
 #' @param maximumCN Maximum CN in the segments for SV calling. #TODO make sure parameters correspond to maxCN paramter in getCNprob
-#' @param segmentsCounts TODO ...
+#' @param segmentsCounts The dataframe containing the segments chr and coordinates and W and C read counts over all cells
 #' @param r The matrix of dispersion parameters of chromosomes(rows) and cells(columns) for CN=2 for a segment of size bin.size
 #' @param p The p parameter of the NB distribution
 #' @param cellTypes The matrix of cell types of chromosomes(rows) and cells(columns) TODO ... In function getSegType there is a parameter cellType. Are these paramters expecting the same thing? If not please use bit more informative name.
@@ -90,12 +90,22 @@ SVcalling_wrapperFunc = function(bin.size, K, maximumCN, segmentsCounts, r, p, c
   # filter out small segments
   filterSeg = intersect(filterSeg, which(as.numeric(segmentsCounts$end) - as.numeric(segmentsCounts$start) > 100))
   
-  
+
   # sort cells based on type in each chr
   chrOrder = list()
   for (i in 1:nrow(cellTypes))
   {
     chrOrder[[i]] = c(which(cellTypes[i,] == "wc"), which(cellTypes[i,] == "ww"), which(cellTypes[i,] == "cc"))
+  }
+  
+  # filter out all segments in the chromosomes that have SCE in all cells (If there is any) and send a message
+  allSCEchrs <- match(TRUE, sapply(chrOrder, isEmpty))
+  if (!isEmpty(allSCEchrs))
+  {
+    message(paste("Warning: chrs", allSCEchrs, "have SCE in all cells"))
+    # keep only the segments that are in allSCEchrs
+    newFilter <- which(is.na(match(sapply(segmentsCounts$chromosome, chrNumber), allSCEchrs)))
+    filterSeg <- intersect(filterSeg, newFilter)
   }
   
   aggProbDF = data.frame()
