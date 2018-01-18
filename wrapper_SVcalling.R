@@ -95,7 +95,7 @@ SVcalling_wrapperFunc = function(bin.size, K, maximumCN, segmentsCounts, r, p, c
   chrOrder = list()
   for (i in 1:nrow(cellTypes))
   {
-    chrOrder[[i]] = c(which(cellTypes[i,] == "wc"), which(cellTypes[i,] == "ww"), which(cellTypes[i,] == "cc"))
+    chrOrder[[i]] = c(which(cellTypes[i,] == "cw"), which(cellTypes[i,] == "wc"), which(cellTypes[i,] == "ww"), which(cellTypes[i,] == "cc"))
   }
   
   # filter out all segments in the chromosomes that have SCE in all cells (If there is any) and send a message
