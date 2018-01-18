@@ -108,6 +108,7 @@ rule simulate_counts:
             -U {output.segments} \
             -P {output.phases} \
             -S {output.sce} \
+            --sample-name simulation{wildcards.seed}-{wildcards.window_size} \
             {input.config} > {log} 2>&1
         """
 
