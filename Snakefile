@@ -108,6 +108,7 @@ rule simulate_counts:
             -U {output.segments} \
             -P {output.phases} \
             -S {output.sce} \
+            --sample-name simulation{wildcards.seed}-{wildcards.window_size} \
             {input.config} > {log} 2>&1
         """
 
@@ -300,7 +301,7 @@ rule install_MaRyam:
         "log/install_MaRyam.log"
     shell:
         """
-        Rscript utils/install_maryam.R > {log} 2>&1
+        TAR=$(which tar) Rscript utils/install_maryam.R > {log} 2>&1
         """
 
 rule run_sv_classification:
@@ -385,7 +386,7 @@ rule install_StrandPhaseR:
         "log/strandphaser-install.log"
     shell:
         """
-        Rscript utils/install_strandphaser.R > {log} 2>&1
+        TAR=$(which tar) Rscript utils/install_strandphaser.R > {log} 2>&1
         """
 
 rule prepare_strandphaser_config_per_chrom:
@@ -483,7 +484,7 @@ rule convert_strandphaser_output:
 
 rule mergeBams:
     input:
-        lambda wc: expand("bam/" + wc.sample + "/{bam}.bam", bam = BAM_PER_SAMPLE[wc.sample])
+        lambda wc: expand("bam/" + wc.sample + "/{bam}.bam", bam = BAM_PER_SAMPLE[wc.sample]) if wc.sample in BAM_PER_SAMPLE else "FOOBAR",
     output:
         "snv_calls/{sample}/merged.bam"
     shell:

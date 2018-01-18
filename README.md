@@ -4,20 +4,36 @@
 
 Preliminary SV calling using Strand-seq data - summarized in a [Snakemake](https://bitbucket.org/snakemake/snakemake) pipeline.
 
+
+### Bioconda environment
+To install the correct environment, you can use Bioconda.
+
+  1. **Install MiniConda:**
+    In case you do not have Conda yet, it is easiest to just install [MiniConda](https://conda.io/miniconda.html).
+
+  2. **Create environment:**
+
+    ```
+    conda env create -n strandseqnation -f conda-environment.yml
+    source activate strandseqnation
+    ```
+
+    That's it, you are ready to go.
+
 ### How to use it
 
   1. **Install required software:**
 
     * Install [mosaicatcher](https://github.com/friendsofstrandseq/mosaicatcher) (*currently you will need the `develop` branch*)
     * Get the R-scripts from [strandsequtils](https://github.com/friendsofstrandseq/strandsequtils)
-    * Install BSgenome.Hsapiens.UCSC.hg38:
+    * Install BSgenome.Hsapiens.UCSC.hg38 (can be skipped of you use the Bioconda environment, see above):
       ```
       source("https://bioconductor.org/biocLite.R")
       biocLite('BSgenome.Hsapiens.UCSC.hg38')
       ```
     * [Strand-Phaser](https://github.com/daewoooo/StrandPhaseR) is installed automatically
 
-  2. **Set up the configuration of the smakemake pipeline**
+  2. **Set up the configuration of the snakemake pipeline**
 
     * Open `Snake.config.json` and specify the path to the executatables
       (such as Mosaicatcher) and to the R scripts.
@@ -37,7 +53,7 @@ Preliminary SV calling using Strand-seq data - summarized in a [Snakemake](https
         --cluster-config Snake.cluster.json \
         --cluster "???"
       ```
-
+      
 ### SNV calls
 
   The pipeline will run simple SNV calling using [samtools](https://github.com/samtools/samtools)
