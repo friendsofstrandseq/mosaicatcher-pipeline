@@ -23,7 +23,9 @@
         "medium"    : 0.33,
         "many"      : 0.9
     },
-    
+
+    "paired_end"    : false,
+
     "simulation_min_vaf" : 0.01,
     "simulation_max_vaf" : 1.0,
     "simulation_neg_binom_p" : {
