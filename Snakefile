@@ -29,7 +29,9 @@ rule all:
         expand("sv_calls/{sample}/{window}_fixed.{bpdens}.SV_probs.{chrom}.pdf", sample = SAMPLE, chrom = config['chromosomes'],
                window = [50000, 100000, 200000, 500000], bpdens = ["few","medium","many"]),
         #expand("sv_calls/{sample}/{window}_variable.{bpdens}.SV_probs.chr1.pdf", sample = SAMPLE,
-        #       window = [50000, 100000], bpdens = ["few","medium","many"])
+        #       window = [50000, 100000], bpdens = ["few","medium","many"]),
+        expand("segmentation/{sample}/{window}_fixed/{chrom}.pdf", sample = SAMPLE,
+                window = [50000, 100000], chrom = config['chromosomes'][0])    # Specifically run this only for one chrom because it is super slow
 
 
 
@@ -276,6 +278,23 @@ rule segmentation:
         {input} > {log} 2>&1
         """
 
+rule plot_segmentation:
+    input:
+        counts = "counts/{sample}/{file_name}.txt.gz",
+        segments = "segmentation/{sample}/{file_name}.txt"
+    output:
+        "segmentation/{sample}/{file_name}/{chrom}.pdf"
+    log:
+        "log/{sample}/plot_segmentation.{file_name}.{chrom}.txt"
+    params:
+        command = config["plot_segments"]
+    shell:
+        """
+        Rscript {params.command} {input.counts} {input.segments} {wildcards.chrom} {output} > {log} 2>&1
+        """
+
+
+
 # Pick a few segmentations and prepare the input files for SV classification
 rule prepare_segments:
     input:
@@ -313,7 +332,8 @@ rule run_sv_classification:
         bp     = "segmentation2/{sample}/{windows}.{bpdens}.txt"
     output:
         outdir = "sv_probabilities/{sample}/{windows}.{bpdens}/",
-        out1   = "sv_probabilities/{sample}/{windows}.{bpdens}/allSegCellProbs.table"
+        out1   = "sv_probabilities/{sample}/{windows}.{bpdens}/allSegCellProbs.table",
+        bamNames = "sv_probabilities/{sample}/{windows}.{bpdens}/bamNames.txt"
     log:
         "log/{sample}/run_sv_classification.{windows}.{bpdens}.txt"
     params:
@@ -336,8 +356,9 @@ rule run_sv_classification:
 
 rule convert_SVprob_output:
     input:
-        probs = "sv_probabilities/{sample}/{windows}.{bpdens}/allSegCellProbs.table",
-        info  = "counts/{sample}/{windows}.info"
+        probs    = "sv_probabilities/{sample}/{windows}.{bpdens}/allSegCellProbs.table",
+        info     = "counts/{sample}/{windows}.info",
+        bamNames = "sv_probabilities/{sample}/{windows}.{bpdens}/bamNames.txt"
     output:
         "sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.txt"
     params:

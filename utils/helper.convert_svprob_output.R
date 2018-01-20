@@ -8,15 +8,26 @@ f_info   = snakemake@input[["info"]]
 f_info
 sample   = snakemake@params[["sample_name"]]
 sample
+f_bamNames = snakemake@input[["bamNames"]]
+f_bamNames
 
 d = fread(f_maryam, header = T)
+print("Maryam's data:")
 d
 f = fread(f_info)
+print("Info data:")
 f
+b = fread(f_bamNames)
+b = b[order(cell_id),]
+print("bamNames data:")
+b
 
 # Map cell number to cell name
 assert_that(max(d$cells) <= nrow(f))
-d$cell = f$cell[d$cells]
+assert_that(max(d$cells) <= max(b$cell_id))
+assert_that(all(1:nrow(b) == b$cell_id))    # Make sure that bamNames are sorted and exactly match numbers 1...n 
+
+d$cell = b[d$cells,]$cell_name
 d$sample = sample
 d
 
