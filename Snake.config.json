@@ -4,6 +4,7 @@
     "reference"     : "/g/korbel/shared/datasets/refgenomes/human/hg19_chr1_22XYM.fa",
     "mosaicatcher"  : "/g/korbel/meiers/tools/mosaicatcher/mosaicatcher/build/mosaicatcher",
     "plot_script"   : "/g/korbel/meiers/tools/mosaicatcher/mosaicatcher/R/qc.R",
+    "plot_segments" : "/g/korbel/meiers/tools/mosaicatcher/mosaicatcher/R/plot_segments.R",
     "sv_plot_script": "/g/korbel/meiers/tools/mosaicatcher/mosaicatcher/R/svs.R",
     "sce_script"    : "/g/korbel/meiers/tools/mosaicatcher/strandsequtils/sce_utils/SCE.R",
     "samtools"      : "samtools",
