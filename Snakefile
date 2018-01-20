@@ -420,7 +420,10 @@ rule prepare_strandphaser_config_per_chrom:
             print("[General]",                    file = f)
             print("numCPU           = 1",         file = f)
             print("chromosomes      = '" + wildcards.chrom + "'", file = f)
-            print("pairedEndReads   = TRUE",      file = f)
+            if (config["paired_end"]):
+                print("pairedEndReads   = TRUE",  file = f)
+            else:
+                print("pairedEndReads   = FALSE", file = f)
             print("min.mapq         = 10",        file = f)
             print("",                             file = f)
             print("[StrandPhaseR]",               file = f)
