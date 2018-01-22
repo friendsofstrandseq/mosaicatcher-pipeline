@@ -165,7 +165,7 @@ rule plot_SV_calls:
         counts = "counts/{sample}/{windows}.txt.gz",
         probs  = "sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.txt"
     output:
-        dynamic("sv_calls/{sample}/{windows}.{bpdens}.SV_probs.{chrom}.pdf")
+        expand("sv_calls/{{sample}}/{{windows}}.{{bpdens}}.SV_probs.{chrom}.pdf", chrom = config['chromosomes'] )
     log:
         "log/{sample}/plot_SV_call.{windows}.{bpdens}.txt"
     params:
