@@ -38,7 +38,7 @@ changeRCformat = function(RCfile, outputDir, bamNamesFile = "bamNames.txt")
                              cell_name = substr(oldFormat[1:numCells],3,nchar(oldFormat[1:numCells])))
   write.table(oldColumOrder, file = paste0(outputDir, bamNamesFile), quote = F, sep = "\t", row.names = F)
   
-  list(binRC=newFormat, cellNames = as.character(oldColumOrder$cell_name))
+  list(binRCfile=newFormat, cellNames = as.character(oldColumOrder$cell_name))
 }
 
 #' Changes the format of the cell types file and gives as output the cell types matrix
@@ -110,14 +110,14 @@ changeNBparamsFormat = function(infoFile, K, cellNames)
 
 #' outputs the segment counts
 #'
-#' @param binRC bin read counts splitted by chromosomes
+#' @param binRCfile bin read counts splitted by chromosomes
 #' @param breakpointsFile The name of the breakpoint file
 #' @param K The number of chromosomes (autosomes).
 #' @param bin.size The size of the bins.
 #' @author Maryam Ghareghani, Sascha Meiers
 #' @export
 
-getSegReadCounts = function(binRC, breakpointsFile, K, bin.size)
+getSegReadCounts = function(binRCfile, breakpointsFile, K, bin.size)
 {
   seg = utils::read.table(breakpointsFile, stringsAsFactors = F, colClasses = c("integer", "character", "integer"), header = T)[,2:3]
   colnames(seg) = c("chromosome", "breakpoint")
@@ -133,7 +133,7 @@ getSegReadCounts = function(binRC, breakpointsFile, K, bin.size)
     if (nrow(chrSegs) < 2)
       next()
     
-    binRC_chrom = binRC[[k]]
+    binRCfile_chrom = binRCfile[[k]]
     
     for (i in 2:nrow(chrSegs)) # assumption: there are at least two breakpoints in each chromosome
     {
@@ -141,12 +141,12 @@ getSegReadCounts = function(binRC, breakpointsFile, K, bin.size)
       end.bin.idx = chrSegs$breakpoint[i]
       
       df = data.frame(chromosome = paste0("chr",k), 
-                      start = binRC_chrom[start.bin.idx]$start, 
-                      end   = binRC_chrom[end.bin.idx]$end,
+                      start = binRCfile_chrom[start.bin.idx]$start, 
+                      end   = binRCfile_chrom[end.bin.idx]$end,
                       stringsAsFactors = F)
       subRows = (start.bin.idx:end.bin.idx)
 
-      df = cbind(df, t(as.data.frame(colSums(as.matrix(binRC[[k]][subRows, 4:ncol(binRC[[k]])])))))
+      df = cbind(df, t(as.data.frame(colSums(as.matrix(binRCfile[[k]][subRows, 4:ncol(binRCfile[[k]])])))))
       rownames(df)  = NULL
       
       segRC = rbind(segRC, df)
