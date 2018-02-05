@@ -100,7 +100,7 @@ SVcalling_wrapperFunc = function(bin.size, K, maximumCN, segmentsCounts, r, p, c
   
   # filter out all segments in the chromosomes that have SCE in all cells (If there is any) and send a message
   allSCEchrs <- match(TRUE, sapply(chrOrder, isEmpty))
-  if (!isEmpty(allSCEchrs))
+  if (!is.na(allSCEchrs))
   {
     message(paste("Warning: chrs", allSCEchrs, "have SCE in all cells"))
     # keep only the segments that are in allSCEchrs
