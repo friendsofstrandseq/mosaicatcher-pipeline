@@ -153,12 +153,17 @@ newgetGenotypeProbTable = function(haplotypeProbTable)
 getGenotypeProbDataFrame = function(hapProbDF)
 {
   GTs = list()
-  haplotypeNames = colnames(hapProbDF[14:ncol(hapProbDF)])
+  # blacklist the names of non probability columns
+  haplotypeNames = colnames(hapProbDF[8:ncol(hapProbDF)])
+  maximumCN = length(which(grepl("CN*", haplotypeNames)))-1
+  # blacklist copy number names
+  haplotypeNames = haplotypeNames[(maximumCN+2):length(haplotypeNames)]
   GTnames = NULL
   
-  for (i in 1:length(haplotypeNames))
+  if (startsWith(haplotypeNames[1],"X"))
   {
-    haplotypeNames[i] = substr(haplotypeNames[i], 2, nchar(haplotypeNames[i]))
+    haplotypeNames = sapply(haplotypeNames, function(x) substr(x, 2, nchar(x)))
+    names(haplotypeNames) = NULL
   }
   
   for (i in 1:length(haplotypeNames))
@@ -172,19 +177,19 @@ getGenotypeProbDataFrame = function(hapProbDF)
     }
   }
   
-  GTprobDF = hapProbDF[,1:13]
+  GTprobDF = hapProbDF[,1:(maximumCN+8)]
   for (i in 1:length(GTs))
   {
     if (length(GTs[[i]]) == 1)
     {
-      GTprobDF = cbind(GTprobDF, hapProbDF[,13+GTs[[i]]])
+      GTprobDF = cbind(GTprobDF, hapProbDF[,maximumCN+8+GTs[[i]]])
     } else
     {
-      GTprobDF = cbind(GTprobDF, hapProbDF[,13+GTs[[i]][1]]+hapProbDF[,13+GTs[[i]][2]])
+      GTprobDF = cbind(GTprobDF, hapProbDF[,maximumCN+8+GTs[[i]][1]]+hapProbDF[,maximumCN+8+GTs[[i]][2]])
     }
   }
   
-  colnames(GTprobDF)[14:ncol(GTprobDF)] = GTnames
+  colnames(GTprobDF)[(maximumCN+9):ncol(GTprobDF)] = GTnames
   
   GTprobDF
 }
