@@ -15,7 +15,8 @@ dispersionPar = function(segType, r, segLen = binLength, binLength, alpha = 0.05
   
   for (i in which(disp == 0))
   {
-    disp[i] = r*alpha
+    disp[i] = r*alpha*(segLen/binLength)
+    # TODO: we can also scale it to the total CN (if CN > 0)
   }
   disp
 }
