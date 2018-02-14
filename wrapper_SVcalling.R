@@ -71,17 +71,18 @@ SVcalling_wrapperFunc = function(bin.size, K, maximumCN, segmentsCounts, r, p, c
     {
       filterSeg <- c(filterSeg, i)
       # computing haplotype probabilities
-      hapProbTables[[i]] = newgetCellStatProbabilities(hapStatus, segCounts, as.character(cellTypes[chr,]), p, as.numeric(r[chr,]), binLength = bin.size, alpha = 0.05, haplotypeMode = haplotypeMode)
+      hapProbTables[[i]] = newgetCellStatProbabilities(hapStatus, counts = segCounts, chrCellTypes = as.character(cellTypes[chr,]), p, chrCellsDispPars = as.numeric(r[chr,]), binLength = bin.size, alpha = 0.05, haplotypeMode = haplotypeMode)
+      
+      #normalizing hapProbTable
+      hapProbTables[[i]] = normalizeProbTable(hapProbTables[[i]])
       # regularization
       hapProbTables[[i]] = regularizeProbTable(hapProbTables[[i]])
-      # computing aggregate Probabilities (based on non SCE cells only), I think it doesn't matter if we do it after normalization as well
+      # computing aggregate Probabilities (based on non SCE cells only)
       for (h in 1:length(hapStatus))
       {
         aggProbTable[i,h] = sum(log(hapProbTables[[i]][h,nonSCEcells[[chr]]]))
       }
-      #normalizing hapProbTable
-      hapProbTables[[i]] = normalizeProbTable(hapProbTables[[i]])
-      
+            
       #normalInvCNstatus
       normInvCNstatus[[i]] = getGenotypeProbTable(hapProbTables[[i]])
     }
