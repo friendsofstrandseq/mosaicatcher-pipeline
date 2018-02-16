@@ -21,8 +21,8 @@
 
     "bp_density"    : {
         "few"       : 0.1,
-        "medium"    : 0.33,
-        "many"      : 0.9
+        "medium"    : 0.25,
+        "many"      : 0.5
     },
 
     "paired_end"    : false,
@@ -34,10 +34,10 @@
         "100000" : 0.3,
         "500000" : 0.1,
     },
-    "simulation_min_reads_per_library" : 250000,
+    "simulation_min_reads_per_library" :  500000,
     "simulation_max_reads_per_library" : 1000000,
     "simulation_window_sizes" : [50000, 100000],
-    "simulation_cell_count" : 200,
+    "simulation_cell_count" : 100,
     "simulation_alpha" : 0.02,
 
     "genome_size" : 3e9
