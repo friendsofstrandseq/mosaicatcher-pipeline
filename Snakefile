@@ -323,50 +323,63 @@ rule install_MaRyam:
         TAR=$(which tar) Rscript utils/install_maryam.R > {log} 2>&1
         """
 
-rule run_sv_classification:
+# rule run_sv_classification:
+#     input:
+#         maryam = "utils/R-packages2/MaRyam/R/MaRyam",
+#         counts = "counts/{sample}/{windows}.txt.gz",
+#         info   = "counts/{sample}/{windows}.info",
+#         states = "strand_states/{sample}/final.txt",
+#         bp     = "segmentation2/{sample}/{windows}.{bpdens}.txt"
+#     output:
+#         outdir = "sv_probabilities/{sample}/{windows}.{bpdens}/",
+#         out1   = "sv_probabilities/{sample}/{windows}.{bpdens}/allSegCellProbs.table",
+#         bamNames = "sv_probabilities/{sample}/{windows}.{bpdens}/bamNames.txt"
+#     log:
+#         "log/{sample}/run_sv_classification.{windows}.{bpdens}.txt"
+#     params:
+#         windowsize    = lambda wc: wc.windows.split("_")[0]
+#     shell:
+#         """
+#         set -x
+#         # set haplotypeInfo if phasing info is available
+#         Rscript utils/MaRyam_pipeline.R \
+#                 binRCfile={input.counts} \
+#                 BRfile={input.bp} \
+#                 infoFile={input.info} \
+#                 stateFile={input.states} \
+#                 outputDir={output.outdir} \
+#                 bin.size={params.windowsize} \
+#                 K=22 \
+#                 maximumCN=4 \
+#                 utils/R-packages2/ > {log} 2>&1
+#         """
+#
+# rule convert_SVprob_output:
+#     input:
+#         probs    = "sv_probabilities/{sample}/{windows}.{bpdens}/allSegCellProbs.table",
+#         info     = "counts/{sample}/{windows}.info",
+#         bamNames = "sv_probabilities/{sample}/{windows}.{bpdens}/bamNames.txt"
+#     output:
+#         "sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.txt"
+#     params:
+#         sample_name = lambda wc: wc.sample
+#     log:
+#         "log/{sample}/convert_SVprob_output.{windows}.{bpdens}.txt"
+#     script:
+#         "utils/helper.convert_svprob_output.R"
+
+
+rule run_sv_classification_new:
     input:
-        maryam = "utils/R-packages2/MaRyam/R/MaRyam",
         counts = "counts/{sample}/{windows}.txt.gz",
         info   = "counts/{sample}/{windows}.info",
         states = "strand_states/{sample}/final.txt",
         bp     = "segmentation2/{sample}/{windows}.{bpdens}.txt"
     output:
-        outdir = "sv_probabilities/{sample}/{windows}.{bpdens}/",
-        out1   = "sv_probabilities/{sample}/{windows}.{bpdens}/allSegCellProbs.table",
-        bamNames = "sv_probabilities/{sample}/{windows}.{bpdens}/bamNames.txt"
-    log:
-        "log/{sample}/run_sv_classification.{windows}.{bpdens}.txt"
-    params:
-        windowsize    = lambda wc: wc.windows.split("_")[0]
-    shell:
-        """
-        set -x
-        # set haplotypeInfo if phasing info is available
-        Rscript utils/MaRyam_pipeline.R \
-                binRCfile={input.counts} \
-                BRfile={input.bp} \
-                infoFile={input.info} \
-                stateFile={input.states} \
-                outputDir={output.outdir} \
-                bin.size={params.windowsize} \
-                K=22 \
-                maximumCN=4 \
-                utils/R-packages2/ > {log} 2>&1
-        """
-
-rule convert_SVprob_output:
-    input:
-        probs    = "sv_probabilities/{sample}/{windows}.{bpdens}/allSegCellProbs.table",
-        info     = "counts/{sample}/{windows}.info",
-        bamNames = "sv_probabilities/{sample}/{windows}.{bpdens}/bamNames.txt"
-    output:
         "sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.txt"
-    params:
-        sample_name = lambda wc: wc.sample
-    log:
-        "log/{sample}/convert_SVprob_output.{windows}.{bpdens}.txt"
     script:
-        "utils/helper.convert_svprob_output.R"
+        "utils/sv_classifier.R"
+
 
 
 ################################################################################
