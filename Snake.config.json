@@ -32,7 +32,7 @@
     "simulation_neg_binom_p" : {
         "50000" : 0.4,
         "100000" : 0.3,
-        "500000" : 0.1,
+        "500000" : 0.1
     },
     "simulation_min_reads_per_library" :  500000,
     "simulation_max_reads_per_library" : 1000000,
