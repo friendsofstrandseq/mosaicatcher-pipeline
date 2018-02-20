@@ -118,14 +118,48 @@ message("[SV classifier] Annotating observed W/C counts")
 probs <- add_seg_counts(probs, counts)
 probs[, scalar := 1]
 
-
-message("Annotating NB probabilities")
+message("[SV classifier] Annotating NB probabilities")
 probs <- add_NB_probs(probs)
 
-message("Post-processing NB probabilities")
+message("[SV classifier] Post-processing NB probabilities")
 probs[state == "sce", `:=`(p_ref = 0, p_homInv = 0, p_hetInv = 0, p_hetDel = 0, p_homDel = 0)]
 probs[,likelyhoodratio := p_ref - pmax(p_hetInv, p_hetDel, p_hetInv)]
 probs[,obs_exp := (W+C)/expected]
+
+
+
+
+# Model loci across all cells. 
+# Each model allows only one type of SV in the locus
+mod = probs[, data.table(model = c("ref","hetDel","homDel","hetInv","homInv","hetDup"),
+                         loglik = c(sum(p_ref),
+                                    sum(pmax(p_ref, p_hetDel)),
+                                    sum(pmax(p_ref, p_homDel)),
+                                    sum(pmax(p_ref, p_hetInv)),
+                                    sum(pmax(p_ref, p_homInv)),
+                                    sum(pmax(p_ref, p_hetDup))   ),
+                         num    = c(sum(p_ref == pmax(p_ref, p_hetDel, p_homInv, p_hetInv, p_homDel, p_hetDup)),
+                                    sum(p_hetDel == pmax(p_ref, p_hetDel)),
+                                    sum(p_homDel == pmax(p_ref, p_homDel)),
+                                    sum(p_hetInv == pmax(p_ref, p_hetInv)),
+                                    sum(p_homInv == pmax(p_ref, p_homInv)),
+                                    sum(p_hetDup == pmax(p_ref, p_hetDup))  )
+                         )[order(loglik, decreasing = T)],
+      by = .(chrom, from, to)]
+MIN_CELLS = 2
+mod = mod[, .SD[num>=MIN_CELLS][1,], by = .(chrom, from, to)]
+
+
+
+
+# Apply the best model to the prob by overwriting the probabilities
+probs = merge(probs, mod[, .(chrom, from, to, model)], by = c("chrom","from","to"))
+probs[model == "ref" & pmax(p_hetDel, p_homInv, p_hetInv, p_homDel, p_hetDup) > p_ref,]
+mod[chrom == "chr13" & from == 271]
+message("@ work here")
+
+
+
 
 
 # Before output, Rename columns
@@ -147,7 +181,6 @@ out = probs[, .(chrom,
                 p_dup_h1  = exp(p_hetDup),
                 p_dup_h2  = exp(p_hetDup)  )]
 write.table(out, file = snakemake@output[[1]], row.names = F, col.names = T, quote=F, sep = "\t")
-probs
 
 # heat map
 #  X = dcast(probs[grepl('^chr3', chrom)], chrom + from + to ~ sample + cell, value.var = "likelyhoodratio")
@@ -157,10 +190,4 @@ probs
 #  Y[Y > 100] = 100
 #  Y[Y < -100] = -100
 #  pheatmap(Y, breaks = c(-101,-5,0,5,101), color = c("blue","turquoise","orange","red"))
-
-
-
-# Next steps:
-# - Model to allow only one type of SV per locus
-# - Re-calculate scalar for this locus across all cells
 
