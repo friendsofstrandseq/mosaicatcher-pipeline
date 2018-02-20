@@ -34,10 +34,32 @@ rule all:
                 window = [50000, 100000], chrom = config['chromosomes'][0])    # Specifically run this only for one chrom because it is super slow
 
 
-
 ################################################################################
 # Simulation of count data                                                     #
 ################################################################################
+
+rule simul:
+    input:
+        expand("sv_calls/{sample}-{window}/{window}_fixed.{segments}.SV_probs.chr1.pdf",
+                sample = ["simulation7","simulation8","simulation9"],
+                window = [50000, 100000],
+                segments = ["few","medium","many"]),
+        expand("plots/{sample}-{window}/{window}_fixed.pdf",
+                sample = ["simulation7","simulation8","simulation9"],
+                window = [50000, 100000]),
+        expand("evaluation/simulation{seed}_{window}.{segments}.pdf",
+                seed  = [7,8,9],
+                window = [50000, 100000],
+                segments = ["few","medium","many"])
+
+rule evaluate_simulation:
+    input:
+        prob = "sv_probabilities/simulation{seed}-{window}/{window}_fixed.{bpdens}/probabilities.txt",
+        simul = "simulation/variants/genome{seed}-{window}.txt"
+    output:
+        "evaluation/simulation{seed}_{window}.{bpdens}.pdf"
+    script:
+        "utils/evaluate_simulation.R"
 
 rule simulate_genome:
     output:
