@@ -163,13 +163,12 @@ plotHeatmapSegment <- function(dataFrame, plot.log=FALSE, file=NULL, aggProbs=F,
 
 
 GTprobsFile = snakemake@input[["genotypeProbs"]]
-directory = snakemake@input[[1]]
 
 GTprobs <- read.table(GTprobsFile, stringsAsFactors = F, header = T )
 ID <- apply(GTprobs[,c('chr','start','end')], 1, function(x) paste(x, collapse = "_"))
 
 GTprobs.l <- split(GTprobs, paste(GTprobs$chr, GTprobs$start, GTprobs$end))
 
-pdf(paste0(directory, "heatmapPlots.pdf"))
+pdf(snakemake@output[[1]])
 lapply(GTprobs.l, plot)
 dev.off()
