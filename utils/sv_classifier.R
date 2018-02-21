@@ -152,18 +152,28 @@ mod = mod[, .SD[num>=MIN_CELLS][1,], by = .(chrom, from, to)]
 
 
 
-# Apply the best model to the prob by overwriting the probabilities
+# Apply the best model to the prob by overwriting probabilities
 probs = merge(probs, mod[, .(chrom, from, to, model)], by = c("chrom","from","to"))
-probs[model == "ref" & pmax(p_hetDel, p_homInv, p_hetInv, p_homDel, p_hetDup) > p_ref,]
-mod[chrom == "chr13" & from == 271]
-message("@ work here")
+newprobs = probs
+
+newprobs[model == "ref", p_ref := 0]
+newprobs[model == "hetDup" & p_hetDup > p_ref, p_hetDup := 0]
+newprobs[model == "hetDup" & p_hetDup <= p_ref, p_ref := 0]
+newprobs[model == "hetDel" & p_hetDel > p_ref, p_hetDel := 0]
+newprobs[model == "hetDel" & p_hetDel <= p_ref, p_ref := 0]
+newprobs[model == "hetInv" & p_hetInv > p_ref, p_hetInv := 0]
+newprobs[model == "hetInv" & p_hetInv <= p_ref, p_ref := 0]
+newprobs[model == "homInv" & p_homInv > p_ref + 0.01, p_homInv := 0]
+newprobs[model == "homInv" & p_homInv <= p_ref + 0.01, p_ref := 0]
+newprobs[model == "homDel" & p_homDel > p_ref, p_homDel := 0]
+newprobs[model == "homDel" & p_homDel <= p_ref, p_ref := 0]
 
 
 
 
 
 # Before output, Rename columns
-out = probs[, .(chrom, 
+out = newprobs[, .(chrom,
                 start = bins[from]$start, 
                 end = bins[to]$end, 
                 sample, 
