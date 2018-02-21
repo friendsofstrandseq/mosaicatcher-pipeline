@@ -375,6 +375,20 @@ rule run_sv_classification:
                 maximumCN=4 \
                 utils/R-packages2/ > {log} 2>&1
         """
+
+rule convert_SVprob_output:
+    input:
+        haplotypeProbs = "sv_probabilities/{sample}/{windows}.{bpdens}/allSegCellProbs.table",
+        genotypeProbs  = "sv_probabilities/{sample}/{windows}.{bpdens}/allSegCellGTprobs.table",
+        info     = "counts/{sample}/{windows}.info",
+        bamNames = "sv_probabilities/{sample}/{windows}.{bpdens}/bamNames.txt"
+    output:
+        "sv_probabilities/{sample}/{windows}.{bpdens}/final_plots/"
+    log:
+        "log/{sample}/final.plots.{windows}.{bpdens}.txt"
+    script:
+        "utils/plot_heatmap.R"
+        
 rule convert_SVprob_output:
     input:
         probs    = "sv_probabilities/{sample}/{windows}.{bpdens}/allSegCellProbs.table",
