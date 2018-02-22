@@ -52,7 +52,7 @@ rule simul:
                 window = [50000, 100000],
                 segments = ["few","medium","many"]),
         expand("sv_probabilities/simulation{seed}-{window}/{window}_fixed.{segments}/final_plots/heatmapPlots.pdf",
-                seed  = list(range(5)),
+                seed  = list(range(7)),
                 window = [50000, 100000],
                 segments = ["few","medium","many"])
 
