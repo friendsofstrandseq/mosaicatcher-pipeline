@@ -7,10 +7,10 @@ library(scales)
 MIN_LLR = 0.5   # min. log likelihood ratio of SV prob. over REF prob.
 MIN_RCO = 0.7   # min. reciprocal overlap of true and detected SV
 
-sv_input = "sv_probabilities/simulation7-100000/100000_fixed.few/probabilities.txt"
-real_input = "simulation/variants/genome7-100000.txt"
-#sv_input = snakemake@input[["prob"]]
-#real_input = snakemake@input[["simul"]]
+#sv_input = "sv_probabilities/simulation7-100000/100000_fixed.few/probabilities.txt"
+#real_input = "simulation/variants/genome7-100000.txt"
+sv_input = snakemake@input[["prob"]]
+real_input = snakemake@input[["simul"]]
 
 
 svs = fread(sv_input)
