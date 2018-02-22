@@ -106,8 +106,10 @@ plt1 <- ggplot(plt_obj) +
 # Plot: Recall on detected loci
 plt_obj = LOCI[!is.na(start.call), .(size = end - start, VAF, SV_type, n = recall.total, k = recall.correct)]
 plt2 = ggplot(plt_obj) + 
-  geom_point(aes(size, VAF, col = k/n)) + 
-  scale_color_gradientn(name = "Recall (correct SV type)", colours = c("blue","orange","green")) +
+  geom_point(aes(size, VAF, col = k/n), size = 1.5) +
+  scale_color_gradientn(name = "Recall (correct SV type)",
+                        values = c(0,0.1,0.9,1),
+                        colours = c("black","dodgerblue","darkorange","red")) +
   facet_wrap(~SV_type, nrow = 1) +
   theme(legend.position = "bottom", legend.key.width = unit(2,"cm")) +
   xlab("SV size") +
