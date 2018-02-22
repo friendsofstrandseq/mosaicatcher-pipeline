@@ -12,8 +12,6 @@ sv_input = snakemake@input[["prob"]]
 real_input = snakemake@input[["simul"]]
 
 
-
-
 svs = fread(sv_input)
 real = fread(real_input)
 
@@ -25,6 +23,22 @@ svs[, `:=`(ref_prob = p_ref, p_ref = NULL) ]
 
 # melt to one entry per SV class
 svs = melt.data.table(svs, measure.vars = colnames(svs)[grepl('^p_', colnames(svs))], variable.name = "SV_class", value.name = "SV_prob", variable.factor = FALSE)
+
+# Rename called SV classes
+unique(svs$SV_class)
+svs <- svs[SV_class %in% c("p_inv_hom", "p_inv_h1", "p_inv_h2", "p_del_hom", "p_del_h1",  "p_del_h2", "p_dup_hom", "p_dup_h1", "p_dup_h2", "p_idup_h1", "p_idup_h2") ]
+svs[SV_class == "p_inv_hom", SV_class := "hom_inv"]
+svs[SV_class == "p_inv_h1", SV_class := "het_inv"]
+svs[SV_class == "p_inv_h2", SV_class := "het_inv"]
+svs[SV_class == "p_del_hom", SV_class := "hom_del"]
+svs[SV_class == "p_del_h1", SV_class := "het_del"]
+svs[SV_class == "p_del_h2", SV_class := "het_del"]
+svs[SV_class == "p_dup_hom", SV_class := "hom_dup"]
+svs[SV_class == "p_dup_h1", SV_class := "het_dup"]
+svs[SV_class == "p_dup_h2", SV_class := "het_dup"]
+svs[SV_class == "p_idup_h1", SV_class := "inv_dup"]
+svs[SV_class == "p_idup_h2", SV_class := "inv_dup"]
+
 
 # cast again to one entry per locus and cell, now with 
 setkey(svs, chrom, start, end, sample, cell)
@@ -52,20 +66,6 @@ combined = combined[!is.na(start) & end.call > start & start.call < end & (pmin(
 LOCI = merge(LOCI, combined, by = c("chrom","start","end"), all.x = T)
 LOCI[, id := 1:.N]
 assert_that(all(LOCI[,.(chrom, start, end)] == unique(real[, .(chrom, start, end)])))
-
-
-# Rename called SV classes
-unique(svs$SV_class)
-svs[SV_class == "p_inv_hom", SV_class := "hom_inv"]
-svs[SV_class == "p_inv_h1", SV_class := "het_inv"]
-svs[SV_class == "p_inv_h2", SV_class := "het_inv"]
-svs[SV_class == "p_del_hom", SV_class := "hom_del"]
-svs[SV_class == "p_del_h1", SV_class := "het_del"]
-svs[SV_class == "p_del_h2", SV_class := "het_del"]
-svs[SV_class == "p_dup_hom", SV_class := "hom_dup"]
-svs[SV_class == "p_dup_h1", SV_class := "het_dup"]
-svs[SV_class == "p_dup_h2", SV_class := "het_dup"]
-
 
 
 ### Determine sensitivity (recall)
