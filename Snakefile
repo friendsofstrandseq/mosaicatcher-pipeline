@@ -48,7 +48,7 @@ rule simul:
                 sample = ["simulation7","simulation8","simulation9"],
                 window = [50000, 100000]),
         expand("evaluation/simulation{seed}_{window}.{segments}.pdf",
-                seed  = [7,8,9],
+                seed  = list(range(5)),
                 window = [50000, 100000],
                 segments = ["few","medium","many"])
 
@@ -375,6 +375,20 @@ rule run_sv_classification:
                 maximumCN=4 \
                 utils/R-packages2/ > {log} 2>&1
         """
+
+rule plot_heatmap:
+    input:
+        haplotypeProbs = "sv_probabilities/{sample}/{windows}.{bpdens}/allSegCellProbs.table",
+        genotypeProbs  = "sv_probabilities/{sample}/{windows}.{bpdens}/allSegCellGTprobs.table",
+        info     = "counts/{sample}/{windows}.info",
+        bamNames = "sv_probabilities/{sample}/{windows}.{bpdens}/bamNames.txt"
+    output:
+        "sv_probabilities/{sample}/{windows}.{bpdens}/final_plots/heatmapPlots.pdf"
+    log:
+        "log/{sample}/final.plots.{windows}.{bpdens}.txt"
+    script:
+        "utils/plot_heatmap.R"
+        
 rule convert_SVprob_output:
     input:
         probs    = "sv_probabilities/{sample}/{windows}.{bpdens}/allSegCellProbs.table",
