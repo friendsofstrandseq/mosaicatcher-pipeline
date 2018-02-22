@@ -1,12 +1,13 @@
-#' Changes the format of all files to the format used in the SV calling wrapper function.
+#' Changes the format of all files to the format used in the SV calling wrapper function, and estimates the dispersion paramters based on p parameter and bin read counts
 #'
 #' @param RCfile The name of the file containing bin read counts
 #' @param outputDir The directory containing the output files.
 #' @param bamNamesFile Outputs the names of the bam files in the order they are used in the tool
+#' @param p the p parameter of the NB distribution
 #' @author Maryam Ghareghani, Sascha Meiers
 #' @export
 
-changeRCformat = function(RCfile, outputDir, bamNamesFile = "bamNames.txt")
+changeRCformat = function(RCfile, outputDir, bamNamesFile = "bamNames.txt", p)
 {
   counts = data.table::fread(paste("zcat", RCfile))
   # newFormat is the table with all w counts first and then all the c counts
@@ -38,7 +39,11 @@ changeRCformat = function(RCfile, outputDir, bamNamesFile = "bamNames.txt")
                              cell_name = substr(oldFormat[1:numCells],3,nchar(oldFormat[1:numCells])))
   write.table(oldColumOrder, file = paste0(outputDir, bamNamesFile), quote = F, sep = "\t", row.names = F)
   
-  list(binRC=newFormat, cellNames = as.character(oldColumOrder$cell_name))
+  # estimating dispersion parameters per single cell
+  x = counts[class != "None", list(mean = mean(w+c), trmean = base::mean(w+c, trim = 0.1)), by = list(sample,cell)]
+  disp <- x$trmean * p / (1-p)
+  
+  list(binRC=newFormat, cellNames = as.character(oldColumOrder$cell_name), r = disp)
 }
 
 #' Changes the format of the cell types file and gives as output the cell types matrix
