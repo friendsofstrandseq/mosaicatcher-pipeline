@@ -78,7 +78,10 @@ assert_that(all(unique(counts[,.(sample,cell)]) == unique(info[,.(sample,cell)])
 
 
 # Get mean and median from count data
-info <- merge(info, counts[, .(mean = mean((w+c)[class != "None"]), median = median((w+c)[class != "None"])), by = .(sample, cell)], by = c("sample","cell"))
+# When calculated, ignore "None" bins and also use the trimmed mean!
+info <- merge(info, counts[, .(mean = mean((w+c)[class != "None"], trim = 0.05),
+                               median = median((w+c)[class != "None"])), by = .(sample, cell)],
+              by = c("sample","cell"))
 
 
 
@@ -121,16 +124,24 @@ probs[, scalar := 1]
 message("[SV classifier] Annotating NB probabilities")
 probs <- add_NB_probs(probs)
 
-message("[SV classifier] Post-processing NB probabilities")
-probs[state == "sce", `:=`(p_ref = 0, p_homInv = 0, p_hetInv = 0, p_hetDel = 0, p_homDel = 0)]
-probs[,likelyhoodratio := p_ref - pmax(p_hetInv, p_hetDel, p_hetInv)]
-probs[,obs_exp := (W+C)/expected]
+message("[SV classifier] Post-processing NB probabilities, e.g. adding a prior")
+probs[state == "sce", `:=`(p_ref = -999, p_homInv = -1000, p_hetInv = -1000, p_hetDel = -1000, p_homDel = -1000)]
 
-
-
+# add a prior
+PRIORS = c(ref = 0.75, homInv = 0.05, hetInv = 0.05, hetDup = 0.05, hetDel = 0.05, homDel = 0.05)
+probs[, `:=`(p_ref    = p_ref    + log(PRIORS["ref"]),
+             p_homInv = p_homInv + log(PRIORS["homInv"]),
+             p_hetInv = p_hetInv + log(PRIORS["hetInv"]),
+             p_hetDup = p_hetDup + log(PRIORS["hetDup"]),
+             p_homDel = p_homDel + log(PRIORS["homDel"]),
+             p_hetDel = p_hetDel + log(PRIORS["hetDel"]))]
+# Add log likelihood ratio log( p(SV) / p(REF) )
+probs[,loklikratio := pmax(p_hetInv, p_hetDel, p_hetDup, p_homDel, p_homInv) - p_ref]
 
 # Model loci across all cells. 
 # Each model allows only one type of SV in the locus
+MIN_CELLS = 2
+message("[SV classifier] Model across cells. Allow only one SV class, seen in at least ", MIN_CELLS, " cells")
 mod = probs[, data.table(model = c("ref","hetDel","homDel","hetInv","homInv","hetDup"),
                          loglik = c(sum(p_ref),
                                     sum(pmax(p_ref, p_hetDel)),
@@ -146,16 +157,12 @@ mod = probs[, data.table(model = c("ref","hetDel","homDel","hetInv","homInv","he
                                     sum(p_hetDup == pmax(p_ref, p_hetDup))  )
                          )[order(loglik, decreasing = T)],
       by = .(chrom, from, to)]
-MIN_CELLS = 2
 mod = mod[, .SD[num>=MIN_CELLS][1,], by = .(chrom, from, to)]
-
-
-
 
 # Apply the best model to the prob by overwriting probabilities
 probs = merge(probs, mod[, .(chrom, from, to, model)], by = c("chrom","from","to"))
-newprobs = probs
 
+newprobs = probs
 newprobs[model == "ref", p_ref := 0]
 newprobs[model == "hetDup" & p_hetDup > p_ref, p_hetDup := 0]
 newprobs[model == "hetDup" & p_hetDup <= p_ref, p_ref := 0]
@@ -167,7 +174,7 @@ newprobs[model == "homInv" & p_homInv > p_ref + 0.01, p_homInv := 0]
 newprobs[model == "homInv" & p_homInv <= p_ref + 0.01, p_ref := 0]
 newprobs[model == "homDel" & p_homDel > p_ref, p_homDel := 0]
 newprobs[model == "homDel" & p_homDel <= p_ref, p_ref := 0]
-
+unique(newprobs[model!= "ref",.(chrom, from, to)])
 
 
 
