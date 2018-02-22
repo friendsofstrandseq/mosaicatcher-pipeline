@@ -40,15 +40,15 @@ rule all:
 
 rule simul:
     input:
-        expand("sv_calls/{sample}-{window}/{window}_fixed.{segments}.SV_probs.chr1.pdf",
-                sample = ["simulation7","simulation8","simulation9"],
+        expand("sv_calls/simulation{seed}-{window}/{window}_fixed.{segments}.SV_probs.chr1.pdf",
+                seed   = list(range(7)),
                 window = [50000, 100000],
                 segments = ["few","medium","many"]),
-        expand("plots/{sample}-{window}/{window}_fixed.pdf",
-                sample = ["simulation7","simulation8","simulation9"],
+        expand("plots/simulation{seed}-{window}/{window}_fixed.pdf",
+                seed   = list(range(7)),
                 window = [50000, 100000]),
         expand("evaluation/simulation{seed}_{window}.{segments}.pdf",
-                seed  = list(range(5)),
+                seed  = list(range(7)),
                 window = [50000, 100000],
                 segments = ["few","medium","many"])
 
