@@ -162,12 +162,15 @@ plotHeatmapSegment <- function(dataFrame, plot.log=FALSE, file=NULL, aggProbs=F,
 }
 
 
+hapProbsFile = snakemake@input[["haplotypeProbs"]]
 GTprobsFile = snakemake@input[["genotypeProbs"]]
 
-GTprobs <- read.table(GTprobsFile, stringsAsFactors = F, header = T )
+GTprobs <- read.table(GTprobsFile, stringsAsFactors = F, header = T)
+hapProbs <- read.table(hapProbsFile, stringsAsFactors = F, header = T)
 
 GTprobs.l <- split(GTprobs, paste(GTprobs$chr, GTprobs$start, GTprobs$end))
+hapProbs.l <- split(hapProbs, paste(GTprobs$chr, GTprobs$start, GTprobs$end))
 
 pdf(snakemake@output[[1]])
-lapply(GTprobs.l, function(x) plot(plotHeatmapSegment(x)$heatmap.plt))
+lapply(1:length(GTprobs.l), function(x) grid.arrange(plotHeatmapSegment(GTprobs.l[[x]])$heatmap.plt, plotHeatmapSegment(hapProbs.l[[x]])$heatmap.plt))
 dev.off()
