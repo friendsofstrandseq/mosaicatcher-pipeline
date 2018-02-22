@@ -50,6 +50,10 @@ rule simul:
         expand("evaluation/simulation{seed}_{window}.{segments}.pdf",
                 seed  = list(range(5)),
                 window = [50000, 100000],
+                segments = ["few","medium","many"]),
+        expand("sv_probabilities/simulation{seed}-{window}/{window}_fixed.{segments}/final_plots/heatmapPlots.pdf",
+                seed  = list(range(5)),
+                window = [50000, 100000],
                 segments = ["few","medium","many"])
 
 rule evaluate_simulation:
@@ -355,6 +359,7 @@ rule run_sv_classification:
     output:
         outdir = "sv_probabilities/{sample}/{windows}.{bpdens}/",
         out1   = "sv_probabilities/{sample}/{windows}.{bpdens}/allSegCellProbs.table",
+        out2   = "sv_probabilities/{sample}/{windows}.{bpdens}/allSegCellGTprobs.table",
         bamNames = "sv_probabilities/{sample}/{windows}.{bpdens}/bamNames.txt"
     log:
         "log/{sample}/run_sv_classification.{windows}.{bpdens}.txt"
