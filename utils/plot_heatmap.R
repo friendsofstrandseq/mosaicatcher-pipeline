@@ -168,8 +168,11 @@ GTprobsFile = snakemake@input[["genotypeProbs"]]
 GTprobs <- read.table(GTprobsFile, stringsAsFactors = F, header = T)
 hapProbs <- read.table(hapProbsFile, stringsAsFactors = F, header = T)
 
-GTprobs.l <- split(GTprobs, paste(GTprobs$chr, GTprobs$start, GTprobs$end))
-hapProbs.l <- split(hapProbs, paste(hapProbs$chr, hapProbs$start, hapProbs$end))
+ID <- paste0(GTprobs$chr, "_", GTprobs$start, "_", GTprobs$end)
+ID <- factor(ID, levels=unique(ID)) # split them later with their true orders as in the table (not alphabetically)
+                            
+GTprobs.l <- split(GTprobs, ID)
+hapProbs.l <- split(hapProbs, ID)
 
 pdf(snakemake@output[[1]])
 lapply(1:length(GTprobs.l), function(x) grid.arrange(plotHeatmapSegment(GTprobs.l[[x]])$heatmap.plt, plotHeatmapSegment(hapProbs.l[[x]])$heatmap.plt))
