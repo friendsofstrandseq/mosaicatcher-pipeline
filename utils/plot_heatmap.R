@@ -169,7 +169,7 @@ GTprobs <- read.table(GTprobsFile, stringsAsFactors = F, header = T)
 hapProbs <- read.table(hapProbsFile, stringsAsFactors = F, header = T)
 
 GTprobs.l <- split(GTprobs, paste(GTprobs$chr, GTprobs$start, GTprobs$end))
-hapProbs.l <- split(hapProbs, paste(GTprobs$chr, GTprobs$start, GTprobs$end))
+hapProbs.l <- split(hapProbs, paste(hapProbs$chr, hapProbs$start, hapProbs$end))
 
 pdf(snakemake@output[[1]])
 lapply(1:length(GTprobs.l), function(x) grid.arrange(plotHeatmapSegment(GTprobs.l[[x]])$heatmap.plt, plotHeatmapSegment(hapProbs.l[[x]])$heatmap.plt))
