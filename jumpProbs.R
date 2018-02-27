@@ -26,7 +26,7 @@ addJumpProbs <- function(probTable)
     jump.probs[[k]] <- list()
     for (i in 1:(length(probTable.l.chroms[[k]])-1)) {
       prod.probs <- probTable.l.chroms[[k]][[i]][,(maximumCN+9):n] * probTable.l.chroms[[k]][[i+1]][,(maximumCN+9):n]
-      jump.probs[[k]][[i]] <- rowSums(prod.probs)
+      jump.probs[[k]][[i]] <- 1-rowSums(prod.probs)
       
       # adding jump probs to the prob table
       if (i > 1)
