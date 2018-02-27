@@ -238,3 +238,30 @@ regularizeProbTable = function(probTable, regFactor = 1e-10)
   }
   newProbTable
 }
+
+
+#' For each segment, computes the probabilities of having the same haplotype for all single cells
+#' 
+#' @param probTable.l The list of segments probability table
+#' @author Maryam Ghareghani
+#' @export
+#' 
+
+
+
+jumpProbs <- function(probTable.l)
+{
+  chroms <- sapply(probTable.l, function(x) x$chr[1])
+  probTable.l.chroms <- split(probTable.l, factor(chroms, levels = unique(chroms)))
+  jump.probs <- list()
+  for (k in 1:length(probTable.l.chroms)) {
+    jump.probs[[k]] <- list()
+    for (i in 1:(length(probTable.l.chroms[[k]])-1)) {
+      prod.probs <- probTable.l.chroms[[k]][[i]][,(maximumCN+9):n] * probTable.l.chroms[[k]][[i+1]][,(maximumCN+9):n]
+      jump.probs[[k]][[i]] <- rowSums(prod.probs)
+    }
+  }
+  
+  names(jump.probs) <- names(probTable.l.chroms)
+  return(jump.probs)
+}
