@@ -122,7 +122,17 @@ plotHeatmapSegment <- function(dataFrame, plot.log=FALSE, file=NULL, aggProbs=F,
   names(colColors) <- paste0("CN",0:maximumCN) #c("CN0","CN1","CN2","CN3","CN4","CN5")
   CNV.states <- rep(names(colColors), table(probs.names.cnv))
   CNV.states <- CNV.states[gsub(CNV.states, pattern = 'CN', replacement = '') <= CNV]
-  colAnnot.df <- data.frame(ID=factor(levels(tab.long$variable), levels=levels(tab.long$variable)), type = c(names(colColors), CNV.states))
+  #make header table
+  ID=factor(levels(tab.long$variable), levels=levels(tab.long$variable))
+  type = c(names(colColors), CNV.states)
+  if (length(ID) > length(type)) {
+    toAdd <- length(ID) - length(type)
+    type <- c(type, rep("Jump", toAdd))
+    colColors <- c(colColors, jump="white")
+    colAnnot.df <- data.frame(ID=ID, type=type)
+  } else {
+    colAnnot.df <- data.frame(ID=ID, type=type)
+  } 
   
   #plot the upper description row
   header <- ggplot(colAnnot.df) + geom_tile(aes(x=ID, y=1, fill=type)) + scale_fill_manual(values = colColors) + header_theme + guides(fill = guide_legend(nrow = 1)) + ggtitle(paste0(dataFrame[1,1], "_", dataFrame[1,2], "_", dataFrame[1,3]))
@@ -135,7 +145,7 @@ plotHeatmapSegment <- function(dataFrame, plot.log=FALSE, file=NULL, aggProbs=F,
     celltypes <- c(celltypes[which(celltypes=='all')], celltypes[-which(celltypes=='all')])
   }  
   colType.df <- data.frame(ID=celltypes, level=c(1:length(celltypes)))
-  cellType <- ggplot(colType.df) + geom_tile(aes(x=1, y=factor(level), fill=ID)) + scale_fill_manual(values = c('cc'="paleturquoise4",  'cw'="blue", 'wc'="olivedrab",'ww'="sandybrown", 'all'="red")) + header_theme
+  cellType <- ggplot(colType.df) + geom_tile(aes(x=1, y=factor(level), fill=ID)) + scale_fill_manual(values = c('cc'="paleturquoise4",  'cw'="cornsilk3", 'wc'="cornsilk4",'ww'="sandybrown", 'all'="red")) + header_theme
   
   #extract legends from the plots
   plt.leg <- getlegend(plt)
