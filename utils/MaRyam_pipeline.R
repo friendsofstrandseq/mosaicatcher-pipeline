@@ -32,16 +32,21 @@ print(paste("bin.size =", bin.size))
 print(paste("K =", K))
 print(paste("maximumCN =", maximumCN))
 
-l <- changeRCformat(binRCfile, outputDir)
+p = data.table::fread(infoFile)$nb_p[1]
+
+l <- changeRCformat(binRCfile, outputDir, p = p)
 cellNames <- l$cellNames
 initial.binRC <- l$binRC
+r = matrix(rep(l$r, K), ncol = length(cellNames), byrow = T)
 f <- factor(initial.binRC$chromosome, levels=unique(initial.binRC$chromosome))
 binRC <- split(initial.binRC, f)
 
 cellTypes = changeCellTypesFormat(stateFile, cellNames)
-NBparams = changeNBparamsFormat(infoFile, K, cellNames)
-p = NBparams[[1]]
-r = NBparams[[2]]
+#NBparams = changeNBparamsFormat(infoFile, K, cellNames)
+#p = NBparams[[1]]
+#r = NBparams[[2]]
+
+
 segmentsCounts = getSegReadCounts(binRC, BRfile, K, bin.size)
 
 SVcalling_wrapperFunc(bin.size, K, maximumCN, segmentsCounts, r, p, cellTypes, outputDir, haplotypeMode = haplotypeMode)
