@@ -1,11 +1,10 @@
 #' Rscript for the snakemake pipeline for computing jump probabilities and including heatmaps
 #' author Maryam Ghareghani
 
-# install and load MaRyam package
-library(devtools) 
-install_git("git://github.com/friendsofstrandseq/MaRyam.git", branch = "master")
-library("MaRyam")
+sink(snakemake@log[[1]])
 
+.libPaths( c( snakemake@params[["r_package_path"]],.libPaths()) )
+suppressPackageStartupMessages(library(MaRyam))
 
 hapProbsFile = snakemake@input[["haplotypeProbs"]]
 GTprobsFile = snakemake@input[["genotypeProbs"]]
