@@ -383,12 +383,15 @@ rule run_sv_classification:
 
 rule plot_heatmap:
     input:
+        maryam = "utils/R-packages2/MaRyam/R/MaRyam",
         haplotypeProbs = "sv_probabilities/{sample}/{windows}.{bpdens}/allSegCellProbs.table",
         genotypeProbs  = "sv_probabilities/{sample}/{windows}.{bpdens}/allSegCellGTprobs.table",
         info     = "counts/{sample}/{windows}.info",
         bamNames = "sv_probabilities/{sample}/{windows}.{bpdens}/bamNames.txt"
     output:
         "sv_probabilities/{sample}/{windows}.{bpdens}/final_plots/heatmapPlots.pdf"
+    params:
+        r_package_path = "utils/R-packages2"
     log:
         "log/{sample}/final.plots.{windows}.{bpdens}.txt"
     script:
