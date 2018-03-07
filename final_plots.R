@@ -30,6 +30,8 @@ setPanelHeights <- function(g, heights){
 #' Main heatmap function
 #' 
 #' @param dataFrame The probability table for a segment with single cells in rows and genotypes/haplotypes in columns
+#' @param ord.feature The ordering feature used for sorting single cells (rows) in the heatmap. 
+#' It can be NULL (kepping the input order), "SV_probs" (baded hierarchical clustering of SV_probs), "input_jump_p", and "output_jump_p".
 #' @param plot.log Binary option for plotting the heatmap in log scale
 #' @param file TODO write document
 #' @param aggProbs TODO write document
@@ -38,7 +40,7 @@ setPanelHeights <- function(g, heights){
 #' @export
 #' 
 
-plotHeatmapSegment <- function(dataFrame, plot.log=FALSE, file=NULL, aggProbs=F, CNV=3) {
+plotHeatmapSegment <- function(dataFrame, ord.feature = NULL, plot.log=FALSE, file=NULL, aggProbs=F, CNV=3) {
   #get rid of leading X character after reading data in
   colnames(dataFrame) <- gsub(colnames(dataFrame), pattern = 'X', replacement = '')
   
@@ -59,9 +61,26 @@ plotHeatmapSegment <- function(dataFrame, plot.log=FALSE, file=NULL, aggProbs=F,
   #cluter probs hclust
   #get order of rows
   #sort dataFrame rows based on hclust order
-  ord <- order.dendrogram(as.dendrogram(hclust(dist(probs, method = "euclidean"), method = "ward.D")))
-  dataFrame <- dataFrame[ord,]
-  probs <- probs[ord,]
+  
+  if (!is.null(ord.feature))
+  {
+    if (ord.feature == "SV_prob")
+    {
+      ord <- order.dendrogram(as.dendrogram(hclust(dist(probs), method = "ward.D")))
+    } else if (ord.feature == "input_jump_p")
+    {
+      ord <- order(dataFrame$input_jump_p)
+    } else if (ord.feature == "output_jump_p")
+    {
+      ord <- order(dataFrame$output_jump_p)
+    } else
+    {
+      message("The ord.feature argument is not valid")
+    }
+    
+    dataFrame <- dataFrame[ord,]
+    probs <- probs[ord,]
+  }
   
   #sort input data.frame
   rowIds <- dataFrame$cells
@@ -187,5 +206,6 @@ plotHeatmapSegment <- function(dataFrame, plot.log=FALSE, file=NULL, aggProbs=F,
   
   #grid.newpage()
   #grid.draw(final.plot)
-  return(list(heatmap.plt=final.plot, hc.ord=rev(dataFrame$cells)))
+  #return(list(heatmap.plt=final.plot, hc.ord=rev(dataFrame$cells)))
+  return(final.plot)
 }
