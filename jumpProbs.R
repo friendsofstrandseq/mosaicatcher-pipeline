@@ -1,6 +1,6 @@
-#' Computes the probabilities of having the same haplotype for all single cells (jump probabilities)
+#' Computes the probabilities of having the same genotype/haplotype for all single cells (jump probabilities)
 #' returns a list containing the lists of probability tables of segments for each chromosome
-#' In the output probability tables, the jump probabilities are included for internal (not first and last) segments
+#' In the output probability tables, the input and output jump probabilities are included for internal (not first and last) segments
 #' 
 #' @param probTable.l.chroms 
 #' @author Maryam Ghareghani
@@ -25,6 +25,7 @@ addJumpProbs <- function(probTable)
   for (k in 1:length(probTable.l.chroms)) {
     jump.probs[[k]] <- list()
     for (i in 1:(length(probTable.l.chroms[[k]])-1)) {
+      # computing the jump prob from segment i to i+1
       prod.probs <- probTable.l.chroms[[k]][[i]][,(maximumCN+9):n] * probTable.l.chroms[[k]][[i+1]][,(maximumCN+9):n]
       jump.probs[[k]][[i]] <- 1-rowSums(prod.probs)
       
@@ -32,7 +33,7 @@ addJumpProbs <- function(probTable)
       if (i > 1)
       {
         probTable.l.chroms[[k]][[i]] <- cbind(probTable.l.chroms[[k]][[i]], 
-                                             data.frame(input_jump_p = jump.probs[[k]][[i-1]], output_jump_p = jump.probs[[k]][[i]]))
+                  data.frame(input_jump_p = jump.probs[[k]][[i-1]], output_jump_p = jump.probs[[k]][[i]]))
       }
     }
   }
