@@ -108,8 +108,8 @@ LOCI = merge(LOCI, recall, by = "id")
 spurious_calls = svs[SV_llr >= MIN_LLR,
                      .N,
                      by = .(chrom, start, end, id, SV_class)] # all loci, all classes
-# There are also some calls that overlap SVs (by at least 5 %) without fully matching them
-twighlight_loci = combined[recovl >= 0.05,
+# There are also some calls that overlap SVs (by at least 0.1 %) without fully matching them
+twighlight_loci = combined[recovl >= 0.001,
                            .(chrom, start = start.call, end = end.call, twighlight = T)]
 # add these overlapping loci to the list of spurious calls
 spurious_calls = merge(spurious_calls,
