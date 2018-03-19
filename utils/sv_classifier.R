@@ -70,7 +70,7 @@ message("[SV classifier] Problem size: ", nrow(info), " cells x ", nrow(segs), "
 
 
 
-# Kick out non-PASS cells     # To test, use something like  info[seq(1,nrow(info),3)]$pass1 = 0
+# Kick out non-PASS cells     # To test, use something like `info[seq(1,nrow(info),3)]$pass1 = 0`
 if (nrow(info[pass1 != 1])> 0) message("[SV classifier] Kicking out ", nrow(info[pass1 != 1]), " low quality cells. ", nrow(info[pass1 == 1]), " remain.")
 info <- info[pass1 == 1,]
 counts <- counts[ paste(sample,cell) %in% info[,paste(sample,cell)] ]
@@ -107,8 +107,7 @@ segs[, `:=`(to = bps, bps = NULL, k = NULL)]
 
 
 # Do all the work:
-
-message("[SV classifier] Preparing large table [segments + cells  x features]")
+message("[SV classifier] Preparing large table [segments + cells x features]")
 probs <- segs[,cbind(.SD,info[,.(sample,cell,nb_p,nb_r,medbin,mean)]), by = .(chrom,from)]
 
 message("[SV classifier] Annotating strand-state (slow)")
@@ -125,9 +124,7 @@ message("[SV classifier] Annotating NB probabilities")
 probs <- add_NB_probs(probs)
 
 message("[SV classifier] Post-processing NB probabilities, e.g. adding a prior")
-probs[state == "sce", `:=`(p_ref = -999, p_homInv = -1000, p_hetInv = -1000, p_hetDel = -1000, p_homDel = -1000)]
-
-# add a prior
+probs[state == "sce", `:=`(p_ref = -1000, p_homInv = -1000, p_hetInv = -1000, p_hetDel = -1000, p_homDel = -1000)]
 PRIORS = c(ref = 0.75, homInv = 0.05, hetInv = 0.05, hetDup = 0.05, hetDel = 0.05, homDel = 0.05)
 probs[, `:=`(p_ref    = p_ref    + log(PRIORS["ref"]),
              p_homInv = p_homInv + log(PRIORS["homInv"]),
@@ -136,7 +133,8 @@ probs[, `:=`(p_ref    = p_ref    + log(PRIORS["ref"]),
              p_homDel = p_homDel + log(PRIORS["homDel"]),
              p_hetDel = p_hetDel + log(PRIORS["hetDel"]))]
 # Add log likelihood ratio log( p(SV) / p(REF) )
-probs[,loklikratio := pmax(p_hetInv, p_hetDel, p_hetDup, p_homDel, p_homInv) - p_ref]
+probs[,max_loklikratio := pmax(p_hetInv, p_hetDel, p_hetDup, p_homDel, p_homInv) - p_ref]
+
 
 # Model loci across all cells. 
 # Each model allows only one type of SV in the locus
