@@ -12,18 +12,22 @@ addJumpProbs <- function(probTable)
   maximumCN <- length(which(startsWith(colnames(probTable), "CN")))-1
   n <- ncol(probTable)
   
-  # split probTable by segment
-  ID <- paste0(probTable$chr, "_", probTable$start, "_", probTable$end)
-  ID <- factor(ID, levels=unique(ID))
-  probTable.l <- split(probTable, ID)
+  # split probTable by chrom
+  probTable.l.chroms <- split(probTable, factor(probTable$chr, levels = unique(probTable$chr)))
   
-  # split probTable.l by chromosome
-  chroms <- sapply(probTable.l, function(x) x$chr[1])
-  probTable.l.chroms <- split(probTable.l, factor(chroms, levels = unique(chroms)))
+  # split probTable.l.chrom by segment
+  for (k in 1:length(probTable.l.chroms))
+  {
+    ID <- paste0(probTable.l.chroms[[k]]$start, "_", probTable.l.chroms[[k]]$end)
+    ID <- factor(ID, levels=unique(ID))
+    probTable.l.chroms[[k]] <- split(probTable.l.chroms[[k]], ID)
+  }
   
   jump.probs <- list()
   for (k in 1:length(probTable.l.chroms)) {
     jump.probs[[k]] <- list()
+    if (length(probTable.l.chroms[[k]]) == 1)
+      next()
     for (i in 1:(length(probTable.l.chroms[[k]])-1)) {
       # computing the jump prob from segment i to i+1
       prod.probs <- probTable.l.chroms[[k]][[i]][,(maximumCN+9):n] * probTable.l.chroms[[k]][[i+1]][,(maximumCN+9):n]
@@ -33,7 +37,7 @@ addJumpProbs <- function(probTable)
       if (i > 1)
       {
         probTable.l.chroms[[k]][[i]] <- cbind(probTable.l.chroms[[k]][[i]], 
-                  data.frame(input_jump_p = jump.probs[[k]][[i-1]], output_jump_p = jump.probs[[k]][[i]]))
+                data.frame(input_jump_p = jump.probs[[k]][[i-1]], output_jump_p = jump.probs[[k]][[i]]))
       }
     }
   }
@@ -41,4 +45,3 @@ addJumpProbs <- function(probTable)
   # return the list of segments prob table including the jump probabilities
   return(probTable.l.chroms)
 }
-
