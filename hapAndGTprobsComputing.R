@@ -265,3 +265,69 @@ jumpProbs <- function(probTable.l)
   names(jump.probs) <- names(probTable.l.chroms)
   return(jump.probs)
 }
+
+#' returns the genotyoe class (CN_loss, CN_gain, normal_CN2, or inv_CN2)
+#' 
+#' @param genotype.name The genotype or haplotype coding
+#' @author Maryam Ghareghani
+#' @export
+#' 
+
+genotype_class <- function(genotype.name)
+{
+  geno.class <- ""
+  if (startsWith(genotype.name, "X"))
+  {
+    genotype.name <- substr(genotype.name, 2, nchar(genotype.name))
+  }
+  genotype.int.vec <- sapply(1:nchar(genotype.name), function(x) as.numeric(substr(genotype.name,x,x)))
+  CN <- sum(genotype.int.vec)
+  
+  if (CN < 2)
+  {
+    geno.class <- "CN_loss"
+  } else if (CN > 2 )
+  {
+    geno.class <- "CN_ gain"
+  } else # CN = 2
+  {
+    if (genotype.int.vec[2] + genotype.int.vec[4] > 0)
+    {
+      geno.class <- "inv_CN2"
+    } else
+    {
+      geno.class <- "normal_CN2"
+    }
+  }
+  
+  return(geno.class)
+}
+
+#' returns the genotyoe class (CN_loss, CN_gain, normal_CN2, or inv_CN2) probability dataframe
+#' 
+#' @param prob.tab The genotype or haplotype probability dataframe
+#' @author Maryam Ghareghani
+#' @export
+#' 
+
+get_GT_class_prob_table <- function(prob.tab)
+{
+  # getting the index of the last column before CN probs
+  last.CN.col.idx <- max(which(startsWith(names(prob.tab), "CN")))
+  
+  # getting genotype names
+  gt.names <- names(prob.tab)[(last.CN.col.idx+1):ncol(prob.tab)]
+  
+  # getting genotype classes
+  gt.classes <- sapply(gt.names, genotype_class)
+  
+  prob.gt.class <- prob.tab[,1:7]
+  for (g in unique(gt.classes))
+  {
+    g.idx <- which(gt.classes == g)+last.CN.col.idx
+    prob.gt.class <- cbind(prob.gt.class, data.frame(rowSums(prob.tab[g.idx])))
+  }
+  names(prob.gt.class)[8:ncol(prob.gt.class)] <-unique(gt.classes)
+  
+  return(prob.gt.class)
+}
