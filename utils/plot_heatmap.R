@@ -22,5 +22,16 @@ hapProbs.l.chrom <- addJumpProbs(hapClassProbs)
 
 pdf(snakemake@output[[1]])
 for (k in 1:length(GTprobs.l.chrom))
-  lapply(1:length(GTprobs.l.chrom[[k]]), function(x) grid.arrange(plotHeatmapSegment(GTprobs.l.chrom[[k]][[x]]), plotHeatmapSegment(hapProbs.l.chrom[[k]][[x]])))
+{
+  plot(plotHeatmapSegment(GTprobs.l.chrom[[k]][[1]]))
+  if (length(GTprobs.l.chrom[[k]]) > 2)
+  {
+    for (i in 2:(length(GTprobs.l.chrom[[k]])-1))
+    {
+      grid.arrange(plotHeatmapSegment(GTprobs.l.chrom[[k]][[i]],ord.feature="input_jump_p")
+                   , plotHeatmapSegment(GTprobs.l.chrom[[k]][[i]],ord.feature="output_jump_p"))
+    }
+  }
+  plot(plotHeatmapSegment(GTprobs.l.chrom[[k]][[(length(GTprobs.l.chrom[[k]]))]]))
+}
 dev.off()
