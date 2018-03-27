@@ -7,10 +7,17 @@
 #' @export
 #' 
 
-addJumpProbs <- function(probTable)
+addJumpProbs <- function(probTable, simplified=TRUE)
 {
   maximumCN <- length(which(startsWith(colnames(probTable), "CN")))-1
   n <- ncol(probTable)
+  
+  if (simplified)
+  {
+    s = 8
+  } else {
+    s = maximumCN+9
+  }
   
   # split probTable by chrom
   probTable.l.chroms <- split(probTable, factor(probTable$chr, levels = unique(probTable$chr)))
@@ -30,7 +37,7 @@ addJumpProbs <- function(probTable)
       next()
     for (i in 1:(length(probTable.l.chroms[[k]])-1)) {
       # computing the jump prob from segment i to i+1
-      prod.probs <- probTable.l.chroms[[k]][[i]][,(maximumCN+9):n] * probTable.l.chroms[[k]][[i+1]][,(maximumCN+9):n]
+      prod.probs <- probTable.l.chroms[[k]][[i]][,s:n] * probTable.l.chroms[[k]][[i+1]][,s:n]
       jump.probs[[k]][[i]] <- 1-rowSums(prod.probs)
       
       # adding jump probs to the prob table
