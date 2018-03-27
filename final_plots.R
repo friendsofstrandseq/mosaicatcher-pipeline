@@ -36,32 +36,35 @@ setPanelHeights <- function(g, heights){
 #' @param file TODO write document
 #' @param aggProbs TODO write document
 #' @param CNV The maximum CN for plotting
+#' @param simplified If to plot simplified probability table e.g ("CN_loss","inv_CN2","normal_CN2","CN_gain") 
 #' @author David Porubsky, Maryam Ghareghani
 #' @export
 #' 
 
-plotHeatmapSegment <- function(dataFrame, ord.feature = NULL, plot.log=FALSE, file=NULL, aggProbs=F, CNV=3) {
+plotHeatmapSegment <- function(dataFrame, ord.feature = NULL, plot.log=FALSE, file=NULL, aggProbs=F, CNV=3, simplified=TRUE) {
   #get rid of leading X character after reading data in
   colnames(dataFrame) <- gsub(colnames(dataFrame), pattern = 'X', replacement = '')
   
   # Get the maximum reported CN in the prob table
-  maximumCN <- length(which(startsWith(colnames(dataFrame), "CN")))-1
-  
-  #Filter probs for certain CNVs
-  probs.names <- colnames(dataFrame[(maximumCN+9):ncol(dataFrame)])
-  # excluding the jump prob columns
-  probs.names <- probs.names[!probs.names %in% c("input_jump_p","output_jump_p")]
-  probs.names.l <- sapply(probs.names, function(x) strsplit(x, ''))
-  probs.names.cnv <- sapply(probs.names.l, function(x) sum(as.numeric(x)))
-  probs2filt <- names(probs.names.cnv[probs.names.cnv > CNV])
-  dataFrame <- dataFrame[,!colnames(dataFrame) %in% probs2filt]
-  
-  probs <- as.matrix(dataFrame[,c(8:ncol(dataFrame))])
+  if (!simplified) {
+    maximumCN <- length(which(startsWith(colnames(dataFrame), "CN")))-1
+    #Filter probs for certain CNVs
+    probs.names <- colnames(dataFrame[(maximumCN+9):ncol(dataFrame)])
+    # excluding the jump prob columns
+    probs.names <- probs.names[!probs.names %in% c("input_jump_p","output_jump_p")]
+    probs.names.l <- sapply(probs.names, function(x) strsplit(x, ''))
+    probs.names.cnv <- sapply(probs.names.l, function(x) sum(as.numeric(x)))
+    probs2filt <- names(probs.names.cnv[probs.names.cnv > CNV])
+    dataFrame <- dataFrame[,!colnames(dataFrame) %in% probs2filt]
+    probs <- as.matrix(dataFrame[,c(8:ncol(dataFrame))])
+  } else {
+    probs.names.cnv <- colnames(dataFrame)[8:ncol(dataFrame)]
+    probs <- as.matrix(dataFrame[,c(8:ncol(dataFrame))])
+  }  
   
   #cluter probs hclust
   #get order of rows
   #sort dataFrame rows based on hclust order
-  
   if (!is.null(ord.feature))
   {
     if (ord.feature == "SV_prob")
@@ -86,9 +89,9 @@ plotHeatmapSegment <- function(dataFrame, ord.feature = NULL, plot.log=FALSE, fi
   rowIds <- dataFrame$cells
   if (aggProbs) {
     rowIds <- c(rowIds[which.max(rowIds)], rowIds[-which.max(rowIds)])
-    dataFrame$cells <- factor(dataFrame$cells, levels=rowIds)
+    dataFrame$cells <- factor(dataFrame$cells, levels=unique(rowIds))
   } else {
-    dataFrame$cells <- factor(dataFrame$cells, levels=rowIds)
+    dataFrame$cells <- factor(dataFrame$cells, levels=unique(rowIds))
   }
   
   #tranform wide table format into a long format for plotting
@@ -136,11 +139,18 @@ plotHeatmapSegment <- function(dataFrame, ord.feature = NULL, plot.log=FALSE, fi
     legend.position="bottom"
   )
   
-  #set the colors for the upper description row
-  colColors <- brewer.pal(n=maximumCN+1, name="Set1")
-  names(colColors) <- paste0("CN",0:maximumCN) #c("CN0","CN1","CN2","CN3","CN4","CN5")
-  CNV.states <- rep(names(colColors), table(probs.names.cnv))
-  CNV.states <- CNV.states[gsub(CNV.states, pattern = 'CN', replacement = '') <= CNV]
+  if (!simplified) {
+    #set the colors for the upper description row
+    colColors <- brewer.pal(n=maximumCN+1, name="Set1")
+    names(colColors) <- paste0("CN",0:maximumCN) #c("CN0","CN1","CN2","CN3","CN4","CN5")
+    CNV.states <- rep(names(colColors), table(probs.names.cnv))
+    CNV.states <- CNV.states[gsub(CNV.states, pattern = 'CN', replacement = '') <= CNV]
+  } else {
+    colColors <- brewer.pal(n=length(probs.names.cnv), name="Set1")
+    names(colColors) <- probs.names.cnv #c("CN0","CN1","CN2","CN3","CN4","CN5")
+    CNV.states <- rep(names(colColors), table(probs.names.cnv)) 
+  } 
+  
   #make header table
   ID=factor(levels(tab.long$variable), levels=levels(tab.long$variable))
   type = c(names(colColors), CNV.states)
