@@ -38,6 +38,13 @@ l <- changeRCformat(binRCfile, outputDir, p = p)
 cellNames <- l$cellNames
 initial.binRC <- l$binRC
 r = matrix(rep(l$r, K), ncol = length(cellNames), byrow = T)
+# report a warning if some cells are totally removed (because of having SCEs in all chrs)
+if (length(r) != K*length(cellNames))
+{
+  message("Warning! The dimension of dispersion parameters and the number
+          of cells and chromosomes don't match.
+           Some cells may have been removed completely!")
+}
 f <- factor(initial.binRC$chromosome, levels=unique(initial.binRC$chromosome))
 binRC <- split(initial.binRC, f)
 
