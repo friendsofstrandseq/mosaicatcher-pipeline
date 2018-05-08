@@ -40,8 +40,8 @@ changeRCformat = function(RCfile, outputDir, bamNamesFile = "bamNames.txt", p)
   write.table(oldColumOrder, file = paste0(outputDir, bamNamesFile), quote = F, sep = "\t", row.names = F)
   
   # estimating dispersion parameters per single cell
-  x = counts[class != "None", list(mean = mean(w+c), trmean = base::mean(w+c, trim = 0.1)), by = list(sample,cell)]
-  disp <- x$trmean * p / (1-p)
+  x <- sapply(1:numCells, function(x) base::mean(as.matrix(newFormat[,2*x+2, with=F]+newFormat[,2*x+3, with=F])[,1], trim = 0.1))
+  disp <- x * p / (1-p)
   
   list(binRC=newFormat, cellNames = as.character(oldColumOrder$cell_name), r = disp)
 }
