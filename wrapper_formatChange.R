@@ -57,20 +57,14 @@ changeCellTypesFormat = function(stateFile, cellNames)
 {
   #cellType = read.table(cellType, stringsAsFactors = F, header = T)
   d = data.table::fread(stateFile)
-  # adding two columns to the end including the start and end of chromosomes
-  d = merge(d, d[, .(chrom_start = min(start), chrom_end = max(end)), by = chrom], by = "chrom")
-  # kick out the SCE cells
-  d = d[start == chrom_start & end == chrom_end,]
-  x = data.table::dcast(d, chrom + start + end ~ cell, value.var = "class")
   
-  # make sure if all cells are reported
-  stopifnot(unique(sort(d$cell)) == unique(sort(cellNames)))
+  # cast the states in a datatable with chroms in rows and cells in columns (paste all strand states for SCE cells)
+  x = data.table::dcast(d, chrom~cell, value.var = "class", fun.aggregate=function(x) paste0(x,collapse=""))
   
   # order the columns based on the order of the cellNames
-  names <- colnames(x)[4:ncol(x)]
+  names <- colnames(x)[2:ncol(x)]
   m <- match(cellNames, names)
-  x <- x[,c(1:3, m+3),with = F]
-  
+  x <- x[,c(1, m+1),with = F]
   
   # exclude the extra chromosomes
   x <- x[grepl('^chr[0-9XY][0-9]?$', x$chrom),]
@@ -81,8 +75,9 @@ changeCellTypesFormat = function(stateFile, cellNames)
   # subset only autosomes
   x = x[rowOrder[rowOrder < 23],]
   
-  cellTypes = as.matrix(x[,4:ncol(x)])
-  cellTypes[which(is.na(cellTypes))] = "?"
+  cellTypes = as.matrix(x[,2:ncol(x)])
+  # mark the SCE strand states (the ones with length bigger than 2) as ?
+  cellTypes[which(sapply(cellTypes, nchar)>2)] = "?"
   
   tolower(cellTypes)
 }
