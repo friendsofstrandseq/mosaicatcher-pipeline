@@ -16,26 +16,26 @@ regularizationParameter <- 1e-10
 
 add_dispPar <- function(prob.tab, alpha = 0.05)
 {
-  new.probs <- prob.tab
-  new.probs[, disp_w := scalar*nb_r*Wcn*(to-from+1)*(0.5)]
-  new.probs[, disp_c := scalar*nb_r*Ccn*(to-from+1)*(0.5)]
+  probs <- prob.tab
+  probs[, disp_w := scalar*nb_r*Wcn*(to-from+1)*(0.5)]
+  probs[, disp_c := scalar*nb_r*Ccn*(to-from+1)*(0.5)]
   
   # setting both W and C dispersion params for CN0 to alpha
-  cn0_ridx <- which(new.probs$disp_c==0 & new.probs$disp_w==0)
-  new.probs[cn0_ridx, disp_w:=scalar*nb_r*alpha*(to-from+1)]
-  new.probs[cn0_ridx, disp_c:=scalar*nb_r*alpha*(to-from+1)]
+  cn0_ridx <- which(probs$disp_c==0 & probs$disp_w==0)
+  probs[cn0_ridx, disp_w:=scalar*nb_r*alpha*(to-from+1)]
+  probs[cn0_ridx, disp_c:=scalar*nb_r*alpha*(to-from+1)]
   
   # rescaling W and C dispersion params for Wcn=0 cases with the parameter alpha
-  Wcn0_ridx <- which(new.probs$disp_w==0)
-  new.probs[Wcn0_ridx, disp_w:=disp_c*alpha*2]
-  new.probs[Wcn0_ridx, disp_c:=disp_c*(1-alpha)*2]
+  Wcn0_ridx <- which(probs$disp_w==0)
+  probs[Wcn0_ridx, disp_w:=disp_c*alpha*2]
+  probs[Wcn0_ridx, disp_c:=disp_c*(1-alpha)*2]
   
   # rescaling W and C dispersion params for Ccn=0 cases with the parameter alpha
-  Ccn0_ridx <- which(new.probs$disp_c==0)
-  new.probs[Ccn0_ridx, disp_c:=disp_w*alpha*2]
-  new.probs[Ccn0_ridx, disp_w:=disp_w*(1-alpha)*2]
+  Ccn0_ridx <- which(probs$disp_c==0)
+  probs[Ccn0_ridx, disp_c:=disp_w*alpha*2]
+  probs[Ccn0_ridx, disp_w:=disp_w*(1-alpha)*2]
   
-  return(new.probs)
+  return(probs)
 }
 
 #' Compute the segment type given the segment strand state and the segment status
@@ -100,7 +100,7 @@ for (st in c("CC","WW","WC","CW"))
 }
 colnames(hapStrandStates)[3:4]=c("Wcn", "Ccn")
 setkey(hapStrandStates, state)
-
+##### COMMENT: this part probably can be done in a better way using datatable
 # I don't know how to merge these two datatables (probs and hapStrandStates)
 #take the only solution that I have in mind
 
@@ -122,61 +122,74 @@ for (i in 1:4)
 #repeat the rows based on the row indices defines in rep.rows
 expanded.hapstates <- hapStrandStates[rep.rows]
 
-# expand the probs datatable: repeat each row in the probs table #haps time
-expanded.probs <- probs[sort(rep(1:nrow(probs),length(hapStatus)))]
+# expand the probs datatable: First sort the rows based on states, then repeat each row in the probs table #haps time
+expanded.probs <- probs[order(state)][sort(rep(1:nrow(probs),length(hapStatus)))]
 
 #check if the strand states are the same in the two datatables
 assert_that(all(expanded.probs$state == expanded.hapstates$state))
 
 # combine the two datatables
-new.probs <- cbind(expanded.probs, expanded.hapstates[,-"state"])
-
+probs <- cbind(expanded.probs, expanded.hapstates[,-"state"])
+###########
 # compute dispersion parameters
-new.probs <- add_dispPar(new.probs)
+probs <- add_dispPar(probs)
 
 # compute NB haplotype likelihoods
-new.probs[, nb_hap_ll := dnbinom(Wcn, size = disp_w, prob = nb_p)
+probs[, nb_hap_ll := dnbinom(Wcn, size = disp_w, prob = nb_p)
                     *dnbinom(Ccn, size = disp_c, prob = nb_p)]
 
-# not tested from here on
-# averaging the nb probs of sister haplotypes
-# , when haplotype specific strand states are not known
+# computing sister haplotype (haplotype with the same genotype) for each haplotype
+sister.haps <- sapply(hapStatus, sisterHaplotype)
+sister.hap.pos <- match(sister.haps, hapStatus)
+# compute the set of symmetric haplotypes (haplotypes that are equal to their sister haplotype)
+symmetric.haps <- hapStatus[which(sister.haps==hapStatus)]
+# testin:
+# test <- probs[haplotype=="1000"|haplotype=="0010",]
+# test[, diff_ll:=.SD$nb_hap_ll[2]-.SD$nb_hap_ll[1],by=.(sample, chrom, cell, from, to)]
+# unique(test$diff_ll)
+# It did not work for the tested data, all pairs of sister haplotypes turned to have the same ll
+# I should test the following part later
 
-sister.hap.pos <- match(sister_haps, hapStatus)
-sister.hap.pos[which(sister.hap.pos==1:length(hapStatus))]=NA
-sister.hap.pos <- rep(sister.hap.pos, nrow(new.probs)/length(hapStatus))
-
+# averaging the nb probs of sister haplotypes, when haplotype specific strand states are not known
 if (!haplotypeMode)
 {
-  new_nb_hap_ll <- new.probs$nb_hap_ll
-  new_nb_hap_ll[which(!is.na(sister.hap.pos))] <- (new.probs$nb_hap_ll
-                      +new.probs$nb_hap_ll[sister.hap.pos])[which(!is.na(sister.hap.pos))]/2
-  new.probs[, nb_hap_ll := new_nb_hap_ll]
+  probs[,nb_hap_ll:=.((nb_hap_ll+nb_hap_ll[sister.hap.pos])/2), by=.(sample, cell, chrom, from, to)]
 }
 
-# sorting the probs table based on segments
-new.probs <- new.probs[order(sample, cell, chrom, from, to)]
-
-# normalizing nb_hap_ll to 1 per sample, cell, and segment
-new.probs[, nb_hap_ll := nb_hap_ll/sum(nb_hap_ll), by=.(sample, cell, chrom, from, to)]
-
-# regularizing nb_hap_ll to set the min possible likelihood to a constant small number
-# TODO complete this part
+# testing if there are some segments with zero probability for all haplotypes
+segs_max_hap_nb_probs <- probs[, .(sample, chrom, cell, from, to, max_nb_hap_ll=max(nb_hap_ll)), 
+                              by=.(sample, chrom, cell, from, to)]
+# there are some 0s (0.3% of segments in the tested example) ???(how to treat them)
+# blacklisting these segs:
+# How to do it in  datatable????
 
 # add prior and compute the posteriori probs (add new columns)
 # TODO complete this part
 
+# normalizing nb_hap_ll to 1 per sample, cell, and segment
+probs[, nb_hap_ll := nb_hap_ll/sum(nb_hap_ll), by=.(sample, cell, chrom, from, to)]
+# some NANs are produced here
+
+# regularizing nb_hap_ll to set the min possible likelihood to a constant small number
+# TODO complete this part
+
 # normalizing again
-new.probs[, nb_hap_ll := nb_hap_ll/sum(nb_hap_ll), by=.(sample, cell, chrom, from, to)]
-
-# computing genotype likelihoods
-nb_gt_ll <- new.probs$nb_hap_ll
-nb_gt_ll[which(!is.na(sister.hap.pos))] <- (new.probs$nb_hap_ll
-            +new.probs$nb_hap_ll[sister.hap.pos])[which(!is.na(sister.hap.pos))]
-new.probs[, nb_gt_ll := nb_gt_ll]
-
-# nb_gt_ll sums up to a very low number: double check
+probs[, nb_hap_ll := nb_hap_ll/sum(nb_hap_ll), by=.(sample, cell, chrom, from, to)]
 
 # converting to simple haplotype prob table
+
+if (!haplotypeMode)
+{
+  # computing genotype likelihoods
+  probs[,nb_gt_ll:=.(nb_hap_ll+nb_hap_ll[sister.hap.pos]), by=.(sample, cell, chrom, from, to)]
+  # deviding the gt likelihoods of symmetric haplotypes by 2
+  probs[haplotype %in% symmetric.haps, nb_gt_ll:=.(nb_gt_ll/2)]
+  # nb_gt_ll sums up to a very low number: double check
+  
+  # traslate haplotype to genotype naming
+  
+}
+
+# dcasting: converting the table from long to wide format based on the haplotypes
 
 # calling SVs (It should be included in Sascha's code)
