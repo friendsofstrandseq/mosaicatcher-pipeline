@@ -252,6 +252,6 @@ simp.probs <- probs[haplo_name!="complex"]
 probs[, nb_hap_pp := nb_hap_pp/sum(nb_hap_pp), by=.(sample, cell, chrom, from, to)]
 probs[, nb_gt_pp := nb_hap_pp/sum(nb_gt_pp), by=.(sample, cell, chrom, from, to)]
 
-# dcasting: converting the table from long to wide format based on the haplotypes
+# dcasting: converting the table from long to wide format based on the haplotype names
 
 # calling SVs (It should be included in Sascha's code)
