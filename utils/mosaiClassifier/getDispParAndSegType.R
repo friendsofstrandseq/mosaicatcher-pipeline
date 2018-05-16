@@ -1,28 +1,38 @@
-#' Compute the dispersion paramters, given a segment type.
-#' 
-#' @param segType A string containing a number of w characters followed by a number of c characters.
-#' @inheritParams getCNprob
+#functions:
+#' This function computes the dispersion parameters for W and C read counts in each segment
+#'
+#' @param prob.tab a table containing all segments with their states in all cells
+#' , combined with all possible haplotypes and the corresponding C and W copy number
+#' @param alpha The fraction of background reads in WW and CC states
 #' @author Maryam Ghareghani
 #' @export
-#' 
 
-dispersionPar = function(segType, r, segLen = binLength, binLength, alpha = 0.05)
+add_dispPar <- function(prob.tab, alpha = 0.05)
 {
-  CNw = stringr::str_count(segType, "w")
-  CNc = stringr::str_count(segType, "c")
+  probs <- prob.tab
+  probs[, disp_w := scalar*nb_r*Wcn*(to-from+1)*(0.5)]
+  probs[, disp_c := scalar*nb_r*Ccn*(to-from+1)*(0.5)]
   
-  disp = rep(r/2,2)*(segLen/binLength)*c(CNw, CNc)
+  # setting both W and C dispersion params for CN0 to alpha
+  cn0_ridx <- which(probs$disp_c==0 & probs$disp_w==0)
+  probs[cn0_ridx, disp_w:=scalar*nb_r*alpha*(to-from+1)]
+  probs[cn0_ridx, disp_c:=scalar*nb_r*alpha*(to-from+1)]
   
-  for (i in which(disp == 0))
-  {
-    disp[i] = r*alpha*(segLen/binLength)
-    # TODO: we can also scale it to the total CN (if CN > 0)
-  }
-  disp
+  # rescaling W and C dispersion params for Wcn=0 cases with the parameter alpha
+  Wcn0_ridx <- which(probs$disp_w==0)
+  probs[Wcn0_ridx, disp_w:=disp_c*alpha*2]
+  probs[Wcn0_ridx, disp_c:=disp_c*(1-alpha)*2]
+  
+  # rescaling W and C dispersion params for Ccn=0 cases with the parameter alpha
+  Ccn0_ridx <- which(probs$disp_c==0)
+  probs[Ccn0_ridx, disp_c:=disp_w*alpha*2]
+  probs[Ccn0_ridx, disp_w:=disp_w*(1-alpha)*2]
+  
+  return(probs)
 }
 
-
-#' Compute the segment type given a cell (majority) type and the segment status and returns a string containing a number of w characters followed by a number of c characters.
+#' Compute the segment type given the segment strand state and the segment status
+#' Returns W and C copy numbers, respectively
 #' 
 #' @param cellType The (majority) type of a cell that can have one these possible values: "ww","cc","wc","cw", or "?".
 #' @param status A \code{vector} of length 4 containing {CN in hap1, inv CN in hap1, CN in hap2, inv CN in hap2} respectively.
@@ -41,7 +51,7 @@ getSegType = function(cellType, status)
   {
     for (i in 1:2)
     {
-      if (substr(cellType, i, i) == "w")
+      if (substr(cellType, i, i) == "W")
         Wstatus = paste0(Wstatus, "10")
       else
         Wstatus = paste0(Wstatus, "01")
@@ -54,8 +64,9 @@ getSegType = function(cellType, status)
       Nc = Nc + as.integer(substr(status, i, i))*(1-as.integer(substr(Wstatus, i, i)))
     }
     
-    segType = paste0(stringr::str_dup("w",Nw),stringr::str_dup("c",Nc))
+    segType = paste0(stringr::str_dup("W",Nw),stringr::str_dup("C",Nc))
   }
   
-  segType
+  #list(segType, Wcn = Nw, Ccn = Nc)
+  c(Nw, Nc)
 }
