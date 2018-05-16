@@ -8,7 +8,7 @@ source("utils/mosaiClassifier/getDispParAndSegType.R")
 
 
 
-getSVProbabilities <- function(counts, info, strand, segs) {
+mosaiClassifierPrepare <- function(counts, info, strand, segs) {
 
   ##############################################################################
   # Check input data
@@ -113,15 +113,21 @@ getSVProbabilities <- function(counts, info, strand, segs) {
   probs[, expected := (to - from +1)*mean, by = .(sample, cell, chrom, from, to)]
 
   message("[MosaiClassifier] Annotating observed W/C counts")
-  probs <- add_seg_counts(probs, counts)
+  probs <- addCountsPerSegment(probs, counts)
   probs[, scalar := 1]
 
+  return(probs)
+}
 
+
+
+mosaiClassifierCalcProbs <- function(d) {
+
+  assert_that(is.data.table(d))
+  @ work here
 
   ##############################################################################
   # Extend table by haplotype states
   #
   @ work
-  
-
-  
+}
