@@ -38,21 +38,23 @@ rule all:
 
 rule simul:
     input:
-        expand("sv_calls/simulation{seed}-{window}/{window}_fixed.{segments}.SV_probs.chr1.pdf",
+        expand("sv_calls/simulation{seed}-{window}/{window}_fixed.{segments}/{method}.{chrom}.pdf",
                 seed   = list(range(7)),
-                window = [50000, 100000],
-                segments = ["few","medium","many"]),
+                window = [50000],
+                segments = ["medium"],
+                method = METHODS,
+                chrom = config["chromosomes"]),
         expand("plots/simulation{seed}-{window}/{window}_fixed.pdf",
                 seed   = list(range(7)),
-                window = [50000, 100000]),
+                window = [50000]),
         expand("evaluation/simulation{seed}_{window}.{segments}.pdf",
                 seed  = list(range(7)),
-                window = [50000, 100000],
-                segments = ["few","medium","many"]),
+                window = [50000],
+                segments = ["medium"]),
         expand("sv_probabilities/simulation{seed}-{window}/{window}_fixed.{segments}/final_plots/heatmapPlots.pdf",
                 seed  = list(range(7)),
-                window = [50000, 100000],
-                segments = ["few","medium","many"])
+                window = [50000],
+                segments = ["medium"])
 
 rule evaluate_simulation:
     input:
@@ -375,7 +377,7 @@ rule plot_heatmap:
         "log/{sample}/final.plots.{windows}.{bpdens}.txt"
     script:
         "utils/plot_heatmap.R"
-        
+
 rule convert_SVprob_output:
     input:
         probs    = "sv_probabilities/{sample}/{windows}.{bpdens}/allSegCellProbs.table",
