@@ -17,21 +17,19 @@ import os.path
 # * plot all single cell libraries in different window sizes
 # * calculate a segmentation into potential SVs using Mosaicatcher
 
+
+METHODS = ["simpleCalls"]
+
 rule all:
     input:
         expand("plots/{sample}/{window}_fixed.pdf", sample = SAMPLE, window = [50000, 100000, 200000, 500000]),
         expand("plots/{sample}/{window}_variable.pdf", sample = SAMPLE, window = [50000, 100000]),
-        expand("segmentation2/{sample}/{window}_fixed.{bpdens}.txt", sample = SAMPLE,
-               window = [50000, 100000, 200000, 500000], bpdens = ["few","medium","many"]),
-        #expand("segmentation2/{sample}/{window}_variable.{bpdens}.chr1.txt", sample = SAMPLE,
-        #       window = [50000, 100000], bpdens = ["few","medium","many"]),
-        expand("strand_states/{sample}/final.txt", sample = SAMPLE),
-        expand("sv_calls/{sample}/{window}_fixed.{bpdens}.SV_probs.{chrom}.pdf", sample = SAMPLE, chrom = config['chromosomes'],
-               window = [50000, 100000, 200000, 500000], bpdens = ["few","medium","many"]),
-        #expand("sv_calls/{sample}/{window}_variable.{bpdens}.SV_probs.chr1.pdf", sample = SAMPLE,
-        #       window = [50000, 100000], bpdens = ["few","medium","many"]),
-        expand("segmentation/{sample}/{window}_fixed/{chrom}.pdf", sample = SAMPLE,
-                window = [50000, 100000], chrom = config['chromosomes'][0])    # Specifically run this only for one chrom because it is super slow
+        expand("sv_calls/{sample}/{window}_fixed.{bpdens}/{method}.{chrom}.pdf",
+               sample = SAMPLE,
+               chrom = config["chromosomes"],
+               window = [100000],
+               bpdens = ["few","medium","many"],
+               method = METHODS)
 
 
 ################################################################################
@@ -189,16 +187,12 @@ rule plot_mosaic_counts:
 rule plot_SV_calls:
     input:
         counts = "counts/{sample}/{windows}.txt.gz",
-        probs  = "sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.txt"
+        calls  = "sv_calls/{sample}/{windows}.{bpdens}/{method}.txt"
     output:
-        expand("sv_calls/{{sample}}/{{windows}}.{{bpdens}}.SV_probs.{chrom}.pdf", chrom = config['chromosomes'] )
-    log:
-        "log/{sample}/plot_SV_call.{windows}.{bpdens}.txt"
-    params:
-        plot_command = "Rscript " + config["sv_plot_script"]
+        "sv_calls/{sample}/{windows}.{bpdens}/{method}.{chrom}.pdf"
     shell:
         """
-        {params.plot_command} {input.counts} {input.probs} sv_calls/{wildcards.sample}/{wildcards.windows}.{wildcards.bpdens}.SV_probs > {log} 2>&1
+        Rscript utils/chrom.R calls={input.calls} {input.counts} {wildcards.chrom} {output}
         """
 
 
@@ -302,21 +296,6 @@ rule segmentation:
         {params.mc_command} segment \
         -o {output} \
         {input} > {log} 2>&1
-        """
-
-rule plot_segmentation:
-    input:
-        counts = "counts/{sample}/{file_name}.txt.gz",
-        segments = "segmentation/{sample}/{file_name}.txt"
-    output:
-        "segmentation/{sample}/{file_name}/{chrom}.pdf"
-    log:
-        "log/{sample}/plot_segmentation.{file_name}.{chrom}.txt"
-    params:
-        command = config["plot_segments"]
-    shell:
-        """
-        Rscript {params.command} {input.counts} {input.segments} {wildcards.chrom} {output} > {log} 2>&1
         """
 
 
@@ -423,6 +402,31 @@ rule convert_SVprob_output:
 #     script:
 #         "utils/sv_classifier.R"
 
+
+################################################################################
+# New SV classification based on a combination of Sascha's and Maryam's method #
+################################################################################
+
+rule mosaiClassifier_make_call:
+    input:
+        "sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.Rdata"
+    output:
+        "sv_calls/{sample}/{windows}.{bpdens}/simpleCalls.txt"
+    shell:
+        """
+        Rscript utils/mosaiClassifier.makeCall.R {input} {output}
+        """
+
+rule mosaiClassifier_calc_probs:
+    input:
+        counts = "counts/{sample}/{windows}.txt.gz",
+        info   = "counts/{sample}/{windows}.info",
+        states = "strand_states/{sample}/final.txt",
+        bp     = "segmentation2/{sample}/{windows}.{bpdens}.txt"
+    output:
+        output = "sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.Rdata"
+    script:
+        "utils/mosaiClassifier.main.R"
 
 
 ################################################################################
