@@ -75,10 +75,33 @@ getSVProbabilities <- function(counts, info, strand, segs) {
   info <- merge(info,
                 counts[, .(mean = mean((w+c)[class != "None"], trim = 0.05)),
                        by = .(sample, cell)],
-                by = c("sample","cell"))
+                by = c("sample","cell")) %>% suppressWarnings
 
 
+  ##############################################################################
+  # Expand table to (all cells) x (all segments)
+  #
+  # add a "from" column which contians the "to" breakpoint from the prev. segment each
+  segs[, from := shift(bps,fill = 0) + 1, by = chrom]
+
+  # rename the "bps" column to "to"
+  segs[, `:=`(to = bps, bps = NULL, k = NULL)]
+
+  # Add coordinates
+  addPositions(segs, counts)
+
+  # Expand the table to (cells) x (segments) and annotate with NB params
+  # --> take each row in "segs" and cbind it to a whole "info" table
+  message("[SV classifier] Preparing large table [segments + cells x features]")
+  probs <- segs[,
+                cbind(.SD, info[,.(sample, cell, nb_p, mean)]),
+                by = .(chrom,from)]
 
 
+  ##############################################################################
+  # Annotate each segment and cell with the strand state
+  #
+  message("[SV classifier] Annotating strand-state (slow)")
+  addStrandStates(probs, strand)
 
 
