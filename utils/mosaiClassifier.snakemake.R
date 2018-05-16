@@ -17,7 +17,7 @@ strand = fread(snakemake@input[["states"]])
 segs   = fread(snakemake@input[["bp"]])
 
 
-d = getSVProbabilities(counts, info, strand, )
+d = getSVProbabilities(counts, info, strand, segs)
 saveRDS(d, file = snakemake@output[[1]])
 
 
