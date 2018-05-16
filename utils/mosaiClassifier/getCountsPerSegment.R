@@ -2,7 +2,7 @@ library(data.table)
 library(assertthat)
 
 
-# add_seg_counts
+# addCountsPerSegment
 # Given segments + a large count table, calculate W/C counts per segment and cell.
 #
 # df = table with segments / cells.
@@ -11,7 +11,12 @@ library(assertthat)
 # returns an updated df
 #
 # Internally, create a [bins x cells] matrix to access cumulative counts quickly
-add_seg_counts <- function(df, count_tab) {
+#
+# Todo:
+# A maybe faster way of doing it would be a more vectorized / data.table conform
+# way. This would be a nice step for later
+#
+addCountsPerSegment <- function(df, count_tab) {
   
     assert_that(is.data.table(df))
     assert_that("sample" %in% colnames(df),
