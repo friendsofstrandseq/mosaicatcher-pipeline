@@ -64,7 +64,7 @@ getSVProbabilities <- function(counts, info, strand, segs) {
   ##############################################################################
   # Estimation mean read count per bin for dispersion parameters
   #
-  message("[SV classifier] Problem size: ",
+  message("[MosaiClassifier] Problem size: ",
           nrow(info),
           " cells x ",
           nrow(segs),
@@ -72,10 +72,11 @@ getSVProbabilities <- function(counts, info, strand, segs) {
 
   # Get trimmed mean of counts per bin to estimate the r parameter
   # When calculating this, ignore the "None" bins
-  info <- merge(info,
+  info <- suppressWarnings(
+          merge(info,
                 counts[, .(mean = mean((w+c)[class != "None"], trim = 0.05)),
                        by = .(sample, cell)],
-                by = c("sample","cell")) %>% suppressWarnings
+                by = c("sample","cell")) )
 
 
   ##############################################################################
@@ -92,7 +93,6 @@ getSVProbabilities <- function(counts, info, strand, segs) {
 
   # Expand the table to (cells) x (segments) and annotate with NB params
   # --> take each row in "segs" and cbind it to a whole "info" table
-  message("[SV classifier] Preparing large table [segments + cells x features]")
   probs <- segs[,
                 cbind(.SD, info[,.(sample, cell, nb_p, mean)]),
                 by = .(chrom,from)]
@@ -101,7 +101,27 @@ getSVProbabilities <- function(counts, info, strand, segs) {
   ##############################################################################
   # Annotate each segment and cell with the strand state
   #
-  message("[SV classifier] Annotating strand-state (slow)")
-  addStrandStates(probs, strand)
+  message("[MosaiClassifier] Annotating strand-state")
+  probs = addStrandStates(probs, strand)
 
 
+
+  ##############################################################################
+  # Annotate the observed and expected counts in each segment / cell
+  #
+  message("[MosaiClassifier] Annotating expected coverage")
+  probs[, expected := (to - from +1)*mean, by = .(sample, cell, chrom, from, to)]
+
+  message("[MosaiClassifier] Annotating observed W/C counts")
+  probs <- add_seg_counts(probs, counts)
+  probs[, scalar := 1]
+
+
+
+  ##############################################################################
+  # Extend table by haplotype states
+  #
+  @ work
+  
+
+  
