@@ -23,7 +23,6 @@ METHODS = ["simpleCalls"]
 rule all:
     input:
         expand("plots/{sample}/{window}_fixed.pdf", sample = SAMPLE, window = [50000, 100000, 200000, 500000]),
-        expand("plots/{sample}/{window}_variable.pdf", sample = SAMPLE, window = [50000, 100000]),
         expand("sv_calls/{sample}/{window}_fixed.{bpdens}/{method}.{chrom}.pdf",
                sample = SAMPLE,
                chrom = config["chromosomes"],
@@ -46,24 +45,7 @@ rule simul:
                 chrom = config["chromosomes"]),
         expand("plots/simulation{seed}-{window}/{window}_fixed.pdf",
                 seed   = list(range(7)),
-                window = [50000]),
-        expand("evaluation/simulation{seed}_{window}.{segments}.pdf",
-                seed  = list(range(7)),
-                window = [50000],
-                segments = ["medium"]),
-        expand("sv_probabilities/simulation{seed}-{window}/{window}_fixed.{segments}/final_plots/heatmapPlots.pdf",
-                seed  = list(range(7)),
-                window = [50000],
-                segments = ["medium"])
-
-rule evaluate_simulation:
-    input:
-        prob = "sv_probabilities/simulation{seed}-{window}/{window}_fixed.{bpdens}/probabilities.txt",
-        simul = "simulation/variants/genome{seed}-{window}.txt"
-    output:
-        "evaluation/simulation{seed}_{window}.{bpdens}.pdf"
-    script:
-        "utils/evaluate_simulation.R"
+                window = [50000])
 
 rule simulate_genome:
     output:
@@ -254,32 +236,6 @@ rule mosaic_count_fixed:
         """
 
 
-rule mosaic_count_variable:
-    input:
-        bam = lambda wc: expand("bam/" + wc.sample + "/{bam}.bam", bam = BAM_PER_SAMPLE[wc.sample]),
-        bai = lambda wc: expand("bam/" + wc.sample + "/{bam}.bam.bai", bam = BAM_PER_SAMPLE[wc.sample]),
-        bed = lambda wc: config["variable_bins"][str(wc.window)],
-        excl = "log/exclude_file"
-    output:
-        counts = "counts/{sample}/{window}_variable.txt.gz",
-        info   = "counts/{sample}/{window}_variable.info"
-    log:
-        "log/{sample}/mosaic_count_variable.{window}.txt"
-    params:
-        mc_command = config["mosaicatcher"]
-    shell:
-        """
-        echo "NOTE: Exclude file not used in variable-width bins"
-        {params.mc_command} count \
-            --verbose \
-            -o {output.counts} \
-            -i {output.info} \
-            -b {input.bed} \
-            {input.bam} \
-        > {log} 2>&1
-        """
-
-
 ################################################################################
 # Segmentation                                                                 #
 ################################################################################
@@ -320,47 +276,6 @@ rule prepare_segments:
 # SV classification                                                            #
 ################################################################################
 
-rule install_MaRyam:
-    output:
-        "utils/R-packages2/MaRyam/R/MaRyam"
-    log:
-        "log/install_MaRyam.log"
-    shell:
-        """
-        TAR=$(which tar) Rscript utils/install_maryam.R > {log} 2>&1
-        """
-
-rule run_sv_classification:
-    input:
-        maryam = "utils/R-packages2/MaRyam/R/MaRyam",
-        counts = "counts/{sample}/{windows}.txt.gz",
-        info   = "counts/{sample}/{windows}.info",
-        states = "strand_states/{sample}/final.txt",
-        bp     = "segmentation2/{sample}/{windows}.{bpdens}.txt"
-    output:
-        outdir = "sv_probabilities/{sample}/{windows}.{bpdens}/",
-        out1   = "sv_probabilities/{sample}/{windows}.{bpdens}/allSegCellProbs.table",
-        out2   = "sv_probabilities/{sample}/{windows}.{bpdens}/allSegCellGTprobs.table",
-        bamNames = "sv_probabilities/{sample}/{windows}.{bpdens}/bamNames.txt"
-    log:
-        "log/{sample}/run_sv_classification.{windows}.{bpdens}.txt"
-    params:
-        windowsize    = lambda wc: wc.windows.split("_")[0]
-    shell:
-        """
-        set -x
-        # set haplotypeInfo if phasing info is available
-        Rscript utils/MaRyam_pipeline.R \
-                binRCfile={input.counts} \
-                BRfile={input.bp} \
-                infoFile={input.info} \
-                stateFile={input.states} \
-                outputDir={output.outdir} \
-                bin.size={params.windowsize} \
-                K=22 \
-                maximumCN=4 \
-                utils/R-packages2/ > {log} 2>&1
-        """
 
 rule plot_heatmap:
     input:
@@ -377,32 +292,6 @@ rule plot_heatmap:
         "log/{sample}/final.plots.{windows}.{bpdens}.txt"
     script:
         "utils/plot_heatmap.R"
-
-rule convert_SVprob_output:
-    input:
-        probs    = "sv_probabilities/{sample}/{windows}.{bpdens}/allSegCellProbs.table",
-        info     = "counts/{sample}/{windows}.info",
-        bamNames = "sv_probabilities/{sample}/{windows}.{bpdens}/bamNames.txt"
-    output:
-        "sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.txt"
-    params:
-        sample_name = lambda wc: wc.sample
-    log:
-        "log/{sample}/convert_SVprob_output.{windows}.{bpdens}.txt"
-    script:
-        "utils/helper.convert_svprob_output.R"
-
-
-# rule run_sv_classification_new:
-#     input:
-#         counts = "counts/{sample}/{windows}.txt.gz",
-#         info   = "counts/{sample}/{windows}.info",
-#         states = "strand_states/{sample}/final.txt",
-#         bp     = "segmentation2/{sample}/{windows}.{bpdens}.txt"
-#     output:
-#         "sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.txt"
-#     script:
-#         "utils/sv_classifier.R"
 
 
 ################################################################################
