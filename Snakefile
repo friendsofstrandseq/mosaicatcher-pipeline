@@ -317,7 +317,7 @@ rule mosaiClassifier_calc_probs:
     output:
         output = "sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.Rdata"
     script:
-        "utils/mosaiClassifier.main.R"
+        "utils/mosaiClassifier.snakemake.R"
 
 
 ################################################################################
