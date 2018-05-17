@@ -1,63 +1,44 @@
-sink(snakemake@log[[1]])
 library(data.table)
 library(assertthat)
+source("utils/mosaiClassifier/mosaiClassifier.R")
 
-f_maryam = snakemake@input[["probs"]]
-f_maryam
-f_info   = snakemake@input[["info"]]
-f_info
-sample   = snakemake@params[["sample_name"]]
-sample
-f_bamNames = snakemake@input[["bamNames"]]
-f_bamNames
+# delete: probs = readRDS("sv_probabilities/simulation1-50000/50000_fixed.medium/probabilities.Rdata")
 
-d = fread(f_maryam, header = T)
-print("Maryam's data:")
-d
-f = fread(f_info)
-print("Info data:")
-f
-b = fread(f_bamNames)
-b = b[order(cell_id),]
-print("bamNames data:")
-b
+makeSVCallSimple <- function(probs, llr_thr = 1) {
 
-# Map cell number to cell name
-assert_that(max(d$cells) <= nrow(f))
-assert_that(max(d$cells) <= max(b$cell_id))
-assert_that(all(1:nrow(b) == b$cell_id))    # Make sure that bamNames are sorted and exactly match numbers 1...n 
+  # Do post-processing incl. priors + normalization + regularization
+  probs = mosaiClassifierPostProcessing(probs)
+  setkey(probs, chrom, start, end, sample, cell)
 
-d$cell = b[d$cells,]$cell_name
-d$sample = sample
-d
+  # annotate the ref_hom posterior probability per segment / cell
+  probs[,
+        ref_hom_pp := .SD[haplo_name == "ref_hom", nb_hap_pp],
+        by = .(chrom, start, end, sample, cell)]
 
-# Get log likelihood ratio of major SV classes
-d <- d[, .(chrom = chr,
-           start = format(start, scientific=F),
-           end   = format(end, scientific=F),
-           sample, 
-           cell, 
-           type = toupper(types),
-           p_del_hom = log(`0000`) - log(`1010`), 
-           p_del_h1  = log(`0010`) - log(`1010`), 
-           p_del_h2  = log(`1000`) - log(`1010`),
-           p_inv_hom = log(`0101`) - log(`1010`), 
-           p_inv_h1  = log(`0110`) - log(`1010`), 
-           p_inv_h2  = log(`1001`) - log(`1010`),
-           p_dup_hom = log(`2020`) - log(`1010`), 
-           p_dup_h1  = log(`2010`) - log(`1010`), 
-           p_dup_h2  = log(`1020`) - log(`1010`)) ]
+  # order the different haplotype states based on their posterior prob. (nb_hap_pp)
+  # and keep only the two most likely states
+  probs[, rank := NULL]
+  probs[,
+        rank := frank(-nb_hap_pp, ties.method = "first"), 
+        by = .(chrom, start, end, sample, cell)]
+  probs <- probs[rank <= 2]
+  # Sort by rank within each group
+  setkey(probs, chrom, start, end, sample, cell, rank)
+
+  # select first and 2nd SV call
+  probs[, `:=`(sv_call_name          = haplo_name[rank==1],
+               sv_call_haplotype     = haplotype[rank==1],
+               sv_call_name_2nd      = haplo_name[rank==2],
+               sv_call_haplotype_2nd = haplotype[rank==2],
+               llr_to_ref            = log(nb_hap_pp[rank==1]) - log(ref_hom_pp[rank==1]),
+               llr_to_2nd            = log(nb_hap_pp[rank==1]) - log(nb_hap_pp[rank==2]))]
+  probs <- probs[rank == 1]
 
 
-# keep only entries with an SV call
-# log likelihood ratio >= 1
-LLR = 1
-e = melt(d, 
-         id.vars = c("chrom","start","end","sample","cell"), 
-         measure.vars = c("p_del_h1", "p_del_h2", "p_inv_hom", "p_inv_h1", "p_inv_h2", "p_dup_hom", "p_dup_h1", "p_dup_h2"),
-         variable.name = "SV_class",
-         value.name    = "loglikratio",
-         variable.factor = F)
-e = e[loglikratio>= LLR, .SD[order(loglikratio, decreasing = T)][1,], by = .(chrom, start, end, sample, cell)]
-e[, SV_class := substr(SV_class,3,nchar(SV_class))]
-write.table(e, file = snakemake@output[[1]], quote=F, col.names = T, row.names = F, sep = "\t")
+  # Clean up table
+  probs <- probs[, .(chrom, start, end, sample, cell, class, sv_call_name, sv_call_haplotype, sv_call_name_2nd, sv_call_haplotype_2nd, llr_to_ref, llr_to_2nd)]
+
+  return(probs[sv_call_name != "ref_hom" & llr_to_ref > llr_thr])
+}
+
+

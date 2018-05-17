@@ -241,8 +241,8 @@ mosaiClassifierPostProcessing <- function(probs, haplotypeMode=F, regularization
 
   # testing if there are some segments with zero probability for all haplotypes
   segs_max_hap_nb_probs <- probs[,
-                                 .(sample, chrom, cell, start, end, max_nb_hap_ll=rep(max(nb_hap_ll), .N)),
-                                 by=.(sample, chrom, cell, start, end)]
+                                 .(sample, cell, chrom, start, end, max_nb_hap_ll=rep(max(nb_hap_ll), .N)),
+                                 by=.(sample, cell, chrom, start, end)]
   message(paste("the number of segments with 0 prob for all haplotypes = ", 
                 segs_max_hap_nb_probs[max_nb_hap_ll==0, .N]))
 
