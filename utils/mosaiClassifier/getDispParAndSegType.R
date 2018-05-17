@@ -9,6 +9,7 @@
 
 add_dispPar <- function(prob.tab, alpha = 0.05)
 {
+  # set the dispersion parameters
   probs <- prob.tab
   probs[, disp_w := scalar*nb_r*Wcn*(to-from+1)*(0.5)]
   probs[, disp_c := scalar*nb_r*Ccn*(to-from+1)*(0.5)]
@@ -20,13 +21,13 @@ add_dispPar <- function(prob.tab, alpha = 0.05)
   
   # rescaling W and C dispersion params for Wcn=0 cases with the parameter alpha
   Wcn0_ridx <- which(probs$disp_w==0)
-  probs[Wcn0_ridx, disp_w:=disp_c*alpha*(Wcn+Ccn)]
-  probs[Wcn0_ridx, disp_c:=disp_c*(1-alpha)*(Wcn+Ccn)]
+  probs[Wcn0_ridx, disp_w:=disp_c*alpha]
+  probs[Wcn0_ridx, disp_c:=disp_c*(1-alpha)]
   
   # rescaling W and C dispersion params for Ccn=0 cases with the parameter alpha
   Ccn0_ridx <- which(probs$disp_c==0)
-  probs[Ccn0_ridx, disp_c:=disp_w*alpha*(Wcn+Ccn)]
-  probs[Ccn0_ridx, disp_w:=disp_w*(1-alpha)*(Wcn+Ccn)]
+  probs[Ccn0_ridx, disp_c:=disp_w*alpha]
+  probs[Ccn0_ridx, disp_w:=disp_w*(1-alpha)]
   
   return(probs)
 }
