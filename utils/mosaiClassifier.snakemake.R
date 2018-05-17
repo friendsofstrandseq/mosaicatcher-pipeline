@@ -1,6 +1,5 @@
 library(data.table)
 library(assertthat)
-library(pheatmap)
 source("utils/mosaiClassifier/mosaiClassifier.R")
 
 
