@@ -8,16 +8,6 @@ source("utils/mosaiClassifier/getDispParAndSegType.R")
 source("utils/mosaiClassifier/haploAndGenoName.R")
 
 
-dir <- "/home/maryam/research/hackathons/troubleshooting/simulatedData/simulation5-100000/"
-binRCfile <- paste0(dir, "100000_fixed.txt.gz")
-BRfile <- paste0(dir, "100000_fixed.few.txt")
-infoFile <- paste0(dir, "100000_fixed.info")
-stateFile <- paste0(dir, "final.txt")
-counts <- fread(paste("zcat", binRCfile))
-info <- fread(infoFile)
-strand <- fread(stateFile)
-segs <- fread(BRfile)
-
 mosaiClassifierPrepare <- function(counts, info, strand, segs) {
 
   ##############################################################################
@@ -124,6 +114,12 @@ mosaiClassifierPrepare <- function(counts, info, strand, segs) {
   probs <- addCountsPerSegment(probs, counts)
   probs[, scalar := 1]
 
+
+  # Clean up table
+  probs[, `:=`(from = NULL,
+               to   = NULL,
+               mean = NULL)]
+
   return(probs)
 }
 
@@ -131,8 +127,22 @@ mosaiClassifierPrepare <- function(counts, info, strand, segs) {
 
 mosaiClassifierCalcProbs <- function(probs, maximumCN=4, haplotypeMode=F, alpha=0.05) {
 
-  assert_that(is.data.table(probs))
-  # check the colnames
+  assert_that(is.data.table(probs),
+              "sample" %in% colnames(probs),
+              "cell"   %in% colnames(probs),
+              "chrom"  %in% colnames(probs),
+              "start"  %in% colnames(probs),
+              "end"    %in% colnames(probs),
+              "nb_p"   %in% colnames(probs),
+              "expected"     %in% colnames(probs),
+              "scalar" %in% colnames(probs),
+              "W"      %in% colnames(probs),
+              "C"      %in% colnames(probs),
+              !("haplotype"  %in% colnames(probs)),
+              !("haplo_name" %in% colnames(probs)),
+              !("nb_hap_ll"  %in% colnames(probs)))
+
+
   # defining the vector of all possible haplotypes
   hapStatus <- NULL
   for (j in 0:maximumCN){
@@ -141,109 +151,131 @@ mosaiClassifierCalcProbs <- function(probs, maximumCN=4, haplotypeMode=F, alpha=
   for (j in 1:length(hapStatus)){
     hapStatus[j] <- paste(decodeStatus(hapStatus[j]), collapse = '')
   }
-  
+
   # creating a datatable containing all possible combinations of strand states and haplotypes,
   # and setting their segTypes
   hapStrandStates <- data.table()
   for (st in c("CC","WW","WC","CW")){
     hapStrandStates <- rbind(hapStrandStates, 
                              data.table(class=st, haplotype=hapStatus, 
-                             segtype=t(sapply(hapStatus, function(x) getSegType(st, x)))))
+                                        segtype=t(sapply(hapStatus, function(x) getSegType(st, x)))))
   }
   # naming third and forth columns
   colnames(hapStrandStates)[3:4]=c("Wcn", "Ccn")
+
+  # Add SCE states where all possibilities are equal (by setting Wcn and Ccn to 0):
+  hapStrandStates = rbind(hapStrandStates,
+                          data.table(class = "?",
+                                     haplotype = hapStatus,
+                                     Wcn   = 1,
+                                     Ccn   = 1))
+
+  # Make sure that all states listed in probs are one of "WW","WC","CW","CC", or "?"
+  assert_that(all(unique(probs$class) %in% c("WW","WC","CW","CC","?"))) %>% invisible
+
   # adding haplotype and genotype name columns
   hapStrandStates[,haplo_name:=.(sapply(haplotype, get_hap_name))]
   hapStrandStates[,geno_name:=.(sapply(haplo_name, haplo_to_geno_name))]
+
   # sort based on state
   setkey(hapStrandStates, class)
-  
+
   ##### mering probs and haplotype strand states
-  # kick out the segs with sces
-  probs <- probs[class!="?"]
-  
+  message("[MosaiClassifier] Expand table by ",
+          length(hapStatus),
+          " possible haplotype states")
   probs <- merge(probs, 
-                hapStrandStates,
-                by = "class",
-                allow.cartesian = T)
+                 hapStrandStates,
+                 by = "class",
+                 allow.cartesian = T)
+
   ###########
-  # compute dispersion parameter (nb_r) column
-  probs[, nb_r:=.(nb_p*mean/(1-nb_p))]
   # reshuffling the columns
-  probs <- probs[,.(sample, cell, chrom, start, end, from, to, nb_p, nb_r, mean, class, expected,
-           W, C, scalar, haplotype, Wcn, Ccn, haplo_name, geno_name)]
-  
-  # computing dispersion parameters seperately for each segment and W and C counts
+  probs <- probs[,.(sample, cell, chrom, start, end, start, end, class, nb_p, expected,
+                    W, C, scalar, haplotype, Wcn, Ccn, haplo_name, geno_name)]
+
+  # computing dispersion parameters seperately for each segment and W and C counts ("Wcn" and "Ccn")
+  message("[MosaiClassifier] Calculate dispersion parameters")
+
   probs <- add_dispPar(probs, alpha)
-  
+
   # compute NB haplotype likelihoods
+  message("[MosaiClassifier] Calculate NB likelihoods")
   probs[, nb_hap_ll := dnbinom(W, size = disp_w, prob = nb_p)
-        *dnbinom(C, size = disp_c, prob = nb_p)]
-  
+        * dnbinom(C, size = disp_c, prob = nb_p)]
+
   # computing sister haplotype (haplotype with the same genotype) for each haplotype
   sister.haps <- sapply(hapStatus, sisterHaplotype)
   sister.hap.pos <- match(sister.haps, hapStatus)
   # compute the set of symmetric haplotypes (haplotypes that are equal to their sister haplotype)
   symmetric.haps <- hapStatus[which(sister.haps==hapStatus)]
-  
+
   # averaging the nb probs of sister haplotypes, when haplotype specific strand states are not known
   # adding genotype likelihoods, if haplotype mode is false
-  if (!haplotypeMode)
-  {
+  if (!haplotypeMode) {
+    message("[MosaiClassifier] Haplotype-unaware mode. H1 and H2 events are averaged.")
     probs[,nb_hap_ll:=.((nb_hap_ll+nb_hap_ll[sister.hap.pos])/2), by=.(sample, cell, chrom, from, to)]
   }
+
   # computing genotype likelihoods
   probs[,nb_gt_ll:=.(nb_hap_ll+nb_hap_ll[sister.hap.pos]), by=.(sample, cell, chrom, from, to)]
   # deviding the gt likelihoods of symmetric haplotypes by 2
   probs[haplotype %in% symmetric.haps, nb_gt_ll:=.(nb_gt_ll/2)]
-  
-  # TODO export the prob table to some output file
-  
+
+
+  # Clean up table:
+  probs[, `:=`(Wcn = NULL,
+               Ccn = NULL,
+               disp_w = NULL,
+               disp_c = NULL)]
   return(probs)
 }
+
+
+
 
 mosaiClassifierPostProcessing <- function(probs, haplotypeMode=F, regularizationFactor=1e-10)
 {
   assert_that(is.data.table(probs))
   # check the colnames
-  
+
   # testing if there are some segments with zero probability for all haplotypes
   segs_max_hap_nb_probs <- probs[,
                                  .(sample, chrom, cell, from, to, max_nb_hap_ll=rep(max(nb_hap_ll), .N)), 
                                  by=.(sample, chrom, cell, from, to)]
   message(paste("the number of segments with 0 prob for all haplotypes = ", 
                 segs_max_hap_nb_probs[max_nb_hap_ll==0, .N]))
-  
+
   # add prior probs to the table
   probs[,prior:=100L]
   probs[haplo_name=="ref_hom",prior:=200L]
   probs[haplo_name=="complex",prior:=1L]
-  
+
   # compute the posteriori probs (add new columns)
   probs[,nb_hap_pp:=.(nb_hap_ll*prior)][,nb_gt_pp:=.(nb_gt_ll*prior)]
-  
+
   # set a uniform prob on sce segs and the segs_max_hap_nb_probs=0
   probs[segs_max_hap_nb_probs$max_nb_hap_ll==0,nb_hap_pp:=1L]
   probs[class=="?", nb_hap_pp:=1L]
   probs[segs_max_hap_nb_probs$max_nb_hap_ll==0,nb_gt_pp:=1L]
   probs[class=="?", nb_gt_pp:=1L]
-  
+
   # normalizing nb_hap_pp and nb_gt_pp to 1 per sample, cell, and segment
   probs[, nb_hap_pp := nb_hap_pp/sum(nb_hap_pp), by=.(sample, cell, chrom, from, to)]
   probs[, nb_gt_pp := nb_gt_pp/sum(nb_gt_pp), by=.(sample, cell, chrom, from, to)]
-  
+
   # regularizing nb_hap_ll to set the min possible likelihood to a constant small number
   probs[,nb_hap_pp:=.((regularizationFactor/length(hapStatus))+nb_hap_pp*(1-regularizationFactor))]
   probs[,nb_gt_pp:=.((regularizationFactor/length(hapStatus))+nb_gt_pp*(1-regularizationFactor))]
-  
+
   # converting to simple haplotype prob table
   simp.probs <- probs[haplo_name!="complex"]
-  
+
   # normalizing hap and gt probs in simp.probs
   probs[, nb_hap_pp := nb_hap_pp/sum(nb_hap_pp), by=.(sample, cell, chrom, from, to)]
   probs[, nb_gt_pp := nb_hap_pp/sum(nb_gt_pp), by=.(sample, cell, chrom, from, to)]
-  
+
   # dcasting: converting the table from long to wide format based on the haplotype names
-  
+
   # calling SVs (It should be included in Sascha's code)
 }
