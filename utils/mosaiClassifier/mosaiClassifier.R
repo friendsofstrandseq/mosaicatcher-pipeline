@@ -270,14 +270,5 @@ mosaiClassifierPostProcessing <- function(probs, haplotypeMode=F, regularization
   probs[,nb_hap_pp:=.((regularizationFactor/numHaps)+nb_hap_pp*(1-regularizationFactor))]
   probs[,nb_gt_pp:=.((regularizationFactor/numHaps)+nb_gt_pp*(1-regularizationFactor))]
 
-  # converting to simple haplotype prob table
-  simp.probs <- probs[haplo_name!="complex"]
-
-  # normalizing hap and gt probs in simp.probs
-  probs[, nb_hap_pp := nb_hap_pp/sum(nb_hap_pp), by=.(sample, cell, chrom, start, end)]
-  probs[, nb_gt_pp := nb_hap_pp/sum(nb_gt_pp), by=.(sample, cell, chrom, start, end)]
-
-  # dcasting: converting the table from long to wide format based on the haplotype names
-
-  # calling SVs (It should be included in Sascha's code)
+  return(probs)
 }
