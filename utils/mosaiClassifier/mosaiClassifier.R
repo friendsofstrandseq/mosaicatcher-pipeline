@@ -135,23 +135,20 @@ mosaiClassifierCalcProbs <- function(probs, maximumCN=4, haplotypeMode=F, alpha=
   # check the colnames
   # defining the vector of all possible haplotypes
   hapStatus <- NULL
-  for (j in 0:maximumCN)
-  {
+  for (j in 0:maximumCN){
     hapStatus <- c(hapStatus, allStatus(3,j))
   }
-  for (j in 1:length(hapStatus))
-  {
+  for (j in 1:length(hapStatus)){
     hapStatus[j] <- paste(decodeStatus(hapStatus[j]), collapse = '')
   }
   
   # creating a datatable containing all possible combinations of strand states and haplotypes,
   # and setting their segTypes
   hapStrandStates <- data.table()
-  for (st in c("CC","WW","WC","CW"))
-  {
-    hapStrandStates <- rbindlist(list(hapStrandStates, 
-                                      data.table(class=st, haplotype=hapStatus, 
-                                                 segtype=t(sapply(hapStatus, function(x) getSegType(st, x))))))
+  for (st in c("CC","WW","WC","CW")){
+    hapStrandStates <- rbind(hapStrandStates, 
+                             data.table(class=st, haplotype=hapStatus, 
+                             segtype=t(sapply(hapStatus, function(x) getSegType(st, x)))))
   }
   # naming third and forth columns
   colnames(hapStrandStates)[3:4]=c("Wcn", "Ccn")
@@ -194,12 +191,11 @@ mosaiClassifierCalcProbs <- function(probs, maximumCN=4, haplotypeMode=F, alpha=
   if (!haplotypeMode)
   {
     probs[,nb_hap_ll:=.((nb_hap_ll+nb_hap_ll[sister.hap.pos])/2), by=.(sample, cell, chrom, from, to)]
-    
-    # computing genotype likelihoods
-    probs[,nb_gt_ll:=.(nb_hap_ll+nb_hap_ll[sister.hap.pos]), by=.(sample, cell, chrom, from, to)]
-    # deviding the gt likelihoods of symmetric haplotypes by 2
-    probs[haplotype %in% symmetric.haps, nb_gt_ll:=.(nb_gt_ll/2)]
   }
+  # computing genotype likelihoods
+  probs[,nb_gt_ll:=.(nb_hap_ll+nb_hap_ll[sister.hap.pos]), by=.(sample, cell, chrom, from, to)]
+  # deviding the gt likelihoods of symmetric haplotypes by 2
+  probs[haplotype %in% symmetric.haps, nb_gt_ll:=.(nb_gt_ll/2)]
   
   # TODO export the prob table to some output file
   
@@ -229,6 +225,8 @@ mosaiClassifierPostProcessing <- function(probs, haplotypeMode=F, regularization
   # set a uniform prob on sce segs and the segs_max_hap_nb_probs=0
   probs[segs_max_hap_nb_probs$max_nb_hap_ll==0,nb_hap_pp:=1L]
   probs[class=="?", nb_hap_pp:=1L]
+  probs[segs_max_hap_nb_probs$max_nb_hap_ll==0,nb_gt_pp:=1L]
+  probs[class=="?", nb_gt_pp:=1L]
   
   # normalizing nb_hap_pp and nb_gt_pp to 1 per sample, cell, and segment
   probs[, nb_hap_pp := nb_hap_pp/sum(nb_hap_pp), by=.(sample, cell, chrom, from, to)]
