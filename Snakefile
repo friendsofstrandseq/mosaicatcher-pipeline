@@ -40,7 +40,7 @@ rule simul:
         expand("sv_calls/simulation{seed}-{window}/{window}_fixed.{segments}/{method}.{chrom}.pdf",
                 seed   = list(range(7)),
                 window = [50000],
-                segments = ["medium"],
+                segments = ["few","medium"],
                 method = METHODS,
                 chrom = config["chromosomes"]),
         expand("plots/simulation{seed}-{window}/{window}_fixed.pdf",
@@ -303,7 +303,7 @@ rule mosaiClassifier_make_call:
         "sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.Rdata"
     output:
         "sv_calls/{sample}/{windows}.{bpdens}/simpleCalls.txt"
-    shell:
+    script:
         "utils/mosaiClassifier_call.snakemake.R"
 
 rule mosaiClassifier_calc_probs:
