@@ -214,11 +214,11 @@ mosaiClassifierCalcProbs <- function(probs, maximumCN=4, haplotypeMode=F, alpha=
   # adding genotype likelihoods, if haplotype mode is false
   if (!haplotypeMode) {
     message("[MosaiClassifier] Haplotype-unaware mode. H1 and H2 events are averaged.")
-    probs[,nb_hap_ll:=.((nb_hap_ll+nb_hap_ll[sister.hap.pos])/2), by=.(sample, cell, chrom, from, to)]
+    probs[,nb_hap_ll:=.((nb_hap_ll+nb_hap_ll[sister.hap.pos])/2), by=.(sample, cell, chrom, start, end)]
   }
 
   # computing genotype likelihoods
-  probs[,nb_gt_ll:=.(nb_hap_ll+nb_hap_ll[sister.hap.pos]), by=.(sample, cell, chrom, from, to)]
+  probs[,nb_gt_ll:=.(nb_hap_ll+nb_hap_ll[sister.hap.pos]), by=.(sample, cell, chrom, start, end)]
   # deviding the gt likelihoods of symmetric haplotypes by 2
   probs[haplotype %in% symmetric.haps, nb_gt_ll:=.(nb_gt_ll/2)]
 
@@ -241,8 +241,8 @@ mosaiClassifierPostProcessing <- function(probs, haplotypeMode=F, regularization
 
   # testing if there are some segments with zero probability for all haplotypes
   segs_max_hap_nb_probs <- probs[,
-                                 .(sample, chrom, cell, from, to, max_nb_hap_ll=rep(max(nb_hap_ll), .N)), 
-                                 by=.(sample, chrom, cell, from, to)]
+                                 .(sample, chrom, cell, start, end, max_nb_hap_ll=rep(max(nb_hap_ll), .N)),
+                                 by=.(sample, chrom, cell, start, end)]
   message(paste("the number of segments with 0 prob for all haplotypes = ", 
                 segs_max_hap_nb_probs[max_nb_hap_ll==0, .N]))
 
@@ -261,8 +261,8 @@ mosaiClassifierPostProcessing <- function(probs, haplotypeMode=F, regularization
   probs[class=="?", nb_gt_pp:=1L]
 
   # normalizing nb_hap_pp and nb_gt_pp to 1 per sample, cell, and segment
-  probs[, nb_hap_pp := nb_hap_pp/sum(nb_hap_pp), by=.(sample, cell, chrom, from, to)]
-  probs[, nb_gt_pp := nb_gt_pp/sum(nb_gt_pp), by=.(sample, cell, chrom, from, to)]
+  probs[, nb_hap_pp := nb_hap_pp/sum(nb_hap_pp), by=.(sample, cell, chrom, start, end)]
+  probs[, nb_gt_pp := nb_gt_pp/sum(nb_gt_pp), by=.(sample, cell, chrom, start, end)]
 
   # regularizing nb_hap_ll to set the min possible likelihood to a constant small number
   probs[,nb_hap_pp:=.((regularizationFactor/length(hapStatus))+nb_hap_pp*(1-regularizationFactor))]
@@ -272,8 +272,8 @@ mosaiClassifierPostProcessing <- function(probs, haplotypeMode=F, regularization
   simp.probs <- probs[haplo_name!="complex"]
 
   # normalizing hap and gt probs in simp.probs
-  probs[, nb_hap_pp := nb_hap_pp/sum(nb_hap_pp), by=.(sample, cell, chrom, from, to)]
-  probs[, nb_gt_pp := nb_hap_pp/sum(nb_gt_pp), by=.(sample, cell, chrom, from, to)]
+  probs[, nb_hap_pp := nb_hap_pp/sum(nb_hap_pp), by=.(sample, cell, chrom, start, end)]
+  probs[, nb_gt_pp := nb_hap_pp/sum(nb_gt_pp), by=.(sample, cell, chrom, start, end)]
 
   # dcasting: converting the table from long to wide format based on the haplotype names
 
