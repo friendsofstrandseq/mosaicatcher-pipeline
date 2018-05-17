@@ -129,7 +129,7 @@ mosaiClassifierPrepare <- function(counts, info, strand, segs) {
 
 
 
-mosaiClassifierCalcProbs <- function(probs, maximumCN=4, haplotypeMode=F, alpha=0.05, regularizationFactor=1e-10) {
+mosaiClassifierCalcProbs <- function(probs, maximumCN=4, haplotypeMode=F, alpha=0.05) {
 
   assert_that(is.data.table(probs))
   # check the colnames
@@ -166,37 +166,28 @@ mosaiClassifierCalcProbs <- function(probs, maximumCN=4, haplotypeMode=F, alpha=
   probs <- probs[class!="?"]
   
   probs <- merge(probs, 
-                hapStrandStates,#[,.(haplotype, Wcn, Ccn, haplo_name, geno_name)],
+                hapStrandStates,
                 by = "class",
                 allow.cartesian = T)
   ###########
   # compute dispersion parameter (nb_r) column
-  #probs[, nb_r:=.((1-nb_p)*mean/nb_p)]
-  # alternative (the right way)
   probs[, nb_r:=.(nb_p*mean/(1-nb_p))]
-  probs[,.(sample, cell, chrom, start, end, from, to, nb_p, nb_r, mean, class, expected,
+  # reshuffling the columns
+  probs <- probs[,.(sample, cell, chrom, start, end, from, to, nb_p, nb_r, mean, class, expected,
            W, C, scalar, haplotype, Wcn, Ccn, haplo_name, geno_name)]
   
   # computing dispersion parameters seperately for each segment and W and C counts
-  probs <- add_dispPar(probs)
+  probs <- add_dispPar(probs, alpha)
   
   # compute NB haplotype likelihoods
   probs[, nb_hap_ll := dnbinom(W, size = disp_w, prob = nb_p)
         *dnbinom(C, size = disp_c, prob = nb_p)]
-  
-  # there is sth going wrong here, the nb probs are not right
   
   # computing sister haplotype (haplotype with the same genotype) for each haplotype
   sister.haps <- sapply(hapStatus, sisterHaplotype)
   sister.hap.pos <- match(sister.haps, hapStatus)
   # compute the set of symmetric haplotypes (haplotypes that are equal to their sister haplotype)
   symmetric.haps <- hapStatus[which(sister.haps==hapStatus)]
-  # testing:
-  # test <- probs[haplotype=="1000"|haplotype=="0010",]
-  # test[, diff_ll:=.SD$nb_hap_ll[2]-.SD$nb_hap_ll[1],by=.(sample, chrom, cell, from, to)]
-  # unique(test$diff_ll)
-  # It did not work for the tested data, all pairs of sister haplotypes turned to have the same ll
-  # I should test the following part later
   
   # averaging the nb probs of sister haplotypes, when haplotype specific strand states are not known
   # adding genotype likelihoods, if haplotype mode is false
@@ -212,40 +203,40 @@ mosaiClassifierCalcProbs <- function(probs, maximumCN=4, haplotypeMode=F, alpha=
   
   # TODO export the prob table to some output file
   
-  ### Post processing
+  return(probs)
+}
+
+mosaiClassifierPostProcessing <- function(probs, haplotypeMode=F, regularizationFactor=1e-10)
+{
+  assert_that(is.data.table(probs))
+  # check the colnames
   
   # testing if there are some segments with zero probability for all haplotypes
-  segs_max_hap_nb_probs <- probs[, .(sample, chrom, cell, from, to, max_nb_hap_ll=rep(max(nb_hap_ll), .N)), 
+  segs_max_hap_nb_probs <- probs[,
+                                 .(sample, chrom, cell, from, to, max_nb_hap_ll=rep(max(nb_hap_ll), .N)), 
                                  by=.(sample, chrom, cell, from, to)]
-  # there are some 0s (0.3% of segments in the tested example) ???(how to treat them)
-  # segs_max_hap_nb_probs[max_nb_hap_ll==0] # non-empty
+  message(paste("the number of segments with 0 prob for all haplotypes = ", 
+                segs_max_hap_nb_probs[max_nb_hap_ll==0, .N]))
   
   # add prior probs to the table
-  # TODO set the class of the prior column to numeric, it set the prior of complex haplos to z now
-  probs[,prior:=1.0L]
-  probs[haplo_name=="ref_hom",prior:=2L]
-  probs[haplo_name=="complex",prior:=.(prior/100)]
+  probs[,prior:=100L]
+  probs[haplo_name=="ref_hom",prior:=200L]
+  probs[haplo_name=="complex",prior:=1L]
   
   # compute the posteriori probs (add new columns)
   probs[,nb_hap_pp:=.(nb_hap_ll*prior)][,nb_gt_pp:=.(nb_gt_ll*prior)]
   
   # set a uniform prob on sce segs and the segs_max_hap_nb_probs=0
-  # TODO test this part
   probs[segs_max_hap_nb_probs$max_nb_hap_ll==0,nb_hap_pp:=1L]
   probs[class=="?", nb_hap_pp:=1L]
   
-  # normalizing nb_hap_pp to 1 per sample, cell, and segment
+  # normalizing nb_hap_pp and nb_gt_pp to 1 per sample, cell, and segment
   probs[, nb_hap_pp := nb_hap_pp/sum(nb_hap_pp), by=.(sample, cell, chrom, from, to)]
-  # some NANs are produced here (It will be resolved after prev #TODO)
+  probs[, nb_gt_pp := nb_gt_pp/sum(nb_gt_pp), by=.(sample, cell, chrom, from, to)]
   
   # regularizing nb_hap_ll to set the min possible likelihood to a constant small number
-  # TODO test this part
   probs[,nb_hap_pp:=.((regularizationFactor/length(hapStatus))+nb_hap_pp*(1-regularizationFactor))]
-  
-  # computing genotype posterioris
-  probs[,nb_gt_pp:=.(nb_hap_pp+nb_hap_pp[sister.hap.pos]), by=.(sample, cell, chrom, from, to)]
-  # deviding the gt likelihoods of symmetric haplotypes by 2
-  probs[haplotype %in% symmetric.haps, nb_gt_pp:=.(nb_gt_ll/2)]
+  probs[,nb_gt_pp:=.((regularizationFactor/length(hapStatus))+nb_gt_pp*(1-regularizationFactor))]
   
   # converting to simple haplotype prob table
   simp.probs <- probs[haplo_name!="complex"]
