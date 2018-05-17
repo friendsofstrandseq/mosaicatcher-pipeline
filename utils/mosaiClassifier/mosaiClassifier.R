@@ -8,6 +8,11 @@ source("utils/mosaiClassifier/getDispParAndSegType.R")
 source("utils/mosaiClassifier/haploAndGenoName.R")
 
 
+dir <- "/home/maryam/research/hackathons/troubleshooting/simulatedData/simulation5-100000/"
+binRCfile <- paste0(dir, "100000_fixed.txt.gz")
+BRfile <- paste0(dir, "100000_fixed.few.txt")
+infoFile <- paste0(dir, "100000_fixed.info")
+stateFile <- paste0(dir, "final.txt")
 counts <- fread(paste("zcat", binRCfile))
 info <- fread(infoFile)
 strand <- fread(stateFile)
@@ -129,6 +134,7 @@ mosaiClassifierPrepare <- function(counts, info, strand, segs) {
 mosaiClassifierCalcProbs <- function(probs, maximumCN=4, haplotypeMode=F, alpha=0.05, regularizationFactor=1e-10) {
 
   assert_that(is.data.table(probs))
+  # check the colnames
   # defining the vector of all possible haplotypes
   hapStatus <- NULL
   for (j in 0:maximumCN)
@@ -145,7 +151,7 @@ mosaiClassifierCalcProbs <- function(probs, maximumCN=4, haplotypeMode=F, alpha=
   for (st in c("CC","WW","WC","CW"))
   {
     hapStrandStates <- rbindlist(list(hapStrandStates, 
-                                      data.table(state=st, haplotype=hapStatus, 
+                                      data.table(class=st, haplotype=hapStatus, 
                                                  segtype=t(sapply(hapStatus, function(x) getSegType(st, x))))))
   }
   # naming third and forth columns
@@ -154,18 +160,18 @@ mosaiClassifierCalcProbs <- function(probs, maximumCN=4, haplotypeMode=F, alpha=
   hapStrandStates[,haplo_name:=.(sapply(haplotype, get_hap_name))]
   hapStrandStates[,geno_name:=.(sapply(haplo_name, haplo_to_geno_name))]
   # sort based on state
-  setkey(hapStrandStates, state)
+  setkey(hapStrandStates, class)
   ##### COMMENT: this part probably can be done in a better way using datatable
   # I don't know how to merge these two datatables (probs and hapStrandStates)
   # took the only solution that I have in mind
   
   # kick out the segs with sces
-  #probs <- probs[state!="sce"]
+  probs <- probs[class!="?"]
   
   #probs <- probs[order(sample, cell, chrom, from, to)]
   # compute the numer of segments with different strand states in probs
-  strand.count <- probs[,.N,by=state]
-  setkey(strand.count,state)
+  strand.count <- probs[,.N,by=class]
+  setkey(strand.count,class)
   strand.count <- strand.count$N
   # expand the hapStrandStates datatable
   rep.rows <- NULL
@@ -179,13 +185,13 @@ mosaiClassifierCalcProbs <- function(probs, maximumCN=4, haplotypeMode=F, alpha=
   expanded.hapstates <- hapStrandStates[rep.rows]
   
   # expand the probs datatable: First sort the rows based on states, then repeat each row in the probs table #haps time
-  expanded.probs <- probs[order(state)][sort(rep(1:nrow(probs),length(hapStatus)))]
+  expanded.probs <- probs[order(class)][sort(rep(1:nrow(probs),length(hapStatus)))]
   
   #check if the strand states are the same in the two datatables
-  assert_that(all(expanded.probs$state == expanded.hapstates$state))
+  assert_that(all(expanded.probs$class == expanded.hapstates$class))
   
   # combine the two datatables
-  probs <- cbind(expanded.probs, expanded.hapstates[,-"state"])
+  probs <- cbind(expanded.probs, expanded.hapstates[,-"class"])
   ###########
   # compute dispersion parameters
   probs <- add_dispPar(probs)
@@ -240,7 +246,7 @@ mosaiClassifierCalcProbs <- function(probs, maximumCN=4, haplotypeMode=F, alpha=
   # set a uniform prob on sce segs and the segs_max_hap_nb_probs=0
   # TODO test this part
   probs[segs_max_hap_nb_probs$max_nb_hap_ll==0,nb_hap_pp:=1L]
-  probs[state=="sce", nb_hap_pp:=1L]
+  probs[class=="?", nb_hap_pp:=1L]
   
   # normalizing nb_hap_pp to 1 per sample, cell, and segment
   probs[, nb_hap_pp := nb_hap_pp/sum(nb_hap_pp), by=.(sample, cell, chrom, from, to)]
