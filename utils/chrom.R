@@ -43,6 +43,7 @@ manual_colors = c(
   simul_inv_dup   = "darkgoldenrod2",
   idup_h1         = muted("darkgoldenrod2", 80, 70),
   idup_h2         = muted("darkgoldenrod2", 80, 70),
+  complex         = "grey",
     # background
   bg1 = "#ffffff",
   bg2 = "khaki2")
@@ -157,7 +158,10 @@ if (!is.null(f_calls)) {
               "end"      %in% colnames(svs),
               "sample"   %in% colnames(svs),
               "cell"     %in% colnames(svs),
-              "SV_class" %in% colnames(svs)) %>% invisible
+              ("SV_class" %in% colnames(svs) | "sv_call_name" %in% colnames(svs) )) %>% invisible
+  if(!("SV_class" %in% colnames(svs))) {
+    svs[, SV_class := sv_call_name]
+  }
   assert_that(all(svs$SV_class %in% names(manual_colors))) %>% invisible
   svs[, sample_cell := paste(sample, "-", cell)]
   assert_that(all(unique(svs$sample_cell) %in% unique(counts$sample_cell))) %>% invisible
