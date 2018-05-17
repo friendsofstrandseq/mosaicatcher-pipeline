@@ -114,8 +114,6 @@ mosaiClassifierPrepare <- function(counts, info, strand, segs) {
   message("[MosaiClassifier] Annotating strand-state")
   probs = addStrandStates(probs, strand)
 
-
-
   ##############################################################################
   # Annotate the observed and expected counts in each segment / cell
   #
@@ -146,7 +144,8 @@ mosaiClassifierCalcProbs <- function(probs, maximumCN=4, haplotypeMode=F, alpha=
     hapStatus[j] <- paste(decodeStatus(hapStatus[j]), collapse = '')
   }
   
-  # creating a datatable containing all possible combinations of strand states and haplotypes, and setting their segTypes
+  # creating a datatable containing all possible combinations of strand states and haplotypes,
+  # and setting their segTypes
   hapStrandStates <- data.table()
   for (st in c("CC","WW","WC","CW"))
   {
@@ -161,37 +160,19 @@ mosaiClassifierCalcProbs <- function(probs, maximumCN=4, haplotypeMode=F, alpha=
   hapStrandStates[,geno_name:=.(sapply(haplo_name, haplo_to_geno_name))]
   # sort based on state
   setkey(hapStrandStates, class)
-  ##### COMMENT: this part probably can be done in a better way using datatable
-  # I don't know how to merge these two datatables (probs and hapStrandStates)
-  # took the only solution that I have in mind
   
+  ##### mering probs and haplotype strand states
   # kick out the segs with sces
   probs <- probs[class!="?"]
   
-  #probs <- probs[order(sample, cell, chrom, from, to)]
-  # compute the numer of segments with different strand states in probs
-  strand.count <- probs[,.N,by=class]
-  setkey(strand.count,class)
-  strand.count <- strand.count$N
-  # expand the hapStrandStates datatable
-  rep.rows <- NULL
-  for (i in 1:4)
-  {
-    rep.rows <- c(rep.rows,
-                  rep((1:length(hapStatus))+(i-1)*length(hapStatus),strand.count[i]))
-  }
-  # expand the haplotype state dataframe according to the number of segments with different states
-  #repeat the rows based on the row indices defines in rep.rows
-  expanded.hapstates <- hapStrandStates[rep.rows]
-  
-  # expand the probs datatable: First sort the rows based on states, then repeat each row in the probs table #haps time
-  expanded.probs <- probs[order(class)][sort(rep(1:nrow(probs),length(hapStatus)))]
-  
-  #check if the strand states are the same in the two datatables
-  assert_that(all(expanded.probs$class == expanded.hapstates$class))
-  
-  # combine the two datatables
-  probs <- cbind(expanded.probs, expanded.hapstates[,-"class"])
+  ##### easier implementation using datatable
+  probs <- merge(probs, 
+                hapStrandStates,#[,.(haplotype, Wcn, Ccn, haplo_name, geno_name)],
+                by = "class",
+                allow.cartesian = T)
+  probs[,.(sample, cell, chrom, start, end, from, to, nb_p, mean, class, expected,
+          W, C, scalar, haplotype, Wcn, Ccn, haplo_name, geno_name)]
+
   ###########
   # compute dispersion parameters
   probs <- add_dispPar(probs)
