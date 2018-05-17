@@ -300,7 +300,7 @@ rule plot_heatmap:
 
 rule mosaiClassifier_make_call:
     input:
-        "sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.Rdata"
+        probs = "sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.Rdata"
     output:
         "sv_calls/{sample}/{windows}.{bpdens}/simpleCalls.txt"
     script:
