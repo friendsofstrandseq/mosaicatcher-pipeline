@@ -20,16 +20,17 @@ add_dispPar <- function(prob.tab, alpha = 0.05)
   
   # rescaling W and C dispersion params for Wcn=0 cases with the parameter alpha
   Wcn0_ridx <- which(probs$disp_w==0)
-  probs[Wcn0_ridx, disp_w:=disp_c*alpha*2]
-  probs[Wcn0_ridx, disp_c:=disp_c*(1-alpha)*2]
+  probs[Wcn0_ridx, disp_w:=disp_c*alpha*(Wcn+Ccn)]
+  probs[Wcn0_ridx, disp_c:=disp_c*(1-alpha)*(Wcn+Ccn)]
   
   # rescaling W and C dispersion params for Ccn=0 cases with the parameter alpha
   Ccn0_ridx <- which(probs$disp_c==0)
-  probs[Ccn0_ridx, disp_c:=disp_w*alpha*2]
-  probs[Ccn0_ridx, disp_w:=disp_w*(1-alpha)*2]
+  probs[Ccn0_ridx, disp_c:=disp_w*alpha*(Wcn+Ccn)]
+  probs[Ccn0_ridx, disp_w:=disp_w*(1-alpha)*(Wcn+Ccn)]
   
   return(probs)
 }
+
 
 #' Compute the segment type given the segment strand state and the segment status
 #' Returns W and C copy numbers, respectively
