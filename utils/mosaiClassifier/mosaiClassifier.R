@@ -264,9 +264,11 @@ mosaiClassifierPostProcessing <- function(probs, haplotypeMode=F, regularization
   probs[, nb_hap_pp := nb_hap_pp/sum(nb_hap_pp), by=.(sample, cell, chrom, start, end)]
   probs[, nb_gt_pp := nb_gt_pp/sum(nb_gt_pp), by=.(sample, cell, chrom, start, end)]
 
+  # get the number of haplotypes
+  numHaps <- length(unique(probs$haplotype))
   # regularizing nb_hap_ll to set the min possible likelihood to a constant small number
-  probs[,nb_hap_pp:=.((regularizationFactor/length(hapStatus))+nb_hap_pp*(1-regularizationFactor))]
-  probs[,nb_gt_pp:=.((regularizationFactor/length(hapStatus))+nb_gt_pp*(1-regularizationFactor))]
+  probs[,nb_hap_pp:=.((regularizationFactor/numHaps)+nb_hap_pp*(1-regularizationFactor))]
+  probs[,nb_gt_pp:=.((regularizationFactor/numHaps)+nb_gt_pp*(1-regularizationFactor))]
 
   # converting to simple haplotype prob table
   simp.probs <- probs[haplo_name!="complex"]
