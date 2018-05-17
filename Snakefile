@@ -304,9 +304,7 @@ rule mosaiClassifier_make_call:
     output:
         "sv_calls/{sample}/{windows}.{bpdens}/simpleCalls.txt"
     shell:
-        """
-        Rscript utils/mosaiClassifier.makeCall.R {input} {output}
-        """
+        "utils/mosaiClassifier_call.snakemake.R"
 
 rule mosaiClassifier_calc_probs:
     input:
