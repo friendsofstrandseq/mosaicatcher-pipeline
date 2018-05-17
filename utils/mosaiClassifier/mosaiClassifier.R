@@ -165,21 +165,26 @@ mosaiClassifierCalcProbs <- function(probs, maximumCN=4, haplotypeMode=F, alpha=
   # kick out the segs with sces
   probs <- probs[class!="?"]
   
-  ##### easier implementation using datatable
   probs <- merge(probs, 
                 hapStrandStates,#[,.(haplotype, Wcn, Ccn, haplo_name, geno_name)],
                 by = "class",
                 allow.cartesian = T)
-  probs[,.(sample, cell, chrom, start, end, from, to, nb_p, mean, class, expected,
-          W, C, scalar, haplotype, Wcn, Ccn, haplo_name, geno_name)]
-
   ###########
-  # compute dispersion parameters
+  # compute dispersion parameter (nb_r) column
+  #probs[, nb_r:=.((1-nb_p)*mean/nb_p)]
+  # alternative (the right way)
+  probs[, nb_r:=.(nb_p*mean/(1-nb_p))]
+  probs[,.(sample, cell, chrom, start, end, from, to, nb_p, nb_r, mean, class, expected,
+           W, C, scalar, haplotype, Wcn, Ccn, haplo_name, geno_name)]
+  
+  # computing dispersion parameters seperately for each segment and W and C counts
   probs <- add_dispPar(probs)
   
   # compute NB haplotype likelihoods
-  probs[, nb_hap_ll := dnbinom(Wcn, size = disp_w, prob = nb_p)
-        *dnbinom(Ccn, size = disp_c, prob = nb_p)]
+  probs[, nb_hap_ll := dnbinom(W, size = disp_w, prob = nb_p)
+        *dnbinom(C, size = disp_c, prob = nb_p)]
+  
+  # there is sth going wrong here, the nb probs are not right
   
   # computing sister haplotype (haplotype with the same genotype) for each haplotype
   sister.haps <- sapply(hapStatus, sisterHaplotype)
