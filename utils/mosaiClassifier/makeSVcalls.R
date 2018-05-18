@@ -2,9 +2,25 @@ library(data.table)
 library(assertthat)
 source("utils/mosaiClassifier/mosaiClassifier.R")
 
-# delete: probs = readRDS("sv_probabilities/simulation1-50000/50000_fixed.medium/probabilities.Rdata")
 
+#' Derives SV type with highest probability according in each cell and segment.
+#' Output is a table with columns "sv_call_name" and "llr_to_ref"
+#'
+#' @author Sascha Meiers
+#' @export
+#'
 makeSVCallSimple <- function(probs, llr_thr = 1) {
+
+  assert_that(is.data.table(probs),
+              "sample" %in% colnames(probs),
+              "cell"   %in% colnames(probs),
+              "chrom"  %in% colnames(probs),
+              "start"  %in% colnames(probs),
+              "end"    %in% colnames(probs),
+              "haplo_name" %in% colnames(probs),
+              "haplotype"  %in% colnames(probs),
+              "nb_hap_ll"  %in% colnames(probs))
+  assert_that(!("nb_hap_pp" %in% colnames(probs)))
 
   # Do post-processing incl. priors + normalization + regularization
   probs = mosaiClassifierPostProcessing(probs)
