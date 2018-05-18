@@ -18,7 +18,7 @@ import os.path
 # * calculate a segmentation into potential SVs using Mosaicatcher
 
 
-METHODS = ["simpleCalls"]
+METHODS = ["simpleCalls", "biAllelic"]
 
 rule all:
     input:
@@ -334,6 +334,15 @@ rule mosaiClassifier_calc_probs:
         output = "sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.Rdata"
     script:
         "utils/mosaiClassifier.snakemake.R"
+
+rule mosaiClassifier_make_call_biallelic:
+    input:
+        probs = "sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.Rdata"
+    output:
+        "sv_calls/{sample}/{windows}.{bpdens}/biAllelic.txt"
+    script:
+        "utils/mosaiClassifier_call_biallelic.snakemake.R"
+
 
 
 ################################################################################
