@@ -16,8 +16,15 @@ strand = fread(snakemake@input[["states"]])
 segs   = fread(snakemake@input[["bp"]])
 
 
+# haplotypeMode?
+if ("CW" %in% strand$class) {
+  haplotypeMode = T
+} else {
+  haplotypeMode = F
+}
+
 d = mosaiClassifierPrepare(counts, info, strand, segs)
-d = mosaiClassifierCalcProbs(d)
+d = mosaiClassifierCalcProbs(d, maximumCN = 4, haplotypeMode = haplotypeMode)
 
 saveRDS(d, file = snakemake@output[[1]])
 
