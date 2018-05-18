@@ -80,5 +80,5 @@ forceBiallelic <- function(probs, penalize_factor=0)
     return(probs.new)
   }
   
-  probs <- apply_prior(probs)
+  probs <- apply_prior(probs, penalize_factor)
 }
