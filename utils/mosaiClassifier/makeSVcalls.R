@@ -20,19 +20,15 @@ makeSVCallSimple <- function(probs, llr_thr = 1) {
               "haplo_name" %in% colnames(probs),
               "haplotype"  %in% colnames(probs),
               "nb_hap_ll"  %in% colnames(probs)) %>% invisible
-  assert_that(!("nb_hap_pp" %in% colnames(probs))) %>% invisible
 
-  # Do post-processing incl. priors + normalization + regularization
-  probs = mosaiClassifierPostProcessing(probs)
+  # make sure post-processing was done beforehands
+  assert_that("nb_hap_pp" %in% colnames(probs)) %>% invisible
   setkey(probs, chrom, start, end, sample, cell)
 
   # annotate the ref_hom posterior probability per segment / cell
   probs[,
         ref_hom_pp := .SD[haplo_name == "ref_hom", nb_hap_pp],
         by = .(chrom, start, end, sample, cell)]
-  
-  # force it to be biallelic
-  probs <- forceBiallelic(probs)
 
   # order the different haplotype states based on their posterior prob. (nb_hap_pp)
   # and keep only the two most likely states
@@ -62,6 +58,11 @@ makeSVCallSimple <- function(probs, llr_thr = 1) {
 
 forceBiallelic <- function(probs, penalize_factor=0)
 {
+  # Add reference probability as an extra column (same as in makeSimpleSVCalls)
+  probs[,
+        ref_hom_pp := .SD[haplo_name == "ref_hom", nb_hap_pp],
+        by = .(chrom, start, end, sample, cell)]
+
   probs[, biall_hap_pp:=nb_hap_pp+ref_hom_pp]
   probs[haplo_name=="ref_hom", biall_hap_pp:=ref_hom_pp]
   setkey(probs,sample, chrom, start, end, haplotype)
