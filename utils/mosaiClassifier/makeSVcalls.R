@@ -14,6 +14,9 @@ makeSVCallSimple <- function(probs, llr_thr = 1) {
   probs[,
         ref_hom_pp := .SD[haplo_name == "ref_hom", nb_hap_pp],
         by = .(chrom, start, end, sample, cell)]
+  
+  # force it to be biallelic
+  probs <- forceBiallelic(probs)
 
   # order the different haplotype states based on their posterior prob. (nb_hap_pp)
   # and keep only the two most likely states
@@ -41,4 +44,24 @@ makeSVCallSimple <- function(probs, llr_thr = 1) {
   return(probs[sv_call_name != "ref_hom" & llr_to_ref > llr_thr])
 }
 
-
+forceBiallelic <- function(probs, penalize_factor=0)
+{
+  probs[, biall_hap_pp:=nb_hap_pp+ref_hom_pp]
+  probs[haplo_name=="ref_hom", biall_hap_pp:=ref_hom_pp]
+  setkey(probs,sample, chrom, start, end, haplotype)
+  # computing aggregate biallelic probabilities
+  probs[, agg_hap_pp := sum(log(biall_hap_pp)), by=.(sample, chrom, start, end, haplotype)]
+  # adding the most Likely allele (other than reference) in the biallelic mode and creating a new column for that
+  probs[, allele:=haplo_name[which.max(agg_hap_pp)], by=.(sample, chrom, start, end)]
+  
+  apply_prior <- function(probs, penalize_factor)
+  {
+    probs.new <- probs
+    probs.new[haplo_name!=allele & haplo_name!="ref_hom", nb_hap_pp:=nb_hap_pp*penalize_factor]
+    # normalization
+    probs.new <- probs.new[, nb_hap_pp:=nb_hap_pp/(sum(nb_hap_pp)), by=.(sample, chrom, start, end, cell)]
+    return(probs.new)
+  }
+  
+  probs <- apply_prior(probs)
+}
