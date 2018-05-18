@@ -246,20 +246,17 @@ mosaiClassifierPostProcessing <- function(probs, haplotypeMode=F, regularization
   message(paste("the number of segments with 0 prob for all haplotypes = ", 
                 segs_max_hap_nb_probs[max_nb_hap_ll==0, .N]))
 
+  # set a uniform prob on sce segs and the segs_max_hap_nb_probs=0
+  probs[segs_max_hap_nb_probs$max_nb_hap_ll==0,
+        `:=`(nb_hap_ll = 1.0, nb_geno_ll = 1.0)]
+  
   # add prior probs to the table
   probs[,prior:=100L]
-  probs[geno_name=="idup_het",prior:=99]
   probs[haplo_name=="ref_hom",prior:=200L]
   probs[haplo_name=="complex",prior:=1L]
 
   # compute the posteriori probs (add new columns)
   probs[,nb_hap_pp:=.(nb_hap_ll*prior)][,nb_gt_pp:=.(nb_gt_ll*prior)]
-
-  # set a uniform prob on sce segs and the segs_max_hap_nb_probs=0
-  probs[segs_max_hap_nb_probs$max_nb_hap_ll==0,nb_hap_pp:=1L]
-  probs[class=="?", nb_hap_pp:=1L]
-  probs[segs_max_hap_nb_probs$max_nb_hap_ll==0,nb_gt_pp:=1L]
-  probs[class=="?", nb_gt_pp:=1L]
 
   # normalizing nb_hap_pp and nb_gt_pp to 1 per sample, cell, and segment
   probs[, nb_hap_pp := nb_hap_pp/sum(nb_hap_pp), by=.(sample, cell, chrom, start, end)]
