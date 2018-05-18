@@ -27,7 +27,7 @@ rule all:
                sample = SAMPLE,
                chrom = config["chromosomes"],
                window = [100000],
-               bpdens = ["few","medium","many"],
+               bpdens = ["few","medium","more","many"],
                method = METHODS)
 
 
