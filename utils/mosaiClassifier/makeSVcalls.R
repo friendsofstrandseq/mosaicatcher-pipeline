@@ -18,7 +18,7 @@ makeSVCallSimple <- function(probs, llr_thr = 1) {
   # order the different haplotype states based on their posterior prob. (nb_hap_pp)
   # and keep only the two most likely states
   probs[,
-        rank := frank(-nb_hap_pp, ties.method = "first"), 
+        rank := frank(-nb_hap_pp, ties.method = "random"), # random should never allow ties to get the same rank!
         by = .(chrom, start, end, sample, cell)]
   probs <- probs[rank <= 2]
   # Sort by rank within each group
