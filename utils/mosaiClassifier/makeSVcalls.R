@@ -19,8 +19,8 @@ makeSVCallSimple <- function(probs, llr_thr = 1) {
               "end"    %in% colnames(probs),
               "haplo_name" %in% colnames(probs),
               "haplotype"  %in% colnames(probs),
-              "nb_hap_ll"  %in% colnames(probs))
-  assert_that(!("nb_hap_pp" %in% colnames(probs)))
+              "nb_hap_ll"  %in% colnames(probs)) %>% invisible
+  assert_that(!("nb_hap_pp" %in% colnames(probs))) %>% invisible
 
   # Do post-processing incl. priors + normalization + regularization
   probs = mosaiClassifierPostProcessing(probs)
