@@ -7,10 +7,11 @@
 
 get_hap_name <- function(hap.code)
 {
-  hap.codes <- c("1010", "0010", "1000", "0000", "0110", "1001", "0101", "2010", "1020", "2020")
+  hap.codes <- c("1010", "0010", "1000", "0000", "0110", "1001", "0101", "2010", "1020", "2020", "1110", "1011")
   hap.names <- c("ref_hom", "del_h1", "del_h2", "del_hom", # ref and del
                  "inv_h1", "inv_h2", "inv_hom", # inv
-                 "dup_h1", "dup_h2", "dup_hom") # dup
+                 "dup_h1", "dup_h2", "dup_hom", # dup
+                 "idup_h1", "idup_h2") # inv-dup
   
   hap.idx <- match(hap.code, hap.codes)
   
