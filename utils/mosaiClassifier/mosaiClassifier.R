@@ -248,6 +248,7 @@ mosaiClassifierPostProcessing <- function(probs, haplotypeMode=F, regularization
 
   # add prior probs to the table
   probs[,prior:=100L]
+  probs[geno_name=="idup_het",prior:=99]
   probs[haplo_name=="ref_hom",prior:=200L]
   probs[haplo_name=="complex",prior:=1L]
 
