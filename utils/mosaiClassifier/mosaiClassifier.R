@@ -232,7 +232,10 @@ mosaiClassifierCalcProbs <- function(probs, maximumCN=4, haplotypeMode=F, alpha=
 }
 
 
-
+# priors are 100 by default.
+# Variant classes (matched by their `haplo_name`) which we want to weight differently
+# can be included into the `priors` argument in form of a data table.
+# A uniform prior can be done by specifying `priors = NULL`
 mosaiClassifierPostProcessing <- function(probs,
                                           haplotypeMode=F,
                                           regularizationFactor=1e-10,
@@ -266,7 +269,7 @@ mosaiClassifierPostProcessing <- function(probs,
 
   # PRIORS
   # when priors are given
-  if (!missing(priors)) {
+  if (!is.null(priors)) {
 
     # first check that priors are in the right format
     assert_that(is.data.table(priors),
@@ -283,6 +286,7 @@ mosaiClassifierPostProcessing <- function(probs,
 
   # when no priors are given
   } else {
+    message("[MosaiClassifier] Using uniform priors")
     probs[, prior:= 100]
   }
 
