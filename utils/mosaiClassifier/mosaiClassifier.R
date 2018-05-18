@@ -48,7 +48,7 @@ mosaiClassifierPrepare <- function(counts, info, strand, segs) {
 
   # Kick out non-PASS cells
   if (nrow(info[pass1 != 1])> 0) {
-    message("[SV classifier] Kicking out ",
+    message("[MosaiClassifier] Kicking out ",
             nrow(info[pass1 != 1]),
             " low quality cells. ",
             nrow(info[pass1 == 1]),
@@ -233,27 +233,59 @@ mosaiClassifierCalcProbs <- function(probs, maximumCN=4, haplotypeMode=F, alpha=
 
 
 
-
-mosaiClassifierPostProcessing <- function(probs, haplotypeMode=F, regularizationFactor=1e-10)
+mosaiClassifierPostProcessing <- function(probs,
+                                          haplotypeMode=F,
+                                          regularizationFactor=1e-10,
+                                          priors = data.table(
+                                                haplo_name = c("ref_hom","idup_h1","idup_h2","complex"),
+                                                prior      = c(      200,       90,       90,        1)))
 {
-  assert_that(is.data.table(probs))
-  # check the colnames
+  assert_that(is.data.table(probs),
+              "sample" %in% colnames(probs),
+              "cell"   %in% colnames(probs),
+              "chrom"  %in% colnames(probs),
+              "start"  %in% colnames(probs),
+              "end"    %in% colnames(probs),
+              "haplo_name" %in% colnames(probs),
+              "haplotype"  %in% colnames(probs),
+              "nb_hap_ll"  %in% colnames(probs)) %>% invisible
+  assert_that(!("nb_hap_pp" %in% colnames(probs))) %>% invisible
+
 
   # testing if there are some segments with zero probability for all haplotypes
   segs_max_hap_nb_probs <- probs[,
                                  .(sample, cell, chrom, start, end, max_nb_hap_ll=rep(max(nb_hap_ll), .N)),
                                  by=.(sample, cell, chrom, start, end)]
-  message(paste("the number of segments with 0 prob for all haplotypes = ", 
-                segs_max_hap_nb_probs[max_nb_hap_ll==0, .N]))
+  message("[MosaiClassifier] The number of segments with 0 prob for all haplotypes is = ", 
+          segs_max_hap_nb_probs[max_nb_hap_ll==0, .N])
 
   # set a uniform prob on sce segs and the segs_max_hap_nb_probs=0
   probs[segs_max_hap_nb_probs$max_nb_hap_ll==0,
         `:=`(nb_hap_ll = 1.0, nb_geno_ll = 1.0)]
-  
-  # add prior probs to the table
-  probs[,prior:=100L]
-  probs[haplo_name=="ref_hom",prior:=200L]
-  probs[haplo_name=="complex",prior:=1L]
+
+
+  # PRIORS
+  # when priors are given
+  if (!missing(priors)) {
+
+    # first check that priors are in the right format
+    assert_that(is.data.table(priors),
+                "haplo_name" %in% colnames(priors),
+                "prior"      %in% colnames(priors),
+                all(is.numeric(priors$prior) & priors$prior >= 0),
+                all(priors$haplo_name %in% probs$haplo_name)) %>% invisible
+
+    # then add these priors to the probs table
+    probs <- merge(probs, priors, by = "haplo_name", all.x = T)
+
+    # set all other priors to 100
+    probs[is.na(prior), prior := 100]
+
+  # when no priors are given
+  } else {
+    probs[, prior:= 100]
+  }
+
 
   # compute the posteriori probs (add new columns)
   probs[,nb_hap_pp:=.(nb_hap_ll*prior)][,nb_gt_pp:=.(nb_gt_ll*prior)]
