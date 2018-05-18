@@ -24,9 +24,9 @@ if ("CW" %in% strand$class) {
 }
 
 d = mosaiClassifierPrepare(counts, info, strand, segs)
-d = mosaiClassifierCalcProbs(d, maximumCN = 4, haplotypeMode = haplotypeMode)
+e = mosaiClassifierCalcProbs(d, maximumCN = 4, haplotypeMode = haplotypeMode)
 
-saveRDS(d, file = snakemake@output[[1]])
+saveRDS(e, file = snakemake@output[[1]])
 
 
 
