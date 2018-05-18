@@ -46,7 +46,7 @@ manual_colors = c(
   complex         = "grey",
     # background
   bg1 = "#ffffff",
-  bg2 = "khaki2")
+  bg2 = "#dddddd")
 
 
 
