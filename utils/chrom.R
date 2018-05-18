@@ -42,7 +42,7 @@ manual_colors = c(
   simul_false_del = "darkgrey",
   simul_inv_dup   = "darkgoldenrod2",
   idup_h1         = muted("darkgoldenrod2", 80, 70),
-  idup_h2         = muted("darkgoldenrod2", 80, 70),
+  idup_h2         = muted("gold", 80, 70),
   complex         = "darkorchid1",
     # background
   bg1 = "#ffffff",
