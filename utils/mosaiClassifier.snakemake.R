@@ -18,6 +18,7 @@ segs   = fread(snakemake@input[["bp"]])
 
 d = mosaiClassifierPrepare(counts, info, strand, segs)
 d = mosaiClassifierCalcProbs(d)
+d = mosaiClassifierPostProcessing(d)
 saveRDS(d, file = snakemake@output[[1]])
 
 
