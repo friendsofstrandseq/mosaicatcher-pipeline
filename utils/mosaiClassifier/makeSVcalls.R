@@ -17,7 +17,6 @@ makeSVCallSimple <- function(probs, llr_thr = 1) {
 
   # order the different haplotype states based on their posterior prob. (nb_hap_pp)
   # and keep only the two most likely states
-  probs[, rank := NULL]
   probs[,
         rank := frank(-nb_hap_pp, ties.method = "first"), 
         by = .(chrom, start, end, sample, cell)]
@@ -31,7 +30,8 @@ makeSVCallSimple <- function(probs, llr_thr = 1) {
                sv_call_name_2nd      = haplo_name[rank==2],
                sv_call_haplotype_2nd = haplotype[rank==2],
                llr_to_ref            = log(nb_hap_pp[rank==1]) - log(ref_hom_pp[rank==1]),
-               llr_to_2nd            = log(nb_hap_pp[rank==1]) - log(nb_hap_pp[rank==2]))]
+               llr_to_2nd            = log(nb_hap_pp[rank==1]) - log(nb_hap_pp[rank==2])),
+       by = .(chrom, start, end, sample, cell)]
   probs <- probs[rank == 1]
 
 
