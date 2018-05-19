@@ -334,6 +334,8 @@ rule mosaiClassifier_calc_probs:
         bp     = "segmentation2/{sample}/{windows}.{bpdens}.txt"
     output:
         output = "sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.Rdata"
+    log:
+        "log/{sample}/mosaiClassifier_calc_probs.{windows}.{bpdens}.txt"
     script:
         "utils/mosaiClassifier.snakemake.R"
 
