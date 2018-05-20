@@ -7,6 +7,9 @@ source("utils/mosaiClassifier/generateHaploStates.R")
 source("utils/mosaiClassifier/getDispParAndSegType.R")
 source("utils/mosaiClassifier/haploAndGenoName.R")
 
+library(GenomicRanges) # This is to test whether the given strand states
+                       # are in fact disjoint intervals !
+
 
 mosaiClassifierPrepare <- function(counts, info, strand, segs) {
 
@@ -30,6 +33,7 @@ mosaiClassifierPrepare <- function(counts, info, strand, segs) {
               "pass1" %in% colnames(info)) %>% invisible
   setkey(info,sample,cell)
 
+  # check strand states
   assert_that(is.data.table(strand),
               "sample"%in% colnames(strand),
               "cell"  %in% colnames(strand),
@@ -38,6 +42,14 @@ mosaiClassifierPrepare <- function(counts, info, strand, segs) {
               "end"   %in% colnames(strand),
               "class" %in% colnames(strand)) %>% invisible
   setkey(strand, sample, cell, chrom, start, end)
+
+  # -> test whether strand states are disjoint intervals
+  test_disjoint_intervals <- function(d) {
+      gr <- makeGRangesFromDataFrame(d)
+      end(gr) <- end(gr) -1
+      return(isDisjoint(gr))
+  }
+  strand[, assert_that(test_disjoint_intervals(.SD)), by = .(sample, cell)] %>% invisible
 
   # segs
   assert_that(is.data.table(segs),
