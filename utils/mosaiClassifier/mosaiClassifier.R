@@ -95,7 +95,7 @@ mosaiClassifierPrepare <- function(counts, info, strand, segs) {
   # Expand table to (all cells) x (all segments)
   #
   # add a "from" column which contians the "to" breakpoint from the prev. segment each
-  segs[, from := shift(bps,fill = 0) + 1, by = chrom]
+  segs[, from := data.table::shift(bps,fill = 0) + 1, by = chrom]
 
   # rename the "bps" column to "to"
   segs[, `:=`(to = bps, bps = NULL, k = NULL)]
