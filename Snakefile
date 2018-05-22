@@ -361,10 +361,10 @@ rule determine_initial_strand_states:
     log:
         "log/{sample}/determine_initial_strand_states.txt"
     params:
-        sce_command = "Rscript " + config["sce_script"]
+        mc_command = config["mosaicatcher"]
     shell:
         """
-        {params.sce_command} {input} {output}
+        {params.mc_command} states -u -v -o {output} {input} 2>&1 > {log}
         """
 
 # Strandphaser needs a different input format which contains the path names to
