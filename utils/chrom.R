@@ -25,19 +25,19 @@ manual_colors = c(
   dup_hom         = muted("firebrick4", 70, 50),
   simul_het_dup   = "firebrick2",
   dup_h1          = muted("firebrick2", 90, 30),
-  dup_h2          = muted("firebrick2", 90, 30),
+  dup_h2          = muted("orangered1", 90, 30),
     # deletions
   simul_hom_del   = "dodgerblue4",
   del_hom         = muted("dodgerblue4", 50, 60),
   simul_het_del   = "dodgerblue2",
   del_h1          = muted("dodgerblue2", 80, 50),
-  del_h2          = muted("dodgerblue2", 80, 50),
+  del_h2          = muted("deepskyblue2", 80, 50),
     # inversions
   simul_hom_inv   = "chartreuse4",
   inv_hom         = muted("chartreuse4", 80, 50),
   simul_het_inv   = "chartreuse2",
   inv_h1          = muted("chartreuse2", 100, 60),
-  inv_h2          = muted("chartreuse2", 100, 60),
+  inv_h2          = muted("darkolivegreen3", 100, 60),
     # other SVs
   simul_false_del = "darkgrey",
   simul_inv_dup   = "darkgoldenrod2",
