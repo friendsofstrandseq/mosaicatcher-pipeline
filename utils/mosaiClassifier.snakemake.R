@@ -1,10 +1,5 @@
 library(data.table)
 library(assertthat)
-
-logfile <- file(snakemake@log[[1]])
-sink(logfile, append=TRUE)
-sink(logfile, append=TRUE, type="message")
-
 source("utils/mosaiClassifier/mosaiClassifier.R")
 
 
