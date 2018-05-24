@@ -323,6 +323,8 @@ rule mosaiClassifier_make_call:
         probs = "sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.Rdata"
     output:
         "sv_calls/{sample}/{windows}.{bpdens}/simpleCalls.txt"
+    log:
+        "log/{sample}/mosaiClassifier_make_call.{windows}.{bpdens}.txt"
     script:
         "utils/mosaiClassifier_call.snakemake.R"
 
@@ -344,6 +346,8 @@ rule mosaiClassifier_make_call_biallelic:
         probs = "sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.Rdata"
     output:
         "sv_calls/{sample}/{windows}.{bpdens}/biAllelic.txt"
+    log:
+        "log/{sample}/mosaiClassifier_make_call_biallelic.{windows}.{bpdens}.txt"
     script:
         "utils/mosaiClassifier_call_biallelic.snakemake.R"
 
