@@ -253,6 +253,31 @@ rule mosaic_count_fixed:
         > {log} 2>&1
         """
 
+rule mosaic_count_variable:
+    input:
+        bam = lambda wc: expand("bam/" + wc.sample + "/{bam}.bam", bam = BAM_PER_SAMPLE[wc.sample]),
+        bai = lambda wc: expand("bam/" + wc.sample + "/{bam}.bam.bai", bam = BAM_PER_SAMPLE[wc.sample]),
+        bed = lambda wc: config["variable_bins"][str(wc.window)],
+        excl = "log/exclude_file"
+    output:
+        counts = "counts/{sample}/{window}_variable.txt.gz",
+        info   = "counts/{sample}/{window}_variable.info"
+    log:
+        "log/{sample}/mosaic_count_variable.{window}.txt"
+    params:
+        mc_command = config["mosaicatcher"]
+    shell:
+        """
+        echo "NOTE: Exclude file not used in variable-width bins"
+        {params.mc_command} count \
+            --verbose \
+            -o {output.counts} \
+            -i {output.info} \
+            -b {input.bed} \
+            {input.bam} \
+        > {log} 2>&1
+        """
+
 
 ################################################################################
 # Segmentation                                                                 #
