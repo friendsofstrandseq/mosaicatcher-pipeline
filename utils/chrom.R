@@ -46,7 +46,12 @@ manual_colors = c(
   complex         = "darkorchid1",
     # background
   bg1 = "#ffffff",
-  bg2 = "#dddddd")
+  bg2 = "#dddddd",
+    # Strand states
+  `State: WW` = "sandybrown",
+  `State: CC` = "paleturquoise4",
+  `State: WC` = "khaki",
+  `State: CW` = "yellow2")
 
 
 
@@ -67,7 +72,8 @@ print_usage_and_stop = function(msg = NULL) {
   message("    per-page=<int>        Number of cells to be printed per page                ")
   message("    segments=<file>       Show the segmentation in the plots                    ")
   message("    calls=<file>          Highlight SV calls provided in a table                ")
-  message("    truth=<file>          Mark the `true`` SVs provided in a table              ")
+  message("    truth=<file>          Mark the `true`` SVs provided in a table           ")
+  message("    strand=<file>         Mark the strand states which calls are based on    ")
   message("                                                                                ")
   message("Generates one plot per chromosome listing all cells below another, separated    ")
   message("into pages. If an SV probability file is provided (2), segments are colored     ")
@@ -105,10 +111,11 @@ f_out    = args[length(args)]
 f_segments = NULL
 f_calls    = NULL
 f_truth    = NULL
+f_strand   = NULL
 cells_per_page <- 8
 
 if (length(args)>3) {
-  if (!all(grepl("^(calls|segments|per-page|truth)=", args[1:(length(args)-3)]))) {
+  if (!all(grepl("^(strand|calls|segments|per-page|truth)=", args[1:(length(args)-3)]))) {
     print_usage_and_stop("[Error]: Options must be one of `calls`, `segments`, `per-page`, or `truth`") }
   for (op in args[1:(length(args)-3)]) {
     if (grepl("^segments=", op)) f_segments = str_sub(op, 10)
@@ -118,6 +125,7 @@ if (length(args)>3) {
       pp = as.integer(str_sub(op, 10)); 
       if (pp>0 && pp < 50) { cells_per_page = pp }
     } 
+    if (grepl("^strand=", op))   f_strand = str_sub(op, 8)
   }
 }
 
@@ -203,6 +211,21 @@ if (!is.null(f_truth)) {
   simul = simul[chrom == CHROM]
 }
 
+### Check strand states file
+if (!is.null(f_strand)) {
+  message(" * Reading strand state file from ", f_strand, "...")
+  strand = fread(f_strand)
+  assert_that("sample"  %in% colnames(strand),
+              "cell"    %in% colnames(strand),
+              "chrom"   %in% colnames(strand),
+              "start"   %in% colnames(strand),
+              "end"     %in% colnames(strand),
+              "class"   %in% colnames(strand))
+  strand[, class := paste("State:", class)]
+  strand[, sample_cell := paste(sample, "-", cell)]
+  assert_that(all(unique(strand$sample_cell) %in% unique(counts$sample_cell))) %>% invisible
+  strand = strand[chrom == CHROM]
+}
 
 
 
@@ -260,6 +283,16 @@ while (i <= n_cells) {
         plt <- plt +
           geom_rect(data = local_sim,
                     aes(xmin = start, xmax = end, ymin = y_lim, ymax = Inf, fill = SV_class))
+      }
+    }
+    
+    # Add bars for strand states, if available
+    if (!is.null(f_strand)) {
+      local_strand = strand[CELLS, on = .(sample_cell), nomatch = 0]
+      if (nrow(strand) > 0) {
+        plt <- plt +
+          geom_rect(data = local_strand,
+                    aes(xmin = start, xmax = end, ymin = -Inf, ymax = -y_lim, fill = class))
       }
     }
 
