@@ -255,6 +255,31 @@ rule mosaic_count_fixed:
         > {log} 2>&1
         """
 
+rule mosaic_count_variable:
+    input:
+        bam = lambda wc: expand("bam/" + wc.sample + "/{bam}.bam", bam = BAM_PER_SAMPLE[wc.sample]),
+        bai = lambda wc: expand("bam/" + wc.sample + "/{bam}.bam.bai", bam = BAM_PER_SAMPLE[wc.sample]),
+        bed = lambda wc: config["variable_bins"][str(wc.window)],
+        excl = "log/exclude_file"
+    output:
+        counts = "counts/{sample}/{window}_variable.txt.gz",
+        info   = "counts/{sample}/{window}_variable.info"
+    log:
+        "log/{sample}/mosaic_count_variable.{window}.txt"
+    params:
+        mc_command = config["mosaicatcher"]
+    shell:
+        """
+        echo "NOTE: Exclude file not used in variable-width bins"
+        {params.mc_command} count \
+            --verbose \
+            -o {output.counts} \
+            -i {output.info} \
+            -b {input.bed} \
+            {input.bam} \
+        > {log} 2>&1
+        """
+
 
 ################################################################################
 # Segmentation                                                                 #
@@ -325,6 +350,8 @@ rule mosaiClassifier_make_call:
         probs = "sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.Rdata"
     output:
         "sv_calls/{sample}/{windows}.{bpdens}/simpleCalls.txt"
+    log:
+        "log/{sample}/mosaiClassifier_make_call.{windows}.{bpdens}.txt"
     script:
         "utils/mosaiClassifier_call.snakemake.R"
 
@@ -346,6 +373,8 @@ rule mosaiClassifier_make_call_biallelic:
         probs = "sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.Rdata"
     output:
         "sv_calls/{sample}/{windows}.{bpdens}/biAllelic.txt"
+    log:
+        "log/{sample}/mosaiClassifier_make_call_biallelic.{windows}.{bpdens}.txt"
     script:
         "utils/mosaiClassifier_call_biallelic.snakemake.R"
 

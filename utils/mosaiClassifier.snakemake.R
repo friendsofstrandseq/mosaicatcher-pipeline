@@ -1,3 +1,4 @@
+sink(snakemake@log[[1]])
 library(data.table)
 library(assertthat)
 source("utils/mosaiClassifier/mosaiClassifier.R")
