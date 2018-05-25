@@ -174,25 +174,27 @@ rule plot_SV_calls:
     input:
         counts = "counts/{sample}/{windows}.txt.gz",
         calls  = "sv_calls/{sample}/{windows}.{bpdens}/{method}.txt",
+        strand = "strand_states/{sample}/final.txt",
         segments = "segmentation2/{sample}/{windows}.{bpdens}.txt"
     output:
         "sv_calls/{sample}/{windows}.{bpdens}/{method}.{chrom}.pdf"
     shell:
         """
-        Rscript utils/chrom.R segments={input.segments} calls={input.calls} {input.counts} {wildcards.chrom} {output}
+        Rscript utils/chrom.R segments={input.segments} strand={input.strand} calls={input.calls} {input.counts} {wildcards.chrom} {output}
         """
 
 rule plot_SV_calls_simulated:
     input:
         counts = "counts/simulation{seed}-{window}/{window}_fixed.txt.gz",
         calls  = "sv_calls/simulation{seed}-{window}/{window}_fixed.{bpdens}/{method}.txt",
+        strand = "strand_states/simulation{seed}-{window}/final.txt",
         segments = "segmentation2/simulation{seed}-{window}/{window}_fixed.{bpdens}.txt",
         truth  = "simulation/variants/genome{seed}-{window}.txt"
     output:
         "sv_calls/simulation{seed}-{window}/{window}_fixed.{bpdens}/{method}.{chrom}.pdf"
     shell:
         """
-        Rscript utils/chrom.R segments={input.segments} truth={input.truth} calls={input.calls} {input.counts} {wildcards.chrom} {output}
+        Rscript utils/chrom.R segments={input.segments} strand={input.strand} truth={input.truth} calls={input.calls} {input.counts} {wildcards.chrom} {output}
         """
 
 
