@@ -4,6 +4,7 @@
 
 Preliminary SV calling using Strand-seq data - summarized in a [Snakemake](https://bitbucket.org/snakemake/snakemake) pipeline.
 
+Update: We just switched to a re-implementation of the SV classification. Still in the test phase
 
 ### Bioconda environment
 To install the correct environment, you can use Bioconda.
