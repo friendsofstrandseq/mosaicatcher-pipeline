@@ -289,7 +289,7 @@ while (i <= n_cells) {
     # Add bars for strand states, if available
     if (!is.null(f_strand)) {
       local_strand = strand[CELLS, on = .(sample_cell), nomatch = 0]
-      if (nrow(strand) > 0) {
+      if (nrow(local_strand) > 0) {
         plt <- plt +
           geom_rect(data = local_strand,
                     aes(xmin = start, xmax = end, ymin = -Inf, ymax = -y_lim, fill = class))
