@@ -25,7 +25,7 @@ manual_colors = c(
   dup_hom         = muted("firebrick4", 70, 50),
   simul_het_dup   = "firebrick2",
   dup_h1          = muted("firebrick2", 90, 30),
-  dup_h2          = muted("orangered1", 90, 30),
+  dup_h2          = muted("firebrick2", 80, 20),
     # deletions
   simul_hom_del   = "dodgerblue4",
   del_hom         = muted("dodgerblue4", 50, 60),
