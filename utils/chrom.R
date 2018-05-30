@@ -311,7 +311,9 @@ while (i <= n_cells) {
               strip.background = element_rect(color = "#eeeeee", fill = "#eeeeee"),
               strip.text = element_text(size = 5),
               legend.position = "bottom") +
-        ggtitle(paste("data:", basename(f_counts), "chromosome:", CHROM))
+        ggtitle(paste0("data: ", basename(f_counts),
+                ifelse(!is.null(f_segments), paste0(" / ", basename(f_segments)), ""), 
+                ", chromosome: ", CHROM, ", scale: [", -y_lim, ",", y_lim, "]"))
 
     print(plt)
     i = i + cells_per_page
