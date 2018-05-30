@@ -40,6 +40,9 @@
     "simulation_cell_count" : 100,
     "simulation_alpha" : 0.02,
 
-    "genome_size" : 3e9
+    "genome_size" : 3e9,
 
+    "normalization" : {
+        "50000_fixed" : "utils/normalization/norm.HGSVC.50kb.txt"
+    }
 }
