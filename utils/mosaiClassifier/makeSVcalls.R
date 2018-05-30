@@ -56,7 +56,7 @@ makeSVCallSimple <- function(probs, llr_thr = 1) {
   return(probs[sv_call_name != "ref_hom" & llr_to_ref > llr_thr])
 }
 
-forceBiallelic <- function(probs, penalize_factor=0)
+forceBiallelic <- function(probs, penalize_factor = 0.1)
 {
   # Add reference probability as an extra column (same as in makeSimpleSVCalls)
   probs[,
