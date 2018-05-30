@@ -26,7 +26,7 @@ rule all:
         expand("sv_calls/{sample}/{window}_fixed.{bpdens}/{method}.{chrom}.pdf",
                sample = SAMPLE,
                chrom = config["chromosomes"],
-               window = [100000],
+               window = [50000, 100000],
                bpdens = ["few","medium","more","many"],
                method = METHODS)
 
