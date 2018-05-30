@@ -37,3 +37,22 @@ haplo_to_geno_name <- function(hap.name)
   
   return(geno.name)
 }
+
+#' translates the haplotype code to the corresponding classe of genotypes (normal, inv, CN loss, CN gain)
+#' 
+#' @param hap.code The haplotype coding
+#' @author Maryam Ghareghani
+#' @export
+#' 
+
+haplo_code_to_geno_class <- function(hap.code)
+{
+  if (length(hap.code) < 1) return (character())
+  
+  dd = as.data.table(str_split(hap.code,"", simplify = T, n = 4))
+  dd = dd[, lapply(.SD, as.integer)]
+  dd[, state := ifelse(V1+V2+V3+V4 != 2, 
+                       ifelse(V1+V2+V3+V4<2, "loss", "gain"), 
+                       ifelse(V2+V4>0, "inv", "ref") )]
+  return(dd$state)
+}
