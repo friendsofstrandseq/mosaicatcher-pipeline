@@ -112,7 +112,7 @@ addNormalizationScalar <- function(df, counts, normVector) {
     }
 
     getScalarSum <- function(chrom_, from_, to_) {
-      return ( x[chrom==chrom_, sum(scalar[from_ : to_])] )
+      return ( x[chrom==chrom_, sum(scalar[from_ : to_])/(to_ - from_ + 1)] )
     }
     df[,
        scalar := getScalarSum(chrom, from, to),
