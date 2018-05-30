@@ -83,3 +83,38 @@ addCountsPerSegment <- function(df, count_tab) {
     df[, c("W","C") := count(sample, cell, chrom, from, to), by = .(sample, cell, chrom, from)  ]
     return (df)
 }
+
+addNormalizationScalar <- function(df, counts, normVector) {
+
+    assert_that(is.data.table(df),
+                "chrom" %in% colnames(df),
+                "start" %in% colnames(df),
+                "end"   %in% colnames(df),
+                "sample"%in% colnames(df),
+                "cell"  %in% colnames(df)) %>% invisible
+    setkey(df, sample, cell, chrom, start, end)
+    assert_that(is.data.table(normVector),
+                "chrom"  %in% colnames(normVector),
+                "start"  %in% colnames(normVector),
+                "end"    %in% colnames(normVector),
+                "scalar" %in% colnames(normVector))
+    assert_that(nrow(normVector) == nrow(normVector[, .(chrom,start,end)]))
+    setkey(normVector, chrom, start, end)
+
+    x <- merge(unique(counts[, .(chrom, start, end)]),
+               normVector[, .(chrom, start, end, scalar)],
+               by = c("chrom","start","end"),
+               all.x = T)
+    setkey(x, chrom, start, end)
+
+    if (nrow(x[is.na(scalar)])>0) {
+      message("[MosaiClassifier] WARNING: Normalization could not be set for ", nrow(x[is.na(scalar)]), " bins. Defaulting to 1")
+    }
+
+    getScalarSum <- function(chrom_, from_, to_) {
+      return ( x[chrom==chrom_, sum(scalar[from_ : to_])/(to_ - from_ + 1)] )
+    }
+    df[,
+       scalar := getScalarSum(chrom, from, to),
+       by = .(chrom, from, to)]
+}
