@@ -26,7 +26,7 @@ rule all:
         expand("sv_calls/{sample}/{window}_fixed.{bpdens}/{method}.{chrom}.pdf",
                sample = SAMPLE,
                chrom = config["chromosomes"],
-               window = [100000],
+               window = [50000, 100000],
                bpdens = ["few","medium","more","many"],
                method = METHODS)
 
@@ -355,12 +355,19 @@ rule mosaiClassifier_make_call:
     script:
         "utils/mosaiClassifier_call.snakemake.R"
 
+def get_normalization_file(wc):
+    if "normalization" in config and wc.windows in config["normalization"]:
+        return config["normalization"][wc.windows]
+    else:
+        return []
+
 rule mosaiClassifier_calc_probs:
     input:
         counts = "counts/{sample}/{windows}.txt.gz",
         info   = "counts/{sample}/{windows}.info",
         states = "strand_states/{sample}/final.txt",
-        bp     = "segmentation2/{sample}/{windows}.{bpdens}.txt"
+        bp     = "segmentation2/{sample}/{windows}.{bpdens}.txt",
+        norm   = get_normalization_file
     output:
         output = "sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.Rdata"
     log:
