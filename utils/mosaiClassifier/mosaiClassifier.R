@@ -11,7 +11,7 @@ library(GenomicRanges) # This is to test whether the given strand states
                        # are in fact disjoint intervals !
 
 
-mosaiClassifierPrepare <- function(counts, info, strand, segs) {
+mosaiClassifierPrepare <- function(counts, info, strand, segs, normVector = NULL) {
 
   ##############################################################################
   # Check input data
@@ -124,7 +124,13 @@ mosaiClassifierPrepare <- function(counts, info, strand, segs) {
 
   message("[MosaiClassifier] Annotating observed W/C counts")
   probs <- addCountsPerSegment(probs, counts)
-  probs[, scalar := 1]
+
+  # Add normalization factors to the expected counts ("scalar")
+  if (!is.null(normVector)) {
+    addNormalizationScalar(probs, counts, normVector)
+  } else {
+    probs[, scalar := 1.0]
+  }
 
 
   # Clean up table
@@ -134,6 +140,7 @@ mosaiClassifierPrepare <- function(counts, info, strand, segs) {
 
   return(probs)
 }
+
 
 
 
