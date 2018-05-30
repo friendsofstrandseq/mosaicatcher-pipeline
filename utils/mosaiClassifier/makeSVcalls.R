@@ -51,12 +51,12 @@ makeSVCallSimple <- function(probs, llr_thr = 1) {
 
 
   # Clean up table
-  probs <- probs[, .(chrom, start, end, sample, cell, class, sv_call_name, sv_call_haplotype, sv_call_name_2nd, sv_call_haplotype_2nd, llr_to_ref, llr_to_2nd)]
+  probs <- probs[, .(chrom, start, end, sample, cell, class, scalar, sv_call_name, sv_call_haplotype, sv_call_name_2nd, sv_call_haplotype_2nd, llr_to_ref, llr_to_2nd)]
 
   return(probs[sv_call_name != "ref_hom" & llr_to_ref > llr_thr])
 }
 
-forceBiallelic <- function(probs, penalize_factor=0)
+forceBiallelic <- function(probs, penalize_factor = 0.1)
 {
   # Add reference probability as an extra column (same as in makeSimpleSVCalls)
   probs[,
