@@ -36,18 +36,18 @@ addCountsPerSegment <- function(df, count_tab) {
     setkey(counts,sample,cell, chrom, start, end)
 
     # Add expected counts (old way)
-    probs[,
+    df[,
           expected_old := (to - from +1)*mean,
           by = .(sample, cell, chrom, from, to)]
 
     # Add expected counts (new way)
     counts[, num_bins := cumsum(class != "None"), by = .(sample, cell, chrom)]
     xxx <- counts[, .(chrom_ = chrom, start_ = start, end_ = end, sample_ = sample, cell_ = cell, num_bins)]
-    probs[,
+    df[,
           expected := xxx[sample_ == sample & cell_ == cell & chrom_ == chrom, num_bins[to] - num_bins[from] + 1] * mean,
           by = .(sample, cell, chrom)]
     
-    unique(probs[, .(chrom, from, to)])
+    #unique(probs[, .(chrom, from, to)])
 
     # Assign bin indices and check that all cells have the same bins!
     counts[, idx := 1:.N, by = .(chrom, sample, cell)]
