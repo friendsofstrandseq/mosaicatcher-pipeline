@@ -12,7 +12,7 @@ segs   = fread(snakemake@input[["bp"]])
 
 
 # is there a normalization file given?
-if ("norm" %in% names(snakemake@input)) {
+if ("norm" %in% names(snakemake@input) && length(snakemake@input[["norm"]])>0) {
   message("[MosaiClassifier] Read normalization from ", snakemake@input[["norm"]])
   normalization = fread(snakemake@input[["norm"]])
 } else {
