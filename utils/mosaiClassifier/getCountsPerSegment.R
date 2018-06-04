@@ -18,22 +18,36 @@ library(assertthat)
 #
 addCountsPerSegment <- function(df, count_tab) {
   
+
     assert_that(is.data.table(df))
     assert_that("sample" %in% colnames(df),
                 "cell"   %in% colnames(df),
                 "chrom"  %in% colnames(df),
                 "from"   %in% colnames(df))
-  
-    counts <- count_tab # copy
+
+    counts <- copy(count_tab) # copy
     assert_that("chrom" %in% colnames(counts),
                 "start" %in% colnames(counts),
                 "end"   %in% colnames(counts),
                 "sample"%in% colnames(counts),
-                "cell"  %in% colnames(counts))
+                "cell"  %in% colnames(counts),
+                "class" %in% colnames(counts))
     counts <- counts[order(sample,cell,chrom,start,end),] # order
-    setkey(counts,sample,cell)
+    setkey(counts,sample,cell, chrom, start, end)
+
+    # Add expected counts (old way)
+    probs[,
+          expected_old := (to - from +1)*mean,
+          by = .(sample, cell, chrom, from, to)]
+
+    # Add expected counts (new way)
+    counts[, num_bins := cumsum(class != "None"), by = .(sample, cell, chrom)]
+    xxx <- counts[, .(chrom_ = chrom, start_ = start, end_ = end, sample_ = sample, cell_ = cell, num_bins)]
+    probs[,
+          expected := xxx[sample_ == sample & cell_ == cell & chrom_ == chrom, num_bins[to] - num_bins[from] + 1] * mean,
+          by = .(sample, cell, chrom)]
     
-    
+    unique(probs[, .(chrom, from, to)])
 
     # Assign bin indices and check that all cells have the same bins!
     counts[, idx := 1:.N, by = .(chrom, sample, cell)]
@@ -44,6 +58,8 @@ addCountsPerSegment <- function(df, count_tab) {
     chrom_map <- bins[,.N, by = chrom][,.(chrom = c(chrom, "end"), chr_idx = 1:(length(chrom)+1), N = c(1,cumsum(N)+1))]
     setkey(chrom_map, chrom)
 
+    # Set black-listed counts to 0
+    counts[class == "None", `:=`(w = 0, c = 0)]
     
     # Get cumulative counts (bins are ordered by idx!)
     counts[, w := cumsum(w), by = .(sample,cell,chrom)]
