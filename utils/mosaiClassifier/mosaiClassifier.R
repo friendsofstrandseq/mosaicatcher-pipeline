@@ -127,6 +127,7 @@ mosaiClassifierPrepare <- function(counts, info, strand, segs, normVector = NULL
 
   # Add normalization factors to the expected counts ("scalar")
   if (!is.null(normVector)) {
+    message("[MosaiClassifier] Normalize coverage expectation")
     addNormalizationScalar(probs, counts, normVector)
   } else {
     probs[, scalar := 1.0]
