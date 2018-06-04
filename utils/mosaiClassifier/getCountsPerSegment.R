@@ -17,7 +17,7 @@ library(assertthat)
 # A maybe faster way of doing it would be a more vectorized / data.table conform
 # way. This would be a nice step for later
 #
-addCountsPerSegment <- function(df, count_tab) {
+addCountsPerSegment2 <- function(df, count_tab) {
   
 
     assert_that(is.data.table(df))
@@ -103,7 +103,7 @@ addCountsPerSegment <- function(df, count_tab) {
 
 
 
-addCountsPerSegment2 <- function(df, counts) {
+addCountsPerSegment <- function(df, counts) {
 
   assert_that(is.data.table(df))
   assert_that("sample" %in% colnames(df),
@@ -133,7 +133,6 @@ addCountsPerSegment2 <- function(df, counts) {
   count_tab <- count_tab[,
             .(c = sum(c), w = sum(w), expected = sum(class != "None")),
             by = .(sample, cell, chrom, from, to)]
-  count_tab[, `:=`(bin = NULL, start = NULL, end = NULL)]
 
 
   # Add information to the original `df` table
