@@ -119,9 +119,6 @@ mosaiClassifierPrepare <- function(counts, info, strand, segs, normVector = NULL
   ##############################################################################
   # Annotate the observed and expected counts in each segment / cell
   #
-  message("[MosaiClassifier] Annotating expected coverage")
-  probs[, expected := (to - from +1)*mean, by = .(sample, cell, chrom, from, to)]
-
   message("[MosaiClassifier] Annotating observed W/C counts")
   probs <- addCountsPerSegment(probs, counts)
 
