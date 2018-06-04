@@ -19,10 +19,9 @@
     "R_reference"   : "BSgenome.Hsapiens.UCSC.hg38",
 
     "bp_density"    : {
-        "few"       : 0.1,
-        "medium"    : 0.25,
-        "more"      : 0.33,
-        "many"      : 0.5
+        "few"       : 0.2,
+        "medium"    : 0.4,
+        "many"      : 0.6
     },
 
     "paired_end"    : true,
