@@ -18,7 +18,7 @@ import os.path
 # * calculate a segmentation into potential SVs using Mosaicatcher
 
 
-METHODS = ["simpleCalls", "biAllelic"]
+METHODS = ["simpleCalls_llr1", "simpleCalls_llr4", "biAllelic_llr1", "biAllelic_llr4"]
 
 rule all:
     input:
@@ -27,7 +27,7 @@ rule all:
                sample = SAMPLE,
                chrom = config["chromosomes"],
                window = [50000, 100000],
-               bpdens = ["few","medium","more","many"],
+               bpdens = ["few","medium","many"],
                method = METHODS)
 
 
@@ -349,9 +349,9 @@ rule mosaiClassifier_make_call:
     input:
         probs = "sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.Rdata"
     output:
-        "sv_calls/{sample}/{windows}.{bpdens}/simpleCalls.txt"
+        "sv_calls/{sample}/{windows}.{bpdens}/simpleCalls_llr{llr}.txt"
     log:
-        "log/{sample}/mosaiClassifier_make_call.{windows}.{bpdens}.txt"
+        "log/{sample}/mosaiClassifier_make_call.{windows}.{bpdens}.{llr}.txt"
     script:
         "utils/mosaiClassifier_call.snakemake.R"
 
@@ -379,9 +379,9 @@ rule mosaiClassifier_make_call_biallelic:
     input:
         probs = "sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.Rdata"
     output:
-        "sv_calls/{sample}/{windows}.{bpdens}/biAllelic.txt"
+        "sv_calls/{sample}/{windows}.{bpdens}/biAllelic_llr{llr}.txt"
     log:
-        "log/{sample}/mosaiClassifier_make_call_biallelic.{windows}.{bpdens}.txt"
+        "log/{sample}/mosaiClassifier_make_call_biallelic.{windows}.{bpdens}.{llr}.txt"
     script:
         "utils/mosaiClassifier_call_biallelic.snakemake.R"
 
