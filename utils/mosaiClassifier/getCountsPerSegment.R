@@ -1,3 +1,4 @@
+library(dplyr)
 library(data.table)
 library(assertthat)
 
@@ -99,6 +100,51 @@ addCountsPerSegment <- function(df, count_tab) {
     df[, c("W","C") := count(sample, cell, chrom, from, to), by = .(sample, cell, chrom, from)  ]
     return (df)
 }
+
+
+
+addCountsPerSegment2 <- function(df, counts) {
+
+  assert_that(is.data.table(df))
+  assert_that("sample" %in% colnames(df),
+              "cell"   %in% colnames(df),
+              "chrom"  %in% colnames(df),
+              "from"   %in% colnames(df)) %>% invisible
+
+  count_tab <- copy(counts) # copy
+  assert_that("chrom" %in% colnames(count_tab),
+              "start" %in% colnames(count_tab),
+              "end"   %in% colnames(count_tab),
+              "sample"%in% colnames(count_tab),
+              "cell"  %in% colnames(count_tab),
+              "class" %in% colnames(count_tab)) %>% invisible
+  setkey(count_tab, sample, cell, chrom, start, end)
+
+  # Set black-listed counts to 0
+  counts[class == "None", `:=`(w = 0, c = 0)]
+
+  # Assign bins (from count_tab) to segments
+  all_segs = unique(df[, .(chrom, from, to)])[, .(bin = from:to), by = .(chrom, from, to)]
+  count_tab[, bin := 1:.N, by = .(sample, cell, chrom)]
+  count_tab <- merge(count_tab, all_segs, by = c("chrom","bin"), all.x = T)
+  assert_that(all(!is.na(count_tab$from)), msg = "Segments should cover all bins") %>% invisible
+
+  # Now summarize counts and expectation per cell and segment
+  count_tab <- count_tab[,
+            .(c = sum(c), w = sum(w), expected = sum(class != "None")),
+            by = .(sample, cell, chrom, from, to)]
+  count_tab[, `:=`(bin = NULL, start = NULL, end = NULL)]
+
+
+  # Add information to the original `df` table
+  df <- merge(df, count_tab, by = c("sample","cell","chrom","from","to"))
+  df[, expected := expected * mean]
+
+  return (df)
+}
+
+
+
 
 addNormalizationScalar <- function(df, counts, normVector) {
 
