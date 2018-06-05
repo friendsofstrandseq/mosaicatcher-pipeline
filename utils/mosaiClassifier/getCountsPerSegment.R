@@ -124,8 +124,11 @@ addCountsPerSegment <- function(df, counts) {
   counts[class == "None", `:=`(w = 0, c = 0)]
 
   # Assign bins (from count_tab) to segments
+  # Extend segments by all numbers from `from` to `to`
   all_segs = unique(df[, .(chrom, from, to)])[, .(bin = from:to), by = .(chrom, from, to)]
+  # Assign indices to bins in count_tab
   count_tab[, bin := 1:.N, by = .(sample, cell, chrom)]
+  # Merge count_tab and segments by their bin IDs
   count_tab <- merge(count_tab, all_segs, by = c("chrom","bin"), all.x = T)
   assert_that(all(!is.na(count_tab$from)), msg = "Segments should cover all bins") %>% invisible
 
