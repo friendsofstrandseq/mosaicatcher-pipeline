@@ -42,6 +42,5 @@
     "genome_size" : 3e9,
 
     "normalization" : {
-        "50000_fixed" : "utils/normalization/norm.HGSVC.50kb.txt"
     }
 }
