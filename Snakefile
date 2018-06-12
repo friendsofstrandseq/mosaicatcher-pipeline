@@ -22,8 +22,9 @@ METHODS = ["simpleCalls_llr1", "simpleCalls_llr4", "biAllelic_llr1", "biAllelic_
 
 rule all:
     input:
-        expand("plots/{sample}/{window}_fixed.pdf", sample = SAMPLE, window = [50000, 100000, 200000, 500000]),
-        expand("sv_calls/{sample}/{window}_fixed.{bpdens}/{method}.{chrom}.pdf",
+        expand("plots/{sample}/{window}_fixed.pdf",      sample = SAMPLE, window = [50000, 100000, 200000, 500000]),
+        expand("plots/{sample}/{window}_fixed_norm.pdf", sample = SAMPLE, window = [50000, 100000, 200000]),
+        expand("sv_calls/{sample}/{window}_fixed_norm.{bpdens}/{method}.{chrom}.pdf",
                sample = SAMPLE,
                chrom = config["chromosomes"],
                window = [50000, 100000],
@@ -282,6 +283,34 @@ rule mosaic_count_variable:
 
 
 ################################################################################
+# Normalize counts                                                             #
+################################################################################
+
+rule normalize_counts:
+    input:
+        counts = "counts/{sample}/{window}_fixed.txt.gz",
+        norm   = "utils/normalization/HGSVC.{window}.txt"
+    output:
+        "counts/{sample}/{window}_fixed_norm.txt.gz"
+    params:
+        r_command = config["norm_script"]
+    shell:
+        """
+        Rscript {params.r_command} {input.counts} {input.norm} {output} 
+        """
+
+rule link_normalized_info_file:
+    input:
+        info = "counts/{sample}/{window}_fixed.info"
+    output:
+        info = "counts/{sample}/{window}_fixed_norm.info"
+    run:
+        d = os.path.dirname(output.info)
+        file = os.path.basename(output.info)
+        shell("cd {d} && ln -s ../../{input.info} {file} && cd ../..")
+
+
+################################################################################
 # Segmentation                                                                 #
 ################################################################################
 
@@ -355,19 +384,12 @@ rule mosaiClassifier_make_call:
     script:
         "utils/mosaiClassifier_call.snakemake.R"
 
-def get_normalization_file(wc):
-    if "normalization" in config and wc.windows in config["normalization"]:
-        return config["normalization"][wc.windows]
-    else:
-        return []
-
 rule mosaiClassifier_calc_probs:
     input:
         counts = "counts/{sample}/{windows}.txt.gz",
         info   = "counts/{sample}/{windows}.info",
         states = "strand_states/{sample}/final.txt",
-        bp     = "segmentation2/{sample}/{windows}.{bpdens}.txt",
-        norm   = get_normalization_file
+        bp     = "segmentation2/{sample}/{windows}.{bpdens}.txt"
     output:
         output = "sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.Rdata"
     log:
