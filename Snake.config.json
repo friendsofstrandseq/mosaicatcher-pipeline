@@ -6,6 +6,7 @@
     "plot_script"   : "/g/korbel/meiers/tools/mosaicatcher/mosaicatcher/R/qc.R",
     "plot_segments" : "/g/korbel/meiers/tools/mosaicatcher/mosaicatcher/R/plot_segments.R",
     "sv_plot_script": "/g/korbel/meiers/tools/mosaicatcher/mosaicatcher/R/svs.R",
+    "norm_script"   : "/g/korbel/meiers/tools/mosaicatcher/mosaicatcher_experimental/R/norm.R",
     "samtools"      : "samtools",
     "bcftools"      : "bcftools",
 
