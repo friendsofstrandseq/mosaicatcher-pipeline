@@ -326,6 +326,7 @@ rule segmentation:
     shell:
         """
         {params.mc_command} segment \
+        --remove-none \
         -m 0.33 \
         -M 50000000 \
         -o {output} \
