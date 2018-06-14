@@ -3,7 +3,7 @@
 
     "reference"     : "/g/korbel/shared/datasets/refgenomes/human/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna",
     "mosaicatcher"  : "/g/korbel/meiers/tools/mosaicatcher/mosaicatcher_experimental/build/mosaicatcher",
-    "plot_script"   : "/g/korbel/meiers/tools/mosaicatcher/mosaicatcher/R/qc.R",
+    "plot_script"   : "/g/korbel/meiers/tools/mosaicatcher/mosaicatcher_experimental/R/qc.R",
     "plot_segments" : "/g/korbel/meiers/tools/mosaicatcher/mosaicatcher/R/plot_segments.R",
     "sv_plot_script": "/g/korbel/meiers/tools/mosaicatcher/mosaicatcher/R/svs.R",
     "norm_script"   : "/g/korbel/meiers/tools/mosaicatcher/mosaicatcher_experimental/R/norm.R",
