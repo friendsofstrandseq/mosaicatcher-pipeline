@@ -98,7 +98,7 @@ mosaiClassifierPrepare <- function(counts, info, strand, segs, normVector = NULL
   segs[, from := data.table::shift(bps,fill = 0) + 1, by = chrom]
 
   # rename the "bps" column to "to"
-  segs[, `:=`(to = bps, bps = NULL, k = NULL)]
+  segs[, `:=`(to = bps + 1, bps = NULL, k = NULL)]
 
   # Add coordinates
   addPositions(segs, counts)
