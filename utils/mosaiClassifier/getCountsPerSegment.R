@@ -134,7 +134,9 @@ addCountsPerSegment <- function(df, counts) {
 
   # Now summarize counts and expectation per cell and segment
   count_tab <- count_tab[,
-            .(C = sum(c), W = sum(w), expected = sum(class != "None")),
+            .(C = as.integer(sum(c)),
+			  W = as.integer(sum(w)),
+			  expected = sum(class != "None")),
             by = .(sample, cell, chrom, from, to)]
 
 
