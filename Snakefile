@@ -179,9 +179,11 @@ rule plot_SV_calls:
         segments = "segmentation2/{sample}/{windows}.{bpdens}.txt"
     output:
         "sv_calls/{sample}/{windows}.{bpdens}/{method}.{chrom}.pdf"
+    params:
+        sv_plot_script = config["sv_plot_script"]
     shell:
         """
-        Rscript utils/chrom.R segments={input.segments} strand={input.strand} calls={input.calls} {input.counts} {wildcards.chrom} {output}
+        Rscript {params.sv_plot_script} segments={input.segments} strand={input.strand} calls={input.calls} {input.counts} {wildcards.chrom} {output}
         """
 
 rule plot_SV_calls_simulated:
@@ -193,9 +195,11 @@ rule plot_SV_calls_simulated:
         truth  = "simulation/variants/genome{seed}-{window}.txt"
     output:
         "sv_calls/simulation{seed}-{window}/{window}_fixed.{bpdens}/{method}.{chrom}.pdf"
+    params:
+        sv_plot_script = config["sv_plot_script"]
     shell:
         """
-        Rscript utils/chrom.R segments={input.segments} strand={input.strand} truth={input.truth} calls={input.calls} {input.counts} {wildcards.chrom} {output}
+        Rscript {params.sv_plot_script} segments={input.segments} strand={input.strand} truth={input.truth} calls={input.calls} {input.counts} {wildcards.chrom} {output}
         """
 
 
@@ -248,6 +252,7 @@ rule mosaic_count_fixed:
         """
         {params.mc_command} count \
             --verbose \
+            --do-not-blacklist-hmm \
             -o {output.counts} \
             -i {output.info} \
             -x {input.excl} \
