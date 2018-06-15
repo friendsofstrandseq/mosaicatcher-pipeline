@@ -94,11 +94,16 @@ mosaiClassifierPrepare <- function(counts, info, strand, segs, normVector = NULL
   ##############################################################################
   # Expand table to (all cells) x (all segments)
   #
-  # add a "from" column which contians the "to" breakpoint from the prev. segment each
-  segs[, from := data.table::shift(bps,fill = 0) + 1, by = chrom]
+  # Go from 0-based coordinates to 1-based bin coordinates
+  segs[, to := bps + 1L]
 
-  # rename the "bps" column to "to"
-  segs[, `:=`(to = bps + 1, bps = NULL, k = NULL)]
+  # add a "from" column which contians the "to" breakpoint from the prev. segment each
+  segs[, from := (data.table::shift(to,fill = 0L) + 1L), by = chrom]
+
+  # remove columns "bps" and "k"
+  segs[, `:=`(bps = NULL, k = NULL)]
+
+
 
   # Add coordinates
   addPositions(segs, counts)
