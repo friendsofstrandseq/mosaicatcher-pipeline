@@ -102,7 +102,7 @@ rule simulate_counts:
         cell_count   = config["simulation_cell_count"],
         alpha        = config["simulation_alpha"],
     log:
-        "log/simulate_counts/genome{seed}-{window_size}.txt"
+        "log/simulate_counts/genome{seed}-{window_size}.log"
     shell:
         """
             {params.mc_command} simulate \
@@ -161,7 +161,7 @@ rule plot_mosaic_counts:
     output:
         "plots/{sample}/{file_name}.pdf"
     log:
-        "log/plot_mosaic_counts/{sample}.{file_name}.txt"
+        "log/plot_mosaic_counts/{sample}/{file_name}.log"
     params:
         plot_command = "Rscript " + config["plot_script"]
     shell:
@@ -179,11 +179,19 @@ rule plot_SV_calls:
         segments = "segmentation2/{sample}/{windows}.{bpdens}.txt"
     output:
         "sv_calls/{sample}/{windows}.{bpdens}/{method}.{chrom}.pdf"
+    log:
+        "log/plot_SV_calls/{sample}/{windows}.{bpdens}.{method}.{chrom}.log"
     params:
         sv_plot_script = config["sv_plot_script"]
     shell:
         """
-        Rscript {params.sv_plot_script} segments={input.segments} strand={input.strand} calls={input.calls} {input.counts} {wildcards.chrom} {output}
+        Rscript {params.sv_plot_script} \
+            segments={input.segments} \
+            strand={input.strand} \
+            calls={input.calls} \
+            {input.counts} \
+            {wildcards.chrom} \
+            {output} 2>&1 > {log}
         """
 
 rule plot_SV_calls_simulated:
@@ -195,11 +203,20 @@ rule plot_SV_calls_simulated:
         truth  = "simulation/variants/genome{seed}-{window}.txt"
     output:
         "sv_calls/simulation{seed}-{window}/{window}_fixed.{bpdens}/{method}.{chrom}.pdf"
+    log:
+        "log/plot_SV_calls_simulated/simulation{seed}-{window}/{window}_fixed.{bpdens}.{method}.{chrom}.log"
     params:
         sv_plot_script = config["sv_plot_script"]
     shell:
         """
-        Rscript {params.sv_plot_script} segments={input.segments} strand={input.strand} truth={input.truth} calls={input.calls} {input.counts} {wildcards.chrom} {output}
+        Rscript {params.sv_plot_script} \
+            segments={input.segments} \
+            strand={input.strand} \
+            truth={input.truth} \
+            calls={input.calls} \
+            {input.counts} \
+            {wildcards.chrom} \
+            {output} 2>&1 > {log}
         """
 
 
@@ -213,12 +230,14 @@ rule generate_exclude_file_1:
     output:
         temp("log/exclude_file.temp")
     input:
-        bam = expand("bam/{sample}/{bam}.bam", sample = SAMPLE[0], bam = BAM[0]),
+        bam = expand("bam/{sample}/{bam}.bam", sample = SAMPLE[0], bam = BAM[0])
+    log:
+        "log/generate_exclude_file_1.log"
     params:
         samtools = config["samtools"]
     shell:
         """
-        {params.samtools} view -H {input.bam} | awk '/^@SQ/ {{print substr($2,4)}}' > {output}
+        {params.samtools} view -H {input.bam} | awk '/^@SQ/ {{print substr($2,4)}}' > {output} 2> {log}
         """
 
 rule generate_exclude_file_2:
@@ -245,7 +264,7 @@ rule mosaic_count_fixed:
         counts = "counts/{sample}/{window}_fixed.txt.gz",
         info   = "counts/{sample}/{window}_fixed.info"
     log:
-        "log/{sample}/mosaic_count_fixed.{window}.txt"
+        "log/{sample}/mosaic_count_fixed.{window}.log"
     params:
         mc_command = config["mosaicatcher"]
     shell:
@@ -271,7 +290,7 @@ rule mosaic_count_variable:
         counts = "counts/{sample}/{window}_variable.txt.gz",
         info   = "counts/{sample}/{window}_variable.info"
     log:
-        "log/{sample}/mosaic_count_variable.{window}.txt"
+        "log/{sample}/mosaic_count_variable.{window}.log"
     params:
         mc_command = config["mosaicatcher"]
     shell:
@@ -297,11 +316,13 @@ rule normalize_counts:
         norm   = "utils/normalization/HGSVC.{window}.txt"
     output:
         "counts/{sample}/{window}_fixed_norm.txt.gz"
+    log:
+        "log/normalize_counts/{sample}/{window}_fixed.log"
     params:
         r_command = config["norm_script"]
     shell:
         """
-        Rscript {params.r_command} {input.counts} {input.norm} {output} 
+        Rscript {params.r_command} {input.counts} {input.norm} {output} 2>&1 > {log}
         """
 
 rule link_normalized_info_file:
@@ -325,7 +346,7 @@ rule segmentation:
     output:
         "segmentation/{sample}/{file_name}.txt"
     log:
-        "log/{sample}/segmentation.{file_name}.txt"
+        "log/segmentation/{sample}/{file_name}.log"
     params:
         mc_command = config["mosaicatcher"]
     shell:
@@ -338,8 +359,6 @@ rule segmentation:
         {input} > {log} 2>&1
         """
 
-
-
 # Pick a few segmentations and prepare the input files for SV classification
 rule prepare_segments:
     input:
@@ -347,7 +366,7 @@ rule prepare_segments:
     output:
         "segmentation2/{sample}/{windows}.{bpdens}.txt"
     log:
-        "log/{sample}/prepare_segments.{windows}.{bpdens}.txt"
+        "log/prepare_segments/{sample}/{windows}.{bpdens}.log"
     params:
         quantile = lambda wc: config["bp_density"][wc.bpdens]
     script:
@@ -357,7 +376,6 @@ rule prepare_segments:
 ################################################################################
 # SV classification                                                            #
 ################################################################################
-
 
 rule plot_heatmap:
     input:
@@ -371,7 +389,7 @@ rule plot_heatmap:
     params:
         r_package_path = "utils/R-packages2"
     log:
-        "log/{sample}/final.plots.{windows}.{bpdens}.txt"
+        "log/plot_heatmap/{sample}/{windows}.{bpdens}.log"
     script:
         "utils/plot_heatmap.R"
 
@@ -386,7 +404,7 @@ rule mosaiClassifier_make_call:
     output:
         "sv_calls/{sample}/{windows}.{bpdens}/simpleCalls_llr{llr}.txt"
     log:
-        "log/{sample}/mosaiClassifier_make_call.{windows}.{bpdens}.{llr}.txt"
+        "log/mosaiClassifier_make_call/{sample}/{windows}.{bpdens}.{llr}.log"
     script:
         "utils/mosaiClassifier_call.snakemake.R"
 
@@ -399,7 +417,7 @@ rule mosaiClassifier_calc_probs:
     output:
         output = "sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.Rdata"
     log:
-        "log/{sample}/mosaiClassifier_calc_probs.{windows}.{bpdens}.txt"
+        "log/mosaiClassifier_calc_probs/{sample}/{windows}.{bpdens}.log"
     script:
         "utils/mosaiClassifier.snakemake.R"
 
@@ -409,7 +427,7 @@ rule mosaiClassifier_make_call_biallelic:
     output:
         "sv_calls/{sample}/{windows}.{bpdens}/biAllelic_llr{llr}.txt"
     log:
-        "log/{sample}/mosaiClassifier_make_call_biallelic.{windows}.{bpdens}.{llr}.txt"
+        "log/mosaiClassifier_make_call_biallelic/{sample}/{windows}.{bpdens}.{llr}.log"
     script:
         "utils/mosaiClassifier_call_biallelic.snakemake.R"
 
@@ -425,12 +443,12 @@ rule determine_initial_strand_states:
     output:
         "strand_states/{sample}/intitial_strand_state"
     log:
-        "log/{sample}/determine_initial_strand_states.txt"
+        "log/determine_initial_strand_states/{sample}.log"
     params:
         mc_command = config["mosaicatcher"]
     shell:
         """
-        {params.mc_command} states -u -v -o {output} {input} 2>&1 > {log}
+        {params.mc_command} states -o {output} {input} 2>&1 > {log}
         """
 
 # Strandphaser needs a different input format which contains the path names to
@@ -442,7 +460,7 @@ rule convert_strandphaser_input:
     output:
         "strand_states/{sample}/strandphaser_input.txt"
     log:
-        "log/{sample}/convert_strandphaser_input.txt"
+        "log/convert_strandphaser_input/{sample}.log"
     script:
         "utils/helper.convert_strandphaser_input.R"
 
@@ -450,7 +468,7 @@ rule install_StrandPhaseR:
     output:
         "utils/R-packages/StrandPhaseR/R/StrandPhaseR"
     log:
-        "log/strandphaser-install.log"
+        "log/install_StrandPhaseR.log"
     shell:
         """
         TAR=$(which tar) Rscript utils/install_strandphaser.R > {log} 2>&1
@@ -502,7 +520,7 @@ rule run_strandphaser_per_chrom:
     output:
         "strand_states/{sample}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt"
     log:
-        "log/{sample}/run_strandphaser.{chrom}.txt"
+        "log/run_strandphaser_per_chrom/{sample}/{chrom}.log"
     shell:
         """
         Rscript utils/StrandPhaseR_pipeline.R \
@@ -523,11 +541,13 @@ rule combine_strandphaser_output:
                 chrom = config["chromosomes"])
     output:
         "strand_states/{sample}/strandphaser_output.txt"
+    log:
+        "log/combine_strandphaser_output/{sample}.log"
     shell:
         """
         set +o pipefail
-        cat {input} | head -n1 > {output};
-        for x in {input}; do tail -n+2 $x >> {output}; done;
+        cat {input} | head -n1 > {output} 2> {log};
+        for x in {input}; do tail -n+2 $x >> {output}  2>> {log}; done;
         """
 
 
@@ -539,7 +559,7 @@ rule convert_strandphaser_output:
     output:
         "strand_states/{sample}/final.txt"
     log:
-        "log/{sample}/convert_strandphaser_output.txt"
+        "log/convert_strandphaser_output/{sample}.log"
     script:
         "utils/helper.convert_strandphaser_output.R"
 
@@ -554,17 +574,20 @@ rule mergeBams:
         lambda wc: expand("bam/" + wc.sample + "/{bam}.bam", bam = BAM_PER_SAMPLE[wc.sample]) if wc.sample in BAM_PER_SAMPLE else "FOOBAR",
     output:
         "snv_calls/{sample}/merged.bam"
+    log:
+        "log/mergeBams/{sample}.log"
     shell:
-        config["samtools"] + " merge {output} {input}"
+        config["samtools"] + " merge {output} {input} 2>&1 > {log}"
 
 rule indexMergedBam:
     input:
         "snv_calls/{sample}/merged.bam"
     output:
         "snv_calls/{sample}/merged.bam.bai"
+    log:
+        "log/indexMergedBam/{sample}.log"
     shell:
-        config["samtools"] + " index {input}"
-
+        config["samtools"] + " index {input} 2> {log}"
 
 rule call_SNVs_bcftools_chrom:
     input:
@@ -574,7 +597,7 @@ rule call_SNVs_bcftools_chrom:
     output:
         "snv_calls/{sample}/{chrom}.vcf"
     log:
-        "log/{sample}/call_SNVs_bcftools_chrom.{chrom}.txt"
+        "log/call_SNVs_bcftools_chrom/{sample}/{chrom}.log"
     params:
         samtools = config["samtools"],
         bcftools = config["bcftools"]
@@ -589,8 +612,10 @@ rule merge_SNV_calls:
         expand("snv_calls/{{sample}}/{chrom}.vcf", chrom = config['chromosomes'])
     output:
         "snv_calls/{sample}/all.vcf"
+    log:
+        "log/merge_SNV_calls/{sample}.log"
     shell:
-        config["bcftools"] + " concat -O v -o {output} {input}"
+        config["bcftools"] + " concat -O v -o {output} {input} 2>&1 > {log}"
 
 rule split_external_snv_calls:
     input:
@@ -598,9 +623,21 @@ rule split_external_snv_calls:
         tbi = lambda wc: config["snv_calls"][wc.sample] + ".tbi"
     output:
         vcf = "external_snv_calls/{sample}/{chrom}.vcf"
-    log: "log/{sample}/external_snv_calls.{chrom}.vcf.log"
+    log:
+        "log/split_external_snv_calls/{sample}/{chrom}.vcf.log"
     params:
         bcftools = config["bcftools"]
     shell:
-        "({params.bcftools} view --samples {wildcards.sample} --types snps --exclude-uncalled --trim-alt-alleles -m 2 -M 2 {input.vcf} {wildcards.chrom} | {params.bcftools} view --genotype het - > {output.vcf}) > {log} 2>&1"
+        """
+        ({params.bcftools} view --samples {wildcards.sample} \
+            --types snps \
+            --exclude-uncalled \
+            --trim-alt-alleles \
+            -m 2 -M 2 \
+            {input.vcf} \
+            {wildcards.chrom} \
+        | {params.bcftools} view --genotype het - \
+        > {output.vcf} ) \
+        > {log} 2>&1
+        """
 
