@@ -4,7 +4,6 @@
     "reference"     : "/g/korbel/shared/datasets/refgenomes/human/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna",
     "mosaicatcher"  : "/g/korbel/meiers/tools/mosaicatcher/mosaicatcher_experimental/build/mosaicatcher",
     "plot_script"   : "/g/korbel/meiers/tools/mosaicatcher/mosaicatcher_experimental/R/qc.R",
-    "plot_segments" : "/g/korbel/meiers/tools/mosaicatcher/mosaicatcher/R/plot_segments.R",
     "sv_plot_script": "/g/korbel/meiers/tools/mosaicatcher/mosaicatcher_experimental/R/chrom.R",
     "norm_script"   : "/g/korbel/meiers/tools/mosaicatcher/mosaicatcher_experimental/R/norm.R",
     "samtools"      : "samtools",
@@ -12,7 +11,6 @@
 
     "snv_calls"     : {},
 
-    "exclude_file"  : "/g/korbel/meiers/tools/mosaicatcher/mosaicatcher/data/exclude/GCA_000001405.15_GRCh38_no_alt_analysis_set.exclude",
     "variable_bins" : {
         "50000"     : "utils/variable_bins.GRCh38.50kb.bed",
         "100000"    : "utils/variable_bins.GRCh38.100kb.bed"
@@ -42,6 +40,4 @@
 
     "genome_size" : 3e9,
 
-    "normalization" : {
-    }
 }
