@@ -121,7 +121,7 @@ addCountsPerSegment <- function(df, counts) {
   setkey(count_tab, sample, cell, chrom, start, end)
 
   # Set black-listed counts to 0
-  counts[class == "None", `:=`(w = 0, c = 0)]
+  count_tab[class == "None", `:=`(w = 0, c = 0)]
 
   # Assign bins (from count_tab) to segments
   # Extend segments by all numbers from `from` to `to`
@@ -134,11 +134,10 @@ addCountsPerSegment <- function(df, counts) {
 
   # Now summarize counts and expectation per cell and segment
   count_tab <- count_tab[,
-            .(C = as.integer(sum(c)),
-			  W = as.integer(sum(w)),
-			  expected = sum(class != "None")),
-            by = .(sample, cell, chrom, from, to)]
-
+                         .(C = as.integer(sum(c)),
+                           W = as.integer(sum(w)),
+                           expected = sum(class != "None")),
+                         by = .(sample, cell, chrom, from, to)]
 
   # Add information to the original `df` table
   df <- merge(df, count_tab, by = c("sample","cell","chrom","from","to"))
