@@ -20,6 +20,10 @@ import os.path
 
 METHODS = ["simpleCalls_llr1", "simpleCalls_llr4", "biAllelic_llr1", "biAllelic_llr4"]
 
+
+singularity: "mosaicatcher-singularity-1.0.img"
+
+
 rule all:
     input:
         expand("plots/{sample}/{window}_fixed.pdf",      sample = SAMPLE, window = [50000, 100000, 200000, 500000]),
@@ -591,7 +595,6 @@ rule indexMergedBam:
 
 rule call_SNVs_bcftools_chrom:
     input:
-        fa    = config["reference"],
         bam   = "snv_calls/{sample}/merged.bam",
         bai   = "snv_calls/{sample}/merged.bam.bai"
     output:
@@ -599,11 +602,12 @@ rule call_SNVs_bcftools_chrom:
     log:
         "log/call_SNVs_bcftools_chrom/{sample}/{chrom}.log"
     params:
+        fa = config["reference"],
         samtools = config["samtools"],
         bcftools = config["bcftools"]
     shell:
         """
-        {params.samtools} mpileup -r {wildcards.chrom} -g -f {input.fa} {input.bam} \
+        {params.samtools} mpileup -r {wildcards.chrom} -g -f {params.fa} {input.bam} \
         | {params.bcftools} call -mv - | {params.bcftools} view --genotype het --types snps - > {output} 2> {log}
         """
 
