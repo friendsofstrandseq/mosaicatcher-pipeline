@@ -1,5 +1,5 @@
-library(data.table)
-library(assertthat)
+suppressMessages(library(data.table))
+suppressMessages(library(assertthat))
 source("utils/mosaiClassifier/mosaiClassifier.R")
 
 

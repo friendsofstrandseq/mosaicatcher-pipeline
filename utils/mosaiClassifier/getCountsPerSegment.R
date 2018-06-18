@@ -1,6 +1,6 @@
-library(dplyr)
-library(data.table)
-library(assertthat)
+suppressMessages(library(dplyr))
+suppressMessages(library(data.table))
+suppressMessages(library(assertthat))
 
 
 # addCountsPerSegment

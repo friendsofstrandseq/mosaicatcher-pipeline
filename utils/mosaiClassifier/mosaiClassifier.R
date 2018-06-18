@@ -1,14 +1,15 @@
-library(dplyr)
-library(data.table)
-library(assertthat)
+suppressMessages(library(dplyr))
+suppressMessages(library(data.table))
+suppressMessages(library(assertthat))
 source("utils/mosaiClassifier/getStrandStates.R")
 source("utils/mosaiClassifier/getCountsPerSegment.R")
 source("utils/mosaiClassifier/generateHaploStates.R")
 source("utils/mosaiClassifier/getDispParAndSegType.R")
 source("utils/mosaiClassifier/haploAndGenoName.R")
 
-library(GenomicRanges) # This is to test whether the given strand states
-                       # are in fact disjoint intervals !
+suppressMessages(library(GenomicRanges)) 
+# This is to test whether the given strand states
+# are in fact disjoint intervals !
 
 
 mosaiClassifierPrepare <- function(counts, info, strand, segs, normVector = NULL) {
