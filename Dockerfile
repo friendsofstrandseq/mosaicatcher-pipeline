@@ -59,6 +59,7 @@ RUN apt-get update \
         'foreach')); \
         source('http://bioconductor.org/biocLite.R'); \
         biocLite('BSgenome', ask=F); \
+        biocLite('BSgenome.Hsapiens.UCSC.hg38', ask=F); \
         devtools::install_github('daewoooo/StrandPhaseR@24eabf99a15c2ab959f7c5667cc22ef994cd0fc5', dependencies = NA);" \
 ## Clean up
     && echo -e "\n\n########\nCLEAN UP\n########\n" \
