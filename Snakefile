@@ -21,7 +21,7 @@ import os.path
 METHODS = ["simpleCalls_llr1", "simpleCalls_llr4", "biAllelic_llr1", "biAllelic_llr4"]
 
 
-singularity: "mosaicatcher-singularity-1.0.img"
+singularity: "docker://smei/mosaicatcher-pipeline:test"
 
 
 rule all:
@@ -468,15 +468,15 @@ rule convert_strandphaser_input:
     script:
         "utils/helper.convert_strandphaser_input.R"
 
-rule install_StrandPhaseR:
-    output:
-        "utils/R-packages/StrandPhaseR/R/StrandPhaseR"
-    log:
-        "log/install_StrandPhaseR.log"
-    shell:
-        """
-        TAR=$(which tar) Rscript utils/install_strandphaser.R > {log} 2>&1
-        """
+#rule install_StrandPhaseR:
+#    output:
+#        "utils/R-packages/StrandPhaseR/R/StrandPhaseR"
+#    log:
+#        "log/install_StrandPhaseR.log"
+#    shell:
+#        """
+#        TAR=$(which tar) Rscript utils/install_strandphaser.R > {log} 2>&1
+#        """
 
 rule prepare_strandphaser_config_per_chrom:
     input:
@@ -519,7 +519,7 @@ rule run_strandphaser_per_chrom:
         wcregions    = "strand_states/{sample}/strandphaser_input.txt",
         snppositions = locate_snv_vcf,
         configfile   = "strand_states/{sample}/StrandPhaseR.{chrom}.config",
-        strandphaser = "utils/R-packages/StrandPhaseR/R/StrandPhaseR",
+#       strandphaser = "utils/R-packages/StrandPhaseR/R/StrandPhaseR",
         bamfolder    = "bam/{sample}/"
     output:
         "strand_states/{sample}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt"
