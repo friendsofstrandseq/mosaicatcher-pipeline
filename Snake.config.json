@@ -9,7 +9,11 @@
     "samtools"      : "samtools",
     "bcftools"      : "bcftools",
 
-    "snv_calls"     : {},
+    "snv_calls"     : {
+        "C7_data"   : "/g/korbel2/StrandSeq/20180221_RPE_Data/regenSNVs_GRCh38sites_C7_chr1-22plusX.filtered.vcf.gz",
+		"RPE-BM510" : "/g/korbel2/StrandSeq/20180221_RPE_Data/regenSNVs_GRCh38sites_BM510_chr1-22plusX.filtered.vcf.gz",
+		"RPE1-WT"   : "/g/korbel2/StrandSeq/20180606_RPE1-WT/regenSNVs_GRCh38sites_RPEWTstrandS_chr1-22plusX.filtered.vcf.gz"
+	},
 
     "variable_bins" : {
         "50000"     : "utils/variable_bins.GRCh38.50kb.bed",
