@@ -20,6 +20,21 @@ import os.path
 
 METHODS = ["simpleCalls_llr1", "simpleCalls_llr4", "biAllelic_llr1", "biAllelic_llr4"]
 
+
+localrules:
+    all,
+    simul,
+    simulate_genome,
+    add_vafs_to_simulated_genome,
+    link_to_simulated_counts,
+    link_to_simulated_strand_states,
+    generate_exclude_file_1,
+    generate_exclude_file_2,
+    link_normalized_info_file,
+    prepare_segments,
+    install_StrandPhaseR,
+    prepare_strandphaser_config_per_chrom
+
 rule all:
     input:
         expand("plots/{sample}/{window}_fixed.pdf",      sample = SAMPLE, window = [50000, 100000, 200000, 500000]),
@@ -353,7 +368,8 @@ rule segmentation:
         """
         {params.mc_command} segment \
         --remove-none \
-        -m 0.33 \
+        -m 0.4 \
+        --max_cp_sqrt \
         -M 50000000 \
         -o {output} \
         {input} > {log} 2>&1
