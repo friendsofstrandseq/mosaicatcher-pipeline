@@ -10,7 +10,11 @@
     "samtools"      : "samtools",
     "bcftools"      : "bcftools",
 
-    "snv_calls"     : {},
+    "snv_calls"     : {
+        "C7_data"   : "/snvs/regenSNVs_GRCh38sites_C7_chr1-22plusX.filtered.vcf.gz",
+        "RPE-BM510" : "/snvs/regenSNVs_GRCh38sites_BM510_chr1-22plusX.filtered.vcf.gz",
+        "RPE1-WT"   : "/snvs/regenSNVs_GRCh38sites_RPEWTstrandS_chr1-22plusX.filtered.vcf.gz"
+    },
 
     "variable_bins" : {
         "50000"     : "utils/variable_bins.GRCh38.50kb.bed",
