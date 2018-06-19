@@ -11,9 +11,9 @@
     "bcftools"      : "bcftools",
 
     "snv_calls"     : {
-        "C7_data"   : "/snvs/regenSNVs_GRCh38sites_C7_chr1-22plusX.filtered.vcf.gz",
-        "RPE-BM510" : "/snvs/regenSNVs_GRCh38sites_BM510_chr1-22plusX.filtered.vcf.gz",
-        "RPE1-WT"   : "/snvs/regenSNVs_GRCh38sites_RPEWTstrandS_chr1-22plusX.filtered.vcf.gz"
+        "C7_data"   : "external_snv_calls/regenSNVs_GRCh38sites_C7_chr1-22plusX.filtered.vcf.gz",
+        "RPE-BM510" : "external_snv_calls/regenSNVs_GRCh38sites_BM510_chr1-22plusX.filtered.vcf.gz",
+        "RPE1-WT"   : "external_snv_calls/regenSNVs_GRCh38sites_RPEWTstrandS_chr1-22plusX.filtered.vcf.gz"
     },
 
     "variable_bins" : {
