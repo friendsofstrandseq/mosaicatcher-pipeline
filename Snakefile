@@ -549,8 +549,8 @@ rule combine_strandphaser_output:
     shell:
         """
         set +o pipefail
-        cat {input} | head -n1 > {output} 2> {log};
-        for x in {input}; do tail -n+2 $x >> {output}  2>> {log}; done;
+        cat {input} | head -n1 > {output};
+		tail -q -n+2 {input} >> {output};
         """
 
 
