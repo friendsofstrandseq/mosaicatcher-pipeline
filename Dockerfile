@@ -23,6 +23,8 @@ RUN apt-get update \
         libboost-iostreams1.62-dev \
         libboost-date-time1.62.0 \
         libboost-date-time1.62-dev \
+        zlib1g-dev \
+        libxml2-dev \
         gawk \
         bcftools=1.3.1-1+b1 \
         samtools=1.3.1-3 \
@@ -52,9 +54,7 @@ RUN Rscript -e "source('http://bioconductor.org/biocLite.R'); \
 # Install MosaiCatcher (and clean up afterwards)
 RUN apt-get update \
     && BUILD_DEPS="cmake \
-        git \
-        zlib1g-dev \
-        libxml2-dev" \
+        git" \
     && apt-get install --no-install-recommends -y $BUILD_DEPS \
     && git clone https://github.com/friendsofstrandseq/mosaicatcher.git \
     && cd mosaicatcher \
@@ -65,4 +65,6 @@ RUN apt-get update \
     && cmake --build . \
     && cd \
     && ln -s /mosaicatcher/build/mosaic /usr/local/sbin/mosaic \
-
+    && apt-get remove -y $BUILD_DEPS \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
