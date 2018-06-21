@@ -16,7 +16,7 @@ except subprocess.CalledProcessError:
 running_status=["PENDING", "CONFIGURING", "COMPLETING", "RUNNING", "SUSPENDED"]
 if "COMPLETED" in output:
     try:
-        output = str(subprocess.check_output("grep 'slurmstepd: error: Exceeded step memory limit at some point.' slurm-%s.out" % jobid, shell=True))
+        output = str(subprocess.check_output("grep 'slurmstepd: error: Exceeded step memory limit at some point.' slurm/*.%s.log" % jobid, shell=True))
     except subprocess.CalledProcessError:
         # grep fails to find error (or fails to find log file): success
         print("success")
