@@ -1,6 +1,6 @@
-library(dplyr)
-library(data.table)
-library(ggplot2)
+suppressMessages(library(dplyr))
+suppressMessages(library(data.table))
+suppressMessages(library(ggplot2))
 
 plotNBdist <- function(probs, alpha = 0.05) {
   

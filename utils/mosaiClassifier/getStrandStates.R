@@ -1,6 +1,6 @@
-library(dplyr)
-library(data.table)
-library(assertthat)
+suppressMessages(library(dplyr))
+suppressMessages(library(data.table))
+suppressMessages(library(assertthat))
 
 addPositions <- function(probs, counts) {
   assert_that(is.data.table(counts),

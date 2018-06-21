@@ -23,6 +23,19 @@ METHODS = ["simpleCalls_llr1", "simpleCalls_llr4", "biAllelic_llr1", "biAllelic_
 
 singularity: "docker://smei/mosaicatcher-pipeline:test"
 
+localrules:
+    all,
+    simul,
+    simulate_genome,
+    add_vafs_to_simulated_genome,
+    link_to_simulated_counts,
+    link_to_simulated_strand_states,
+    generate_exclude_file_1,
+    generate_exclude_file_2,
+    link_normalized_info_file,
+    prepare_segments,
+    install_StrandPhaseR,
+    prepare_strandphaser_config_per_chrom
 
 rule all:
     input:
