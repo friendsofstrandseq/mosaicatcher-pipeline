@@ -34,7 +34,7 @@ localrules:
     generate_exclude_file_2,
     link_normalized_info_file,
     prepare_segments,
-    install_StrandPhaseR,
+    split_external_snv_calls,
     prepare_strandphaser_config_per_chrom
 
 rule all:
