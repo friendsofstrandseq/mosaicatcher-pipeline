@@ -254,7 +254,7 @@ rule generate_exclude_file_1:
         samtools = config["samtools"]
     shell:
         """
-        {params.samtools} view -H {input.bam} | awk '/^@SQ/ {{print substr($2,4)}}' > {output} 2> {log}
+        {params.samtools} view -H {input.bam} | awk '/^@SQ/' > {output} 2> {log}
         """
 
 rule generate_exclude_file_2:
@@ -268,8 +268,10 @@ rule generate_exclude_file_2:
         with open(input[0]) as f:
             with open(output[0],"w") as out:
                 for line in f:
-                    if line.strip() not in params.chroms:
-                        print(line.strip(), file = out)
+                    contig = line.strip().split()[1]
+                    contig = contig[3:]
+                    if contig not in params.chroms:
+                        print(contig, file = out)
 
 
 rule mosaic_count_fixed:
