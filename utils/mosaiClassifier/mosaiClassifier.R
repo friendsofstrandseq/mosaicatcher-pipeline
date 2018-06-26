@@ -158,6 +158,7 @@ mosaiClassifierCalcProbs <- function(probs, maximumCN=4, haplotypeMode=F, alpha=
               "end"    %in% colnames(probs),
               "nb_p"   %in% colnames(probs),
               "expected"     %in% colnames(probs),
+              "num_bins"     %in% colnames(probs),
               "scalar" %in% colnames(probs),
               "W"      %in% colnames(probs),
               "C"      %in% colnames(probs),
@@ -214,7 +215,7 @@ mosaiClassifierCalcProbs <- function(probs, maximumCN=4, haplotypeMode=F, alpha=
 
   ###########
   # reshuffling the columns
-  probs <- probs[,.(sample, cell, chrom, start, end, class, nb_p, expected,
+  probs <- probs[,.(sample, cell, chrom, start, end, class, nb_p, expected, num_bins,
                     W, C, scalar, haplotype, Wcn, Ccn, haplo_name, geno_name)]
 
   # computing dispersion parameters seperately for each segment and W and C counts ("Wcn" and "Ccn")
