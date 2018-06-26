@@ -20,11 +20,11 @@
   },
   "plot_SV_calls" :
   {
-    "time"   : "5:00"
+    "time"   : "8:00"
   },
   "plot_mosaic_counts" :
   {
-    "time"   : "16:00"
+    "time"   : "25:00"
   },
   "segmentation" :
   {
@@ -39,17 +39,22 @@
   "mosaiClassifier_make_call" :
   {
     "mem"    : "1G",
-    "time"   : "5:00"
+    "time"   : "25:00"
+  },
+  "mosaiClassifier_make_call_biallelic" :
+  {
+    "mem"    : "1G",
+    "time"   : "25:00"
   },
   "plot_SV_calls" :
   {
     "mem"    : "2G",
-    "time"   : "25:00"
+    "time"   : "10:00"
   },
   "run_strandphaser_per_chrom" :
   {
-    "time"   : "1:30:00",
-    "mem"    : "6G"
+    "time"   : "2:30:00",
+    "mem"    : "12G"
   },
   "call_SNVs_bcftools_chrom" :
   {
