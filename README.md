@@ -78,7 +78,11 @@ of this pipeline, which can be used in Snakemake together with
 
   1. **Singularity required.** We tested this with version 2.5.1.
 
-  2. **Run Snakemake with `--use-singularity` option.** The software inside the
+  2. **Provide SNP call set (optional).** External VCF files (if available) should be
+     *copied* into a subfolder of the pipeline, which can be read from within the image.
+     Accordingly, you need to specify a relative path in `Snake.config-singularity.json`.
+
+  3. **Run Snakemake with `--use-singularity` option.** The software inside the
      Singularity image need to access external data, such as the reference genome.
      These are specified in a separate config file.
 
@@ -103,10 +107,6 @@ of this pipeline, which can be used in Snakemake together with
      ```
 
      > **Note:** Currently only hg38 is supported within the singularity inmage.
-
-  3. **SNP call set.** External VCF files (if available) should be *copied* into a
-     subfolder of the pipeline, which can be read from within the image. Also specify
-     a relative path in `Snake.config-singularity.json`.
 
 
 
@@ -158,7 +158,7 @@ In case you do not have Conda yet, it is easiest to just install
 3. Run `snakemake`
 
 
-## Snakemake recommendations
+## Cluster support (experimental)
 
 You can ask Snakemake to submit your jobs to a HPC cluster. We provided a config
 file (`cluster.json`) for this purpose, yet it might need to be adapted to your
@@ -175,6 +175,15 @@ infrastructure. Here is an example command:
   
   ```
   --latency-wait 60
+  ```
+
+  In the HPC system this was tested (based on SLURM), Snakemake sometimes does not
+  recognize if a job was killed on the cluster and hangs up waiting for it to finish.
+  To overcome this, we provide a small script called `cluster_status.py` which can
+  be passed to Snakemake as shown below. Note that this script might need to be adapted.
+
+  ```
+  --cluster-status cluster_status.py
   ```
 
   Finally, of course the cluster mode can be combined with `--use-singularity`.
