@@ -1,4 +1,3 @@
-sink(snakemake@log[[1]])
 library(data.table)
 source("utils/mosaiClassifier/makeSVcalls.R")
 
