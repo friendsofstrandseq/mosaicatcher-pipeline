@@ -158,23 +158,29 @@ In case you do not have Conda yet, it is easiest to just install
 3. Run `snakemake`
 
 
-
-
-## Cluster support
+## Snakemake recommendations
 
 You can ask Snakemake to submit your jobs to a HPC cluster. We provided a config
 file (`cluster.json`) for this purpose, yet it might need to be adapted to your
-infrastructure.
+infrastructure. Here is an example command:
 
   ```
   snakemake -j 100 \
     --cluster-config Snake.cluster.json \
     --cluster "sbatch --cpus-per-task {cluster.n} --time {cluster.time} --mem {cluster.mem}"
   ```
+  
+  Further, it is often advisable to increase the time Snakemake waits for the
+  file system via this flag:
+  
+  ```
+  --latency-wait 60
+  ```
+
+  Finally, of course the cluster mode can be combined with `--use-singularity`.
 
 
-
-## Provide SNV calls
+## SNP calls
 
   The pipeline will run simple SNV calling using [samtools](https://github.com/samtools/samtools) and [bcftools](https://github.com/samtools/bcftools) on Strand-seq. If you **already have
   SNV calls**, you can avoid that by entering your VCF files into the pipeline.
