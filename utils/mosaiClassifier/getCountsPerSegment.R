@@ -136,12 +136,12 @@ addCountsPerSegment <- function(df, counts) {
   count_tab <- count_tab[,
                          .(C = as.integer(sum(c)),
                            W = as.integer(sum(w)),
-                           expected = sum(class != "None")),
+                           num_bins = sum(class != "None")),
                          by = .(sample, cell, chrom, from, to)]
 
   # Add information to the original `df` table
   df <- merge(df, count_tab, by = c("sample","cell","chrom","from","to"))
-  df[, expected := expected * mean]
+  df[, expected := num_bins * mean]
 
   return (df)
 }
