@@ -1,3 +1,5 @@
+import math
+
 configfile: "Snake.config.json"
 
 SAMPLE,BAM = glob_wildcards("bam/{sample}/{bam}.bam")
@@ -361,17 +363,19 @@ rule link_normalized_info_file:
 
 rule segmentation:
     input:
-        "counts/{sample}/{file_name}.txt.gz"
+        "counts/{sample}/{window}_{file_name}.txt.gz"
     output:
-        "segmentation/{sample}/{file_name}.txt"
+        "segmentation/{sample}/{window,\d+}_{file_name}.txt"
     log:
-        "log/segmentation/{sample}/{file_name}.log"
+        "log/segmentation/{sample}/{window}_{file_name}.log"
     params:
-        mc_command = config["mosaicatcher"]
+        mc_command = config["mosaicatcher"],
+        min_num_segs = lambda wc: math.ceil(200000 / float(wc.window)) # bins to represent 200 kb
     shell:
         """
         {params.mc_command} segment \
         --remove-none \
+        --forbid-small-segments {params.min_num_segs} \
         -M 50000000 \
         -o {output} \
         {input} > {log} 2>&1
@@ -594,8 +598,10 @@ rule mergeBams:
         "snv_calls/{sample}/merged.bam"
     log:
         "log/mergeBams/{sample}.log"
+    threads:
+        4
     shell:
-        config["samtools"] + " merge {output} {input} 2>&1 > {log}"
+        config["samtools"] + " merge -@ {threads} {output} {input} 2>&1 > {log}"
 
 rule indexMergedBam:
     input:
