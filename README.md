@@ -1,64 +1,182 @@
-# Strand-seq pipeline
+# MosaiCatcher pipeline
 
-> **Ongoing work**
+Structural variant calling from single-cell Strand-seq data - summarized in a [Snakemake](https://bitbucket.org/snakemake/snakemake) pipeline.
 
-Preliminary SV calling using Strand-seq data - summarized in a [Snakemake](https://bitbucket.org/snakemake/snakemake) pipeline.
+For Info on Strand-seq see
 
-Update: We just switched to a re-implementation of the SV classification. Still in the test phase
+* Falconer E *et al.*, 2012 (doi: [10.1038/nmeth.2206](https://doi.org/10.1038/nmeth.2206))
+* Sanders AD *et al.*, 2017 (doi: [10.1038/nprot.2017.029](https://doi.org/10.1038/nprot.2017.029))
 
-### Bioconda environment
+
+
+## Overview of this workflow
+
+This workflow uses [Snakemake](https://bitbucket.org/snakemake/snakemake) to
+execute all steps of MosaiCatcher in order. The starting point are single-cell
+BAM files from Strand-seq experiments and the final output are SV predictions in
+a tabular format as well as in a graphical representation. To get to this point,
+the workflow goes through the following steps:
+
+  1. Read binning in fixed-width genomic windows of 50kb or 100kb via [mosaicatcher](https://github.com/friendsofstrandseq/mosaicatcher)
+  2. Normalization of coverage in respect to a reference sample (included)
+  3. Strand state detection ([mosaicatcher](https://github.com/friendsofstrandseq/mosaicatcher))
+  4. Haplotype resolution via [StrandPhaseR](https://github.com/daewoooo/StrandPhaseR)
+  5. Multi-variate segmentation of cells ([mosaicatcher](https://github.com/friendsofstrandseq/mosaicatcher))
+  6. Bayesian classification of segmentation to find SVs using mosaiClassifier (included)
+  7. Visualization of results using custom R plots
+
+
+## Setup
+
+While there are different options for the installation/execution (see below),
+the following steps are shared by all of them:
+
+1. **Download this pipeline.**
+
+   ```
+   git clone https://github.com/friendsofstrandseq/pipeline
+   ```
+
+2. **Configuration.** In the config file `Snake.config.json`, specify the reference genome,
+   the chromosomes you would like to analyse.
+
+3. **Add your data.** Create a subdirectory `bam/sampleName/`	and place the single-cell BAM files (one file per cell) in there:
+
+   ```
+   cd pipeline
+   mkdir -p bam/NA12878
+   cp /path/to/my/cells/*.bam     bam/NA12878/
+   cp /path/to/my/cells/*.bam.bai bam/NA12878
+   ```
+
+4. **BAM requirements.** Make sure that all BAM files belonging to the same sample
+   contain the same read group sample tag (`@RG SM:thisIsTheSampleName`), that they
+   are indexed and have PCR duplicates marked (the latter is especially relevant for
+   single-cell data).
+
+5. **SNP call set.** If available, specify SNV calls (VCF) in `Snake.config.json`.
+   Note that the sample name in the VCF must match the one in the BAM files.
+
+**Note:** Multiple samples can be run simultaneously. Just create different subfolders
+below `bam/`. The same settings from the `Snake.config.json` config files are
+applied to all samples.
+
+
+
+## Installation / Execution
+
+> A Snakemake version of at least 4.8.0 is required for Singularity support.
+> When only an old Snakemake version is available, remove the `singularity`
+> line in `Snakefile` and go for option 2 or 3.
+
+### Option 1: Singularity/Docker image
+
+We provide a [Docker image](https://hub.docker.com/r/smei/mosaicatcher-pipeline/)
+of this pipeline, which can be used in Snakemake together with
+[Singularity](https://singularity.lbl.gov/). This image contains all software
+(but no data) required to run MosaiCatcher.
+
+  1. **Singularity required.** We tested this with version 2.5.1.
+
+  2. **Run Snakemake with `--use-singularity` option.** The software inside the
+     Singularity image need to access external data, such as the reference genome.
+     These are specified in a separate config file.
+
+     We also stripped off the content of the R package
+     [BSgenome.Hsapiens.UCSC.hg38](http://www.bioconductor.org/packages/release/data/annotation/html/BSgenome.Hsapiens.UCSC.hg38.html)
+     (find it in your local R installation), which need to be made available inside
+     the image by binding these files during execution.
+     This is how the command looks like:
+
+     ```
+     # paths on the host system
+     REF="~/data/refGenomes/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna"
+     R_REF="~/R-lib/3.4.0/BSgenome.Hsapiens.UCSC.hg38/extdata/single_sequences.2bit"
+
+     snakemake \
+        --use-singularity \
+        --singularity-args \
+          "-B ${REF}:/reference.fa:ro \
+           -B ${REF}.fai:/reference.fa.fai:ro \
+           -B ${R_REF}:/usr/local/lib/R/site-library/BSgenome.Hsapiens.UCSC.hg38/extdata/single_sequences.2bit:ro" \
+        --configfile Snake.config-singularity.json
+     ```
+
+     > **Note:** Currently only hg38 is supported within the singularity inmage.
+
+  3. **SNP call set.** External VCF files (if available) should be *copied* into a
+     subfolder of the pipeline, which can be read from within the image. Also specify
+     a relative path in `Snake.config-singularity.json`.
+
+
+
+### Option 2: Bioconda environment
+
 To install the correct environment, you can use Bioconda.
 
-  1. **Install MiniConda:**
-    In case you do not have Conda yet, it is easiest to just install [MiniConda](https://conda.io/miniconda.html).
+1. **Install MiniConda:**
+In case you do not have Conda yet, it is easiest to just install
+[MiniConda](https://conda.io/miniconda.html).
 
-  2. **Create environment:**
+2. **Create environment:**
 
-    ```
-    conda env create -n strandseqnation -f conda-environment.yml
-    source activate strandseqnation
-    ```
+	```
+	conda env create -n strandseqnation -f conda-environment.yml
+	source activate strandseqnation
+	```
 
-    That's it, you are ready to go.
+3. **Install [mosaicatcher](https://github.com/friendsofstrandseq/mosaicatcher)**
+ and update the file paths pointing to it (and to several R scripts) in
+ `Snake.config.json`.
 
-### How to use it
+4. **Run** `snakemake`
 
-  1. **Install required software:**
 
-    * Install [mosaicatcher](https://github.com/friendsofstrandseq/mosaicatcher) (*currently you will need the `develop` branch*)
-    * Get the R-scripts from [strandsequtils](https://github.com/friendsofstrandseq/strandsequtils)
-    * Install BSgenome.Hsapiens.UCSC.hg38 (can be skipped of you use the Bioconda environment, see above):
+
+### Option 3: Manual setup
+
+1. **Install required software:**
+
+    * Install [mosaicatcher](https://github.com/friendsofstrandseq/mosaicatcher)
+      (*currently you will need the `develop` branch*)
+    * Install *BSgenome.Hsapiens.UCSC.hg38* from [Bioconductor](http://www.bioconductor.org/packages/release/data/annotation/html/BSgenome.Hsapiens.UCSC.hg38.html):
+
       ```
       source("https://bioconductor.org/biocLite.R")
       biocLite('BSgenome.Hsapiens.UCSC.hg38')
       ```
-    * [Strand-Phaser](https://github.com/daewoooo/StrandPhaseR) is installed automatically
 
-  2. **Set up the configuration of the snakemake pipeline**
+    * Install [Strand-Phaser](https://github.com/daewoooo/StrandPhaseR).
+      This is no longer installed automatically
+    * Install other required R packages
 
-    * Open `Snake.config.json` and specify the path to the executatables
-      (such as Mosaicatcher) and to the R scripts.
-    * Create a subdirectory `bam/` and another subdirectory per sample (e.g.
-      `bam/NA12878/`). **Multiple samples can be run together not**.
-      Then copy (or soft-link) the Strand-seq single-cell libraries (one BAM
-      file per cell) in there. Note that bam files need to be sorted and indexed,
-      contain a read group and should have duplicates marked.
+2. **Set up the configuration of the snakemake pipeline**
 
-  3. **Run Snakemake**
+	* Open `Snake.config.json` and specify the path to the executatables
+	  (such as Mosaicatcher) and to the R scripts.
 
-    * run `snakemake` to compute all tasks locally
-    * Alternatively, you can ask Snakemake to submit your jobs to a HPC cluster. To this end edit the `Snake.cluster.json` file according to your available HPC environment and call
+3. Run `snakemake`
 
-      ```
-      snakemake -j 100 \
-        --cluster-config Snake.cluster.json \
-        --cluster "???"
-      ```
-      
-### SNV calls
 
-  The pipeline will run simple SNV calling using [samtools](https://github.com/samtools/samtools)
-  and [bcftools](https://github.com/samtools/bcftools). If you **already have
+
+
+## Cluster support
+
+You can ask Snakemake to submit your jobs to a HPC cluster. We provided a config
+file (`cluster.json`) for this purpose, yet it might need to be adapted to your
+infrastructure.
+
+  ```
+  snakemake -j 100 \
+    --cluster-config Snake.cluster.json \
+    --cluster "sbatch --cpus-per-task {cluster.n} --time {cluster.time} --mem {cluster.mem}"
+  ```
+
+
+
+## Provide SNV calls
+
+  The pipeline will run simple SNV calling using [samtools](https://github.com/samtools/samtools) and [bcftools](https://github.com/samtools/bcftools) on Strand-seq. If you **already have
   SNV calls**, you can avoid that by entering your VCF files into the pipeline.
   To so, make sure the files are [tabix](https://github.com/samtools/tabix)-indexed
   and specifigy them inside the `Snake.config.json` file:
