@@ -7,18 +7,13 @@ R_REF="/g/korbel/meiers/R-lib/3.4.0-foss-2016b/BSgenome.Hsapiens.UCSC.hg38/extda
 mkdir slurm 2> /dev/null
 
 snakemake \
-    -j 100 \
+    -j 6 \
     --configfile Snake.config-singularity.json \
     --use-singularity \
-	--singularity-args "-B ${REF}:/reference.fa:ro \
+    --singularity-args "-B ${REF}:/reference.fa:ro \
                         -B ${REF}.fai:/reference.fa.fai:ro \
                         -B ${R_REF}:/usr/local/lib/R/site-library/BSgenome.Hsapiens.UCSC.hg38/extdata/single_sequences.2bit:ro" \
-	--cluster-config cluster.json \
-    --local-cores 8 \
-    --cluster "sbatch --parsable -o slurm/{rule}.%j.log -e slurm/{rule}.%j.log --cpus-per-task {cluster.n} --time {cluster.time} --mem {cluster.mem}" \
-    --cluster-status ./cluster_status.py \
     --latency-wait 60 \
     --timestamp \
-    --keep-going \
-    --restart-times 1
+    --printshellcmd
 
