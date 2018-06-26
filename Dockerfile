@@ -2,7 +2,7 @@ FROM rocker/r-ver:3.4.3
 
 MAINTAINER Sascha Meiers meiers@embl.de
 LABEL version="1.0"
-LABEL mosaicatcher_version="develop"
+LABEL mosaicatcher_version="0.3"
 LABEL strandphaser_version="24eabf99a15c2ab959f7c5667cc22ef994cd0fc5"
 LABEL description="Required software dependencies for the MosaiCatcher pipeline (https://github.com/friendsofstrandseq/pipeline) to be used from within Snakemake."
 
@@ -58,7 +58,7 @@ RUN apt-get update \
     && apt-get install --no-install-recommends -y $BUILD_DEPS \
     && git clone https://github.com/friendsofstrandseq/mosaicatcher.git \
     && cd mosaicatcher \
-    && git checkout develop \
+    && git checkout 0.3 \
     && mkdir build \
     && cd build \
     && cmake ../src/ \
