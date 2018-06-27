@@ -23,7 +23,7 @@ import os.path
 METHODS = ["simpleCalls_llr1", "simpleCalls_llr4", "biAllelic_llr1", "biAllelic_llr4"]
 
 
-singularity: "docker://smei/mosaicatcher-pipeline:test"
+singularity: "docker://smei/mosaicatcher-pipeline:v0.1"
 
 localrules:
     all,
