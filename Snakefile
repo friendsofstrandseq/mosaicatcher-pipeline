@@ -48,7 +48,8 @@ rule all:
                chrom = config["chromosomes"],
                window = [50000, 100000],
                bpdens = ["few","medium","many"],
-               method = METHODS)
+               method = METHODS),
+        expand("ploidy/{sample}/ploidy.{chrom}.txt", sample = SAMPLE, chrom = config["chromosomes"])
 
 
 ################################################################################
@@ -168,6 +169,26 @@ rule link_to_simulated_strand_states:
 
 ruleorder: link_to_simulated_counts > mosaic_count_fixed
 ruleorder: link_to_simulated_strand_states > convert_strandphaser_output
+
+
+
+################################################################################
+# Ploidy estimation                                                            #
+################################################################################
+
+rule estimate_ploidy:
+    input:
+        "counts/{sample}/100000_fixed.txt.gz"
+    output:
+        "ploidy/{sample}/ploidy.{chrom}.txt"
+    log:
+        "log/estimate_ploidy/{sample}/{chrom}.log"
+    shell:
+        """
+        python utils/ploidy-estimator.py --chromosome {wildcards.chrom} {input} > {output} 2> {log}
+        """
+
+
 
 ################################################################################
 # Plots                                                                        #
