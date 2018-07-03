@@ -66,9 +66,9 @@ getSegType = function(cellType, status)
       Nc = Nc + as.integer(substr(status, i, i))*(1-as.integer(substr(Wstatus, i, i)))
     }
     
-    segType = paste0(stringr::str_dup("W",Nw),stringr::str_dup("C",Nc))
+    #segType = paste0(stringr::str_dup("W",Nw),stringr::str_dup("C",Nc))
+    segType = c(Nw, Nc)
   }
   
-  #list(segType, Wcn = Nw, Ccn = Nc)
-  c(Nw, Nc)
+  segType
 }
