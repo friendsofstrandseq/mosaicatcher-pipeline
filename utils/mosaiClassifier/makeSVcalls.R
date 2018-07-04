@@ -9,7 +9,7 @@ source("utils/mosaiClassifier/mosaiClassifier.R")
 #' @author Sascha Meiers
 #' @export
 #'
-makeSVCallSimple <- function(probs, llr_thr = 1) {
+makeSVCallSimple <- function(probs, llr_thr = 1, use.pop.priors = FALSE) {
 
   assert_that(is.data.table(probs),
               "sample" %in% colnames(probs),
@@ -24,6 +24,15 @@ makeSVCallSimple <- function(probs, llr_thr = 1) {
   # make sure post-processing was done beforehands
   assert_that("nb_hap_pp" %in% colnames(probs)) %>% invisible
   setkey(probs, chrom, start, end, sample, cell)
+
+  if (use.pop.priors) {
+    message('Applying population priors')
+    probs[, pop.prior := sum(nb_hap_ll) , by = .(chrom, start, end, sample, haplotype)]
+    probs[, pop.prior := pop.prior/sum(pop.prior) , by = .(chrom, start, end, sample, cell)]
+    probs[, nb_hap_pp := nb_hap_pp*pop.prior]
+  } else {
+    message('Skipping population priors')
+  }
 
   # annotate the ref_hom posterior probability per segment / cell
   probs[,
