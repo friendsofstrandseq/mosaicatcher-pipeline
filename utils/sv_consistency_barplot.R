@@ -1,15 +1,12 @@
 ## Jun 27, 2018 ADS
 ## function to generate SV_Consistency barplots from Mosaicatcher outputs
-SVplotting <- function(fileLoc, File){
-  
+SVplotting <- function(inputfile, outputfile.high, outputfile.med, outputfile.low, outputfile.rare) {
+
   library(cowplot)
   library(ggplot2)
   library(data.table)
   library(GenomicRanges)
   
-  if (!file.exists("SV_ConsistencyCheck")) {
-    dir.create("./SV_ConsistencyCheck")
-  }
   
   # ***********************************************
   ash12rainbow= c("#77AADD", "#4477AA", "#114477", "#CC99BB", "#AA4488", "#771155", "#DDDD77", "#AAAA44", "#777711", "#DDAA77", "#AA7744", "#774411")
@@ -58,9 +55,9 @@ SVplotting <- function(fileLoc, File){
   #################################################     
   
   #read in data
-  input<- GRanges(read.table(paste0(fileLoc,File), header=T, stringsAsFactors = F))
+  input<- GRanges(read.table(inputfile, header=T, stringsAsFactors = F))
   input$sv_call_name <- factor(input$sv_call_name, levels=c("del_h1",  "del_h2",  "del_hom", "dup_h1",  "dup_h2",  "dup_hom", "inv_h1",  "inv_h2",  "inv_hom", "idup_h1", "idup_h2", "complex"))
-  message(paste0(File, "loaded"))
+  message(paste0(inputfile, "loaded"))
   
   cellNo <- length(unique(input$cell))
   cellCount<- table(as.factor(input))
@@ -102,25 +99,25 @@ SVplotting <- function(fileLoc, File){
   plt_high.a <- plt_f.a(sv_high)
   plt_high.b <- plt_f.b(sv_high)
   plt.high.save<- plot2x2(plt_high.a, plt_high.b)
-  ggsave(plt.high.save, file=paste0("./SV_ConsistencyCheck/", File, "_highCF_barplot.pdf" ), width=15, height=(length(unique(sv_high$regions)))*0.15, onefile = T)
+  ggsave(plt.high.save, file=outputfile.high, width=15, height=(length(unique(sv_high$regions)))*0.15, onefile = T)
   
   sv_med <- df[which(df$cellCount <= breaks[4] & df$cellCount > breaks[3]),]
   plt_med.a <- plt_f.a(sv_med)
   plt_med.b <- plt_f.b(sv_med)
   plt.med.save<- plot2x2(plt_med.a, plt_med.b)
-  ggsave(plt.med.save, file=paste0("./SV_ConsistencyCheck/", File, "_medCF_barplot.pdf" ), width=15, height=(length(unique(sv_med$regions)))*0.15, onefile = T)
+  ggsave(plt.med.save, file=outputfile.med, width=15, height=(length(unique(sv_med$regions)))*0.15, onefile = T)
   
   sv_low <- df[which(df$cellCount <=  breaks[3] & df$cellCount >  breaks[2]),]
   plt_low.a <- plt_f.a(sv_low)
   plt_low.b <- plt_f.b(sv_low)
   plt.low.save<- plot2x2(plt_low.a, plt_low.b)
-  ggsave(plt.low.save, file=paste0("./SV_ConsistencyCheck/", File, "_lowCF_barplot.pdf" ), width=15, height=(length(unique(sv_low$regions)))*0.15, onefile = T)
+  ggsave(plt.low.save, file=outputfile.low, width=15, height=(length(unique(sv_low$regions)))*0.15, onefile = T)
   
   sv_rare <- df[which(df$cellCount <=  breaks[2] & df$cellCount > 1),]
   plt_rare.a <- plt_f.a(sv_rare)
   plt_rare.b <- plt_f.b(sv_rare)
   plt.rare.save<- plot2x2(plt_rare.a, plt_rare.b)
-  ggsave(plt.rare.save, file=paste0("./SV_ConsistencyCheck/", File, "_rareCF_barplot.pdf" ), width=15, height=(length(unique(sv_rare$regions)))*0.15, onefile = T)
+  ggsave(plt.rare.save, file=outputfile.rare, width=15, height=(length(unique(sv_rare$regions)))*0.15, onefile = T)
   message("pdfs saved successfully")
   
   ############ SAVED as PDFs  
