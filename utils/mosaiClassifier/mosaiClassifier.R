@@ -278,6 +278,7 @@ mosaiClassifierPostProcessing <- function(probs,
               "nb_hap_ll"  %in% colnames(probs)) %>% invisible
   assert_that(!("nb_hap_pp" %in% colnames(probs))) %>% invisible
 
+  message("[MosaiClassifier] regularizationFactor = ", regularizationFactor)
 
   # testing if there are some segments with zero probability for all haplotypes
   segs_max_hap_nb_probs <- probs[,
