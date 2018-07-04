@@ -43,13 +43,19 @@ rule all:
     input:
         expand("plots/{sample}/{window}_fixed.pdf",      sample = SAMPLE, window = [50000, 100000, 200000, 500000]),
         expand("plots/{sample}/{window}_fixed_norm.pdf", sample = SAMPLE, window = [50000, 100000, 200000]),
-        expand("sv_calls/{sample}/{window}_fixed_norm.{bpdens}/{method}.{chrom}.pdf",
+        expand("sv_calls/{sample}/{window}_fixed_norm.{bpdens}/plots/sv_calls/{method}.{chrom}.pdf",
                sample = SAMPLE,
                chrom = config["chromosomes"],
                window = [50000, 100000],
                bpdens = ["few","medium","many"],
                method = METHODS),
-        expand("ploidy/{sample}/ploidy.{chrom}.txt", sample = SAMPLE, chrom = config["chromosomes"])
+        expand("ploidy/{sample}/ploidy.{chrom}.txt", sample = SAMPLE, chrom = config["chromosomes"]),
+        expand("sv_calls/{sample}/{window}_fixed_norm.{bpdens}/plots/sv_consistency/{method}.consistency-barplot-{af}.pdf", 
+               sample = SAMPLE,
+               window = [50000, 100000],
+               bpdens = ["few","medium","many"],
+               method = METHODS,
+               af = ["high","med","low","rare"]),
 
 
 ################################################################################
@@ -218,7 +224,7 @@ rule plot_SV_calls:
         strand = "strand_states/{sample}/final.txt",
         segments = "segmentation2/{sample}/{windows}.{bpdens}.txt"
     output:
-        "sv_calls/{sample}/{windows}.{bpdens}/{method}.{chrom}.pdf"
+        "sv_calls/{sample}/{windows}.{bpdens}/plots/sv_calls/{method}.{chrom}.pdf"
     log:
         "log/plot_SV_calls/{sample}/{windows}.{bpdens}.{method}.{chrom}.log"
     params:
@@ -242,7 +248,7 @@ rule plot_SV_calls_simulated:
         segments = "segmentation2/simulation{seed}-{window}/{window}_fixed.{bpdens}.txt",
         truth  = "simulation/variants/genome{seed}-{window}.txt"
     output:
-        "sv_calls/simulation{seed}-{window}/{window}_fixed.{bpdens}/{method}.{chrom}.pdf"
+        "sv_calls/simulation{seed}-{window}/{window}_fixed.{bpdens}/plots/sv_calls/{method}.{chrom}.pdf"
     log:
         "log/plot_SV_calls_simulated/simulation{seed}-{window}/{window}_fixed.{bpdens}.{method}.{chrom}.log"
     params:
@@ -260,6 +266,18 @@ rule plot_SV_calls_simulated:
         """
 
 
+rule plot_SV_consistency_barplot:
+    input:
+        sv_calls  = "sv_calls/{sample}/{windows}.{bpdens}/{method}.txt",
+    output:
+        barplot_high = "sv_calls/{sample}/{windows}.{bpdens}/plots/sv_consistency/{method}.consistency-barplot-high.pdf",
+        barplot_med = "sv_calls/{sample}/{windows}.{bpdens}/plots/sv_consistency/{method}.consistency-barplot-med.pdf",
+        barplot_low = "sv_calls/{sample}/{windows}.{bpdens}/plots/sv_consistency/{method}.consistency-barplot-low.pdf",
+        barplot_rare = "sv_calls/{sample}/{windows}.{bpdens}/plots/sv_consistency/{method}.consistency-barplot-rare.pdf",
+    log:
+        "log/plot_SV_consistency/{sample}/{windows}.{bpdens}.{method}.log"
+    script:
+        "utils/sv_consistency_barplot.snakemake.R"
 
 
 ################################################################################
