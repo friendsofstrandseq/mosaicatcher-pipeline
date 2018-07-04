@@ -26,8 +26,8 @@ def read_wc_fractions(filename, chunksize, min_count, chromosome):
 			if chromosome is not None:
 				if chromosome != fields.chrom_:
 					continue
-			w_sum += int(fields.w_)
-			c_sum += int(fields.c_)
+			w_sum += float(fields.w_)
+			c_sum += float(fields.c_)
 			if int(fields.end_) - start >= chunksize:
 				if w_sum + c_sum >= min_count:
 					yield w_sum/(w_sum+c_sum)
