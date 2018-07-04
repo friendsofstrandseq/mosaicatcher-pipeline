@@ -20,7 +20,7 @@ import os.path
 # * calculate a segmentation into potential SVs using Mosaicatcher
 
 
-METHODS = ["simpleCalls_llr1", "simpleCalls_llr4", "biAllelic_llr1", "biAllelic_llr4"]
+METHODS = ["simpleCalls_llr1_poppriorsFALSE_regfactor10", "simpleCalls_llr4_poppriorsFALSE_regfactor10", "simpleCalls_llr1_poppriorsTRUE_regfactor6", "simpleCalls_llr4_poppriorsTRUE_regfactor6", "simpleCalls_llr1_poppriorsTRUE_regfactor10", "simpleCalls_llr4_poppriorsTRUE_regfactor10", "biAllelic_llr1", "biAllelic_llr4"]
 
 
 singularity: "docker://smei/mosaicatcher-pipeline:v0.1"
@@ -463,9 +463,9 @@ rule mosaiClassifier_make_call:
     input:
         probs = "sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.Rdata"
     output:
-        "sv_calls/{sample}/{windows}.{bpdens}/simpleCalls_llr{llr}.txt"
+        "sv_calls/{sample}/{windows}.{bpdens}/simpleCalls_llr{llr}_poppriors{pop_priors,(TRUE|FALSE)}_regfactor{regfactor,[0-9]+}.txt"
     log:
-        "log/mosaiClassifier_make_call/{sample}/{windows}.{bpdens}.{llr}.log"
+        "log/mosaiClassifier_make_call/{sample}/{windows}.{bpdens}.llr{llr}.poppriors{pop_priors}.regfactor{regfactor}.log"
     script:
         "utils/mosaiClassifier_call.snakemake.R"
 
