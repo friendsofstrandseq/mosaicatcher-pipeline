@@ -200,3 +200,14 @@ infrastructure. Here is an example command:
         "NA12878" : "path/to/snp/calls.vcf.gz"
     },
   ```
+
+## Note on how Conda environment was created
+The provided environment `conda-environment.yml` is the result of running:
+
+  ```
+  conda create -y -n strandseqnation bcftools bioconductor-biobase bioconductor-biocgenerics bioconductor-biocinstaller bioconductor-biocparallel bioconductor-biostrings bioconductor-bsgenome bioconductor-bsgenome.hsapiens.ucsc.hg38 bioconductor-delayedarray bioconductor-fastseg bioconductor-genomeinfodb bioconductor-genomeinfodbdata bioconductor-genomicalignments bioconductor-genomicranges bioconductor-iranges bioconductor-rsamtools bioconductor-rtracklayer bioconductor-s4vectors bioconductor-summarizedexperiment bioconductor-xvector bioconductor-zlibbioc filechunkio ftputil htslib pysftp r-data.table r-peer samtools snakemake urllib3 aioeasywebdav aiohttp appdirs asn1crypto async-timeout boost boost-cpp bzip2 ca-certificates cairo certifi cffi chardet cmake configargparse cryptography curl docutils dropbox expat fontconfig freetype gettext glib graphite2 gsl harfbuzz icu idna jpeg krb5 libffi libiconv libpng libssh2 libtiff libuv libxml2 multidict ncurses openssl pandas pango paramiko pcre pip pixman psutil pyasn1 pycparser pynacl python python-dateutil pytz pyyaml r-assertthat r-base r-bh r-bitops r-colorspace r-cowplot r-curl r-devtools r-dichromat r-digest r-futile.logger r-futile.options r-ggplot2 r-git2r r-gridextra r-gtable r-hexbin r-httr r-jsonlite r-labeling r-lambda.r r-lattice r-lazyeval r-magrittr r-mass r-matrix r-matrixstats r-memoise r-mime r-munsell r-openssl r-plyr r-r6 r-rcolorbrewer r-rcpp r-rcurl r-reshape2 r-rlang r-rstudioapi r-scales r-snow r-stringi r-stringr r-tibble r-viridislite r-whisker r-withr r-xml ratelimiter readline requests rhash setuptools six sqlite tk wheel wrapt xz yaml yarl zlib bcrypt intel-openmp libgcc libgcc-ng libgfortran-ng libstdcxx-ng mkl numpy wget r-dplyr scipy whatshap
+
+  conda env export > conda-environment.yml
+  ```
+
+This avoids some annoying version downgrades that sometimes happen when creating an environment incrementally.
