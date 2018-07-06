@@ -15,6 +15,8 @@
 		"RPE1-WT"   : "/g/korbel2/StrandSeq/20180606_RPE1-WT/regenSNVs_GRCh38sites_RPEWTstrandS_chr1-22plusX.filtered.vcf.gz"
 	},
 
+    "snv_sites_to_genotype": "",
+
     "variable_bins" : {
         "50000"     : "utils/variable_bins.GRCh38.50kb.bed",
         "100000"    : "utils/variable_bins.GRCh38.100kb.bed"
