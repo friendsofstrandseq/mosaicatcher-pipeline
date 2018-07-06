@@ -1,14 +1,24 @@
 import math
+from collections import defaultdict
 
 configfile: "Snake.config.json"
 
-SAMPLE,BAM = glob_wildcards("bam/{sample}/{bam}.bam")
-BAM_PER_SAMPLE = dict([(s,[]) for s in SAMPLE])
-for i in range(len(SAMPLE)):
-    BAM_PER_SAMPLE[SAMPLE[i]].append(BAM[i])
-print("Detected {} samples:".format(len(set(SAMPLE))))
-for s in set(SAMPLE):
-    print("  {}:\t{} cells".format(s, len(BAM_PER_SAMPLE[s])))
+SAMPLE,BAM = glob_wildcards("bam/{sample}/selected/{bam}.bam")
+SAMPLES = sorted(set(SAMPLE))
+
+BAM_PER_SAMPLE = defaultdict(list)
+for sample,bam in zip(SAMPLE,BAM):
+    BAM_PER_SAMPLE[sample].append(bam)
+
+ALLBAMS_PER_SAMPLE = defaultdict(list)
+for sample in SAMPLES:
+    ALLBAMS_PER_SAMPLE[sample] = glob_wildcards("bam/{}/all/{{bam}}.bam".format(sample)).bam
+
+print("Detected {} samples:".format(len(SAMPLES)))
+for s in SAMPLES:
+    print("  {}:\t{} cells\t {} selected cells".format(s, len(ALLBAMS_PER_SAMPLE[s]), len(BAM_PER_SAMPLE[s])))
+
+
 
 import os.path
 
@@ -41,21 +51,22 @@ localrules:
 
 rule all:
     input:
-        expand("plots/{sample}/{window}_fixed.pdf",      sample = SAMPLE, window = [50000, 100000, 200000, 500000]),
-        expand("plots/{sample}/{window}_fixed_norm.pdf", sample = SAMPLE, window = [50000, 100000, 200000]),
+        expand("plots/{sample}/{window}_fixed.pdf",      sample = SAMPLES, window = [50000, 100000, 200000, 500000]),
+        expand("plots/{sample}/{window}_fixed_norm.pdf", sample = SAMPLES, window = [50000, 100000, 200000]),
         expand("sv_calls/{sample}/{window}_fixed_norm.{bpdens}/plots/sv_calls/{method}.{chrom}.pdf",
                sample = SAMPLE,
                chrom = config["chromosomes"],
                window = [50000, 100000],
                bpdens = ["few","medium","many"],
                method = METHODS),
-        expand("ploidy/{sample}/ploidy.{chrom}.txt", sample = SAMPLE, chrom = config["chromosomes"]),
+        expand("ploidy/{sample}/ploidy.{chrom}.txt", sample = SAMPLES, chrom = config["chromosomes"]),
         expand("sv_calls/{sample}/{window}_fixed_norm.{bpdens}/plots/sv_consistency/{method}.consistency-barplot-{af}.pdf", 
-               sample = SAMPLE,
+               sample = SAMPLES,
                window = [50000, 100000],
                bpdens = ["few","medium","many"],
                method = METHODS,
                af = ["high","med","low","rare"]),
+        ['haplotag/bam/{}/{}.bam'.format(sample,bam) for bam in BAM_PER_SAMPLE[sample] for sample in SAMPLES],
 
 
 ################################################################################
@@ -288,7 +299,7 @@ rule generate_exclude_file_1:
     output:
         temp("log/exclude_file.temp")
     input:
-        bam = expand("bam/{sample}/{bam}.bam", sample = SAMPLE[0], bam = BAM[0])
+        bam = expand("bam/{sample}/selected/{bam}.bam", sample = SAMPLES[0], bam = ALLBAMS_PER_SAMPLE[SAMPLES[0]][0])
     log:
         "log/generate_exclude_file_1.log"
     params:
@@ -317,8 +328,8 @@ rule generate_exclude_file_2:
 
 rule mosaic_count_fixed:
     input:
-        bam = lambda wc: expand("bam/" + wc.sample + "/{bam}.bam", bam = BAM_PER_SAMPLE[wc.sample]) if wc.sample in BAM_PER_SAMPLE else "FOOBAR",
-        bai = lambda wc: expand("bam/" + wc.sample + "/{bam}.bam.bai", bam = BAM_PER_SAMPLE[wc.sample]) if wc.sample in BAM_PER_SAMPLE else "FOOBAR",
+        bam = lambda wc: expand("bam/" + wc.sample + "/selected/{bam}.bam", bam = BAM_PER_SAMPLE[wc.sample]) if wc.sample in BAM_PER_SAMPLE else "FOOBAR",
+        bai = lambda wc: expand("bam/" + wc.sample + "/selected/{bam}.bam.bai", bam = BAM_PER_SAMPLE[wc.sample]) if wc.sample in BAM_PER_SAMPLE else "FOOBAR",
         excl = "log/exclude_file"
     output:
         counts = "counts/{sample}/{window}_fixed.txt.gz",
@@ -342,8 +353,8 @@ rule mosaic_count_fixed:
 
 rule mosaic_count_variable:
     input:
-        bam = lambda wc: expand("bam/" + wc.sample + "/{bam}.bam", bam = BAM_PER_SAMPLE[wc.sample]),
-        bai = lambda wc: expand("bam/" + wc.sample + "/{bam}.bam.bai", bam = BAM_PER_SAMPLE[wc.sample]),
+        bam = lambda wc: expand("bam/" + wc.sample + "/selected/{bam}.bam", bam = BAM_PER_SAMPLE[wc.sample]),
+        bai = lambda wc: expand("bam/" + wc.sample + "/selected/{bam}.bam.bai", bam = BAM_PER_SAMPLE[wc.sample]),
         bed = lambda wc: config["variable_bins"][str(wc.window)],
         excl = "log/exclude_file"
     output:
@@ -567,7 +578,10 @@ rule prepare_strandphaser_config_per_chrom:
 
 def locate_snv_vcf(wildcards):
     if "snv_calls" not in config or wildcards.sample not in config["snv_calls"] or config["snv_calls"][wildcards.sample] == "":
-        return "snv_calls/{}/{}.vcf".format(wildcards.sample, wildcards.chrom)
+        if "snv_sites_to_genotype" in config and config["snv_sites_to_genotype"] != "":
+            return "snv_genotyping/{}/{}.vcf".format(wildcards.sample, wildcards.chrom)
+        else:
+            return "snv_calls/{}/{}.vcf".format(wildcards.sample, wildcards.chrom)
     else:
         return "external_snv_calls/{}/{}.vcf".format(wildcards.sample, wildcards.chrom)
 
@@ -577,9 +591,10 @@ rule run_strandphaser_per_chrom:
         snppositions = locate_snv_vcf,
         configfile   = "strand_states/{sample}/StrandPhaseR.{chrom}.config",
         strandphaser = "utils/R-packages/StrandPhaseR/R/StrandPhaseR",
-        bamfolder    = "bam/{sample}/"
+        bamfolder    = "bam/{sample}/selected"
     output:
-        "strand_states/{sample}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt"
+        "strand_states/{sample}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt",
+        "strand_states/{sample}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf",
     log:
         "log/run_strandphaser_per_chrom/{sample}/{chrom}.log"
     shell:
@@ -593,6 +608,16 @@ rule run_strandphaser_per_chrom:
                 $(pwd)/utils/R-packages/ \
                 > {log} 2>&1
         """
+
+rule merge_strandphaser_vcfs:
+    input:
+        vcf=expand("strand_states/{{sample}}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf", chrom=config["chromosomes"])
+    output:
+        vcf='phased-snvs/{sample}.vcf.gz'
+    log:
+        "log/merge_strandphaser_vcfs/{sample}.log"
+    shell:
+        "(bcftools concat -a | bcftools view -o {output.vcf} -O z --genotype het --types snps - ) > {log} 2>&1"
 
 
 
@@ -625,6 +650,21 @@ rule convert_strandphaser_output:
         "utils/helper.convert_strandphaser_output.R"
 
 
+################################################################################
+# Haplotagging                                                                 #
+################################################################################
+
+rule haplotag_bams:
+    input:
+        vcf='phased-snvs/{sample}.vcf.gz',
+        bam='bam/{sample}/selected/{bam}.bam',
+        ref = config["reference"],
+    output:
+        bam='haplotag/bam/{sample}/{bam}.bam',
+    log:
+        "log/haplotag_bams/{sample}.log"
+    shell:
+        "whatshap haplotag -o {output.bam} -r {input.ref} {input.vcf} {input.bam} > {log} 2>{log}"
 
 ################################################################################
 # Call SNVs                                                                    #
@@ -632,7 +672,7 @@ rule convert_strandphaser_output:
 
 rule mergeBams:
     input:
-        lambda wc: expand("bam/" + wc.sample + "/{bam}.bam", bam = BAM_PER_SAMPLE[wc.sample]) if wc.sample in BAM_PER_SAMPLE else "FOOBAR",
+        lambda wc: expand("bam/" + wc.sample + "/all/{bam}.bam", bam = ALLBAMS_PER_SAMPLE[wc.sample]) if wc.sample in ALLBAMS_PER_SAMPLE else "FOOBAR",
     output:
         "snv_calls/{sample}/merged.bam"
     log:
@@ -657,7 +697,7 @@ rule call_SNVs_bcftools_chrom:
         bam   = "snv_calls/{sample}/merged.bam",
         bai   = "snv_calls/{sample}/merged.bam.bai"
     output:
-        "snv_calls/{sample}/{chrom}.vcf"
+        "snv_calls/{sample}/{chrom,chr[0-9A-Z]+}.vcf"
     log:
         "log/call_SNVs_bcftools_chrom/{sample}/{chrom}.log"
     params:
@@ -668,6 +708,23 @@ rule call_SNVs_bcftools_chrom:
         """
         {params.samtools} mpileup -r {wildcards.chrom} -g -f {params.fa} {input.bam} \
         | {params.bcftools} call -mv - | {params.bcftools} view --genotype het --types snps - > {output} 2> {log}
+        """
+
+rule regenotype_SNVs:
+    input:
+        bam   = "snv_calls/{sample}/merged.bam",
+        bai   = "snv_calls/{sample}/merged.bam.bai",
+        fa = config["reference"],
+        sites = config["snv_sites_to_genotype"],
+    output:
+        vcf = "snv_genotyping/{sample}/{chrom,chr[0-9A-Z]+}.vcf"
+    log:
+        "log/snv_genotyping/{sample}/{chrom}.log"
+    params:
+        bcftools = config["bcftools"]
+    shell:
+        """
+        (freebayes -f {input.fa} -r {wildcards.chrom} -@ {input.sites} --only-use-input-alleles {input.bam} --genotype-qualities | {params.bcftools} view --exclude-uncalled --genotype het --types snps --include "QUAL>=10" - > {output.vcf}) 2> {log}
         """
 
 rule merge_SNV_calls:
