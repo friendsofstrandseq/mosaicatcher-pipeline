@@ -572,7 +572,7 @@ rule prepare_strandphaser_config_per_chrom:
             print("splitPhasedReads = TRUE",     file = f)
             print("compareSingleCells = TRUE",     file = f)
             print("callBreaks       = FALSE",    file = f)
-            print("exportVCF        = '" + wildcards.sample + ".txt'", sep = "", file = f)
+            print("exportVCF        = '", wildcards.sample, "'", sep = "", file = f)
             print("bsGenome         = '", config["R_reference"], "'", sep = "", file = f)
 
 
@@ -609,15 +609,35 @@ rule run_strandphaser_per_chrom:
                 > {log} 2>&1
         """
 
+rule compress_vcf:
+    input:
+        vcf="{file}.vcf",
+    output:
+        vcf="{file}.vcf.gz",
+    log:
+        "log/compress_vcf/{file}.log"
+    shell:
+        "(cat {input.vcf} | bgzip > {output.vcf}) > {log} 2>&1"
+
+
+rule index_vcf:
+    input:
+        vcf="{file}.vcf.gz",
+    output:
+        tbi="{file}.vcf.gz.tbi",
+    shell:
+        "bcftools index --tbi {input.vcf}"
+
 rule merge_strandphaser_vcfs:
     input:
-        vcf=expand("strand_states/{{sample}}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf", chrom=config["chromosomes"])
+        vcfs=expand("strand_states/{{sample}}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz", chrom=config["chromosomes"]),
+        tbis=expand("strand_states/{{sample}}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz.tbi", chrom=config["chromosomes"]),
     output:
         vcf='phased-snvs/{sample}.vcf.gz'
     log:
         "log/merge_strandphaser_vcfs/{sample}.log"
     shell:
-        "(bcftools concat -a | bcftools view -o {output.vcf} -O z --genotype het --types snps - ) > {log} 2>&1"
+        "(bcftools concat -a {input.vcfs} | bcftools view -o {output.vcf} -O z --genotype het --types snps - ) > {log} 2>&1"
 
 
 
