@@ -7,4 +7,4 @@ args=commandArgs(TRUE)
 
 suppressPackageStartupMessages(library(StrandPhaseR))
 
-strandPhaseR(inputfolder=args[1], outputfolder=args[2], configfile = args[3],  WCregions = args[4] , positions=args[5])
+strandPhaseR(inputfolder=args[1], outputfolder=args[2], configfile = args[3],  WCregions = args[4], positions=args[5], fillMissAllele=args[5])
