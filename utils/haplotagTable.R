@@ -4,38 +4,6 @@ library(ggplot2)
 library(cowplot)
 library(BiocParallel)
 
-## load required function [see below!!!]
-
-## run the command
-#tab <- getHaplotagTable(sv.table = "/media/porubsky/Elements/StrandSeqNation/C7/HaplotaggedBams/biAllelic_llr4_100kb_fixed_many.txt", bam.path = "/media/porubsky/Elements/StrandSeqNation/C7/HaplotaggedBams/")
-#This new function takes as an input bed file of genomic regions without the header line <chr start end>
-tab <- getHaplotagTable2(bedFile = "<regions.bed>", bam.path = "<bams>", CPUs=4)
-
-## data quality check [Not compete!!!]
-#final.table <- tab
-#final.table$total.reads <- final.table$crick.count + final.table$watson.count
-#final.table$haplotagged <- apply(final.table[,c(10:13)], 1, sum)
-#final.table$haplotagged.perc <- (final.table$haplotagged / final.table$total.reads)*100
-
-## tagged <- as.data.frame(table(final.table$haplotagged.perc > 0))
-#tagged$ID <- c("untagged", "tagged")
-#p1 <- ggplot(tagged, aes(x="", y=Freq, fill=ID)) + geom_bar(width = 1, stat = "identity") + coord_polar("y", start=0) + theme_bw()
-
-#final.table.cov <- split(final.table, final.table$haplotagged.perc > 0)
-#final.table$regionID <- paste(final.table$chrom, final.table$start, final.table$end, sep="_")
-#final.table.perRegion <- split(final.table, final.table$regionID)
-## get number of informative regions
-#inform.regions <- table(sapply(final.table.perRegion, function(x) sum(x$haplotagged)) == 0)
-#inform.regions <- as.data.frame(inform.regions)
-#inform.regions$ID <- c('Informative', 'Uninformative')
-#p2 <- ggplot(inform.regions, aes(x="", y=Freq, fill=ID)) + geom_bar(width = 1, stat = "identity") + coord_polar("y", start=0) + theme_bw()
-#plot_grid(p1, p2, nrow = 1)
-
-
-#########################
-### ==> FUNCTIONS <== ###
-#########################
-
 #' Print haplotagged read counts
 #'
 #' This function will take \code{list} of haplotagged bams files and will return \link{data.frame}
@@ -100,12 +68,17 @@ getHaplotagTable <- function(sv.table=NULL, bam.path=NULL) {
 #' @param CPUs Number of CPUs to use for data processing.
 #' @author David Porubsky
 
-getHaplotagTable2 <- function(bedFile=NULL, bam.path=NULL, CPUs=4) {
+getHaplotagTable2 <- function(bedFile=NULL, bam.path=NULL, CPUs=4, file.destination=NULL) {
   
   suppressPackageStartupMessages({
     requireNamespace("tools")
   })
   
+  message("Creating haplotag table")
+  message("BED file: ", bedFile)
+  message("BAM path: ", bam.path)
+  message("Output file: ", file.destination)
+
   ## read the SV table
   regions <- read.table(bedFile, header = FALSE, stringsAsFactors = FALSE)
   regions.gr <- GRanges(seqnames=regions$V1, ranges=IRanges(start=regions$V2, end=regions$V3))
@@ -136,9 +109,9 @@ getHaplotagTable2 <- function(bedFile=NULL, bam.path=NULL, CPUs=4) {
   }
   
   final.table <- do.call(rbind, all.counts)
-  file.base <- gsub(sv.table, pattern = "\\.txt|\\.bed|\\.csv|\\.tsv", replacement = "")
-  file.destination <- paste0(file.base, "_haplotaggedCounts.txt") 
-  write.table(final.table, file = file.destination, quote = FALSE, row.names = FALSE)
+  if (!is.null(file.destination)){
+    write.table(final.table, file = file.destination, quote = FALSE, row.names = FALSE)
+  }
   message("DONE!!!")
   
   return(final.table)
