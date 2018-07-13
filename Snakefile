@@ -60,13 +60,16 @@ rule all:
                bpdens = ["few","medium","many"],
                method = METHODS),
         expand("ploidy/{sample}/ploidy.{chrom}.txt", sample = SAMPLES, chrom = config["chromosomes"]),
-        expand("sv_calls/{sample}/{window}_fixed_norm.{bpdens}/plots/sv_consistency/{method}.consistency-barplot-{af}.pdf", 
+        expand("sv_calls/{sample}/{window}_fixed_norm.{bpdens}/plots/sv_consistency/{method}.consistency-barplot-{af}.pdf",
                sample = SAMPLES,
                window = [50000, 100000],
                bpdens = ["few","medium","many"],
                method = METHODS,
                af = ["high","med","low","rare"]),
-        ['haplotag/bam/{}/{}.bam'.format(sample,bam) for bam in BAM_PER_SAMPLE[sample] for sample in SAMPLES],
+        expand("haplotag/table/{sample}/haplotag-counts.{window}_fixed_norm.{bpdens}.tsv",
+               sample = SAMPLES,
+               window = [50000, 100000],
+               bpdens = ["few","medium","many"]),
 
 
 ################################################################################
@@ -686,6 +689,29 @@ rule haplotag_bams:
     shell:
         "whatshap haplotag -o {output.bam} -r {input.ref} {input.vcf} {input.bam} > {log} 2>{log}"
 
+rule create_haplotag_segment_bed:
+    input:
+        segments="segmentation2/{sample}/{size,[0-9]+}{what}.{bpdens}.txt",
+    output:
+        bed="haplotag/bed/{sample}/{size,[0-9]+}{what}.{bpdens}.bed",
+    shell:
+        "awk 'BEGIN {{s={wildcards.size};OFS=\"\\t\"}} $2!=c {{prev=0}} NR>1 {{print $2,prev*s+1,($3+1)*s; prev=$3+1; c=$2}}' {input.segments} > {output.bed}"
+
+rule create_haplotag_table:
+    input:
+        bams=lambda wc: ['haplotag/bam/{}/{}.bam'.format(sample,bam) for bam in BAM_PER_SAMPLE[wc.sample]],
+        bais=lambda wc: ['haplotag/bam/{}/{}.bam.bai'.format(sample,bam) for bam in BAM_PER_SAMPLE[wc.sample]],
+        bed = "haplotag/bed/{sample}/{windows}.{bpdens}.bed"
+    output:
+        tsv='haplotag/table/{sample}/haplotag-counts.{windows}.{bpdens}.tsv'
+    params:
+        bam_path='haplotag/bam/{sample}/',
+    log:
+        "log/create_haplotag_table/{sample}.log"
+    script:
+        "utils/haplotagTable.snakemake.R"
+
+
 ################################################################################
 # Call SNVs                                                                    #
 ################################################################################
@@ -702,13 +728,13 @@ rule mergeBams:
     shell:
         config["samtools"] + " merge -@ {threads} {output} {input} 2>&1 > {log}"
 
-rule indexMergedBam:
+rule index_bam:
     input:
-        "snv_calls/{sample}/merged.bam"
+        "{file}.bam"
     output:
-        "snv_calls/{sample}/merged.bam.bai"
+        "{file}.bam.bai"
     log:
-        "log/indexMergedBam/{sample}.log"
+        "{file}.bam.log"
     shell:
         config["samtools"] + " index {input} 2> {log}"
 
