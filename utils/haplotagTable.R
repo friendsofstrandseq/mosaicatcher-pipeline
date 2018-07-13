@@ -89,6 +89,7 @@ getHaplotagTable2 <- function(bedFile=NULL, bam.path=NULL, CPUs=4, file.destinat
   for (i in 1:length(haplotag.bams)) {
     bam <- haplotag.bams[i]
     filename <- basename(bam)
+    cell.id <- unlist(strsplit(filename, "\\."))[1]
     message("Processing bamfile ", filename, " ...", appendLF=F); ptm <- proc.time()    
     
     ## read in reads for selected regions
@@ -101,6 +102,12 @@ getHaplotagTable2 <- function(bedFile=NULL, bam.path=NULL, CPUs=4, file.destinat
     #use parallel execution with a given number of CPUs
     counts <- bplapply(fragments.per.region, getHapReadCount, BPPARAM = MulticoreParam(CPUs))
     counts.df <- do.call(rbind, counts)
+
+    
+    # cbind regions to counts.df
+    counts.df <- cbind(cell=cell.id, regions, counts.df)
+    # renaming the regions columns
+    colnames(counts.df)[2:4] <- c("chrom", "start", "end")
     
     ## export final table of haplotagged read counts
     all.counts[[i]] <- counts.df
