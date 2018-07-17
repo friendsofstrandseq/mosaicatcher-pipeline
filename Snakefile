@@ -685,7 +685,7 @@ rule haplotag_bams:
     output:
         bam='haplotag/bam/{sample}/{bam}.bam',
     log:
-        "log/haplotag_bams/{sample}.log"
+        "log/haplotag_bams/{sample}/{bam}.log"
     shell:
         "whatshap haplotag -o {output.bam} -r {input.ref} {input.vcf} {input.bam} > {log} 2>{log}"
 
