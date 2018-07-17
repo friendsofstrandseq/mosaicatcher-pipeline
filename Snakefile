@@ -312,7 +312,7 @@ rule generate_exclude_file_1:
     output:
         temp("log/exclude_file.temp")
     input:
-        bam = expand("bam/{sample}/selected/{bam}.bam", sample = SAMPLES[0], bam = ALLBAMS_PER_SAMPLE[SAMPLES[0]][0])
+        bam = expand("bam/{sample}/selected/{bam}.bam", sample = SAMPLES[0], bam = BAM_PER_SAMPLE[SAMPLES[0]][0])
     log:
         "log/generate_exclude_file_1.log"
     params:
