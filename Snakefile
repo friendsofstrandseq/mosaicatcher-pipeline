@@ -66,7 +66,7 @@ rule all:
                bpdens = ["few","medium","many"],
                method = METHODS,
                af = ["high","med","low","rare"]),
-        expand("haplotag/table/{sample}/haplotag-counts.{window}_fixed_norm.{bpdens}.tsv",
+        expand("haplotag/table/{sample}/full/haplotag-counts.{window}_fixed_norm.{bpdens}.tsv",
                sample = SAMPLES,
                window = [50000, 100000],
                bpdens = ["few","medium","many"]),
@@ -691,7 +691,7 @@ rule haplotag_bams:
 
 rule create_haplotag_segment_bed:
     input:
-        segments="segmentation2/{sample}/{size,[0-9]+}{what}.{bpdens}.txt",
+        segments="segmentation2/{sample}/{size}{what}.{bpdens}.txt",
     output:
         bed="haplotag/bed/{sample}/{size,[0-9]+}{what}.{bpdens}.bed",
     shell:
@@ -699,27 +699,34 @@ rule create_haplotag_segment_bed:
 
 rule create_haplotag_table:
     input:
-        bams=lambda wc: ['haplotag/bam/{}/{}.bam'.format(sample,bam) for bam in BAM_PER_SAMPLE[wc.sample]],
-        bais=lambda wc: ['haplotag/bam/{}/{}.bam.bai'.format(sample,bam) for bam in BAM_PER_SAMPLE[wc.sample]],
+        bam='haplotag/bam/{sample}/{cell}.bam',
+        bai='haplotag/bam/{sample}/{cell}.bam.bai',
         bed = "haplotag/bed/{sample}/{windows}.{bpdens}.bed"
     output:
-        tsv='haplotag/table/{sample}/haplotag-counts.{windows}.{bpdens}.tsv'
-    params:
-        bam_path='haplotag/bam/{sample}/',
+        tsv='haplotag/table/{sample}/by-cell/haplotag-counts.{cell}.{windows}.{bpdens}.tsv'
     log:
-        "log/create_haplotag_table/{sample}.log"
+        "log/create_haplotag_table/{sample}.{cell}.log"
     script:
         "utils/haplotagTable.snakemake.R"
 
+rule merge_haplotag_tables:
+    input:
+        tsvs=lambda wc: ['haplotag/table/{}/by-cell/haplotag-counts.{}.{}.{}.tsv'.format(sample,cell,wc.windows,wc.bpdens) for cell in BAM_PER_SAMPLE[wc.sample]],
+    output:
+        tsv='haplotag/table/{sample}/full/haplotag-counts.{windows}.{bpdens}.tsv'
+    shell:
+        '(head -n1 {input.tsvs[0]} && tail -q -n +2 {input.tsvs}) > {output.tsv}'
+
+
 rule create_haplotag_likelihoods:
-	input:
-		haplotag_table='haplotag/table/{sample}/haplotag-counts.{windows}.{bpdens}.tsv'
-		sv_probs_table = 'sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.Rdata'
-	output: 'haplotag/table/{sample}/haplotag-likelihoods.{windows}.{bpdens}.data'
-	log:
+    input:
+        haplotag_table='haplotag/table/{sample}/haplotag-counts.{windows}.{bpdens}.tsv'
+        sv_probs_table = 'sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.Rdata'
+    output: 'haplotag/table/{sample}/haplotag-likelihoods.{windows}.{bpdens}.data'
+    log:
         "log/create_haplotag_likelihoods/{sample}.log"
-	script:
-		"utils/haplotagProbs.snakemake.R"
+    script:
+        "utils/haplotagProbs.snakemake.R"
 
 
 ################################################################################
