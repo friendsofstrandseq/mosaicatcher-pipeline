@@ -36,6 +36,8 @@ getHaplotagTable <- function(sv.table=NULL, bam.path=NULL) {
     ## split reads per selected region
     hits <- findOverlaps(SV.regions.gr.perCell, fragments)
     fragments.per.region <- split(fragments[subjectHits(hits)], queryHits(hits))
+    # subset regions to the regions that have non-zero read count
+    regions <- regions[unique(queryHits(hits)),]
     ## count haplotagged reads in selected regions
     counts <- lapply(fragments.per.region, getHapReadCount)
     counts.df <- do.call(rbind, counts)
