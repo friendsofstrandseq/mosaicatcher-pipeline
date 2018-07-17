@@ -30,7 +30,17 @@ import os.path
 # * calculate a segmentation into potential SVs using Mosaicatcher
 
 
-METHODS = ["simpleCalls_llr1_poppriorsFALSE_regfactor10", "simpleCalls_llr4_poppriorsFALSE_regfactor10", "simpleCalls_llr1_poppriorsTRUE_regfactor6", "simpleCalls_llr4_poppriorsTRUE_regfactor6", "simpleCalls_llr1_poppriorsTRUE_regfactor10", "simpleCalls_llr4_poppriorsTRUE_regfactor10", "biAllelic_llr1", "biAllelic_llr4"]
+METHODS = [
+    "simpleCalls_llr1_poppriorsFALSE_haplotagsFALSE_regfactor10",
+    "simpleCalls_llr4_poppriorsFALSE_haplotagsFALSE_regfactor10",
+    "simpleCalls_llr1_poppriorsTRUE_haplotagsFALSE_regfactor6",
+    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_regfactor6",
+    "simpleCalls_llr1_poppriorsTRUE_haplotagsFALSE_regfactor10",
+    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_regfactor10",
+    "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_regfactor6",
+    "biAllelic_llr1",
+    "biAllelic_llr4"
+]
 
 
 singularity: "docker://smei/mosaicatcher-pipeline:v0.1"
@@ -251,7 +261,7 @@ rule plot_SV_calls:
             calls={input.calls} \
             {input.counts} \
             {wildcards.chrom} \
-            {output} 2>&1 > {log}
+            {output} > {log} 2>&1
         """
 
 rule plot_SV_calls_simulated:
@@ -475,11 +485,11 @@ rule plot_heatmap:
 
 rule mosaiClassifier_make_call:
     input:
-        probs = "sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.Rdata"
+        probs = 'haplotag/table/{sample}/haplotag-likelihoods.{windows}.{bpdens}.data'
     output:
-        "sv_calls/{sample}/{windows}.{bpdens}/simpleCalls_llr{llr}_poppriors{pop_priors,(TRUE|FALSE)}_regfactor{regfactor,[0-9]+}.txt"
+        "sv_calls/{sample}/{windows}.{bpdens}/simpleCalls_llr{llr}_poppriors{pop_priors,(TRUE|FALSE)}_haplotags{use_haplotags,(TRUE|FALSE)}_regfactor{regfactor,[0-9]+}.txt"
     log:
-        "log/mosaiClassifier_make_call/{sample}/{windows}.{bpdens}.llr{llr}.poppriors{pop_priors}.regfactor{regfactor}.log"
+        "log/mosaiClassifier_make_call/{sample}/{windows}.{bpdens}.llr{llr}.poppriors{pop_priors}.haplotags{use_haplotags}.regfactor{regfactor}.log"
     script:
         "utils/mosaiClassifier_call.snakemake.R"
 
