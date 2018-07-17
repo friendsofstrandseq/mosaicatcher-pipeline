@@ -1,8 +1,12 @@
-sink(snakemake@log[[1]])
+log <- file(snakemake@log[[1]], open='wt')
+sink(file=log, type='message')
+sink(file=log, type='output')
 
-haplotagCounts <- snakemake@input[[haplotag_table]]
-probs <- snakemake@input[[sv_probs_table]]
+source('utils/haplotagProbs.R')
 
-probs <- addHaploCountProbs(probs, haploCounts, alpha)
+haplotagCounts <- fread(snakemake@input[["haplotag_table"]])
+probs <- readRDS(snakemake@input[["sv_probs_table"]])
 
-save(probs, file=snakemake@output[[1]])
+probs <- addHaploCountProbs(probs, haplotagCounts, alpha=0.05)
+
+saveRDS(probs, file=snakemake@output[[1]])

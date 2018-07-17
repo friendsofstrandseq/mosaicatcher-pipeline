@@ -705,7 +705,7 @@ rule create_haplotag_table:
     output:
         tsv='haplotag/table/{sample}/by-cell/haplotag-counts.{cell}.{windows}.{bpdens}.tsv'
     log:
-        "log/create_haplotag_table/{sample}.{cell}.log"
+        "log/create_haplotag_table/{sample}.{cell}.{windows}.{bpdens}.log"
     script:
         "utils/haplotagTable.snakemake.R"
 
@@ -720,11 +720,11 @@ rule merge_haplotag_tables:
 
 rule create_haplotag_likelihoods:
     input:
-        haplotag_table='haplotag/table/{sample}/haplotag-counts.{windows}.{bpdens}.tsv'
-        sv_probs_table = 'sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.Rdata'
+        haplotag_table='haplotag/table/{sample}/full/haplotag-counts.{windows}.{bpdens}.tsv',
+        sv_probs_table = 'sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.Rdata',
     output: 'haplotag/table/{sample}/haplotag-likelihoods.{windows}.{bpdens}.data'
     log:
-        "log/create_haplotag_likelihoods/{sample}.log"
+        "log/create_haplotag_likelihoods/{sample}.{windows}.{bpdens}.log"
     script:
         "utils/haplotagProbs.snakemake.R"
 
