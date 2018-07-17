@@ -31,15 +31,15 @@ import os.path
 
 
 METHODS = [
-    "simpleCalls_llr1_poppriorsFALSE_haplotagsFALSE_regfactor10",
-    "simpleCalls_llr4_poppriorsFALSE_haplotagsFALSE_regfactor10",
-    "simpleCalls_llr1_poppriorsTRUE_haplotagsFALSE_regfactor6",
-    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_regfactor6",
-    "simpleCalls_llr1_poppriorsTRUE_haplotagsFALSE_regfactor10",
-    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_regfactor10",
-    "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_regfactor6",
-    "biAllelic_llr1",
-    "biAllelic_llr4"
+    "simpleCalls_llr1_poppriorsFALSE_haplotagsFALSE_gtcutoff0_regfactor10",
+    "simpleCalls_llr4_poppriorsFALSE_haplotagsFALSE_gtcutoff0_regfactor10",
+    "simpleCalls_llr4_poppriorsFALSE_haplotagsFALSE_gtcutoff0_regfactor6",
+    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0_regfactor6",
+    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.05_regfactor6",
+    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.2_regfactor6",
+    "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0_regfactor6",
+    "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.05_regfactor6",
+    "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.2_regfactor6",
 ]
 
 
@@ -487,9 +487,9 @@ rule mosaiClassifier_make_call:
     input:
         probs = 'haplotag/table/{sample}/haplotag-likelihoods.{windows}.{bpdens}.data'
     output:
-        "sv_calls/{sample}/{windows}.{bpdens}/simpleCalls_llr{llr}_poppriors{pop_priors,(TRUE|FALSE)}_haplotags{use_haplotags,(TRUE|FALSE)}_regfactor{regfactor,[0-9]+}.txt"
+        "sv_calls/{sample}/{windows}.{bpdens}/simpleCalls_llr{llr}_poppriors{pop_priors,(TRUE|FALSE)}_haplotags{use_haplotags,(TRUE|FALSE)}_gtcutoff{gtcutoff,[0-9\\.]+}_regfactor{regfactor,[0-9]+}.txt"
     log:
-        "log/mosaiClassifier_make_call/{sample}/{windows}.{bpdens}.llr{llr}.poppriors{pop_priors}.haplotags{use_haplotags}.regfactor{regfactor}.log"
+        "log/mosaiClassifier_make_call/{sample}/{windows}.{bpdens}.llr{llr}.poppriors{pop_priors}.haplotags{use_haplotags}.gtcutoff{gtcutoff}.regfactor{regfactor}.log"
     script:
         "utils/mosaiClassifier_call.snakemake.R"
 

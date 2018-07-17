@@ -9,7 +9,7 @@ source("utils/mosaiClassifier/mosaiClassifier.R")
 #' @author Sascha Meiers
 #' @export
 #'
-makeSVCallSimple <- function(probs, llr_thr = 1, use.pop.priors = FALSE, use.haplotags = FALSE) {
+makeSVCallSimple <- function(probs, llr_thr = 1, use.pop.priors = FALSE, use.haplotags = FALSE, genotype.cutoff = 0.0) {
 
   assert_that(is.data.table(probs),
               "sample" %in% colnames(probs),
@@ -25,12 +25,6 @@ makeSVCallSimple <- function(probs, llr_thr = 1, use.pop.priors = FALSE, use.hap
   assert_that("nb_hap_pp" %in% colnames(probs)) %>% invisible
   setkey(probs, chrom, start, end, sample, cell)
 
-  if (use.haplotags) {
-    assert_that("haplotag.prob" %in% colnames(probs)) %>% invisible
-    probs[!is.na(haplotag.prob), nb_hap_ll := nb_hap_ll*haplotag.prob ]
-    probs[!is.na(haplotag.prob), nb_hap_pp := nb_hap_pp*haplotag.prob ]
-  }
-
   if (use.pop.priors) {
     message('Applying population priors')
     probs[, pop.prior := sum(nb_hap_ll) , by = .(chrom, start, end, sample, haplotype)]
@@ -38,6 +32,18 @@ makeSVCallSimple <- function(probs, llr_thr = 1, use.pop.priors = FALSE, use.hap
     probs[, nb_hap_pp := nb_hap_pp*pop.prior]
   } else {
     message('Skipping population priors')
+  }
+
+  if (genotype.cutoff > 0.0) {
+    probs[, nb_hap_pp_norm := nb_hap_pp/sum(nb_hap_pp) , by = .(chrom, start, end, sample, cell)]
+    probs[, nb_hap_pp_norm_pop := sum(nb_hap_pp_norm) , by = .(chrom, start, end, sample, haplotype)]
+    probs[, nb_hap_pp_norm_pop := nb_hap_pp_norm_pop/sum(nb_hap_pp_norm_pop) , by = .(chrom, start, end, sample, cell)]
+    probs[, nb_hap_pp := ifelse(nb_hap_pp_norm_pop>genotype.cutoff, nb_hap_pp, 0.0)]
+  }
+
+  if (use.haplotags) {
+    assert_that("haplotag.prob" %in% colnames(probs)) %>% invisible
+    probs[!is.na(haplotag.prob), nb_hap_pp := nb_hap_pp*haplotag.prob ]
   }
 
   # annotate the ref_hom posterior probability per segment / cell
