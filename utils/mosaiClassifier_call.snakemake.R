@@ -10,8 +10,9 @@ llr                  = as.numeric(snakemake@wildcards[["llr"]])
 use.pop.priors       = eval(parse(text=snakemake@wildcards[["pop_priors"]]))
 use.haplotags        = eval(parse(text=snakemake@wildcards[["use_haplotags"]]))
 regularizationFactor = 10^(-as.numeric(snakemake@wildcards[["regfactor"]]))
+genotype.cutoff      = as.numeric(snakemake@wildcards[["gtcutoff"]])
 
 probs <- mosaiClassifierPostProcessing(probs, regularizationFactor = regularizationFactor)
-tab <- makeSVCallSimple(probs, llr_thr = llr, use.pop.priors = use.pop.priors, use.haplotags = use.haplotags)
+tab <- makeSVCallSimple(probs, llr_thr = llr, use.pop.priors = use.pop.priors, use.haplotags = use.haplotags, genotype.cutoff = genotype.cutoff)
 
 write.table(tab, file = snakemake@output[[1]], sep = "\t", quote=F, row.names = F, col.names = T)
