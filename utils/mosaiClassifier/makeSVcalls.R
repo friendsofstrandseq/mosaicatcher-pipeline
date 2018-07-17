@@ -9,7 +9,7 @@ source("utils/mosaiClassifier/mosaiClassifier.R")
 #' @author Sascha Meiers
 #' @export
 #'
-makeSVCallSimple <- function(probs, llr_thr = 1, use.pop.priors = FALSE) {
+makeSVCallSimple <- function(probs, llr_thr = 1, use.pop.priors = FALSE, use.haplotags = FALSE) {
 
   assert_that(is.data.table(probs),
               "sample" %in% colnames(probs),
@@ -25,6 +25,12 @@ makeSVCallSimple <- function(probs, llr_thr = 1, use.pop.priors = FALSE) {
   assert_that("nb_hap_pp" %in% colnames(probs)) %>% invisible
   setkey(probs, chrom, start, end, sample, cell)
 
+  if (use.haplotags) {
+    assert_that("haplotag.prob" %in% colnames(probs)) %>% invisible
+    probs[!is.na(haplotag.prob), nb_hap_ll := nb_hap_ll*haplotag.prob ]
+    probs[!is.na(haplotag.prob), nb_hap_pp := nb_hap_pp*haplotag.prob ]
+  }
+
   if (use.pop.priors) {
     message('Applying population priors')
     probs[, pop.prior := sum(nb_hap_ll) , by = .(chrom, start, end, sample, haplotype)]
@@ -38,7 +44,7 @@ makeSVCallSimple <- function(probs, llr_thr = 1, use.pop.priors = FALSE) {
   probs[,
         ref_hom_pp := .SD[haplo_name == "ref_hom", nb_hap_pp],
         by = .(chrom, start, end, sample, cell)]
-
+        
   # order the different haplotype states based on their posterior prob. (nb_hap_pp)
   # and keep only the two most likely states
   probs[,
