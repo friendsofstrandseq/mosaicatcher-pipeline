@@ -711,6 +711,16 @@ rule create_haplotag_table:
     script:
         "utils/haplotagTable.snakemake.R"
 
+rule create_haplotag_likelihoods:
+	input:
+		haplotag_table='haplotag/table/{sample}/haplotag-counts.{windows}.{bpdens}.tsv'
+		sv_probs_table = 'sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.Rdata'
+	output: 'haplotag/table/{sample}/haplotag-likelihoods.{windows}.{bpdens}.data'
+	log:
+        "log/create_haplotag_likelihoods/{sample}.log"
+	script:
+		"utils/haplotagProbs.snakemake.R"
+
 
 ################################################################################
 # Call SNVs                                                                    #
