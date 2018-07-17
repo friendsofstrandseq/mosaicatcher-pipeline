@@ -150,7 +150,7 @@ dependencies:
   - r-dplyr=0.7.6=r341h9d2a408_0
   - r-futile.logger=1.4.3=r3.4.1_0
   - r-futile.options=1.0.0=r3.4.1_0
-  - r-ggplot2=3.0.0=r341h6115d3f_0
+  - r-ggplot2=2.2.1=r3.4.1_0
   - r-git2r=0.21.0=r341h0c37787_0
   - r-glue=1.2.0=r3.4.1_0
   - r-gridextra=2.3=r3.4.1_0
@@ -168,11 +168,9 @@ dependencies:
   - r-matrixstats=0.53.1=r341_0
   - r-mc2d=0.1_18=r3.4.1_0
   - r-memoise=1.1.0=r3.4.1_0
-  - r-mgcv=1.8_24=r341_0
   - r-mime=0.5=r3.4.1_0
   - r-munsell=0.5.0=r341_0
   - r-mvtnorm=1.0_6=r3.4.1_0
-  - r-nlme=3.1_131=r3.4.1_0
   - r-openssl=1.0.1=r3.4.1_0
   - r-pillar=1.2.2=r341h6115d3f_1
   - r-pkgconfig=2.0.1=r3.4.1_0
