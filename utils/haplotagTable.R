@@ -65,11 +65,11 @@ getHaplotagTable <- function(sv.table=NULL, bam.path=NULL) {
 #' counts of reads per haplotype.
 #'
 #' @param bedFile A path to a table in bed format with regions to count haplotagged reads.
-#' @param bam.path A path to the haplotagged bam files.
+#' @param bam.file BAM file name
 #' @param CPUs Number of CPUs to use for data processing.
 #' @author David Porubsky
 
-getHaplotagTable2 <- function(bedFile=NULL, bam.path=NULL, CPUs=4, file.destination=NULL) {
+getHaplotagTable2 <- function(bedFile=NULL, bam.file=NULL, CPUs=4, file.destination=NULL) {
   
   suppressPackageStartupMessages({
     requireNamespace("tools")
@@ -77,54 +77,44 @@ getHaplotagTable2 <- function(bedFile=NULL, bam.path=NULL, CPUs=4, file.destinat
   
   message("Creating haplotag table")
   message("BED file: ", bedFile)
-  message("BAM path: ", bam.path)
+  message("BAM file: ", bam.file)
   message("Output file: ", file.destination)
 
   ## read the SV table
   regions <- read.table(bedFile, header = FALSE, stringsAsFactors = FALSE)
   regions.gr <- GRanges(seqnames=regions$V1, ranges=IRanges(start=regions$V2, end=regions$V3))
-  ## list all bam files to count haplotagged reads in
-  haplotag.bams <- list.files(path = bam.path, pattern = "\\.bam$", full.names = T)
   
-  all.counts <- list()
-  for (i in 1:length(haplotag.bams)) {
-    bam <- haplotag.bams[i]
-    filename <- basename(bam)
-    cell.id <- unlist(strsplit(filename, "\\."))[1]
-    message("Processing bamfile ", filename, " ...", appendLF=F); ptm <- proc.time()    
-    
-    ## read in reads for selected regions
-    fragments <- bamregion2GRanges(bamfile = bam, region = regions.gr, pairedEndReads = T, min.mapq = 10, filterAltAlign = TRUE)
-    fragments$HP[is.na(fragments$HP)] <- 0 #set missing haplotag to zero
-    ## split reads per selected region
-    hits <- findOverlaps(regions.gr, fragments)
-    fragments.per.region <- split(fragments[subjectHits(hits)], queryHits(hits))
-    # subset regions to the regions that have non-zero read count
-    regions <- regions[unique(queryHits(hits)),]
-    ## count haplotagged reads in selected regions
-    #use parallel execution with a given number of CPUs
-    counts <- bplapply(fragments.per.region, getHapReadCount, BPPARAM = MulticoreParam(CPUs))
-    counts.df <- do.call(rbind, counts)
 
-    
-    # cbind regions to counts.df
-    counts.df <- cbind(cell=cell.id, regions, counts.df)
-    # renaming the regions columns
-    colnames(counts.df)[2:4] <- c("chrom", "start", "end")
-    
-    ## export final table of haplotagged read counts
-    all.counts[[i]] <- counts.df
-    
-    time <- proc.time() - ptm; message(" ",round(time[3],2),"s")
-  }
+  filename <- basename(bam.file)
+  cell.id <- unlist(strsplit(filename, "\\."))[1]
+  message("Processing bamfile ", filename, " ...", appendLF=F); ptm <- proc.time()
+
+  ## read in reads for selected regions
+  fragments <- bamregion2GRanges(bamfile = bam.file, region = regions.gr, pairedEndReads = T, min.mapq = 10, filterAltAlign = TRUE)
+  fragments$HP[is.na(fragments$HP)] <- 0 #set missing haplotag to zero
+  ## split reads per selected region
+  hits <- findOverlaps(regions.gr, fragments)
+  fragments.per.region <- split(fragments[subjectHits(hits)], queryHits(hits))
+  # subset regions to the regions that have non-zero read count
+  regions <- regions[unique(queryHits(hits)),]
+  ## count haplotagged reads in selected regions
+  #use parallel execution with a given number of CPUs
+  counts <- bplapply(fragments.per.region, getHapReadCount, BPPARAM = MulticoreParam(CPUs))
+  counts.df <- do.call(rbind, counts)
+
+  # cbind regions to counts.df
+  counts.df <- cbind(cell=cell.id, regions, counts.df)
+  # renaming the regions columns
+  colnames(counts.df)[2:4] <- c("chrom", "start", "end")
   
-  final.table <- do.call(rbind, all.counts)
+  time <- proc.time() - ptm; message(" ",round(time[3],2),"s")
+
   if (!is.null(file.destination)){
-    write.table(final.table, file = file.destination, quote = FALSE, row.names = FALSE)
+    write.table(counts.df, file = file.destination, quote = FALSE, row.names = FALSE)
   }
   message("DONE!!!")
   
-  return(final.table)
+  return(counts.df)
 }
 
 #' Count haplotype specific reads
