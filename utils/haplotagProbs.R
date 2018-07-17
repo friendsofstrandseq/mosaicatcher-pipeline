@@ -61,7 +61,7 @@ addHaploCountProbs <- function(probs, haploCounts, alpha)
         by=haploSegType]
   
   # add a column for multinomial probabilities of haplotagged read counts
-  probs.new <- probs[!is.na(watson.H1) & !is.na(multi.p.W.h1)]
+  probs.new <- probs[!is.na(watson.H1) & !is.na(multi.p.W.h1) & haploSegType!="?"]
   
   probs.new[, haplotag.prob:=dmultinomial(x=as.matrix(probs.new[,.(watson.H1, crick.H1, watson.H2, crick.H2)]), 
                                        prob=as.matrix(probs.new[,.(multi.p.W.h1, multi.p.C.h1, multi.p.W.h2, multi.p.C.h2)]))]
