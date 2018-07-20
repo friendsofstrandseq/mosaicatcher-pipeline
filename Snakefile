@@ -690,7 +690,9 @@ rule convert_strandphaser_output:
 rule haplotag_bams:
     input:
         vcf='phased-snvs/{sample}.vcf.gz',
+        tbi='phased-snvs/{sample}.vcf.gz.tbi',
         bam='bam/{sample}/selected/{bam}.bam',
+        bai='bam/{sample}/selected/{bam}.bam.bai',
         ref = config["reference"],
     output:
         bam='haplotag/bam/{sample}/{bam}.bam',
