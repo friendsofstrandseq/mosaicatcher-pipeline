@@ -35,10 +35,13 @@ makeSVCallSimple <- function(probs, llr_thr = 1, use.pop.priors = FALSE, use.hap
   }
 
   if (genotype.cutoff > 0.0) {
+    message('Using genotype cutoff ', genotype.cutoff)
     probs[, nb_hap_pp_norm := nb_hap_pp/sum(nb_hap_pp) , by = .(chrom, start, end, sample, cell)]
     probs[, nb_hap_pp_norm_pop := sum(nb_hap_pp_norm) , by = .(chrom, start, end, sample, haplotype)]
     probs[, nb_hap_pp_norm_pop := nb_hap_pp_norm_pop/sum(nb_hap_pp_norm_pop) , by = .(chrom, start, end, sample, cell)]
     probs[, nb_hap_pp := ifelse(nb_hap_pp_norm_pop>genotype.cutoff, nb_hap_pp, 0.0)]
+  } else {
+    message('Skipping genotype cutoffs')
   }
 
   if (use.haplotags) {
