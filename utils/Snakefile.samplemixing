@@ -1,0 +1,72 @@
+from collections import defaultdict
+import random
+
+targets = {
+	('WT', 'C7', 80, 10, 1),
+	('WT', 'C7', 80, 20, 1),
+	('WT', 'C7', 50, 50, 1),
+}
+
+sample_paths = {
+	'BM510': '/MMCI/TM/scratch/strandseq/rpe-2018-07-18-BM510/bam/RPE-BM510/selected/',
+	'C7':    '/MMCI/TM/scratch/strandseq/rpe-2018-07-18-C7/bam/C7_data/selected/',
+	'WT':    '/MMCI/TM/scratch/strandseq/rpe-2018-07-18-WT/bam/RPE1-WT/selected/',
+}
+
+samples = sorted(sample_paths.keys())
+sample_cells = defaultdict(list)
+
+for sample in samples:
+	sample_cells[sample] = list(glob_wildcards(sample_paths[sample] + '{cell}.sort.mdup.bam').cell)
+
+
+def select_cells(sample, count):
+	for cell in random.sample(sample_cells[sample], int(count)):
+		yield 
+
+bam_mapping = {}
+for target in targets:
+	sample1, sample2, count1, count2, seed = target
+	target_sample = '_'.join(str(x) for x in target)
+	random.seed(seed)
+	l = []
+	for sample, count in [(sample1,count1),(sample2,count2)]:
+		for cell in random.sample(sample_cells[sample], int(count)):
+			source_bam = sample_paths[sample] + cell + '.sort.mdup.bam'
+			l.append((source_bam, cell))
+	random.shuffle(l)
+	for i, (source_bam, cell) in enumerate(l):
+		target_bam = 'bam/{0}/all/CELL{1:03d}.{2}.bam'.format(target_sample,i,cell)
+		bam_mapping[target_bam] = source_bam
+
+#print(bam_mapping)
+
+rule master:
+	input:
+		bam=bam_mapping.keys(),
+		bai=[x + '.bai' for x in bam_mapping.keys()],
+
+rule create_new_header:
+	input:
+		bam=lambda wc: bam_mapping['bam/{}/all/CELL{}.{}.bam'.format(wc.target_sample,wc.i,wc.cell)]
+	output:
+		hd=temp('bam/{target_sample}/all/CELL{i,[0-9]+}.{cell}.header.sam')
+	shell:
+		'samtools view -H {input.bam} | sed -r \'/^@RG/ s/(SM:[A-Za-z0-9_-]+)/SM:{wildcards.target_sample}/g\' > {output.hd}'
+
+rule translate_bam:
+	input:
+		bam=lambda wc: bam_mapping['bam/{}/all/CELL{}.{}.bam'.format(wc.target_sample,wc.i,wc.cell)],
+		hd='bam/{target_sample}/all/CELL{i,[0-9]+}.{cell}.header.sam'
+	output:
+		bam='bam/{target_sample}/all/CELL{i,[0-9]+}.{cell}.bam'
+	shell:
+		'samtools reheader {input.hd} {input.bam} > {output.bam}'
+
+rule index_bam:
+	input:
+		bam='{file}.bam'
+	output:
+		bai='{file}.bam.bai'
+	shell:
+		'samtools index {input.bam}'
