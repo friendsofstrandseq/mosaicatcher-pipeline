@@ -70,12 +70,12 @@ rule all:
                bpdens = ["few","medium","many"],
                method = METHODS),
         expand("ploidy/{sample}/ploidy.{chrom}.txt", sample = SAMPLES, chrom = config["chromosomes"]),
-        expand("sv_calls/{sample}/{window}_fixed_norm.{bpdens}/plots/sv_consistency/{method}.consistency-barplot-{af}.pdf",
+        expand("sv_calls/{sample}/{window}_fixed_norm.{bpdens}/plots/sv_consistency/{method}.consistency-barplot-{plottype}.pdf",
                sample = SAMPLES,
                window = [50000, 100000],
                bpdens = ["few","medium","many"],
                method = METHODS,
-               af = ["high","med","low","rare"]),
+               plottype = ["byaf","bypos"]),
         expand("haplotag/table/{sample}/full/haplotag-counts.{window}_fixed_norm.{bpdens}.tsv",
                sample = SAMPLES,
                window = [50000, 100000],
@@ -294,10 +294,8 @@ rule plot_SV_consistency_barplot:
     input:
         sv_calls  = "sv_calls/{sample}/{windows}.{bpdens}/{method}.txt",
     output:
-        barplot_high = "sv_calls/{sample}/{windows}.{bpdens}/plots/sv_consistency/{method}.consistency-barplot-high.pdf",
-        barplot_med = "sv_calls/{sample}/{windows}.{bpdens}/plots/sv_consistency/{method}.consistency-barplot-med.pdf",
-        barplot_low = "sv_calls/{sample}/{windows}.{bpdens}/plots/sv_consistency/{method}.consistency-barplot-low.pdf",
-        barplot_rare = "sv_calls/{sample}/{windows}.{bpdens}/plots/sv_consistency/{method}.consistency-barplot-rare.pdf",
+        barplot_bypos = "sv_calls/{sample}/{windows}.{bpdens}/plots/sv_consistency/{method}.consistency-barplot-bypos.pdf",
+        barplot_byaf = "sv_calls/{sample}/{windows}.{bpdens}/plots/sv_consistency/{method}.consistency-barplot-byaf.pdf",
     log:
         "log/plot_SV_consistency/{sample}/{windows}.{bpdens}.{method}.log"
     script:
@@ -485,7 +483,7 @@ rule plot_heatmap:
 
 rule mosaiClassifier_make_call:
     input:
-        probs = 'haplotag/table/{sample}/haplotag-likelihoods.{windows}.{bpdens}.data'
+        probs = 'haplotag/table/{sample}/haplotag-likelihoods.{windows}.{bpdens}.Rdata'
     output:
         "sv_calls/{sample}/{windows}.{bpdens}/simpleCalls_llr{llr}_poppriors{pop_priors,(TRUE|FALSE)}_haplotags{use_haplotags,(TRUE|FALSE)}_gtcutoff{gtcutoff,[0-9\\.]+}_regfactor{regfactor,[0-9]+}.txt"
     log:
@@ -734,7 +732,7 @@ rule create_haplotag_likelihoods:
     input:
         haplotag_table='haplotag/table/{sample}/full/haplotag-counts.{windows}.{bpdens}.tsv',
         sv_probs_table = 'sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.Rdata',
-    output: 'haplotag/table/{sample}/haplotag-likelihoods.{windows}.{bpdens}.data'
+    output: 'haplotag/table/{sample}/haplotag-likelihoods.{windows}.{bpdens}.Rdata'
     log:
         "log/create_haplotag_likelihoods/{sample}.{windows}.{bpdens}.log"
     script:

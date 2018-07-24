@@ -4,4 +4,4 @@ sink(file=log, type='output')
 
 source("utils/sv_consistency_barplot.R")
 
-SVplotting(snakemake@input[["sv_calls"]], snakemake@output[["barplot_high"]], snakemake@output[["barplot_med"]], snakemake@output[["barplot_low"]], snakemake@output[["barplot_rare"]])
+SVplotting(inputfile = snakemake@input[["sv_calls"]], outputfile.byPOS = snakemake@output[["barplot_bypos"]], outputfile.byVAF = snakemake@output[["barplot_byaf"]])
