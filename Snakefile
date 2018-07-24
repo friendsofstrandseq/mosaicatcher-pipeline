@@ -483,7 +483,7 @@ rule plot_heatmap:
 
 rule mosaiClassifier_make_call:
     input:
-        probs = 'haplotag/table/{sample}/haplotag-likelihoods.{windows}.{bpdens}.data'
+        probs = 'haplotag/table/{sample}/haplotag-likelihoods.{windows}.{bpdens}.Rdata'
     output:
         "sv_calls/{sample}/{windows}.{bpdens}/simpleCalls_llr{llr}_poppriors{pop_priors,(TRUE|FALSE)}_haplotags{use_haplotags,(TRUE|FALSE)}_gtcutoff{gtcutoff,[0-9\\.]+}_regfactor{regfactor,[0-9]+}.txt"
     log:
@@ -732,7 +732,7 @@ rule create_haplotag_likelihoods:
     input:
         haplotag_table='haplotag/table/{sample}/full/haplotag-counts.{windows}.{bpdens}.tsv',
         sv_probs_table = 'sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.Rdata',
-    output: 'haplotag/table/{sample}/haplotag-likelihoods.{windows}.{bpdens}.data'
+    output: 'haplotag/table/{sample}/haplotag-likelihoods.{windows}.{bpdens}.Rdata'
     log:
         "log/create_haplotag_likelihoods/{sample}.{windows}.{bpdens}.log"
     script:
