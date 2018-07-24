@@ -98,7 +98,7 @@ SVplotting <- function(inputfile, outputfile.byPOS, outputfile.byVAF) {
   plt_high.a <- plt_f.a(df)
   plt_high.b <- plt_f.b(df)
   plt.all.save <- plot2x2(plt_high.a, plt_high.b)
-  ggsave(plt.all.save, file=outputfile.byPOS, width=15, height=(length(unique(df$regions)))*0.15, onefile = T)
+  ggsave(plt.all.save, file=outputfile.byPOS, width=15, height=(length(unique(df$regions)))*0.15, onefile = T, limitsize = FALSE)
   
   #plots sorted by VAF
   VAFs <- split(df$cellCount, df$Var2)
@@ -108,7 +108,7 @@ SVplotting <- function(inputfile, outputfile.byPOS, outputfile.byVAF) {
   plt_high.a <- plt_f.a(df)
   plt_high.b <- plt_f.b(df)
   plt.all.save <- plot2x2(plt_high.a, plt_high.b)
-  ggsave(plt.all.save, file=outputfile.byVAF, width=15, height=(length(unique(df$regions)))*0.15, onefile = T)
+  ggsave(plt.all.save, file=outputfile.byVAF, width=15, height=(length(unique(df$regions)))*0.15, onefile = T, limitsize = FALSE)
   
   #breaks <- quantile(df[df$cellCount > 1,]$cellCount) # used to divide into "high-rare" SVs
   
