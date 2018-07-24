@@ -1,6 +1,6 @@
 ## Jun 27, 2018 ADS
 ## function to generate SV_Consistency barplots from Mosaicatcher outputs
-SVplotting <- function(inputfile, outputfile.high, outputfile.med, outputfile.low, outputfile.rare) {
+SVplotting <- function(inputfile, outputfile.byPOS, outputfile.byVAF) {
 
   library(cowplot)
   library(ggplot2)
@@ -16,10 +16,11 @@ SVplotting <- function(inputfile, outputfile.high, outputfile.med, outputfile.lo
   ##### Helper FUNCTIONS 1:
   plt_f.a <- function(in_df){
     title <- paste0("CF range: ", min(sort(in_df$cellFrac)), "-", max(sort(in_df$cellFrac)))
-    ggplot(in_df) + geom_bar(aes(x=regions, y=value, fill=Var1), stat="identity")+ xlab("Region of predicted SV") + ylab("Total cells with SV (N)") + theme_bw()+
+    ggplot(in_df) + geom_bar(aes(x=Var2, y=value, fill=Var1), stat="identity")+ xlab("Region of predicted SV") + ylab("Total cells with SV (N)") +
       #theme(axis.text.x = element_text(size=10, angle=90), axis.text.y = element_text(size=4))+   
       scale_fill_manual(values = ash12rainbow, drop=FALSE, name="SV class") + coord_flip() +
-      ggtitle(title)
+      scale_x_continuous(breaks = df$Var2, labels=df$regions, expand = c(0,0)) +
+      ggtitle(title) + theme_bw()
   }
   #tmp <- df[which(df$cellCount < 100 & df$cellCount > 20),]
   #plt_f.a(tmp)
@@ -28,10 +29,11 @@ SVplotting <- function(inputfile, outputfile.high, outputfile.med, outputfile.lo
   plt_f.b <- function(in_df){ 
     in_df.2 <- as.data.frame(setorder(setDT(in_df), -prop)[, head(.SD, 1), keyby = regions]) # pulls out the 'best-fit' SV type
     title <- paste0("agreement: ", round(min(sort(in_df.2$prop)),1), "-", round(max(sort(in_df.2$prop)),1))
-    ggplot(in_df.2) + geom_bar(aes(x=regions, y=as.numeric(prop), fill=Var1), stat="identity") + xlab("Region of predicted SV") + ylab("Best-fit SV called (%)") + theme_bw() +
+    ggplot(in_df.2) + geom_bar(aes(x=Var2, y=as.numeric(prop), fill=Var1), stat="identity") + xlab("Region of predicted SV") + ylab("Best-fit SV called (%)") +
       #theme(axis.text.x = element_text(angle=90))  + 
-      scale_fill_manual(values = ash12rainbow, drop=FALSE, name="SV class") + coord_flip()+
-      ggtitle(title)
+      scale_fill_manual(values = ash12rainbow, drop=FALSE, name="SV class") + coord_flip() +
+      scale_x_continuous(breaks = df$Var2, labels=df$regions, expand = c(0,0)) +
+      ggtitle(title) + theme_bw()
   }
   # plt.b<- plt_f.b(tmp)
   
@@ -68,7 +70,9 @@ SVplotting <- function(inputfile, outputfile.high, outputfile.med, outputfile.lo
   
   # prepare df for plotting
   df <- melt(svType) # var2=region
-  df$regions <- unlist(names(regions))[df$Var2] # add region information
+  #df$regions <- unlist(names(regions))[df$Var2] # add region information
+  sorted.regions <- sort(unlist(reduce(regions)))[df$Var2]
+  df$regions <- names(sorted.regions)
   df$cellCount <- cellCount[df$Var2] # add No of cells with SV called at region
   df$cellFrac <- round(df$cellCount/cellNo, 2) # calculate cell fraction
   df$prop <- round((df$value/df$cellCount)*100, 4) # calculate proportion of each SV_type
@@ -90,42 +94,57 @@ SVplotting <- function(inputfile, outputfile.high, outputfile.med, outputfile.lo
   # ***********************************************
   ## PLOT 2
   ### complex plots of total SV types called in each region
+  #plots sorted by genomic position
+  plt_high.a <- plt_f.a(df)
+  plt_high.b <- plt_f.b(df)
+  plt.all.save <- plot2x2(plt_high.a, plt_high.b)
+  ggsave(plt.all.save, file=outputfile.byPOS, width=15, height=(length(unique(df$regions)))*0.15, onefile = T)
   
-  breaks <- quantile(df[df$cellCount > 1,]$cellCount) # used to divide into "high-rare" SVs
+  #plots sorted by VAF
+  VAFs <- split(df$cellCount, df$Var2)
+  VAFs.count <- sapply(VAFs, unique)
+  VAFs.sorted <- names(VAFs)[order(VAFs.count)]
+  df$Var2 <- match(df$Var2, VAFs.sorted) #rescale Var2 positions by sorted VAFs
+  plt_high.a <- plt_f.a(df)
+  plt_high.b <- plt_f.b(df)
+  plt.all.save <- plot2x2(plt_high.a, plt_high.b)
+  ggsave(plt.all.save, file=outputfile.byVAF, width=15, height=(length(unique(df$regions)))*0.15, onefile = T)
+  
+  #breaks <- quantile(df[df$cellCount > 1,]$cellCount) # used to divide into "high-rare" SVs
   
   ## GENERATE PLOTS based on breaks
   ## PRODUCE 2x2 PLOTs AND SAVE
-  sv_high <- df[which(df$cellCount > breaks[4]),]
-  if (nrow(sv_high) > 0) {
-    plt_high.a <- plt_f.a(sv_high)
-    plt_high.b <- plt_f.b(sv_high)
-    plt.high.save <- plot2x2(plt_high.a, plt_high.b)
-    ggsave(plt.high.save, file=outputfile.high, width=15, height=(length(unique(sv_high$regions)))*0.15, onefile = T)
-  }
+  #sv_high <- df[which(df$cellCount > breaks[4]),]
+  #if (nrow(sv_high) > 0) {
+  #  plt_high.a <- plt_f.a(sv_high)
+  #  plt_high.b <- plt_f.b(sv_high)
+  #  plt.high.save <- plot2x2(plt_high.a, plt_high.b)
+  #  ggsave(plt.high.save, file=outputfile.high, width=15, height=(length(unique(sv_high$regions)))*0.15, onefile = T)
+  #}
   
-  sv_med <- df[which(df$cellCount <= breaks[4] & df$cellCount > breaks[3]),]
-  if (nrow(sv_med) > 0) {
-    plt_med.a <- plt_f.a(sv_med)
-    plt_med.b <- plt_f.b(sv_med)
-    plt.med.save <- plot2x2(plt_med.a, plt_med.b)
-    ggsave(plt.med.save, file=outputfile.med, width=15, height=(length(unique(sv_med$regions)))*0.15, onefile = T)
-  }  
+  #sv_med <- df[which(df$cellCount <= breaks[4] & df$cellCount > breaks[3]),]
+  #if (nrow(sv_med) > 0) {
+  #  plt_med.a <- plt_f.a(sv_med)
+  #  plt_med.b <- plt_f.b(sv_med)
+  #  plt.med.save <- plot2x2(plt_med.a, plt_med.b)
+  #  ggsave(plt.med.save, file=outputfile.med, width=15, height=(length(unique(sv_med$regions)))*0.15, onefile = T)
+  #}  
   
-  sv_low <- df[which(df$cellCount <=  breaks[3] & df$cellCount >  breaks[2]),]
-  if (nrow(sv_low) > 0) {
-    plt_low.a <- plt_f.a(sv_low)
-    plt_low.b <- plt_f.b(sv_low)
-    plt.low.save <- plot2x2(plt_low.a, plt_low.b)
-    ggsave(plt.low.save, file=outputfile.low, width=15, height=(length(unique(sv_low$regions)))*0.15, onefile = T)
-  }  
+  #sv_low <- df[which(df$cellCount <=  breaks[3] & df$cellCount >  breaks[2]),]
+  #if (nrow(sv_low) > 0) {
+  #  plt_low.a <- plt_f.a(sv_low)
+  #  plt_low.b <- plt_f.b(sv_low)
+  #  plt.low.save <- plot2x2(plt_low.a, plt_low.b)
+  #  ggsave(plt.low.save, file=outputfile.low, width=15, height=(length(unique(sv_low$regions)))*0.15, onefile = T)
+  #}  
   
-  sv_rare <- df[which(df$cellCount <=  breaks[2] & df$cellCount > 1),]
-  if (nrow(sv_rare) > 0) {
-    plt_rare.a <- plt_f.a(sv_rare)
-    plt_rare.b <- plt_f.b(sv_rare)
-    plt.rare.save <- plot2x2(plt_rare.a, plt_rare.b)
-    ggsave(plt.rare.save, file=outputfile.rare, width=15, height=(length(unique(sv_rare$regions)))*0.15, onefile = T)
-  }  
+  #sv_rare <- df[which(df$cellCount <=  breaks[2] & df$cellCount > 1),]
+  #if (nrow(sv_rare) > 0) {
+  #  plt_rare.a <- plt_f.a(sv_rare)
+  #  plt_rare.b <- plt_f.b(sv_rare)
+  #  plt.rare.save <- plot2x2(plt_rare.a, plt_rare.b)
+  #  ggsave(plt.rare.save, file=outputfile.rare, width=15, height=(length(unique(sv_rare$regions)))*0.15, onefile = T)
+  #}  
   message("PDFs saved successfully")
   
   ############ SAVED as PDFs  
