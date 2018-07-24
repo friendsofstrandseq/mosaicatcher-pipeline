@@ -70,12 +70,12 @@ rule all:
                bpdens = ["few","medium","many"],
                method = METHODS),
         expand("ploidy/{sample}/ploidy.{chrom}.txt", sample = SAMPLES, chrom = config["chromosomes"]),
-        expand("sv_calls/{sample}/{window}_fixed_norm.{bpdens}/plots/sv_consistency/{method}.consistency-barplot-{af}.pdf",
+        expand("sv_calls/{sample}/{window}_fixed_norm.{bpdens}/plots/sv_consistency/{method}.consistency-barplot-{plottype}.pdf",
                sample = SAMPLES,
                window = [50000, 100000],
                bpdens = ["few","medium","many"],
                method = METHODS,
-               af = ["high","med","low","rare"]),
+               plottype = ["byaf","bypos"]),
         expand("haplotag/table/{sample}/full/haplotag-counts.{window}_fixed_norm.{bpdens}.tsv",
                sample = SAMPLES,
                window = [50000, 100000],
@@ -294,10 +294,8 @@ rule plot_SV_consistency_barplot:
     input:
         sv_calls  = "sv_calls/{sample}/{windows}.{bpdens}/{method}.txt",
     output:
-        barplot_high = "sv_calls/{sample}/{windows}.{bpdens}/plots/sv_consistency/{method}.consistency-barplot-high.pdf",
-        barplot_med = "sv_calls/{sample}/{windows}.{bpdens}/plots/sv_consistency/{method}.consistency-barplot-med.pdf",
-        barplot_low = "sv_calls/{sample}/{windows}.{bpdens}/plots/sv_consistency/{method}.consistency-barplot-low.pdf",
-        barplot_rare = "sv_calls/{sample}/{windows}.{bpdens}/plots/sv_consistency/{method}.consistency-barplot-rare.pdf",
+        barplot_bypos = "sv_calls/{sample}/{windows}.{bpdens}/plots/sv_consistency/{method}.consistency-barplot-bypos.pdf",
+        barplot_byaf = "sv_calls/{sample}/{windows}.{bpdens}/plots/sv_consistency/{method}.consistency-barplot-byaf.pdf",
     log:
         "log/plot_SV_consistency/{sample}/{windows}.{bpdens}.{method}.log"
     script:
