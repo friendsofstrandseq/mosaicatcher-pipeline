@@ -35,11 +35,18 @@ METHODS = [
     "simpleCalls_llr4_poppriorsFALSE_haplotagsFALSE_gtcutoff0_regfactor10",
     "simpleCalls_llr4_poppriorsFALSE_haplotagsFALSE_gtcutoff0_regfactor6",
     "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0_regfactor6",
+    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.005_regfactor6",
+    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.01_regfactor6",
     "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.05_regfactor6",
     "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.2_regfactor6",
     "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0_regfactor6",
+    "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.005_regfactor6",
+    "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.01_regfactor6",
     "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.05_regfactor6",
     "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.2_regfactor6",
+    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.005_regfactor8",
+    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.01_regfactor8",
+    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.05_regfactor8",
 ]
 
 
