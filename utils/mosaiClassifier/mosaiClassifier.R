@@ -12,7 +12,7 @@ suppressMessages(library(GenomicRanges))
 # are in fact disjoint intervals !
 
 
-mosaiClassifierPrepare <- function(counts, info, strand, segs, normVector = NULL) {
+mosaiClassifierPrepare <- function(counts, info, strand, segs, normVector = NULL, manual.segs=FALSE) {
 
   ##############################################################################
   # Check input data
@@ -52,11 +52,13 @@ mosaiClassifierPrepare <- function(counts, info, strand, segs, normVector = NULL
   }
   strand[, assert_that(test_disjoint_intervals(.SD)), by = .(sample, cell)] %>% invisible
 
-  # segs
-  assert_that(is.data.table(segs),
-              "chrom" %in% colnames(segs),
-              "bps"   %in% colnames(segs)) %>% invisible
-  setkey(segs, chrom, bps)
+  if (!manual.segs) {
+    # segs
+    assert_that(is.data.table(segs),
+                "chrom" %in% colnames(segs),
+                "bps"   %in% colnames(segs)) %>% invisible
+    setkey(segs, chrom, bps)
+  }
 
 
   # Kick out non-PASS cells
@@ -77,11 +79,19 @@ mosaiClassifierPrepare <- function(counts, info, strand, segs, normVector = NULL
   ##############################################################################
   # Estimation mean read count per bin for dispersion parameters
   #
-  message("[MosaiClassifier] Problem size: ",
-          nrow(info),
-          " cells x ",
-          nrow(segs),
-          " segments.")
+  if (!manual.segs){
+    message("[MosaiClassifier] Problem size: ",
+            nrow(info),
+            " cells x ",
+            nrow(segs),
+            " segments.")
+  } else {
+    message("[MosaiClassifier] Problem size: ",
+            nrow(info),
+            " cells x ",
+            nrow(segs[, .N, by=.(chrom, start)]),
+            " segments.")
+  }
 
   # Get trimmed mean of counts per bin to estimate the r parameter
   # When calculating this, ignore the "None" bins
@@ -92,41 +102,49 @@ mosaiClassifierPrepare <- function(counts, info, strand, segs, normVector = NULL
                 by = c("sample","cell")) )
 
 
-  ##############################################################################
-  # Expand table to (all cells) x (all segments)
-  #
-  # Go from 0-based coordinates to 1-based bin coordinates
-  segs[, to := bps + 1L]
+  if (!manual.segs) {
+    ##############################################################################
+    # Expand table to (all cells) x (all segments)
+    #
+    # Go from 0-based coordinates to 1-based bin coordinates
+    segs[, to := bps + 1L]
+  
+    # add a "from" column which contians the "to" breakpoint from the prev. segment each
+    segs[, from := (data.table::shift(to,fill = 0L) + 1L), by = chrom]
+  
+    # remove columns "bps" and "k"
+    segs[, `:=`(bps = NULL, k = NULL)]
+  
+  
+  
+    # Add coordinates
+    addPositions(segs, counts)
 
-  # add a "from" column which contians the "to" breakpoint from the prev. segment each
-  segs[, from := (data.table::shift(to,fill = 0L) + 1L), by = chrom]
-
-  # remove columns "bps" and "k"
-  segs[, `:=`(bps = NULL, k = NULL)]
-
-
-
-  # Add coordinates
-  addPositions(segs, counts)
-
-  # Expand the table to (cells) x (segments) and annotate with NB params
-  # --> take each row in "segs" and cbind it to a whole "info" table
-  probs <- segs[,
-                cbind(.SD, info[,.(sample, cell, nb_p, mean)]),
-                by = .(chrom,from)]
+    # Expand the table to (cells) x (segments) and annotate with NB params
+    # --> take each row in "segs" and cbind it to a whole "info" table
+    probs <- segs[,
+                  cbind(.SD, info[,.(sample, cell, nb_p, mean)]),
+                  by = .(chrom,from)]
 
 
-  ##############################################################################
-  # Annotate each segment and cell with the strand state
-  #
-  message("[MosaiClassifier] Annotating strand-state")
-  probs = addStrandStates(probs, strand)
-
-  ##############################################################################
-  # Annotate the observed and expected counts in each segment / cell
-  #
-  message("[MosaiClassifier] Annotating observed W/C counts")
-  probs <- addCountsPerSegment(probs, counts)
+    ##############################################################################
+    # Annotate each segment and cell with the strand state
+    #
+    message("[MosaiClassifier] Annotating strand-state")
+    probs = addStrandStates(probs, strand)
+  
+    ##############################################################################
+    # Annotate the observed and expected counts in each segment / cell
+    #
+    message("[MosaiClassifier] Annotating observed W/C counts")
+    probs <- addCountsPerSegment(probs, counts)
+  
+  } else {
+    probs <- merge(segs, 
+                       info[, .(sample, cell, nb_p, mean)],
+                       by = c("sample", "cell"),
+                       allow.cartesian=T)
+  }
 
   # Add normalization factors to the expected counts ("scalar")
   if (!is.null(normVector)) {
@@ -137,12 +155,20 @@ mosaiClassifierPrepare <- function(counts, info, strand, segs, normVector = NULL
   }
 
 
-  # Clean up table
-  probs[, `:=`(from = NULL,
-               to   = NULL,
-               mean = NULL)]
-
+  if (!manual.segs){
+    # Clean up table
+    probs[, `:=`(from = NULL,
+                 to   = NULL,
+                 mean = NULL)]
+  } else {
+    # define the expedted read counts column
+    # get the median bin size
+    bin.size <- median(counts[, end-start])
+    probs[, expected:=mean*(end-start)/bin.size]
+  }
+  
   return(probs)
+  
 }
 
 
