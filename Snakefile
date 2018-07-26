@@ -728,7 +728,7 @@ rule create_haplotag_table:
 
 rule merge_haplotag_tables:
     input:
-        tsvs=lambda wc: ['haplotag/table/{}/by-cell/haplotag-counts.{}.{}.{}.tsv'.format(sample,cell,wc.windows,wc.bpdens) for cell in BAM_PER_SAMPLE[wc.sample]],
+        tsvs=lambda wc: ['haplotag/table/{}/by-cell/haplotag-counts.{}.{}.{}.tsv'.format(wc.sample,cell,wc.windows,wc.bpdens) for cell in BAM_PER_SAMPLE[wc.sample]],
     output:
         tsv='haplotag/table/{sample}/full/haplotag-counts.{windows}.{bpdens}.tsv'
     shell:
