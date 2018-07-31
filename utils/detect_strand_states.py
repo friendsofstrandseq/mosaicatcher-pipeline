@@ -184,14 +184,16 @@ def safe_div(a,b):
 
 def evaluate_sce_list(sce_list, strand_state_list, breaks):
 	'''Pick initial state (i.e. at the start of the chromosome) such that the total distance where the 
-	state is off is minimized. Additionally evaluate whether to add one more SCE to avoid long streches
+	state is off is minimized. Additionally evaluate whether to add one more SCE to avoid long stretches
 	of wrong cell states.'''
-	best_mismatch_distance = 1e10
+	best_mismatch_distance = None
 	best_ground_state = None
+	best_is_valid = None
 	best_sce_list = None
 	for w_ground_state, c_ground_state in [(2,0), (1,1), (0,2)]:
 		w_state, c_state = w_ground_state, c_ground_state
 		mismatch_distance = 0
+		valid = True
 		for i in range(len(breaks)-1):
 			start = breaks[i]
 			end = breaks[i+1]
@@ -200,13 +202,18 @@ def evaluate_sce_list(sce_list, strand_state_list, breaks):
 				if sce_pos == start:
 					w_state += w_state_diff
 					c_state += c_state_diff
+			# Test whether this sequence of SCEs has led to an impossible ground state
+			# (at least under the assumption that the cell is diploid).
+			if (w_state < 0) or (c_state < 0):
+				valid = False
 			if (w_actual_state, c_actual_state) != (w_state, c_state):
 				mismatch_distance += end-start
-		if mismatch_distance < best_mismatch_distance:
+		if (best_mismatch_distance is None) or ((valid,-mismatch_distance) > (best_is_valid,-best_mismatch_distance)):
+			best_is_valid = valid
 			best_mismatch_distance = mismatch_distance
 			best_ground_state = (w_ground_state, c_ground_state)
 			best_sce_list = copy.copy(sce_list)
-	return sce_list, best_ground_state, best_mismatch_distance
+	return best_is_valid, best_ground_state, best_mismatch_distance
 
 
 def main():
@@ -217,6 +224,8 @@ def main():
 		help='Comma-separated list of single cell names, in the same order as the SINGLESEG files are given.')
 	parser.add_argument('--sce_min_distance', default=200000, type=int, 
 		help='Minimum distance of an SCE to a break in the joint segmentation.')
+	parser.add_argument('--sce_add_cutoff', default=20000000, type=int, 
+		help='Minimum gain in mismatch distance needed to add an additional SCE.')
 	parser.add_argument('--output_jointseg', default=None,
 		help='Filename to output selected joint segmentation to.')
 	parser.add_argument('--output_strand_states', default=None,
@@ -240,7 +249,7 @@ def main():
 	print(args.counts, args.jointseg, args.singleseg)
 
 	nb_params = read_info_file(args.info)
-	print(nb_params['TALL2x2PE20420'])
+	#print(nb_params['TALL2x2PE20420'])
 
 	print('Reading count table from', args.counts, file=sys.stderr)
 	count_table = CountTable(args.counts)
@@ -266,50 +275,92 @@ def main():
 		singleseg.select_k()
 		for chromosome in singleseg.chromosomes:
 			print(' -- chromosome', chromosome, file=sys.stderr)
-			sce_list = []
 			breaks = singleseg.get_selected_segmentation(chromosome)
 			w_counts, c_counts = count_table.get_counts(cell, chromosome, breaks)
 			w, c = 0, 0
 			strand_state_list = []
 			strand_state = (0,0)
+			# all potential SCEs
+			all_sce_candidates = []
+			# indices of SCEs that have been selected 
+			selected_sce_indices = set()
+			# iterate through all breaks and gather a list of potential SCEs
+			# based on whether the strand state left and right of the segment is the same
+			# and on whether the breakpoints coincide with breakpoints in the joint 
+			# segmentation of all cells.
 			for i,b in enumerate(breaks):
 				nearest_joint_breakpoint = jointseg.closest_breakpoint(chromosome, b)
 				if i < len(w_counts):
 					w = w_counts[i]
 					c = c_counts[i]
 				new_strand_state = get_strand_state(w,c)
-				if (i>0) and (new_strand_state != strand_state) and (abs(b-nearest_joint_breakpoint) >= args.sce_min_distance):
+				if (i>0) and (new_strand_state != strand_state):
 					w_state_old, c_state_old = strand_state
 					w_state_new, c_state_new = new_strand_state
-					sce_list.append((b, w_state_new-w_state_old, c_state_new-c_state_old))
+					all_sce_candidates.append((b, w_state_new-w_state_old, c_state_new-c_state_old))
+					if abs(b-nearest_joint_breakpoint) >= args.sce_min_distance:
+						selected_sce_indices.add(len(all_sce_candidates)-1)
 				strand_state = new_strand_state
 				strand_state_list.append(strand_state)
 				print('    breakpoint: {}, nearest breakpoint (jointseg): {} (distance={}), W={}, C={} (ratio:{}), state: {}'.format(b, nearest_joint_breakpoint, abs(b-nearest_joint_breakpoint), w, c, safe_div(w,w+c), strand_state), file=sys.stderr)
 			print('    strand states', strand_state_list, file=sys.stderr)
-			print('    SCE list', sce_list, file=sys.stderr)
-			sce_list, best_ground_state, best_mismatch_distance = evaluate_sce_list(sce_list, strand_state_list, breaks)
-			#best_mismatch_distance = 1e10
-			#best_ground_state = None
-			#for w_ground_state, c_ground_state in [(2,0), (1,1), (0,2)]:
-				#w_state, c_state = w_ground_state, c_ground_state
-				#mismatch_distance = 0
-				#for i in range(len(breaks)-1):
-					#start = breaks[i]
-					#end = breaks[i+1]
-					#w_actual_state, c_actual_state = strand_state_list[i]
-					#for sce_pos, w_state_diff, c_state_diff in sce_list:
-						#if sce_pos == start:
-							#w_state += w_state_diff
-							#c_state += c_state_diff
-					#if (w_actual_state, c_actual_state) != (w_state, c_state):
-						#mismatch_distance += end-start
-				#if mismatch_distance < best_mismatch_distance:
-					#best_mismatch_distance = mismatch_distance
-					#best_ground_state = (w_ground_state, c_ground_state)
-			print('    best ground (leftmost) state:', best_ground_state, 'mismatch distance:', best_mismatch_distance, file=sys.stderr)
+			print('    All SCE candidates:', all_sce_candidates, file=sys.stderr)
+			# Compile initial list of SCEs
+			sce_list = [all_sce_candidates[i] for i in sorted(selected_sce_indices)]
+			print('    SCE list:', sce_list, file=sys.stderr)
+			sce_list_is_valid, ground_state, mismatch_distance = evaluate_sce_list(sce_list, strand_state_list, breaks)
+			print('    SCE list valid:', sce_list_is_valid, file=sys.stderr)
+			print('    best ground (leftmost) state:', ground_state, 'mismatch distance:', mismatch_distance, file=sys.stderr)
+			# Refine SCE list:
+			#  - add one more breakpoints if it substantially improves the concordence
+			#  - add one or more breakpoints if the set of SCEs is invalid
+			added_sces = 0
+			while (added_sces <= 1) or (not sce_list_is_valid):
+				best_i = None
+				best_new_sce_list = None
+				best_new_list_is_valid = None
+				best_new_mismatch_distance = None
+				best_new_ground_state = None
+				
+				# try out the effect of adding each SCE (one by one)
+				for i in range(len(all_sce_candidates)):
+					if i in selected_sce_indices: 
+						continue
+					print('      condidering adding SCE:', all_sce_candidates[i], file=sys.stderr)
+					new_selected_sce_indices = copy.copy(selected_sce_indices)
+					new_selected_sce_indices.add(i)
+					new_sce_list = [all_sce_candidates[i] for i in sorted(new_selected_sce_indices)]
+					new_sce_list_is_valid, new_ground_state, new_mismatch_distance = evaluate_sce_list(new_sce_list, strand_state_list, breaks)
+					if (best_new_mismatch_distance is None) or ((new_sce_list_is_valid,-new_mismatch_distance) > (best_new_list_is_valid,-best_new_mismatch_distance)):
+						best_i = i
+						best_new_list_is_valid = new_sce_list_is_valid
+						best_new_mismatch_distance = new_mismatch_distance
+						best_new_ground_state = new_ground_state
+						best_new_sce_list = new_sce_list
+
+				# Quit if there were no more candidates to be added potentially
+				if best_new_sce_list is None:
+					break
+				
+				# Determine whether to reject the best possible change we found and stop
+				if (not sce_list_is_valid) or ((mismatch_distance - best_new_mismatch_distance) >= args.sce_add_cutoff):
+					selected_sce_indices.add(best_i)
+					sce_list = best_new_sce_list
+					sce_list_is_valid = best_new_list_is_valid
+					mismatch_distance = best_new_mismatch_distance
+					ground_state = best_new_ground_state
+					added_sces += 1
+					print('      accepting change to SCE list:', sce_list, 'new distance:', mismatch_distance, 'new ground state:', ground_state, file=sys.stderr)
+				else:
+					break
+
+			# The procedure above should find a valid SCE selection
+			# (in the worst case, it can just select all potential SCEs (which is valid)
+			assert sce_list_is_valid
+
 			if output_strand_states_file is not None:
 				start = 0
-				w_state, c_state = best_ground_state
+				w_state, c_state = ground_state
 				for sce_pos, w_state_diff, c_state_diff in sce_list:
 					end = sce_pos
 					strand_state_str = 'W'*w_state + 'C'*c_state
