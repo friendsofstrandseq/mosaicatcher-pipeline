@@ -6,9 +6,11 @@ configfile: "Snake.config.json"
 SAMPLE,BAM = glob_wildcards("bam/{sample}/selected/{bam}.bam")
 SAMPLES = sorted(set(SAMPLE))
 
+CELL_PER_SAMPLE= defaultdict(list)
 BAM_PER_SAMPLE = defaultdict(list)
 for sample,bam in zip(SAMPLE,BAM):
     BAM_PER_SAMPLE[sample].append(bam)
+    CELL_PER_SAMPLE[sample].append(bam.replace('.sort.mdup',''))
 
 ALLBAMS_PER_SAMPLE = defaultdict(list)
 for sample in SAMPLES:
@@ -65,20 +67,16 @@ rule all:
         expand("sv_calls/{sample}/{window}_fixed_norm.{bpdens}/plots/sv_calls/{method}.{chrom}.pdf",
                sample = SAMPLE,
                chrom = config["chromosomes"],
-               window = [50000, 100000],
-               bpdens = ["few","medium","many"],
+               window = [100000],
+               bpdens = ["selected"],
                method = METHODS),
         expand("ploidy/{sample}/ploidy.{chrom}.txt", sample = SAMPLES, chrom = config["chromosomes"]),
         expand("sv_calls/{sample}/{window}_fixed_norm.{bpdens}/plots/sv_consistency/{method}.consistency-barplot-{plottype}.pdf",
                sample = SAMPLES,
-               window = [50000, 100000],
-               bpdens = ["few","medium","many"],
+               window = [100000],
+               bpdens = ["selected"],
                method = METHODS,
                plottype = ["byaf","bypos"]),
-        expand("haplotag/table/{sample}/full/haplotag-counts.{window}_fixed_norm.{bpdens}.tsv",
-               sample = SAMPLES,
-               window = [50000, 100000],
-               bpdens = ["few","medium","many"]),
 
 
 ################################################################################
@@ -386,6 +384,14 @@ rule mosaic_count_variable:
         > {log} 2>&1
         """
 
+rule extract_single_cell_counts:
+    input:
+        "counts/{sample}/{window}_{file_name}.txt.gz"
+    output:
+        "counts-per-cell/{sample}/{cell}/{window,[0-9]+}_{file_name}.txt.gz"
+    shell:
+        "zcat {input} | awk '(NR==1) || $5 ==\"{wildcards.cell}\"' | gzip > {output}"
+
 
 ################################################################################
 # Normalize counts                                                             #
@@ -446,13 +452,50 @@ rule prepare_segments:
     input:
         "segmentation/{sample}/{windows}.txt"
     output:
-        "segmentation2/{sample}/{windows}.{bpdens}.txt"
+        "segmentation2/{sample}/{windows}.{bpdens,(many|medium|few)}.txt"
     log:
         "log/prepare_segments/{sample}/{windows}.{bpdens}.log"
     params:
         quantile = lambda wc: config["bp_density"][wc.bpdens]
     script:
         "utils/helper.prepare_segments.R"
+
+rule segment_one_cell:
+    input:
+        "counts-per-cell/{sample}/{cell}/{window}_{file_name}.txt.gz"
+    output:
+        "segmentation-per-cell/{sample}/{cell}/{window,\d+}_{file_name}.txt"
+    log:
+        "log/segmentation-per-cell/{sample}/{cell}/{window}_{file_name}.log"
+    params:
+        mc_command = config["mosaicatcher"],
+        min_num_segs = lambda wc: math.ceil(200000 / float(wc.window)) # bins to represent 200 kb
+    shell:
+        """
+        {params.mc_command} segment \
+        --remove-none \
+        --forbid-small-segments {params.min_num_segs} \
+        -M 50000000 \
+        -o {output} \
+        {input} > {log} 2>&1
+        """
+
+rule segmentation_selection:
+    input:
+        counts="counts/{sample}/{window}_{file_name}.txt.gz",
+        jointseg="segmentation/{sample}/{window}_{file_name}.txt",
+        singleseg=lambda wc: ["segmentation-per-cell/{}/{}/{}_{}.txt".format(wc.sample, cell, wc.window, wc.file_name) for cell in CELL_PER_SAMPLE[wc.sample]],
+        info="counts/{sample}/{window}_{file_name}.info",
+    output:
+        jointseg="segmentation2/{sample}/{window,[0-9]+}_{file_name}.selected.txt",
+        strand_states="strand_states/{sample}/{window,[0-9]+}_{file_name}.intitial_strand_state",
+    log:
+        "log/segmentation_selection/{sample}/{window}_{file_name}.log"
+    params:
+        cellnames = lambda wc: ",".join(cell for cell in CELL_PER_SAMPLE[wc.sample]),
+        sce_min_distance = 400000,
+    shell:
+        "./utils/detect_strand_states.py --sce_min_distance {params.sce_min_distance} --output_jointseg {output.jointseg} --output_strand_states {output.strand_states} --samplename {wildcards.sample} --cellnames {params.cellnames} {input.info} {input.counts} {input.jointseg} {input.singleseg} > {log} 2>&1"
 
 
 ################################################################################
@@ -519,18 +562,30 @@ rule mosaiClassifier_make_call_biallelic:
 # Strand states & phasing                                                      #
 ################################################################################
 
+# DEPRECATED rule for calling SCEs / determining the initial strand states using 
+# the C++ MosaiCatcher code.
+#rule determine_initial_strand_states:
+    #input:
+        #"counts/{sample}/500000_fixed.txt.gz"
+    #output:
+        #"strand_states/{sample}/intitial_strand_state"
+    #log:
+        #"log/determine_initial_strand_states/{sample}.log"
+    #params:
+        #mc_command = config["mosaicatcher"]
+    #shell:
+        #"""
+        #{params.mc_command} states -o {output} {input} 2>&1 > {log}
+        #"""
+
 rule determine_initial_strand_states:
     input:
-        "counts/{sample}/500000_fixed.txt.gz"
+        "strand_states/{sample}/100000_fixed_norm.intitial_strand_state"
     output:
         "strand_states/{sample}/intitial_strand_state"
-    log:
-        "log/determine_initial_strand_states/{sample}.log"
-    params:
-        mc_command = config["mosaicatcher"]
     shell:
         """
-        {params.mc_command} states -o {output} {input} 2>&1 > {log}
+        cd strand_states/{wildcards.sample} && ln -s 100000_fixed_norm.intitial_strand_state intitial_strand_state && cd ../..
         """
 
 # Strandphaser needs a different input format which contains the path names to
