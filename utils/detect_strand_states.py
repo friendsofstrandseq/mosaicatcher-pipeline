@@ -168,9 +168,9 @@ def get_strand_state(w, c):
 	if (w is None) or (c is None) or (w+c == 0):
 		return (0,0)
 	r = w/(w+c)
-	if r < 0.1:
+	if r < 0.2:
 		return (0,2)
-	elif r > 0.9:
+	elif r > 0.8:
 		return (2,0)
 	else:
 		return (1,1)
@@ -256,7 +256,7 @@ def main():
 	print(' ... done.', file=sys.stderr)
 
 	jointseg = Segmentation(args.jointseg)
-	jointseg.select_k()
+	jointseg.select_k(max_diff = 0.5)
 	print('Selected breakpoint numbers for joint segmentation:', file=sys.stderr)
 	for chromosome in sorted(jointseg.selected_k.keys()):
 		print(chromosome, jointseg.selected_k[chromosome], file=sys.stderr)
@@ -272,7 +272,7 @@ def main():
 		print('='*100, filename, file=sys.stderr)
 		print('Processing', filename, file=sys.stderr)
 		singleseg = Segmentation(filename)
-		singleseg.select_k()
+		singleseg.select_k(max_diff = 1)
 		for chromosome in singleseg.chromosomes:
 			print(' -- chromosome', chromosome, file=sys.stderr)
 			breaks = singleseg.get_selected_segmentation(chromosome)
