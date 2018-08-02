@@ -294,6 +294,10 @@ def main():
 					w = w_counts[i]
 					c = c_counts[i]
 				new_strand_state = get_strand_state(w,c)
+				# if strand state could not be called (e.g. due to absence of reads), then
+				# we assume the strand state to have stayed the same
+				if new_strand_state == (0,0):
+					new_strand_state = strand_state
 				if (i>0) and (new_strand_state != strand_state):
 					w_state_old, c_state_old = strand_state
 					w_state_new, c_state_new = new_strand_state
