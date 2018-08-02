@@ -508,7 +508,7 @@ rule segmentation_selection:
         "log/segmentation_selection/{sample}/{window}_{file_name}.log"
     params:
         cellnames = lambda wc: ",".join(cell for cell in CELL_PER_SAMPLE[wc.sample]),
-        sce_min_distance = 400000,
+        sce_min_distance = 500000,
     shell:
         "./utils/detect_strand_states.py --sce_min_distance {params.sce_min_distance} --output_jointseg {output.jointseg} --output_strand_states {output.strand_states} --samplename {wildcards.sample} --cellnames {params.cellnames} {input.info} {input.counts} {input.jointseg} {input.singleseg} > {log} 2>&1"
 
