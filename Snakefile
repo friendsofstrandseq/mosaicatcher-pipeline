@@ -77,6 +77,10 @@ rule all:
                bpdens = ["selected"],
                method = METHODS,
                plottype = ["byaf","bypos"]),
+        expand("halo/{sample}/{window}_{suffix}.json.gz",
+               sample = SAMPLES,
+               window = [100000],
+               suffix = ["fixed", "fixed_norm"])
 
 
 ################################################################################
@@ -297,6 +301,17 @@ rule plot_SV_consistency_barplot:
         "log/plot_SV_consistency/{sample}/{windows}.{bpdens}.{method}.log"
     script:
         "utils/sv_consistency_barplot.snakemake.R"
+
+
+rule generate_halo_json:
+    input:
+        counts = "counts/{sample}/{windows}.txt.gz",
+    output:
+        json = "halo/{sample}/{windows}.json.gz",
+    log:
+        "log/generate_halo_json/{sample}/{windows}.{windows}.log"
+    shell:
+        "(./utils/counts_to_json.py {input.counts} | gzip > {output.json}) 2> {log}"
 
 
 ################################################################################
