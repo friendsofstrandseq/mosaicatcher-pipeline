@@ -9,7 +9,7 @@ source("utils/mosaiClassifier/mosaiClassifier.R")
 #' @author Sascha Meiers
 #' @export
 #'
-makeSVCallSimple <- function(probs, llr_thr = 1, use.pop.priors = FALSE, use.haplotags = FALSE, genotype.cutoff = 0.0) {
+makeSVCallSimple <- function(probs, llr_thr = 1, use.pop.priors = FALSE, use.haplotags = FALSE, genotype.cutoff = 0.0, bin.size, minFrac.used.bins = 0.5) {
 
   assert_that(is.data.table(probs),
               "sample" %in% colnames(probs),
@@ -23,6 +23,10 @@ makeSVCallSimple <- function(probs, llr_thr = 1, use.pop.priors = FALSE, use.hap
 
   # make sure post-processing was done beforehands
   assert_that("nb_hap_pp" %in% colnames(probs)) %>% invisible
+
+  # kick out the segments with a large fraction of blacklisted bins
+  probs <- probs[num_bins*bin.size/(end-start) >= minFrac.used.bins]
+
   setkey(probs, chrom, start, end, sample, cell)
 
   if (use.pop.priors) {
