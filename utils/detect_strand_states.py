@@ -54,14 +54,14 @@ class Segmentation:
 		return s
 
 
-	def select_k(self, max_diff = 1, max_abs_value = 500000):
+	def select_k(self, min_diff = 1, max_abs_value = 500000):
 		'''Select number of breakpoints for each chromosome such that the difference in squared error
-		drops below max_diff.'''
+		drops below min_diff.'''
 		self.selected_k = dict()
 		for chromosome in self.chromosomes:
 			k = 1
 			while ((chromosome,k+1) in self.sse) and \
-				((self.sse[(chromosome,k)] - self.sse[(chromosome,k+1)]) > max_diff) or\
+				((self.sse[(chromosome,k)] - self.sse[(chromosome,k+1)]) > min_diff) or\
 				 (self.sse[(chromosome,k)] > max_abs_value):
 				k += 1
 			self.selected_k[chromosome] = k
@@ -230,7 +230,10 @@ def main():
 		help='Filename to output selected joint segmentation to.')
 	parser.add_argument('--output_strand_states', default=None,
 		help='Filename to output strand states to.')
-	
+	parser.add_argument('--min_diff_jointseg', default=0.5, type=float, 
+		help='Minimum difference in error term to include another breakpoint in the joint segmentation (default=0.5).')
+	parser.add_argument('--min_diff_singleseg', default=1, type=float, 
+		help='Minimum difference in error term to include another breakpoint in the single-cell segmentation (default=1).')
 
 	parser.add_argument('info', metavar='INFO', help='Info file with NB parameters for each single cell')
 	parser.add_argument('counts', metavar='COUNT', help='Gzipped, tab-separated table with counts')
@@ -256,7 +259,7 @@ def main():
 	print(' ... done.', file=sys.stderr)
 
 	jointseg = Segmentation(args.jointseg)
-	jointseg.select_k(max_diff = 0.5)
+	jointseg.select_k(min_diff = args.min_diff_jointseg)
 	print('Selected breakpoint numbers for joint segmentation:', file=sys.stderr)
 	for chromosome in sorted(jointseg.selected_k.keys()):
 		print(chromosome, jointseg.selected_k[chromosome], file=sys.stderr)
@@ -272,7 +275,7 @@ def main():
 		print('='*100, filename, file=sys.stderr)
 		print('Processing', filename, file=sys.stderr)
 		singleseg = Segmentation(filename)
-		singleseg.select_k(max_diff = 1)
+		singleseg.select_k(min_diff = args.min_diff_singleseg)
 		for chromosome in singleseg.chromosomes:
 			print(' -- chromosome', chromosome, file=sys.stderr)
 			breaks = singleseg.get_selected_segmentation(chromosome)
