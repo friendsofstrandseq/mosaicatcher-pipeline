@@ -44,6 +44,13 @@
     "simulation_cell_count" : 100,
     "simulation_alpha" : 0.02,
 
-    "genome_size" : 3e9
+    "genome_size" : 3e9,
 
+    "ground_truth_clonal" : {
+        "RPE-BM510" : "/MMCI/TM/scratch/strandseq/input-data/ground_truth/RPE-BM510_manual/clonal-events.tsv"
+    },
+
+    "ground_truth_single_cell" : {
+        "RPE-BM510" : "/MMCI/TM/scratch/strandseq/input-data/ground_truth/RPE-BM510_manual/single-cell-events.tsv"
+    }
 }
