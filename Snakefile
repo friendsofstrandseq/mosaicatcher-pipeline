@@ -84,11 +84,7 @@ rule all:
                sample = SAMPLES,
                window = [100000],
                suffix = ["fixed", "fixed_norm"]),
-        expand("stats/{sample}/{window}_fixed_norm.{bpdens}/{method}.tsv",
-               sample = SAMPLES,
-               window = [100000],
-               bpdens = BPDENS,
-               method = METHODS),
+        expand("stats-merged/{sample}/stats.tsv", sample = SAMPLES),
 
 
 ################################################################################
@@ -918,29 +914,38 @@ rule split_external_snv_calls:
 
 
 rule summary_statistics:
-	input:
-		segmentation = 'segmentation2/{sample}/{windows}.{bpdens}.txt',
-		strandstates = 'strand_states/{sample}/{windows}.{bpdens}.intitial_strand_state',
-		sv_calls = 'sv_calls/{sample}/{windows}.{bpdens}/{method}.txt',
-	output:
-		tsv = 'stats/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/{method}.tsv',
-	log:
-		'log/summary_statistics/{sample}/{windows}.{bpdens}/{method}.log'
-	run:
-		p = []
-		try:
-			f = config["ground_truth_clonal"][wildcards.sample]
-			if len(f) > 0:
-				p.append('--true-events-clonal')
-				p.append(f)
-		except KeyError:
-			pass
-		try:
-			f = config["ground_truth_single_cell"][wildcards.sample]
-			if len(f) > 0:
-				p.append('--true-events-single-cell')
-				p.append(f)
-		except KeyError:
-			pass
-		additional_params = ' '.join(p)
-		shell('utils/callset_summary_stats.py --segmentation {input.segmentation} --strandstates {input.strandstates} {additional_params} {input.sv_calls}  > {output.tsv}')
+    input:
+        segmentation = 'segmentation2/{sample}/{windows}.{bpdens}.txt',
+        strandstates = 'strand_states/{sample}/{windows}.{bpdens}.intitial_strand_state',
+        sv_calls = 'sv_calls/{sample}/{windows}.{bpdens}/{method}.txt',
+    output:
+        tsv = 'stats/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/{method}.tsv',
+    log:
+        'log/summary_statistics/{sample}/{windows}.{bpdens}/{method}.log'
+    run:
+        p = []
+        try:
+            f = config["ground_truth_clonal"][wildcards.sample]
+            if len(f) > 0:
+                p.append('--true-events-clonal')
+                p.append(f)
+        except KeyError:
+            pass
+        try:
+            f = config["ground_truth_single_cell"][wildcards.sample]
+            if len(f) > 0:
+                p.append('--true-events-single-cell')
+                p.append(f)
+        except KeyError:
+            pass
+        additional_params = ' '.join(p)
+        shell('utils/callset_summary_stats.py --segmentation {input.segmentation} --strandstates {input.strandstates} {additional_params} {input.sv_calls}  > {output.tsv} 2> {log}')
+
+rule aggregate_summary_statistics:
+    input:
+        tsv=expand("stats/{{sample}}/{window}_fixed_norm.{bpdens}/{method}.tsv", window = [100000], bpdens = BPDENS, method = METHODS),
+    output:
+        tsv="stats-merged/{sample}/stats.tsv"
+    shell:
+        "(head -n1 {input.tsv[0]} && tail -n1 -q {input.tsv}) > {output}"
+    
