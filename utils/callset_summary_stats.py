@@ -13,8 +13,10 @@ def sensitivity_1bpoverlap(calls, true_events):
 	# TODO: this algorithm is quadratic time. Could do linear, but fast enough for now.
 	for chrom, start, end, sv_type in true_events[['chrom','start','end','sv_type']].values:
 		if len(calls[(calls.chrom==chrom) & (calls.start<end) & (calls.end>start) & ((calls.sv_call_name == (sv_type+'_h1')) | (calls.sv_call_name == (sv_type+'_h2')))] ) > 0:
-			print('   ground truth call {}:{}-{} ({}) was recovered'.format(chrom,start,end,sv_type), file=sys.stderr)
+			print('   clonal ground truth call {}:{}-{} ({}) was recovered'.format(chrom,start,end,sv_type), file=sys.stderr)
 			found += 1
+		else:
+			print('   clonal ground truth call {}:{}-{} ({}) was missed'.format(chrom,start,end,sv_type), file=sys.stderr)
 	return found
 
 
@@ -25,8 +27,10 @@ def sensitivity_1bpoverlap_single_cell(calls, true_events):
 	# TODO: this algorithm is quadratic time. Could do linear, but fast enough for now.
 	for chrom, start, end, cell, sv_type in true_events[['chrom','start','end','cell','sv_type']].values:
 		if len(calls[(calls.cell==cell) & (calls.chrom==chrom) & (calls.start<end) & (calls.end>start) & ((calls.sv_call_name == (sv_type+'_h1')) | (calls.sv_call_name == (sv_type+'_h2')))]) > 0:
-			print('   ground truth call {}:{}-{} ({},{}) was recovered'.format(chrom,start,end,sv_type,cell), file=sys.stderr)
+			print('   single-cell ground truth call {}:{}-{} ({},{}) was recovered'.format(chrom,start,end,sv_type,cell), file=sys.stderr)
 			found += 1
+		else:
+			print('   single-cell ground truth call {}:{}-{} ({},{}) was missed'.format(chrom,start,end,sv_type,cell), file=sys.stderr)
 	return found
 
 
@@ -70,7 +74,7 @@ def main():
 		result_order += ['total_sce', 'avg_sce_per_cell']
 
 	results['total_calls'] = len(calls)
-	results['unique_calls'] = len(calls.groupby(by=['chrom','start','end']))
+	results['unique_calls'] = len(calls.groupby(by=['chrom','start','end','sv_call_name']))
 	result_order += ['total_calls','unique_calls']
 
 	print('Detected {} total calls and {} unique calls in {} single cells'.format(
