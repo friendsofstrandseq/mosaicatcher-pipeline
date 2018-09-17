@@ -2,17 +2,17 @@ suppressMessages(library(dplyr))
 suppressMessages(library(data.table))
 suppressMessages(library(assertthat))
 
-addPositions <- function(probs, counts) {
+addPositions <- function(segs, counts) {
   assert_that(is.data.table(counts),
               "chrom" %in% colnames(counts),
               "start" %in% colnames(counts),
               "end"   %in% colnames(counts),
               "sample"%in% colnames(counts),
               "cell"  %in% colnames(counts)) %>% invisible
-  assert_that(is.data.table(probs),
-              "chrom" %in% colnames(probs),
-              "from"  %in% colnames(probs),
-              "to"    %in% colnames(probs))
+  assert_that(is.data.table(segs),
+              "chrom" %in% colnames(segs),
+              "from"  %in% colnames(segs),
+              "to"    %in% colnames(segs))
 
   # get the list of bins
   bins <- unique(counts[, .(chrom_ = chrom, start, end)])
@@ -24,11 +24,11 @@ addPositions <- function(probs, counts) {
          by = .(sample,cell), .SDcols = c("chrom", "start", "end")] %>% invisible
 
   # Add start and end position
-  probs[, `:=`(start = bins[chrom_ == chrom]$start[from],
+  segs[, `:=`(start = bins[chrom_ == chrom]$start[from],
                end   = bins[chrom_ == chrom]$end[to]),
         by = chrom]
   # Modified by reference (dummy return)
-  probs
+  segs
 }
 
 
