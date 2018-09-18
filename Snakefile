@@ -505,7 +505,7 @@ rule segmentation_selection:
         info="counts/{sample}/{window}_{file_name}.info",
     output:
         jointseg="segmentation2/{sample}/{window,[0-9]+}_{file_name}.selected_j{min_diff_jointseg}_s{min_diff_singleseg}.txt",
-        strand_states="strand_states/{sample}/{window,[0-9]+}_{file_name}.selected_j{min_diff_jointseg}_s{min_diff_singleseg}.intitial_strand_state",
+        strand_states="strand_states/{sample}/{window,[0-9]+}_{file_name}.selected_j{min_diff_jointseg}_s{min_diff_singleseg}/intitial_strand_state",
     log:
         "log/segmentation_selection/{sample}/{window}_{file_name}.selected_j{min_diff_jointseg}_s{min_diff_singleseg}.log"
     params:
@@ -554,7 +554,7 @@ rule mosaiClassifier_calc_probs:
     input:
         counts = "counts/{sample}/{windows}.txt.gz",
         info   = "counts/{sample}/{windows}.info",
-        states = "strand_states/{sample}/final.txt",
+        states = "strand_states/{sample}/{windows}.{bpdens}/final.txt",
         bp     = "segmentation2/{sample}/{windows}.{bpdens}.txt"
     output:
         output = "sv_probabilities/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/probabilities.Rdata"
@@ -604,26 +604,26 @@ rule call_complex_regions:
         #{params.mc_command} states -o {output} {input} 2>&1 > {log}
         #"""
 
-rule determine_initial_strand_states:
-    input:
-        "strand_states/{sample}/100000_fixed_norm.selected_j0.5_s1.0.intitial_strand_state"
-    output:
-        "strand_states/{sample}/intitial_strand_state"
-    shell:
-        """
-        cd strand_states/{wildcards.sample} && ln -s 100000_fixed_norm.selected_j0.5_s1.0.intitial_strand_state intitial_strand_state && cd ../..
-        """
+#rule determine_initial_strand_states:
+    #input:
+        #"strand_states/{sample}/100000_fixed_norm.selected_j0.5_s1.0.intitial_strand_state"
+    #output:
+        #"strand_states/{sample}/intitial_strand_state"
+    #shell:
+        #"""
+        #cd strand_states/{wildcards.sample} && ln -s 100000_fixed_norm.selected_j0.5_s1.0.intitial_strand_state intitial_strand_state && cd ../..
+        #"""
 
 # Strandphaser needs a different input format which contains the path names to
 # the bam files. This rule extracts this information and prepares an input file.
 rule convert_strandphaser_input:
     input:
-        states = "strand_states/{sample}/intitial_strand_state",
+        states = "strand_states/{sample}/{windows}.{bpdens}/intitial_strand_state",
         info   = "counts/{sample}/500000_fixed.info"
     output:
-        "strand_states/{sample}/strandphaser_input.txt"
+        "strand_states/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/strandphaser_input.txt"
     log:
-        "log/convert_strandphaser_input/{sample}.log"
+        "log/convert_strandphaser_input/{sample}/{windows}.{bpdens}.log"
     script:
         "utils/helper.convert_strandphaser_input.R"
 
@@ -639,9 +639,9 @@ rule install_StrandPhaseR:
 
 rule prepare_strandphaser_config_per_chrom:
     input:
-        "strand_states/{sample}/intitial_strand_state"
+        "strand_states/{sample}/{windows}.{bpdens}/intitial_strand_state"
     output:
-        "strand_states/{sample}/StrandPhaseR.{chrom}.config"
+        "strand_states/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/StrandPhaseR.{chrom}.config"
     run:
         with open(output[0], "w") as f:
             print("[General]",                    file = f)
@@ -678,21 +678,21 @@ def locate_snv_vcf(wildcards):
 
 rule run_strandphaser_per_chrom:
     input:
-        wcregions    = "strand_states/{sample}/strandphaser_input.txt",
+        wcregions    = "strand_states/{sample}/{windows}.{bpdens}/strandphaser_input.txt",
         snppositions = locate_snv_vcf,
-        configfile   = "strand_states/{sample}/StrandPhaseR.{chrom}.config",
+        configfile   = "strand_states/{sample}/{windows}.{bpdens}/StrandPhaseR.{chrom}.config",
         strandphaser = "utils/R-packages/StrandPhaseR/R/StrandPhaseR",
         bamfolder    = "bam/{sample}/selected"
     output:
-        "strand_states/{sample}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt",
-        "strand_states/{sample}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf",
+        "strand_states/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt",
+        "strand_states/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf",
     log:
-        "log/run_strandphaser_per_chrom/{sample}/{chrom}.log"
+        "log/run_strandphaser_per_chrom/{sample}/{windows}.{bpdens}/{chrom}.log"
     shell:
         """
         Rscript utils/StrandPhaseR_pipeline.R \
                 {input.bamfolder} \
-                strand_states/{wildcards.sample}/StrandPhaseR_analysis.{wildcards.chrom} \
+                strand_states/{wildcards.sample}/{wildcards.windows}.{wildcards.bpdens}/StrandPhaseR_analysis.{wildcards.chrom} \
                 {input.configfile} \
                 {input.wcregions} \
                 {input.snppositions} \
@@ -721,12 +721,12 @@ rule index_vcf:
 
 rule merge_strandphaser_vcfs:
     input:
-        vcfs=expand("strand_states/{{sample}}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz", chrom=config["chromosomes"]),
-        tbis=expand("strand_states/{{sample}}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz.tbi", chrom=config["chromosomes"]),
+        vcfs=expand("strand_states/{{sample}}/{{windows}}.{{bpdens}}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz", chrom=config["chromosomes"]),
+        tbis=expand("strand_states/{{sample}}/{{windows}}.{{bpdens}}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz.tbi", chrom=config["chromosomes"]),
     output:
-        vcf='phased-snvs/{sample}.vcf.gz'
+        vcf='phased-snvs/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}.vcf.gz'
     log:
-        "log/merge_strandphaser_vcfs/{sample}.log"
+        "log/merge_strandphaser_vcfs/{sample}/{windows}.{bpdens}.log"
     shell:
         "(bcftools concat -a {input.vcfs} | bcftools view -o {output.vcf} -O z --genotype het --types snps - ) > {log} 2>&1"
 
@@ -734,12 +734,12 @@ rule merge_strandphaser_vcfs:
 
 rule combine_strandphaser_output:
     input:
-        expand("strand_states/{{sample}}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt",
+        expand("strand_states/{{sample}}/{{windows}}.{{bpdens}}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt",
                 chrom = config["chromosomes"])
     output:
-        "strand_states/{sample}/strandphaser_output.txt"
+        "strand_states/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/strandphaser_output.txt"
     log:
-        "log/combine_strandphaser_output/{sample}.log"
+        "log/combine_strandphaser_output/{sample}/{windows}.{bpdens}.log"
     shell:
         """
         set +o pipefail
@@ -750,13 +750,13 @@ rule combine_strandphaser_output:
 
 rule convert_strandphaser_output:
     input:
-        phased_states  = "strand_states/{sample}/strandphaser_output.txt",
-        initial_states = "strand_states/{sample}/intitial_strand_state",
+        phased_states  = "strand_states/{sample}/{windows}.{bpdens}/strandphaser_output.txt",
+        initial_states = "strand_states/{sample}/{windows}.{bpdens}/intitial_strand_state",
         info           = "counts/{sample}/500000_fixed.info"
     output:
-        "strand_states/{sample}/final.txt"
+        "strand_states/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/final.txt"
     log:
-        "log/convert_strandphaser_output/{sample}.log"
+        "log/convert_strandphaser_output/{sample}/{windows}.{bpdens}.log"
     script:
         "utils/helper.convert_strandphaser_output.R"
 
@@ -767,15 +767,15 @@ rule convert_strandphaser_output:
 
 rule haplotag_bams:
     input:
-        vcf='phased-snvs/{sample}.vcf.gz',
-        tbi='phased-snvs/{sample}.vcf.gz.tbi',
+        vcf='phased-snvs/{sample}/{windows}.{bpdens}.vcf.gz',
+        tbi='phased-snvs/{sample}/{windows}.{bpdens}.vcf.gz.tbi',
         bam='bam/{sample}/selected/{bam}.bam',
         bai='bam/{sample}/selected/{bam}.bam.bai',
         ref = config["reference"],
     output:
-        bam='haplotag/bam/{sample}/{bam}.bam',
+        bam='haplotag/bam/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/{bam}.bam',
     log:
-        "log/haplotag_bams/{sample}/{bam}.log"
+        "log/haplotag_bams/{sample}/{windows}.{bpdens}/{bam}.log"
     shell:
         "whatshap haplotag -o {output.bam} -r {input.ref} {input.vcf} {input.bam} > {log} 2>{log}"
 
@@ -789,8 +789,8 @@ rule create_haplotag_segment_bed:
 
 rule create_haplotag_table:
     input:
-        bam='haplotag/bam/{sample}/{cell}.bam',
-        bai='haplotag/bam/{sample}/{cell}.bam.bai',
+        bam='haplotag/bam/{sample}/{windows}.{bpdens}/{cell}.bam',
+        bai='haplotag/bam/{sample}/{windows}.{bpdens}/{cell}.bam.bai',
         bed = "haplotag/bed/{sample}/{windows}.{bpdens}.bed"
     output:
         tsv='haplotag/table/{sample}/by-cell/haplotag-counts.{cell}.{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}.tsv'
@@ -923,7 +923,7 @@ rule split_external_snv_calls:
 rule summary_statistics:
     input:
         segmentation = 'segmentation2/{sample}/{windows}.{bpdens}.txt',
-        strandstates = 'strand_states/{sample}/{windows}.{bpdens}.intitial_strand_state',
+        strandstates = 'strand_states/{sample}/{windows}.{bpdens}/intitial_strand_state',
         sv_calls = 'sv_calls/{sample}/{windows}.{bpdens}/{method}.txt',
     output:
         tsv = 'stats/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/{method}.tsv',
