@@ -250,19 +250,19 @@ rule plot_SV_calls:
     input:
         counts = "counts/{sample}/{windows}.txt.gz",
         calls  = "sv_calls/{sample}/{windows}.{bpdens}/{method}.txt",
-        strand = "strand_states/{sample}/final.txt",
+        complex = "sv_calls/{sample}/{windows}.{bpdens}/{method}.complex.tsv",
+        strand = "strand_states/{sample}/{windows}.{bpdens}/final.txt",
         segments = "segmentation2/{sample}/{windows}.{bpdens}.txt"
     output:
         "sv_calls/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/plots/sv_calls/{method}.{chrom}.pdf"
     log:
         "log/plot_SV_calls/{sample}/{windows}.{bpdens}.{method}.{chrom}.log"
-    params:
-        sv_plot_script = config["sv_plot_script"]
     shell:
         """
-        Rscript {params.sv_plot_script} \
+        Rscript utils/plot-sv-calls.R \
             segments={input.segments} \
             strand={input.strand} \
+            complex={input.complex} \
             calls={input.calls} \
             {input.counts} \
             {wildcards.chrom} \
@@ -280,11 +280,9 @@ rule plot_SV_calls_simulated:
         "sv_calls/simulation{seed}-{window}/{window}_fixed.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/plots/sv_calls/{method}.{chrom}.pdf"
     log:
         "log/plot_SV_calls_simulated/simulation{seed}-{window}/{window}_fixed.{bpdens}.{method}.{chrom}.log"
-    params:
-        sv_plot_script = config["sv_plot_script"]
     shell:
         """
-        Rscript {params.sv_plot_script} \
+        Rscript utils/plot-sv-calls.R \
             segments={input.segments} \
             strand={input.strand} \
             truth={input.truth} \
@@ -575,6 +573,15 @@ rule mosaiClassifier_make_call_biallelic:
     script:
         "utils/mosaiClassifier_call_biallelic.snakemake.R"
 
+rule call_complex_regions:
+    input:
+        calls  = "sv_calls/{sample}/{windows}.{bpdens}/{method}.txt",
+    output:
+        complex = "sv_calls/{sample}/{windows}.{bpdens}/{method}.complex.tsv",
+    log:
+        "log/call_complex_regions/{sample}/{windows}.{bpdens}.{method}.log"
+    shell:
+        "utils/call-complex-regions.py {input.calls} > {output.complex} 2>{log}"
 
 
 ################################################################################
