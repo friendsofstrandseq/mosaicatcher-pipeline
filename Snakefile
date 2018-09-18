@@ -581,7 +581,7 @@ rule call_complex_regions:
     log:
         "log/call_complex_regions/{sample}/{windows}.{bpdens}.{method}.log"
     shell:
-        "utils/call-complex-regions.py {input.calls} > {output.complex} 2>{log}"
+        "utils/call-complex-regions.py --merge_distance 5000000 --ignore_haplotypes --min_cell_count 2 {input.calls} > {output.complex} 2>{log}"
 
 
 ################################################################################
