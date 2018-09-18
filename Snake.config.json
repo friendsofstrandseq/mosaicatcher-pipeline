@@ -1,21 +1,16 @@
 {
     "chromosomes"   : ["chr1","chr2","chr3","chr4","chr5","chr6","chr7","chr8","chr9","chr10","chr11","chr12","chr13","chr14","chr15","chr16","chr17","chr18","chr19","chr20","chr21","chr22","chrX"],
 
-    "reference"     : "/g/korbel/shared/datasets/refgenomes/human/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna",
-    "mosaicatcher"  : "/g/korbel/meiers/tools/mosaicatcher/mosaicatcher_experimental/build/mosaicatcher",
-    "plot_script"   : "/g/korbel/meiers/tools/mosaicatcher/mosaicatcher_experimental/R/qc.R",
-    "sv_plot_script": "/g/korbel/meiers/tools/mosaicatcher/mosaicatcher_experimental/R/chrom.R",
-    "norm_script"   : "/g/korbel/meiers/tools/mosaicatcher/mosaicatcher_experimental/R/norm.R",
+    "reference"     : "/MMCI/TM/scratch/ref/GRCh38_no_alt_analysis_set/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna",
+    "mosaicatcher"  : "/MMCI/TM/scratch/strandseq/mosaicatcher-builds/v0.3/build/mosaic",
+    "plot_script"   : "/MMCI/TM/scratch/strandseq/mosaicatcher-builds/v0.3/R/qc.R",
+    "norm_script"   : "/MMCI/TM/scratch/strandseq/mosaicatcher-builds/v0.3/R/norm.R",
     "samtools"      : "samtools",
     "bcftools"      : "bcftools",
 
-    "snv_calls"     : {
-        "C7_data"   : "/g/korbel2/StrandSeq/20180221_RPE_Data/regenSNVs_GRCh38sites_C7_chr1-22plusX.filtered.vcf.gz",
-		"RPE-BM510" : "/g/korbel2/StrandSeq/20180221_RPE_Data/regenSNVs_GRCh38sites_BM510_chr1-22plusX.filtered.vcf.gz",
-		"RPE1-WT"   : "/g/korbel2/StrandSeq/20180606_RPE1-WT/regenSNVs_GRCh38sites_RPEWTstrandS_chr1-22plusX.filtered.vcf.gz"
-	},
+    "snv_sites_to_genotype": "/MMCI/TM/scratch/MosaiCatcher_data/RPE1_cell_lines/Compare_SNVsCalls/GRCh38_1000G_variableSites/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz",
 
-    "snv_sites_to_genotype": "",
+    "snv_calls"     : {},
 
     "variable_bins" : {
         "50000"     : "utils/variable_bins.GRCh38.50kb.bed",
