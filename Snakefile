@@ -252,7 +252,8 @@ rule plot_SV_calls:
         calls  = "sv_calls/{sample}/{windows}.{bpdens}/{method}.txt",
         complex = "sv_calls/{sample}/{windows}.{bpdens}/{method}.complex.tsv",
         strand = "strand_states/{sample}/{windows}.{bpdens}/final.txt",
-        segments = "segmentation2/{sample}/{windows}.{bpdens}.txt"
+        segments = "segmentation2/{sample}/{windows}.{bpdens}.txt",
+        scsegments = "segmentation-singlecell/{sample}/{windows}.{bpdens}.txt",
     output:
         "sv_calls/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/plots/sv_calls/{method}.{chrom}.pdf"
     log:
@@ -261,6 +262,7 @@ rule plot_SV_calls:
         """
         Rscript utils/plot-sv-calls.R \
             segments={input.segments} \
+            singlecellsegments={input.scsegments} \
             strand={input.strand} \
             complex={input.complex} \
             calls={input.calls} \
@@ -505,6 +507,7 @@ rule segmentation_selection:
         info="counts/{sample}/{window}_{file_name}.info",
     output:
         jointseg="segmentation2/{sample}/{window,[0-9]+}_{file_name}.selected_j{min_diff_jointseg}_s{min_diff_singleseg}.txt",
+        singleseg="segmentation-singlecell/{sample}/{window,[0-9]+}_{file_name}.selected_j{min_diff_jointseg}_s{min_diff_singleseg}.txt",
         strand_states="strand_states/{sample}/{window,[0-9]+}_{file_name}.selected_j{min_diff_jointseg}_s{min_diff_singleseg}/intitial_strand_state",
     log:
         "log/segmentation_selection/{sample}/{window}_{file_name}.selected_j{min_diff_jointseg}_s{min_diff_singleseg}.log"
@@ -512,7 +515,7 @@ rule segmentation_selection:
         cellnames = lambda wc: ",".join(cell for cell in CELL_PER_SAMPLE[wc.sample]),
         sce_min_distance = 500000,
     shell:
-        "./utils/detect_strand_states.py --sce_min_distance {params.sce_min_distance} --min_diff_jointseg {wildcards.min_diff_jointseg} --min_diff_singleseg {wildcards.min_diff_singleseg} --output_jointseg {output.jointseg} --output_strand_states {output.strand_states} --samplename {wildcards.sample} --cellnames {params.cellnames} {input.info} {input.counts} {input.jointseg} {input.singleseg} > {log} 2>&1"
+        "./utils/detect_strand_states.py --sce_min_distance {params.sce_min_distance} --min_diff_jointseg {wildcards.min_diff_jointseg} --min_diff_singleseg {wildcards.min_diff_singleseg} --output_jointseg {output.jointseg} --output_singleseg {output.singleseg} --output_strand_states {output.strand_states} --samplename {wildcards.sample} --cellnames {params.cellnames} {input.info} {input.counts} {input.jointseg} {input.singleseg} > {log} 2>&1"
 
 
 ################################################################################
