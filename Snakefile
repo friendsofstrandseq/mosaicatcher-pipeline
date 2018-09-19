@@ -416,10 +416,22 @@ rule extract_single_cell_counts:
 # Normalize counts                                                             #
 ################################################################################
 
+rule merge_blacklist_bins:
+    input:
+        norm = "utils/normalization/HGSVC.{window}.txt"
+    output:
+        merged = "normalizations/HGSVC.{window}.merged.tsv"
+    log:
+        "log/merge_blacklist_bins/{window}.log"
+    shell:
+        """
+        utils/merge-blacklist.py --merge_distance 500000 {input.norm} > {output.merged} 2> {log}
+        """
+
 rule normalize_counts:
     input:
         counts = "counts/{sample}/{window}_fixed.txt.gz",
-        norm   = "utils/normalization/HGSVC.{window}.txt"
+        norm   = "normalizations/HGSVC.{window}.merged.tsv",
     output:
         "counts/{sample}/{window}_fixed_norm.txt.gz"
     log:
