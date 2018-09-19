@@ -228,6 +228,8 @@ def main():
 		help='Minimum gain in mismatch distance needed to add an additional SCE.')
 	parser.add_argument('--output_jointseg', default=None,
 		help='Filename to output selected joint segmentation to.')
+	parser.add_argument('--output_singleseg', default=None,
+		help='Filename to output selected single cell segmentations to.')
 	parser.add_argument('--output_strand_states', default=None,
 		help='Filename to output strand states to.')
 	parser.add_argument('--min_diff_jointseg', default=0.5, type=float, 
@@ -271,14 +273,24 @@ def main():
 		output_strand_states_file = open(args.output_strand_states, 'w')
 		print('sample','cell','chrom','start','end','class', sep='\t', file=output_strand_states_file)
 
+	output_single_cell_seg_file = None
+	if args.output_singleseg != None:
+		output_single_cell_seg_file = open(args.output_singleseg, 'w')
+		print('sample','cell','chrom','position', sep='\t', file=output_single_cell_seg_file)
+
 	for filename, cell in zip(args.singleseg, cell_names):
 		print('='*100, filename, file=sys.stderr)
 		print('Processing', filename, file=sys.stderr)
 		singleseg = Segmentation(filename)
 		singleseg.select_k(min_diff = args.min_diff_singleseg)
+
 		for chromosome in singleseg.chromosomes:
 			print(' -- chromosome', chromosome, file=sys.stderr)
 			breaks = singleseg.get_selected_segmentation(chromosome)
+			if output_single_cell_seg_file is not None:
+				for position in breaks:
+					print(args.samplename, cell, chromosome, position, sep='\t', file=output_single_cell_seg_file)
+
 			w_counts, c_counts = count_table.get_counts(cell, chromosome, breaks)
 			w, c = 0, 0
 			strand_state_list = []
@@ -381,6 +393,9 @@ def main():
 
 	if output_strand_states_file is not None:
 		output_strand_states_file.close()
+
+	if output_single_cell_seg_file is not None:
+		output_single_cell_seg_file.close()
 
 
 if __name__ == '__main__':
