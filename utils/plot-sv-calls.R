@@ -69,13 +69,14 @@ print_usage_and_stop = function(msg = NULL) {
   message("    Rscript chrom.R [OPTIONS] <count-file> <chrom> <out.pdf>                    ")
   message("                                                                                ")
   message("OPTIONS (no spaces around `=`):                                                 ")
-  message("    per-page=<int>        Number of cells to be printed per page                ")
-  message("    segments=<file>       Show the segmentation in the plots                    ")
-  message("    calls=<file>          Highlight SV calls provided in a table                ")
-  message("    truth=<file>          Mark the `true`` SVs provided in a table              ")
-  message("    strand=<file>         Mark the strand states which calls are based on       ")
-  message("    complex=<file>        Mark complex regions given in file                    ")
-  message("    no-none               Do not hightlight black-listed (i.e. None) bins       ")
+  message("    per-page=<int>            Number of cells to be printed per page            ")
+  message("    segments=<file>           Show the segmentation in the plots                ")
+  message("    singlecellsegments=<file> Show per-cell  segmentation in the plots          ")
+  message("    calls=<file>              Highlight SV calls provided in a table            ")
+  message("    truth=<file>              Mark the `true`` SVs provided in a table          ")
+  message("    strand=<file>             Mark the strand states which calls are based on   ")
+  message("    complex=<file>            Mark complex regions given in file                ")
+  message("    no-none                   Do not hightlight black-listed (i.e. None) bins   ")
   message("                                                                                ")
   message("Generates one plot per chromosome listing all cells below another, separated    ")
   message("into pages. If an SV probability file is provided (2), segments are colored     ")
@@ -111,7 +112,7 @@ cells_per_page = 8
 show_none  = T
 
 if (length(args)>3) {
-  if (!all(grepl("^(strand|calls|segments|per-page|truth|no-none|complex)=?", args[1:(length(args)-3)]))) {
+  if (!all(grepl("^(strand|calls|segments|per-page|truth|no-none|complex|singlecellsegments)=?", args[1:(length(args)-3)]))) {
     print_usage_and_stop("[Error]: Options must be one of `calls`, `segments`, `per-page`, or `truth`") }
   for (op in args[1:(length(args)-3)]) {
     if (grepl("^segments=", op)) f_segments = str_sub(op, 10)
@@ -123,6 +124,7 @@ if (length(args)>3) {
     }
     if (grepl("^strand=", op))   f_strand = str_sub(op, 8)
     if (grepl("^complex=", op))   f_complex = str_sub(op, 9)
+    if (grepl("^singlecellsegments=", op))   f_scsegments = str_sub(op, 20)
     if (grepl("^no-none$", op)) show_none = F
   }
 }
@@ -234,7 +236,7 @@ if (!is.null(f_strand)) {
   strand = strand[chrom == CHROM]
 }
 
-### Check complex regionss file
+### Check complex regions file
 if (!is.null(f_complex)) {
   message(" * Reading complex regions state file from ", f_complex, "...")
   complex = fread(f_complex)
@@ -247,6 +249,18 @@ if (!is.null(f_complex)) {
 
 }
 
+### Check single cell segmentation file
+if (!is.null(f_scsegments)) {
+  message(" * Reading per-cell segmentation regions state file from ", f_scsegments, "...")
+  scsegments = fread(f_scsegments)
+  assert_that("sample"   %in% colnames(scsegments),
+              "cell"     %in% colnames(scsegments),
+              "chrom"    %in% colnames(scsegments),
+              "position" %in% colnames(scsegments)) %>% invisible
+  scsegments[, sample_cell := paste(sample, "-", cell)]
+
+  scsegments = scsegments[chrom == CHROM]
+}
 
 
 ################################################################################
@@ -302,6 +316,16 @@ while (i <= n_cells) {
         plt <- plt +
           geom_rect(data = local_sim,
                     aes(xmin = start, xmax = end, ymin = y_lim, ymax = Inf, fill = SV_class))
+      }
+    }
+
+    # Add lines for single cell segmentation, if available
+    if (!is.null(f_scsegments)) {
+      local_scsegments = scsegments[CELLS, on = .(sample_cell), nomatch = 0]
+      if (nrow(local_scsegments) > 0) {
+        plt <- plt +
+          geom_segment(data = local_scsegments,
+                    aes(x = position, xend = position, y = -Inf, yend = -.8*y_lim), color = 'blue')
       }
     }
 
