@@ -277,6 +277,7 @@ i = 1
 message(" * Plotting ", CHROM, " (", f_out, ")")
 cairo_pdf(f_out, width=14, height=10, onefile = T)
 while (i <= n_cells) {
+    message(" * Processing cells from ", i, " to ", i + cells_per_page - 1)
 
     # Subset to this set of cells:
     CELLS = unique(counts[,.(sample_cell)])[i:(min(i+cells_per_page-1,n_cells))]
@@ -290,6 +291,7 @@ while (i <= n_cells) {
 
     # Add background colors for segments, if available:
     if (!is.null(f_segments)) {
+      message("   * Adding segment colors")
       # Segments need to be multiplied by "CELLS"
       local_seg = CELLS[, cbind(seg, sample_cell), by = sample_cell]
       if (nrow(local_seg)>0) {
@@ -301,6 +303,7 @@ while (i <= n_cells) {
 
     # Add colors for SV calls, if available
     if (!is.null(f_calls)) {
+      message("   * Adding SV calls")
       local_svs = svs[CELLS, on = .(sample_cell), nomatch = 0]
       if (nrow(local_svs)>0) {
         plt <- plt +
@@ -311,6 +314,7 @@ while (i <= n_cells) {
 
     # Add bars for true SVs, if available
     if (!is.null(f_truth)) {
+      message("   * Adding true SVs")
       local_sim = simul[CELLS, on = .(sample_cell), nomatch = 0]
       if (nrow(local_sim)>0) {
         plt <- plt +
@@ -321,6 +325,7 @@ while (i <= n_cells) {
 
     # Add lines for single cell segmentation, if available
     if (!is.null(f_scsegments)) {
+      message("   * Adding single cell segments")
       local_scsegments = scsegments[CELLS, on = .(sample_cell), nomatch = 0]
       if (nrow(local_scsegments) > 0) {
         plt <- plt +
@@ -331,6 +336,7 @@ while (i <= n_cells) {
 
     # Add bars for strand states, if available
     if (!is.null(f_strand)) {
+      message("   * Adding strand states")
       local_strand = strand[CELLS, on = .(sample_cell), nomatch = 0]
       if (nrow(local_strand) > 0) {
         plt <- plt +
@@ -341,6 +347,7 @@ while (i <= n_cells) {
 
     # Add bars for complex states, if available
     if (!is.null(f_complex)) {
+      message("   * Adding complex intervals")
       if (nrow(complex) > 0) {
         plt <- plt +
           geom_rect(data = complex,
@@ -348,6 +355,7 @@ while (i <= n_cells) {
       }
     }
 
+    message("   * Adding actual W/C counts")
     plt <- plt +
         geom_rect(aes(xmin = start, xmax=end, ymin=0, ymax = -w), fill='sandybrown') +
         geom_rect(aes(xmin = start, xmax=end, ymin=0, ymax =  c), fill='paleturquoise4')
@@ -356,11 +364,13 @@ while (i <= n_cells) {
     # Highlight None bins, if requested
     none_bins <- local_counts[class == "None"]
     if (show_none == T && nrow(none_bins)>0) {
+      message("   * Highlighting None bins")
       plt <- plt +
         geom_segment(data = none_bins, aes(x=start, xend=end, y=0, yend=0), col = "black", size = 2)
     }
 
 
+    message("   * Adding labels, etc.")
     plt <- plt +
         facet_wrap(~ sample_cell, ncol = 1) +
         ylab("Watson | Crick") + xlab(NULL) +
@@ -376,6 +386,7 @@ while (i <= n_cells) {
               legend.position = "bottom") +
         ggtitle(paste("data:", basename(f_counts), "chromosome:", CHROM))
 
+    message("   * outputting")
     print(plt)
     i = i + cells_per_page
 } # while
