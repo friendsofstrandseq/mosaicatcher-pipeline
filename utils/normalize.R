@@ -104,6 +104,8 @@ counts[norm_class == "None", class := "None"]
 counts[, `:=`(c = as.numeric(c), w = as.numeric(w))]
 counts[class != "None", `:=`(c = c * scalar,
                              w = w * scalar)]
+counts[class == "None", `:=`(c = 0.0, w = 0.0)]
+
 message(" * Applying normalization: min = ",
         round(min(counts[class!="None", scalar]),3),
         ", max = ",
