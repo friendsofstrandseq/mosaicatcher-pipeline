@@ -4,7 +4,6 @@
     "reference"     : "/MMCI/TM/scratch/ref/GRCh38_no_alt_analysis_set/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna",
     "mosaicatcher"  : "/MMCI/TM/scratch/strandseq/mosaicatcher-builds/v0.3/build/mosaic",
     "plot_script"   : "/MMCI/TM/scratch/strandseq/mosaicatcher-builds/v0.3/R/qc.R",
-    "norm_script"   : "/MMCI/TM/scratch/strandseq/mosaicatcher-builds/v0.3/R/norm.R",
     "samtools"      : "samtools",
     "bcftools"      : "bcftools",
 
