@@ -942,6 +942,7 @@ rule summary_statistics:
         segmentation = 'segmentation2/{sample}/{windows}.{bpdens}.txt',
         strandstates = 'strand_states/{sample}/{windows}.{bpdens}/intitial_strand_state',
         sv_calls = 'sv_calls/{sample}/{windows}.{bpdens}/{method}.txt',
+        complex = "sv_calls/{sample}/{windows}.{bpdens}/{method}.complex.tsv",
     output:
         tsv = 'stats/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/{method}.tsv',
     log:
@@ -963,7 +964,7 @@ rule summary_statistics:
         except KeyError:
             pass
         additional_params = ' '.join(p)
-        shell('utils/callset_summary_stats.py --segmentation {input.segmentation} --strandstates {input.strandstates} {additional_params} {input.sv_calls}  > {output.tsv} 2> {log}')
+        shell('utils/callset_summary_stats.py --segmentation {input.segmentation} --strandstates {input.strandstates} --complex-regions {input.complex} {additional_params} {input.sv_calls}  > {output.tsv} 2> {log}')
 
 rule aggregate_summary_statistics:
     input:
