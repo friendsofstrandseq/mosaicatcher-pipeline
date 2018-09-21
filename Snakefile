@@ -436,11 +436,9 @@ rule normalize_counts:
         "counts/{sample}/{window}_fixed_norm.txt.gz"
     log:
         "log/normalize_counts/{sample}/{window}_fixed.log"
-    params:
-        r_command = config["norm_script"]
     shell:
         """
-        Rscript {params.r_command} {input.counts} {input.norm} {output} 2>&1 > {log}
+        Rscript utils/normalize.R {input.counts} {input.norm} {output} 2>&1 > {log}
         """
 
 rule link_normalized_info_file:
