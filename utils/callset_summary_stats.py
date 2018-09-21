@@ -44,6 +44,9 @@ def main():
 		help='Filename to read true clonal events from.')
 	parser.add_argument('--true-events-single-cell', default=None,
 		help='Filename to read true single-cell events from.')
+	parser.add_argument('--complex-regions', default=None,
+		help='Filename to read complex regions from.')
+
 	#parser.add_argument('--sce_min_distance', default=200000, type=int, 
 		#help='Minimum distance of an SCE to a break in the joint segmentation.')
 
@@ -77,6 +80,22 @@ def main():
 	results['unique_calls'] = len(calls.groupby(by=['chrom','start','end','sv_call_name']))
 	result_order += ['total_calls','unique_calls']
 
+	# Read complex regions file (if provided)
+	if args.complex_regions is not None:
+		complex_regions = pd.read_csv(args.complex_regions, sep='\t')
+		assert set(complex_regions.columns) == set(['chrom','start','end'])
+		results['complex_lengths_mb'] = sum(complex_regions.end - complex_regions.start) / 1000000.0
+		result_order += ['complex_lengths_mb']
+		# determine which of the calls are complex
+		calls['is_complex'] = False
+		for chrom, start, end in complex_regions[['chrom','start','end']].values:
+			calls.loc[(calls.chrom==chrom) & (calls.start<end) & (calls.end>start), 'is_complex'] = True
+		results['total_calls_complex'] = len(calls[calls.is_complex])
+		results['unique_calls_complex'] = len(calls[calls.is_complex].groupby(by=['chrom','start','end','sv_call_name']))
+		result_order += ['total_calls_complex','unique_calls_complex']
+
+	print(calls, file=sys.stderr)
+
 	print('Detected {} total calls and {} unique calls in {} single cells'.format(
 		results['total_calls'],
 		results['unique_calls'],
@@ -86,9 +105,16 @@ def main():
 	# compute event lengths
 	calls = calls.assign(length=lambda x: x.end-x.start)
 	results['avg_sv_load_per_cell_mb'] = np.mean(calls.groupby(by=['cell']).length.sum()) / 1000000.0
+	result_order.append('avg_sv_load_per_cell_mb')
+	if 'is_complex' in calls.columns:
+		results['avg_sv_load_per_cell_complex_mb'] = np.mean(calls[calls.is_complex].groupby(by=['cell']).length.sum()) / 1000000.0
+		result_order.append('avg_sv_load_per_cell_complex_mb')
 
 	# create table of all unique SVs with the number of supporting cells
-	sv_table = calls.groupby(by=['chrom','start','end','sv_call_name']).cell.count().reset_index(name='cell_count')
+	if 'is_complex' in calls.columns:
+		sv_table = calls.groupby(by=['chrom','start','end','sv_call_name','is_complex']).cell.count().reset_index(name='cell_count')
+	else:
+		sv_table = calls.groupby(by=['chrom','start','end','sv_call_name']).cell.count().reset_index(name='cell_count')
 	sv_table = sv_table.assign(af=lambda x: x.cell_count/results['cell_count'])
 	sv_table = sv_table.assign(length=lambda x: x.end-x.start)
 
@@ -114,7 +140,19 @@ def main():
 	results['length_sum_af10to80_mb'] = sv_table[(sv_table.af>=0.1) & (sv_table.af<0.8)].length.sum() / 1000000.0
 	results['length_sum_af80to100_mb'] = sv_table[sv_table.af>=0.8].length.sum() / 1000000.0
 
-	result_order += ['avg_sv_load_per_cell_mb','calls_af0to10','calls_af10to80','calls_af80to100','length_sum_af0to10_mb','length_sum_af10to80_mb','length_sum_af80to100_mb']
+	result_order += ['calls_af0to10','calls_af10to80','calls_af80to100','length_sum_af0to10_mb','length_sum_af10to80_mb','length_sum_af80to100_mb']
+
+	if 'is_complex' in calls.columns:
+		results['calls_af0to10_complex'] = len(sv_table[sv_table.is_complex & (sv_table.af<0.1)])
+		results['calls_af10to80_complex'] = len(sv_table[sv_table.is_complex & (sv_table.af>=0.1) & (sv_table.af<0.8)])
+		results['calls_af80to100_complex'] = len(sv_table[sv_table.is_complex & (sv_table.af>=0.8)])
+
+		results['length_sum_af0to10_complex_mb'] = sv_table[sv_table.is_complex & (sv_table.af<0.1)].length.sum() / 1000000.0
+		results['length_sum_af10to80_complex_mb'] = sv_table[sv_table.is_complex & (sv_table.af>=0.1) & (sv_table.af<0.8)].length.sum() / 1000000.0
+		results['length_sum_af80to100_complex_mb'] = sv_table[sv_table.is_complex & (sv_table.af>=0.8)].length.sum() / 1000000.0
+		result_order += ['calls_af0to10_complex','calls_af10to80_complex','calls_af80to100_complex','length_sum_af0to10_complex_mb','length_sum_af10to80_complex_mb','length_sum_af80to100_complex_mb']
+
+	
 
 	print(*result_order, sep='\t')
 	print(*(results[x] for x in result_order), sep='\t')
