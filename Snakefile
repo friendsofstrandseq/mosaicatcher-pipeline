@@ -33,20 +33,34 @@ import os.path
 
 
 METHODS = [
-    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0_regfactor6",
-    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.005_regfactor6",
-    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.01_regfactor6",
-    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.02_regfactor6",
-    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.03_regfactor6",
-    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.04_regfactor6",
-    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.05_regfactor6",
-    "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0_regfactor6",
-    "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.005_regfactor6",
-    "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.01_regfactor6",
-    "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.02_regfactor6",
-    "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.03_regfactor6",
-    "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.04_regfactor6",
-    "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.05_regfactor6",
+    #"simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0_regfactor6_filterFALSE",
+    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.005_regfactor6_filterFALSE",
+    #"simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.01_regfactor6_filterFALSE",
+    #"simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.02_regfactor6_filterFALSE",
+    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.03_regfactor6_filterFALSE",
+    #"simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.04_regfactor6_filterFALSE",
+    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.05_regfactor6_filterFALSE",
+    #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0_regfactor6_filterFALSE",
+    "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.005_regfactor6_filterFALSE",
+    #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.01_regfactor6_filterFALSE",
+    #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.02_regfactor6_filterFALSE",
+    #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.03_regfactor6_filterFALSE",
+    #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.04_regfactor6_filterFALSE",
+    #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.05_regfactor6_filterFALSE",
+    #"simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0_regfactor6_filterTRUE",
+    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.005_regfactor6_filterTRUE",
+    #"simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.01_regfactor6_filterTRUE",
+    #"simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.02_regfactor6_filterTRUE",
+    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.03_regfactor6_filterTRUE",
+    #"simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.04_regfactor6_filterTRUE",
+    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.05_regfactor6_filterTRUE",
+    #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0_regfactor6_filterTRUE",
+    "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.005_regfactor6_filterTRUE",
+    #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.01_regfactor6_filterTRUE",
+    #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.02_regfactor6_filterTRUE",
+    #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.03_regfactor6_filterTRUE",
+    #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.04_regfactor6_filterTRUE",
+    #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.05_regfactor6_filterTRUE",
 ]
 
 BPDENS = [
@@ -563,13 +577,22 @@ rule mosaiClassifier_make_call:
     input:
         probs = 'haplotag/table/{sample}/haplotag-likelihoods.{window}_fixed_norm.{bpdens}.Rdata'
     output:
-        "sv_calls/{sample}/{window}_fixed_norm.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/simpleCalls_llr{llr}_poppriors{pop_priors,(TRUE|FALSE)}_haplotags{use_haplotags,(TRUE|FALSE)}_gtcutoff{gtcutoff,[0-9\\.]+}_regfactor{regfactor,[0-9]+}.txt"
+        "sv_calls/{sample}/{window}_fixed_norm.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/simpleCalls_llr{llr}_poppriors{pop_priors,(TRUE|FALSE)}_haplotags{use_haplotags,(TRUE|FALSE)}_gtcutoff{gtcutoff,[0-9\\.]+}_regfactor{regfactor,[0-9]+}_filterFALSE.txt"
     params:
         minFrac_used_bins = 0.8
     log:
         "log/mosaiClassifier_make_call/{sample}/{window}_fixed_norm.{bpdens}.llr{llr}.poppriors{pop_priors}.haplotags{use_haplotags}.gtcutoff{gtcutoff}.regfactor{regfactor}.log"
     script:
         "utils/mosaiClassifier_call.snakemake.R"
+
+rule filter_calls:
+    input: 
+        calls = "sv_calls/{sample}/{window}_fixed_norm.{bpdens}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}_filterFALSE.txt"
+    output: 
+        calls = "sv_calls/{sample}/{window}_fixed_norm.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/simpleCalls_llr{llr}_poppriors{pop_priors,(TRUE|FALSE)}_haplotags{use_haplotags,(TRUE|FALSE)}_gtcutoff{gtcutoff,[0-9\\.]+}_regfactor{regfactor,[0-9]+}_filterTRUE.txt"
+    shell:
+        'utils/filter_MosaiCatcher_calls.pl {input.calls} | awk \'BEGIN {{OFS="\\t"}} $15!="FAIL" {{$15=""; print}}\' > {output.calls}'
+
 
 rule mosaiClassifier_calc_probs:
     input:
