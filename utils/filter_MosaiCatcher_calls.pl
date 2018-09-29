@@ -3,7 +3,7 @@ use strict;
 
 my $min_N_inv = 3;
 
-#Use input file with format "chrom	start	end	sample	cell	class	scalar	num_bins	sv_call_name	sv_call_haplotype	sv_call_name_2nd	sv_call_haplotype_2nd	llr_to_ref	llr_to_2nd"
+#Use input file with format "chrom	start	end	sample	cell	class	scalar	num_bins	sv_call_name	sv_call_haplotype	sv_call_name_2nd	sv_call_haplotype_2nd	llr_to_ref	llr_to_2nd	af"
 #
 # e.g. 
 # 
@@ -27,7 +27,7 @@ open FH, "$input_file" or die;
 while (<FH>) {
 	chomp;
 	next if ($_ =~ /^chrom/); #ignore first line
-	my ($chrom, $start, $end, $sample, $cell, $strand_state_class, $scalar, $num_bins, $sv_call_name, $sv_call_haplotype, $sv_call_name_2nd, $sv_call_haplotype_2nd, $llr_to_ref, $llr_to_2nd) = split (/\t/, $_); #split by TAB
+	my ($chrom, $start, $end, $sample, $cell, $strand_state_class, $scalar, $num_bins, $sv_call_name, $sv_call_haplotype, $sv_call_name_2nd, $sv_call_haplotype_2nd, $llr_to_ref, $llr_to_2nd, $af) = split (/\t/, $_); #split by TAB
 	push (@{$STARTs{$chrom}}, $start);
 	push (@{$ENDs{$chrom}}, $end);
 	push (@{$SV_TYPEs{$chrom}}, $sv_call_name);
@@ -74,7 +74,7 @@ foreach my $chrom (sort keys %STARTs) {
 
 
 #--- output file with filters
-print "chrom\tstart\tend\tsample\tcell\tstrand_state_class\tscalar\tnum_bins\tsv_call_name\tsv_call_haplotype\tsv_call_name_2nd\tsv_call_haplotype_2nd\tllr_to_ref\tllr_to_2nd\tpass/fail\n";
+print "chrom\tstart\tend\tsample\tcell\tstrand_state_class\tscalar\tnum_bins\tsv_call_name\tsv_call_haplotype\tsv_call_name_2nd\tsv_call_haplotype_2nd\tllr_to_ref\tllr_to_2nd\taf\tpass/fail\n";
 foreach my $chrom (sort keys %STARTs) {
         for (my $i=0; $i<@{$STARTs{$chrom}}; $i++) {
 		$FILTER{$chrom}{$STARTs{$chrom}[$i]}{$ENDs{$chrom}[$i]}= 'PASS' unless (exists($FILTER{$chrom}{$STARTs{$chrom}[$i]}{$ENDs{$chrom}[$i]})); #initialize
