@@ -77,11 +77,16 @@ makeSVCallSimple <- function(probs, llr_thr = 1, use.pop.priors = FALSE, use.hap
        by = .(chrom, start, end, sample, cell)]
   probs <- probs[rank == 1]
 
+  # compute the number of cells (used below to compute AFs)
+  ncells = length(unique(probs[,cell]))
 
-  # Clean up table
-  probs <- probs[, .(chrom, start, end, sample, cell, class, scalar, num_bins, sv_call_name, sv_call_haplotype, sv_call_name_2nd, sv_call_haplotype_2nd, llr_to_ref, llr_to_2nd)]
+  # select calls to retain and clean up table by removing unnecessary columns
+  probs <- probs[sv_call_name != "ref_hom" & llr_to_ref > llr_thr, .(chrom, start, end, sample, cell, class, scalar, num_bins, sv_call_name, sv_call_haplotype, sv_call_name_2nd, sv_call_haplotype_2nd, llr_to_ref, llr_to_2nd)]
 
-  return(probs[sv_call_name != "ref_hom" & llr_to_ref > llr_thr])
+  # compute allele frequencies
+  probs[, af := .N / ncells , by = .(chrom, start, end, sample, sv_call_name)]
+
+  return(probs)
 }
 
 forceBiallelic <- function(probs, penalize_factor = 0.1)
