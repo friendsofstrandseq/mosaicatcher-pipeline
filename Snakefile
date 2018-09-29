@@ -999,5 +999,5 @@ rule aggregate_summary_statistics:
     output:
         tsv="stats-merged/{sample}/stats.tsv"
     shell:
-        "(head -n1 {input.tsv[0]} && tail -n1 -q {input.tsv}) > {output}"
+        "(head -n1 {input.tsv[0]} && (tail -n1 -q {input.tsv} | sort -k1) ) > {output}"
     
