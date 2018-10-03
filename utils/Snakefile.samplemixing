@@ -2,15 +2,20 @@ from collections import defaultdict
 import random
 
 targets = {
+	('WT', 'C7', 80, 5, 1),
 	('WT', 'C7', 80, 10, 1),
 	('WT', 'C7', 80, 20, 1),
 	('WT', 'C7', 50, 50, 1),
+	('WT', 'BM510', 80, 5, 1),
+	('WT', 'BM510', 80, 10, 1),
+	('WT', 'BM510', 80, 20, 1),
+	('WT', 'BM510', 50, 50, 1),
 }
 
 sample_paths = {
-	'BM510': '/MMCI/TM/scratch/strandseq/rpe-2018-07-18-BM510/bam/RPE-BM510/selected/',
-	'C7':    '/MMCI/TM/scratch/strandseq/rpe-2018-07-18-C7/bam/C7_data/selected/',
-	'WT':    '/MMCI/TM/scratch/strandseq/rpe-2018-07-18-WT/bam/RPE1-WT/selected/',
+	'BM510': '/MMCI/TM/scratch/strandseq/input-data/RPE-BM510/selected/',
+	'C7':    '/MMCI/TM/scratch/strandseq/input-data/C7_data/selected/',
+	'WT':    '/MMCI/TM/scratch/strandseq/input-data/RPE1-WT/selected/',
 }
 
 samples = sorted(sample_paths.keys())
@@ -52,16 +57,16 @@ rule create_new_header:
 	output:
 		hd=temp('bam/{target_sample}/all/CELL{i,[0-9]+}.{cell}.header.sam')
 	shell:
-		'samtools view -H {input.bam} | sed -r \'/^@RG/ s/(SM:[A-Za-z0-9_-]+)/SM:{wildcards.target_sample}/g\' > {output.hd}'
+		'samtools view -H {input.bam} | grep -v "^@RG" > {output.hd}'
 
 rule translate_bam:
 	input:
 		bam=lambda wc: bam_mapping['bam/{}/all/CELL{}.{}.bam'.format(wc.target_sample,wc.i,wc.cell)],
-		hd='bam/{target_sample}/all/CELL{i,[0-9]+}.{cell}.header.sam'
+		hd='bam/{target_sample}/all/CELL{i,[0-9]+}.{cell}.header.sam',
 	output:
 		bam='bam/{target_sample}/all/CELL{i,[0-9]+}.{cell}.bam'
 	shell:
-		'samtools reheader {input.hd} {input.bam} > {output.bam}'
+		'samtools reheader {input.hd} {input.bam} | samtools addreplacerg -r "@RG\tID:CELL{wildcards.i}.{wildcards.cell}\tSM:{wildcards.target_sample}" -o {output.bam} -'
 
 rule index_bam:
 	input:
