@@ -105,6 +105,11 @@ rule all:
                window = [100000],
                suffix = ["fixed", "fixed_norm"]),
         expand("stats-merged/{sample}/stats.tsv", sample = SAMPLES),
+        expand("postprocessing/merge/{sample}/{window}_fixed_norm.{bpdens}/{method}.txt",
+               sample = SAMPLES,
+               window = [100000],
+               bpdens = BPDENS,
+               method = list(set(m.replace('_filterTRUE','').replace('_filterFALSE','') for m in METHODS))),
 
 
 ################################################################################
@@ -626,6 +631,23 @@ rule call_complex_regions:
         "log/call_complex_regions/{sample}/{windows}.{bpdens}.{method}.log"
     shell:
         "utils/call-complex-regions.py --merge_distance 5000000 --ignore_haplotypes --min_cell_count 2 {input.calls} > {output.complex} 2>{log}"
+
+
+rule postprocessing_filter:
+    input: 
+        calls = "sv_calls/{sample}/{window}_fixed_norm.{bpdens}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}_filterFALSE.txt"
+    output: 
+        calls = "postprocessing/filter/{sample}/{window}_fixed_norm.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/simpleCalls_llr{llr}_poppriors{pop_priors,(TRUE|FALSE)}_haplotags{use_haplotags,(TRUE|FALSE)}_gtcutoff{gtcutoff,[0-9\\.]+}_regfactor{regfactor,[0-9]+}.txt"
+    shell:
+        'utils/filter_MosaiCatcher_calls.pl {input.calls}  > {output.calls}'
+
+rule postprocessing_merge:
+    input: 
+        calls = "postprocessing/filter/{sample}/{window}_fixed_norm.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/simpleCalls_llr{llr}_poppriors{pop_priors,(TRUE|FALSE)}_haplotags{use_haplotags,(TRUE|FALSE)}_gtcutoff{gtcutoff,[0-9\\.]+}_regfactor{regfactor,[0-9]+}.txt"
+    output: 
+        calls = "postprocessing/merge/{sample}/{window}_fixed_norm.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/simpleCalls_llr{llr}_poppriors{pop_priors,(TRUE|FALSE)}_haplotags{use_haplotags,(TRUE|FALSE)}_gtcutoff{gtcutoff,[0-9\\.]+}_regfactor{regfactor,[0-9]+}.txt"
+    shell:
+        'utils/group_nearby_calls_of_same_AF.pl {input.calls}  > {output.calls}'
 
 
 ################################################################################
