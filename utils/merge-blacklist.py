@@ -11,6 +11,10 @@ def main():
 	parser = ArgumentParser(prog='merge-blacklist.py', description=__doc__)
 	parser.add_argument('--merge_distance', default=500000, type=int,
 		help='If the distance between two blacklisted intervals is below this threshold, they are merged.')
+	parser.add_argument('--whitelist', default=None, 
+		help='TSV file with intervals to be removed from the blacklist (columns: chrom, start, end).')
+	parser.add_argument('--min_whitelist_interval_size', default=400000, type=int,
+		help='Ignore whitelisted intervals below this size.')
 
 	parser.add_argument('normalization', metavar='NORM', help='File (tsv) with normalization and blacklist data')
 
@@ -20,6 +24,14 @@ def main():
 	norm_table = pd.read_csv(args.normalization, sep='\t')
 
 	assert set(norm_table.columns) == set(['chrom', 'start', 'end', 'scalar', 'class'])
+
+	whitelist = None
+	if args.whitelist is not None:
+		whitelist = pd.read_csv(args.whitelist, sep='\t')
+		assert set(whitelist.columns) == set(['chrom', 'start', 'end'])
+		print('Read', len(whitelist), 'whitelisted intervals from', args.whitelist, file=sys.stderr)
+		whitelist = whitelist[whitelist.end - whitelist.start >= args.min_whitelist_interval_size]
+		print('  -->', len(whitelist), 'remained after removing intervals below', args.min_whitelist_interval_size, 'bp', file=sys.stderr)
 
 	additional_blacklist = 0
 	prev_blacklist_index = None
@@ -42,6 +54,18 @@ def main():
 			prev_blacklist_end = row['end']
 
 	print('Additionally blacklisted', additional_blacklist, 'bp of sequence', file=sys.stderr)
+
+	additional_whitelist = 0
+	if whitelist is not None:
+		for i in range(len(norm_table)):
+			row = norm_table.iloc[i]
+			if row['class'] == 'None':
+				if len(whitelist[(whitelist.chrom == row.chrom) & (row.start<whitelist.end) & (whitelist.start<row.end)]) > 0:
+					norm_table.loc[[i],'class'] = 'good'
+					additional_whitelist += row.end - row.start
+
+	print('White listing: Removed', additional_whitelist, 'bp of sequence for blacklist', file=sys.stderr)
+
 	norm_table.to_csv(sys.stdout, index=False, sep='\t')
 
 	## Identify "complex" intervals
