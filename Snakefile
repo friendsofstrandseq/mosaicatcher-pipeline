@@ -64,7 +64,7 @@ METHODS = [
 ]
 
 BPDENS = [
-    "selected_j{}_s{}".format(joint, single) for joint in [0.1,0.01] for single in [0.5,0.1]
+    "selected_j{}_s{}".format(joint, single) for joint in [0.1] for single in [0.5]
 ]
 
 singularity: "docker://smei/mosaicatcher-pipeline:v0.1"
