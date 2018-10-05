@@ -652,7 +652,7 @@ rule postprocessing_merge:
     output: 
         calls = "postprocessing/merge/{sample}/{window}_fixed_norm.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/simpleCalls_llr{llr}_poppriors{pop_priors,(TRUE|FALSE)}_haplotags{use_haplotags,(TRUE|FALSE)}_gtcutoff{gtcutoff,[0-9\\.]+}_regfactor{regfactor,[0-9]+}.txt"
     shell:
-        'utils/group_nearby_calls_of_same_AF.pl {input.calls}  > {output.calls}'
+        'utils/group_nearby_calls_of_same_AF_and_generate_output_table.pl {input.calls}  > {output.calls}'
 
 
 ################################################################################
