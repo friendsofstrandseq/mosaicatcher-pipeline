@@ -110,6 +110,10 @@ rule all:
                window = [100000],
                bpdens = BPDENS,
                method = list(set(m.replace('_filterTRUE','').replace('_filterFALSE','') for m in METHODS))),
+#        expand("cell-mixing-eval/{window}_fixed_norm.{bpdens}/{method}.tsv",
+#               window = [100000],
+#               bpdens = BPDENS,
+#               method = METHODS),
 
 
 ################################################################################
@@ -1023,3 +1027,14 @@ rule aggregate_summary_statistics:
     shell:
         "(head -n1 {input.tsv[0]} && (tail -n1 -q {input.tsv} | sort -k1) ) > {output}"
     
+rule evaluate_cell_mixing:
+    input:
+        sv_calls = expand('sv_calls/{sample}/{{windows}}.{{bpdens}}/{{method}}.txt', sample=SAMPLES),
+        truth = '../input-data/ground_truth/RPE-BM510_manual/clonal-events.tsv',
+    output:
+        tsv = 'cell-mixing-eval/{windows}.{bpdens}/{method}.tsv'
+    log:
+        'cell-mixing-eval/{windows}.{bpdens}/{method}.log'
+    run:
+        names = ','.join(SAMPLES)
+        shell('utils/evaluate_cell_mixing.py --names {names} {input.truth} {input.sv_calls} > {output.tsv} 2> {log}')
