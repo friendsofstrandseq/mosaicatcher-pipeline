@@ -447,14 +447,15 @@ rule extract_single_cell_counts:
 
 rule merge_blacklist_bins:
     input:
-        norm = "utils/normalization/HGSVC.{window}.txt"
+        norm = "utils/normalization/HGSVC.{window}.txt",
+        whitelist = "utils/normalization/inversion-whitelist.tsv",
     output:
         merged = "normalizations/HGSVC.{window}.merged.tsv"
     log:
         "log/merge_blacklist_bins/{window}.log"
     shell:
         """
-        utils/merge-blacklist.py --merge_distance 500000 {input.norm} > {output.merged} 2> {log}
+        utils/merge-blacklist.py --merge_distance 500000 {input.norm} --whitelist {input.whitelist} --min_whitelist_interval_size 400000 > {output.merged} 2> {log}
         """
 
 rule normalize_counts:
