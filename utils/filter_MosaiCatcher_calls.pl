@@ -4,6 +4,8 @@ use strict;
 my $min_N_inv = 3;
 my $min_WC = 0.2;
 my $safe_llr_to_ref = 20;
+my $SegDup_file = "./utils/segdups/segDups_hg38_UCSCtrack.bed.gz";
+my $MaxSegDup_overlap = 0.5;
 
 #Use input file with format "chrom	start	end	sample	cell	class	scalar	num_bins	sv_call_name	sv_call_haplotype	sv_call_name_2nd	sv_call_haplotype_2nd	llr_to_ref	llr_to_2nd	af"
 #
@@ -18,6 +20,7 @@ if (!$ARGV[0]) {
 	print STDERR "Filters deletions seen in less then $min_WC WC chromosomes\n";
 	print STDERR "Filters duplications seen in less then $min_WC WC chromosomes (but gives inv-dups seen in such context a PASS)\n";
 	print STDERR "Del and Dup events with llr_to_ref>=$safe_llr_to_ref will never be masked\n";
+	printf STDERR "uses SegDup file $SegDup_file and removes all Dels overlapping with SegDups by >%3.1f%\n", $MaxSegDup_overlap*100;
 	exit;
 }
 
@@ -91,6 +94,65 @@ foreach my $chrom (sort keys %STARTs) {
         }
 }
 
+#-- 4. read SegDup table
+print STDERR "Parsing $SegDup_file... ";
+open FH_1, "gunzip -c $SegDup_file |" or die;
+my (%SegDupStart, %SegDupEnd);
+my $cntS;
+my %seenSegDup;
+while (<FH_1>) {
+	chomp;
+	next if ($_=~/^#/); #ignore first line
+	my (undef, $chr, $start, $end) = split (/[\t ]+/, $_);
+	next if (exists ($seenSegDup{$chr}{$start}{$end}));
+	$seenSegDup{$chr}{$start}{$end}=1;
+	#print STDERR "($chr, $start, $end)\n";
+	push (@{$SegDupStart{$chr}}, $start);
+	push (@{$SegDupEnd{$chr}}, $end);
+	$cntS++;
+		
+}
+print STDERR "$cntS events parsed.\n";
+close FH_1;
+
+#-- 5. filter Del events overlapping SegDups to much (based on defined value)
+print STDERR "Testing for overlap with SegDups...\n";
+#my %SEGDUPOV;
+foreach my $chrom (sort keys %STARTs) {
+	my %Seen;
+        for (my $i=0; $i<@{$STARTs{$chrom}}; $i++) {	
+		next unless ($SV_TYPEs{$chrom}[$i] =~ /del/); #only look at del calls
+		my $stD=$STARTs{$chrom}[$i]; my $enD=$ENDs{$chrom}[$i];
+		next if (exists($Seen{$stD}{$enD}));
+		$Seen{$stD}{$enD}=1;
+		my $overlap_string=sprintf "0"x($enD-$stD+1); #Initialize" make long string of "0" with size ($enD-$stD+1)	
+		for (my $y=0; $y<@{$SegDupStart{$chrom}}; $y++) {
+			my $stS=$SegDupStart{$chrom}[$y]; my $enS=$SegDupEnd{$chrom}[$y];
+			if (($stD<=$stS) && ($stS<=$enD)) {
+				my ($EndPos) = sort {$a<=>$b} ($enD, $enS); #sort smaller EndVal
+				my $DupOvL = $EndPos-$stS+1;
+				#print "$overlap_string\n";
+				#print "vorher:", length ($overlap_string), "\n";
+				substr ($overlap_string, $stS-$stD+1, $DupOvL) = sprintf "1"x$DupOvL; #fill in "1" for each overlapping base	
+			} elsif (($stS<=$stD) && ($stD<=$enS)) {
+				my ($EndPos) = sort {$a<=>$b} ($enD, $enS); #sort smaller EndVal
+				my $DupOvL = $EndPos-$stD+1;
+				#print "vorher:", length ($overlap_string), "\n";
+				substr ($overlap_string, 0, $DupOvL) = sprintf "1"x$DupOvL; #fill in "1" for each overlapping base 
+				#print "nachher:", length ($overlap_string), "\n";
+				
+			}
+			
+		}
+		my $overlap=0;
+                for (my $M=0; $M<length($overlap_string); $M++) { 
+                     $overlap+=1 if (substr($overlap_string, $M, 1) eq "1");
+                }
+		$overlap/=length($overlap_string);
+		#$SEGDUPOV{$chrom}{$stD}{$enD}=$overlap;
+		$FILTER{$chrom}{$stD}{$enD}= sprintf ("FAIL(SegDup:%4.2f)", $overlap) if ($overlap > $MaxSegDup_overlap);		
+	}
+}
 
 #--- output file with filters
 print "chrom\tstart\tend\tsample\tcell\tstrand_state_class\tscalar\tnum_bins\tsv_call_name\tsv_call_haplotype\tsv_call_name_2nd\tsv_call_haplotype_2nd\tllr_to_ref\tllr_to_2nd\taf\tpass/fail\n";
@@ -126,3 +188,23 @@ foreach my $chrom (sort keys %STARTs) {
 		print "$REPORTs{$chrom}[$i]\t", $FILTER{$chrom}{$STARTs{$chrom}[$i]}{$ENDs{$chrom}[$i]}, "\n";
 	}
 }
+
+#--- subroutines
+#sub compare_overlap {
+#	my ($chr, $stD, $enD, $stS, $enS) = @_;
+#	my $flag=0;
+#	my $SV_length = $enD-$stD+1;
+#	my $SegDup_length = $enS-$stS+1;
+#	my $overlap_length=0;
+#	my $Rel_overlap=0;
+#	#-- assess_overlap
+#	if (($enS>=$stD) and ($enS<=$enD) and ($stS>=$stD)) { #segDup is fully contained in event
+#		$overlap_length = $enS-$stS+1;
+#		$Rel_overlap = $overlap_length/$SV_length;
+#		print  "($chr: $stD, $enD, $stS, $enS) -> overlap: $overlap_length (SV_length=$SV_length; SegDup_length=$SegDup_length) | relative_overlap=$Rel_overlap\n" if ($Rel_overlap>=$MaxSegDup_overlap);
+#		$RelSegDupOverlap{$chr}{$stD}{$enD} = 1 if ($Rel_overlap>=$MaxSegDup_overlap);	
+#	}
+#	$flag = 1 if ($Rel_overlap>=$MaxSegDup_overlap);
+#	print "--->$flag\n" if ($flag);
+#	return $flag;
+#}
