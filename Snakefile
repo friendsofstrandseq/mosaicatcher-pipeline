@@ -601,7 +601,7 @@ rule filter_calls:
     output: 
         calls = "sv_calls/{sample}/{window}_fixed_norm.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/simpleCalls_llr{llr}_poppriors{pop_priors,(TRUE|FALSE)}_haplotags{use_haplotags,(TRUE|FALSE)}_gtcutoff{gtcutoff,[0-9\\.]+}_regfactor{regfactor,[0-9]+}_filterTRUE.txt"
     shell:
-        'utils/filter_MosaiCatcher_calls.pl {input.calls} | awk \'BEGIN {{OFS="\\t"}} $16!="FAIL" {{$16=""; print}}\' > {output.calls}'
+        'utils/filter_MosaiCatcher_calls.pl {input.calls} | awk \'BEGIN {{OFS="\\t"}} (NR==1) || ($16=="PASS") {{$16=""; print}}\' > {output.calls}'
 
 
 rule mosaiClassifier_calc_probs:
