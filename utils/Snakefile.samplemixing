@@ -1,16 +1,11 @@
 from collections import defaultdict
 import random
 
-targets = {
-	('WT', 'C7', 80, 5, 1),
-	('WT', 'C7', 80, 10, 1),
-	('WT', 'C7', 80, 20, 1),
-	('WT', 'C7', 50, 50, 1),
-	('WT', 'BM510', 80, 5, 1),
-	('WT', 'BM510', 80, 10, 1),
-	('WT', 'BM510', 80, 20, 1),
-	('WT', 'BM510', 50, 50, 1),
-}
+N = 3
+proportions = [(147,3), (142,8), (135,15), (120,30), (75,75), (30,120), (15,135), (8,142), (3,147)]
+targets = [
+	('WT', 'C7', count1, count2, i) for i in range(1,N+1) for count1,count2 in proportions
+]
 
 sample_paths = {
 	'BM510': '/MMCI/TM/scratch/strandseq/input-data/RPE-BM510/selected/',
@@ -24,11 +19,6 @@ sample_cells = defaultdict(list)
 for sample in samples:
 	sample_cells[sample] = list(glob_wildcards(sample_paths[sample] + '{cell}.sort.mdup.bam').cell)
 
-
-def select_cells(sample, count):
-	for cell in random.sample(sample_cells[sample], int(count)):
-		yield 
-
 bam_mapping = {}
 for target in targets:
 	sample1, sample2, count1, count2, seed = target
@@ -36,7 +26,7 @@ for target in targets:
 	random.seed(seed)
 	l = []
 	for sample, count in [(sample1,count1),(sample2,count2)]:
-		for cell in random.sample(sample_cells[sample], int(count)):
+		for cell in random.choices(sample_cells[sample], k=count):
 			source_bam = sample_paths[sample] + cell + '.sort.mdup.bam'
 			l.append((source_bam, cell))
 	random.shuffle(l)
@@ -62,7 +52,7 @@ rule create_new_header:
 rule translate_bam:
 	input:
 		bam=lambda wc: bam_mapping['bam/{}/all/CELL{}.{}.bam'.format(wc.target_sample,wc.i,wc.cell)],
-		hd='bam/{target_sample}/all/CELL{i,[0-9]+}.{cell}.header.sam',
+		hd='bam/{target_sample}/all/CELL{i}.{cell}.header.sam',
 	output:
 		bam='bam/{target_sample}/all/CELL{i,[0-9]+}.{cell}.bam'
 	shell:
