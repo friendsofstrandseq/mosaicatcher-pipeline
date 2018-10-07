@@ -490,7 +490,7 @@ rule segmentation:
     input:
         "counts/{sample}/{window}_{file_name}.txt.gz"
     output:
-        "segmentation/{sample}/{window,\d+}_{file_name}.txt"
+        "segmentation/{sample}/{window,\d+}_{file_name}.txt.fixme"
     log:
         "log/segmentation/{sample}/{window}_{file_name}.log"
     params:
@@ -505,6 +505,16 @@ rule segmentation:
         -o {output} \
         {input} > {log} 2>&1
         """
+
+# TODO: This is a workaround because latest versions of "mosaic segment" don't compute the "bps"
+# TODO: column properly. Remove once fixed in the C++ code.
+rule fix_segmentation:
+    input:
+        "segmentation/{sample}/{window}_{file_name}.txt.fixme"
+    output:
+        "segmentation/{sample}/{window,\d+}_{file_name}.txt"
+    shell:
+        'awk \'BEGIN {{OFS="\\t"}} {{if ($1=="{wildcards.sample}") $12=int(($14-1)/100000); print}}\' {input} > {output}'
 
 # Pick a few segmentations and prepare the input files for SV classification
 rule prepare_segments:
@@ -523,7 +533,7 @@ rule segment_one_cell:
     input:
         "counts-per-cell/{sample}/{cell}/{window}_{file_name}.txt.gz"
     output:
-        "segmentation-per-cell/{sample}/{cell}/{window,\d+}_{file_name}.txt"
+        "segmentation-per-cell/{sample}/{cell}/{window,\d+}_{file_name}.txt.fixme"
     log:
         "log/segmentation-per-cell/{sample}/{cell}/{window}_{file_name}.log"
     params:
@@ -538,6 +548,16 @@ rule segment_one_cell:
         -o {output} \
         {input} > {log} 2>&1
         """
+
+# TODO: This is a workaround because latest versions of "mosaic segment" don't compute the "bps"
+# TODO: column properly. Remove once fixed in the C++ code.
+rule fix_segmentation_one_cell:
+    input:
+        "segmentation-per-cell/{sample}/{cell}/{window}_{file_name}.txt.fixme"
+    output:
+        "segmentation-per-cell/{sample}/{cell}/{window,\d+}_{file_name}.txt"
+    shell:
+        'awk \'BEGIN {{OFS="\\t"}} {{if ($1=="{wildcards.sample}") $12=int(($14-1)/100000); print}}\' {input} > {output}'
 
 rule segmentation_selection:
     input:
