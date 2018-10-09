@@ -3,7 +3,7 @@ use strict;
 
 my $min_N_inv = 3;
 my $min_WC = 0.2;
-my $safe_llr_to_ref = 20;
+my $safe_llr_to_ref = 50;
 my $SegDup_file = "./utils/segdups/segDups_hg38_UCSCtrack.bed.gz";
 my $MaxSegDup_overlap = 0.5;
 
@@ -118,6 +118,10 @@ close FH_1;
 #-- 5. filter Del events overlapping SegDups to much (based on defined value)
 print STDERR "Testing for overlap with SegDups...\n";
 #my %SEGDUPOV;
+my $UCSC_artefact_chr="chr2";
+my $UCSC_artefact_start=90400000;
+my $UCSC_artefact_end=91400000;
+
 foreach my $chrom (sort keys %STARTs) {
 	my %Seen;
         for (my $i=0; $i<@{$STARTs{$chrom}}; $i++) {	
@@ -151,6 +155,28 @@ foreach my $chrom (sort keys %STARTs) {
 		$overlap/=length($overlap_string);
 		#$SEGDUPOV{$chrom}{$stD}{$enD}=$overlap;
 		$FILTER{$chrom}{$stD}{$enD}= sprintf ("FAIL(SegDup:%4.2f)", $overlap) if ($overlap > $MaxSegDup_overlap);		
+		#------------------------------------------------------------
+		#-- remove build38 / ucsc 'hole' region in annotated assembly
+		#------------------------------------------------------------
+		next unless ($chrom eq $UCSC_artefact_chr);
+		my $UCSC_exception=0;
+		if (($stD<=$UCSC_artefact_start) && ($UCSC_artefact_start<=$enD)) {
+                                my ($EndPos) = sort {$a<=>$b} ($enD, $UCSC_artefact_end); #sort smaller EndVal
+                                my $DupOvL = $EndPos-$UCSC_artefact_start+1;
+                                substr ($overlap_string, $UCSC_artefact_start-$stD+1, $DupOvL) = sprintf "1"x$DupOvL; #fill in "1" for each overlapping base
+                		$UCSC_exception=1; 
+		} elsif (($UCSC_artefact_start<=$stD) && ($stD<=$UCSC_artefact_end)) {
+                       my ($EndPos) = sort {$a<=>$b} ($enD, $UCSC_artefact_end); #sort smaller EndVal
+                       my $DupOvL = $EndPos-$stD+1;
+                       substr ($overlap_string, 0, $DupOvL) = sprintf "1"x$DupOvL; #fill in "1" for each overlapping base
+                	$UCSC_exception = 1;
+		}
+		next unless ($UCSC_exception);
+		for (my $M=0; $M<length($overlap_string); $M++) {
+                     $overlap+=1 if (substr($overlap_string, $M, 1) eq "1");
+                }
+		$overlap/=length($overlap_string);
+		$FILTER{$chrom}{$stD}{$enD}= sprintf ("FAIL(SegD/UCSC:%4.2f)", $overlap) if ($overlap > $MaxSegDup_overlap);
 	}
 }
 
