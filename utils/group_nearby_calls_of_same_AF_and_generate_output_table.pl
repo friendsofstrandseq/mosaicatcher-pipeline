@@ -2,12 +2,14 @@
 use strict;
 
 
+my $min_AF_for_grouping =0.1;
 my $AF_simiarity_threshold = 0.25;
 my $input_file = $ARGV[0];
 
 if (!$ARGV[0]) {
 	print STDERR "inputfile missing\n";
 	print STDERR "-> cluster into groups by chromosome, if similar AF (relative threshold=$AF_simiarity_threshold), if same SV event, if SVs are directly adjacent, and if at least one cell shared\n";
+	print STDERR "Ignores SVs with VAF<$min_AF_for_grouping, which are never grouped\n";
 	die;
 }
 
@@ -78,6 +80,7 @@ my $group_name = 0;
 foreach my $chrom (sort keys %STARTs) {
 	my $previous_shared = 0;
         for (my $i=0; $i<@{$STARTs{$chrom}}-1; $i++) {
+		next if ($averaged_AF{$chrom}{$STARTs{$chrom}[$i]} < $min_AF_for_grouping); #ignore events with too low VAF
 		unless ($ENDs{$chrom}[$i] == $STARTs{$chrom}[$i+1]) { #only consider events that are directly adjacent
 			$previous_shared=0;#initialize
 			next;
