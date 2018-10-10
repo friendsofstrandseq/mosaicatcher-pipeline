@@ -44,7 +44,7 @@ METHODS = [
     "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.005_regfactor6_filterFALSE",
     #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.01_regfactor6_filterFALSE",
     #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.02_regfactor6_filterFALSE",
-    #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.03_regfactor6_filterFALSE",
+    "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.03_regfactor6_filterFALSE",
     #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.04_regfactor6_filterFALSE",
     #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.05_regfactor6_filterFALSE",
     #"simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0_regfactor6_filterTRUE",
@@ -58,13 +58,13 @@ METHODS = [
     "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.005_regfactor6_filterTRUE",
     #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.01_regfactor6_filterTRUE",
     #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.02_regfactor6_filterTRUE",
-    #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.03_regfactor6_filterTRUE",
+    "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.03_regfactor6_filterTRUE",
     #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.04_regfactor6_filterTRUE",
     #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.05_regfactor6_filterTRUE",
 ]
 
 BPDENS = [
-    "selected_j{}_s{}".format(joint, single) for joint in [0.1] for single in [0.5]
+    "selected_j{}_s{}_scedist{}".format(joint, single, scedist) for joint in [0.1] for single in [0.5] for scedist in [5,20]
 ]
 
 singularity: "docker://smei/mosaicatcher-pipeline:v0.1"
@@ -284,7 +284,7 @@ rule plot_SV_calls:
         segments = "segmentation2/{sample}/{windows}.{bpdens}.txt",
         scsegments = "segmentation-singlecell/{sample}/{windows}.{bpdens}.txt",
     output:
-        "sv_calls/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/plots/sv_calls/{method}.{chrom}.pdf"
+        "sv_calls/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/plots/sv_calls/{method}.{chrom}.pdf"
     log:
         "log/plot_SV_calls/{sample}/{windows}.{bpdens}.{method}.{chrom}.log"
     shell:
@@ -308,7 +308,7 @@ rule plot_SV_calls_simulated:
         segments = "segmentation2/simulation{seed}-{window}/{window}_fixed.{bpdens}.txt",
         truth  = "simulation/variants/genome{seed}-{window}.txt"
     output:
-        "sv_calls/simulation{seed}-{window}/{window}_fixed.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/plots/sv_calls/{method}.{chrom}.pdf"
+        "sv_calls/simulation{seed}-{window}/{window}_fixed.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/plots/sv_calls/{method}.{chrom}.pdf"
     log:
         "log/plot_SV_calls_simulated/simulation{seed}-{window}/{window}_fixed.{bpdens}.{method}.{chrom}.log"
     shell:
@@ -328,8 +328,8 @@ rule plot_SV_consistency_barplot:
     input:
         sv_calls  = "sv_calls/{sample}/{windows}.{bpdens}/{method}.txt",
     output:
-        barplot_bypos = "sv_calls/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/plots/sv_consistency/{method}.consistency-barplot-bypos.pdf",
-        barplot_byaf = "sv_calls/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/plots/sv_consistency/{method}.consistency-barplot-byaf.pdf",
+        barplot_bypos = "sv_calls/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/plots/sv_consistency/{method}.consistency-barplot-bypos.pdf",
+        barplot_byaf = "sv_calls/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/plots/sv_consistency/{method}.consistency-barplot-byaf.pdf",
     log:
         "log/plot_SV_consistency/{sample}/{windows}.{bpdens}.{method}.log"
     script:
@@ -566,17 +566,16 @@ rule segmentation_selection:
         singleseg=lambda wc: ["segmentation-per-cell/{}/{}/{}_{}.txt".format(wc.sample, cell, wc.window, wc.file_name) for cell in CELL_PER_SAMPLE[wc.sample]],
         info="counts/{sample}/{window}_{file_name}.info",
     output:
-        jointseg="segmentation2/{sample}/{window,[0-9]+}_{file_name}.selected_j{min_diff_jointseg}_s{min_diff_singleseg}.txt",
-        singleseg="segmentation-singlecell/{sample}/{window,[0-9]+}_{file_name}.selected_j{min_diff_jointseg}_s{min_diff_singleseg}.txt",
-        strand_states="strand_states/{sample}/{window,[0-9]+}_{file_name}.selected_j{min_diff_jointseg}_s{min_diff_singleseg}/intitial_strand_state",
+        jointseg="segmentation2/{sample}/{window,[0-9]+}_{file_name}.selected_j{min_diff_jointseg}_s{min_diff_singleseg}_scedist{additional_sce_cutoff}.txt",
+        singleseg="segmentation-singlecell/{sample}/{window,[0-9]+}_{file_name}.selected_j{min_diff_jointseg}_s{min_diff_singleseg}_scedist{additional_sce_cutoff}.txt",
+        strand_states="strand_states/{sample}/{window,[0-9]+}_{file_name}.selected_j{min_diff_jointseg}_s{min_diff_singleseg}_scedist{additional_sce_cutoff}/intitial_strand_state",
     log:
-        "log/segmentation_selection/{sample}/{window}_{file_name}.selected_j{min_diff_jointseg}_s{min_diff_singleseg}.log"
+        "log/segmentation_selection/{sample}/{window}_{file_name}.selected_j{min_diff_jointseg}_s{min_diff_singleseg}_scedist{additional_sce_cutoff}.log"
     params:
         cellnames = lambda wc: ",".join(cell for cell in CELL_PER_SAMPLE[wc.sample]),
         sce_min_distance = 500000,
-        additional_sce_cutoff = 5000000,
     shell:
-        "./utils/detect_strand_states.py --sce_min_distance {params.sce_min_distance} --sce_add_cutoff {params.additional_sce_cutoff} --min_diff_jointseg {wildcards.min_diff_jointseg} --min_diff_singleseg {wildcards.min_diff_singleseg} --output_jointseg {output.jointseg} --output_singleseg {output.singleseg} --output_strand_states {output.strand_states} --samplename {wildcards.sample} --cellnames {params.cellnames} {input.info} {input.counts} {input.jointseg} {input.singleseg} > {log} 2>&1"
+        "./utils/detect_strand_states.py --sce_min_distance {params.sce_min_distance} --sce_add_cutoff {wildcards.additional_sce_cutoff}000000 --min_diff_jointseg {wildcards.min_diff_jointseg} --min_diff_singleseg {wildcards.min_diff_singleseg} --output_jointseg {output.jointseg} --output_singleseg {output.singleseg} --output_strand_states {output.strand_states} --samplename {wildcards.sample} --cellnames {params.cellnames} {input.info} {input.counts} {input.jointseg} {input.singleseg} > {log} 2>&1"
 
 
 ################################################################################
@@ -591,7 +590,7 @@ rule plot_heatmap:
         info     = "counts/{sample}/{windows}.info",
         bamNames = "sv_probabilities/{sample}/{windows}.{bpdens}/bamNames.txt"
     output:
-        "sv_probabilities/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/final_plots/heatmapPlots.pdf"
+        "sv_probabilities/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/final_plots/heatmapPlots.pdf"
     params:
         r_package_path = "utils/R-packages2"
     log:
@@ -608,7 +607,7 @@ rule mosaiClassifier_make_call:
     input:
         probs = 'haplotag/table/{sample}/haplotag-likelihoods.{window}_fixed_norm.{bpdens}.Rdata'
     output:
-        "sv_calls/{sample}/{window}_fixed_norm.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/simpleCalls_llr{llr}_poppriors{pop_priors,(TRUE|FALSE)}_haplotags{use_haplotags,(TRUE|FALSE)}_gtcutoff{gtcutoff,[0-9\\.]+}_regfactor{regfactor,[0-9]+}_filterFALSE.txt"
+        "sv_calls/{sample}/{window}_fixed_norm.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/simpleCalls_llr{llr}_poppriors{pop_priors,(TRUE|FALSE)}_haplotags{use_haplotags,(TRUE|FALSE)}_gtcutoff{gtcutoff,[0-9\\.]+}_regfactor{regfactor,[0-9]+}_filterFALSE.txt"
     params:
         minFrac_used_bins = 0.8
     log:
@@ -620,7 +619,7 @@ rule filter_calls:
     input: 
         calls = "sv_calls/{sample}/{window}_fixed_norm.{bpdens}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}_filterFALSE.txt"
     output: 
-        calls = "sv_calls/{sample}/{window}_fixed_norm.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/simpleCalls_llr{llr}_poppriors{pop_priors,(TRUE|FALSE)}_haplotags{use_haplotags,(TRUE|FALSE)}_gtcutoff{gtcutoff,[0-9\\.]+}_regfactor{regfactor,[0-9]+}_filterTRUE.txt"
+        calls = "sv_calls/{sample}/{window}_fixed_norm.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/simpleCalls_llr{llr}_poppriors{pop_priors,(TRUE|FALSE)}_haplotags{use_haplotags,(TRUE|FALSE)}_gtcutoff{gtcutoff,[0-9\\.]+}_regfactor{regfactor,[0-9]+}_filterTRUE.txt"
     shell:
         'utils/filter_MosaiCatcher_calls.pl {input.calls} | awk \'BEGIN {{OFS="\\t"}} (NR==1) || ($16=="PASS") {{$16=""; print}}\' > {output.calls}'
 
@@ -632,7 +631,7 @@ rule mosaiClassifier_calc_probs:
         states = "strand_states/{sample}/{windows}.{bpdens}/final.txt",
         bp     = "segmentation2/{sample}/{windows}.{bpdens}.txt"
     output:
-        output = "sv_probabilities/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/probabilities.Rdata"
+        output = "sv_probabilities/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/probabilities.Rdata"
     log:
         "log/mosaiClassifier_calc_probs/{sample}/{windows}.{bpdens}.log"
     script:
@@ -642,7 +641,7 @@ rule mosaiClassifier_make_call_biallelic:
     input:
         probs = "sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.Rdata"
     output:
-        "sv_calls/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/biAllelic_llr{llr}.txt"
+        "sv_calls/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/biAllelic_llr{llr}.txt"
     log:
         "log/mosaiClassifier_make_call_biallelic/{sample}/{windows}.{bpdens}.{llr}.log"
     script:
@@ -663,15 +662,15 @@ rule postprocessing_filter:
     input: 
         calls = "sv_calls/{sample}/{window}_fixed_norm.{bpdens}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}_filterFALSE.txt"
     output: 
-        calls = "postprocessing/filter/{sample}/{window}_fixed_norm.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/simpleCalls_llr{llr}_poppriors{pop_priors,(TRUE|FALSE)}_haplotags{use_haplotags,(TRUE|FALSE)}_gtcutoff{gtcutoff,[0-9\\.]+}_regfactor{regfactor,[0-9]+}.txt"
+        calls = "postprocessing/filter/{sample}/{window}_fixed_norm.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/simpleCalls_llr{llr}_poppriors{pop_priors,(TRUE|FALSE)}_haplotags{use_haplotags,(TRUE|FALSE)}_gtcutoff{gtcutoff,[0-9\\.]+}_regfactor{regfactor,[0-9]+}.txt"
     shell:
         'utils/filter_MosaiCatcher_calls.pl {input.calls}  > {output.calls}'
 
 rule postprocessing_merge:
     input: 
-        calls = "postprocessing/filter/{sample}/{window}_fixed_norm.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/simpleCalls_llr{llr}_poppriors{pop_priors,(TRUE|FALSE)}_haplotags{use_haplotags,(TRUE|FALSE)}_gtcutoff{gtcutoff,[0-9\\.]+}_regfactor{regfactor,[0-9]+}.txt"
+        calls = "postprocessing/filter/{sample}/{window}_fixed_norm.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/simpleCalls_llr{llr}_poppriors{pop_priors,(TRUE|FALSE)}_haplotags{use_haplotags,(TRUE|FALSE)}_gtcutoff{gtcutoff,[0-9\\.]+}_regfactor{regfactor,[0-9]+}.txt"
     output: 
-        calls = "postprocessing/merge/{sample}/{window}_fixed_norm.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/simpleCalls_llr{llr}_poppriors{pop_priors,(TRUE|FALSE)}_haplotags{use_haplotags,(TRUE|FALSE)}_gtcutoff{gtcutoff,[0-9\\.]+}_regfactor{regfactor,[0-9]+}.txt"
+        calls = "postprocessing/merge/{sample}/{window}_fixed_norm.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/simpleCalls_llr{llr}_poppriors{pop_priors,(TRUE|FALSE)}_haplotags{use_haplotags,(TRUE|FALSE)}_gtcutoff{gtcutoff,[0-9\\.]+}_regfactor{regfactor,[0-9]+}.txt"
     shell:
         'utils/group_nearby_calls_of_same_AF_and_generate_output_table.pl {input.calls}  > {output.calls}'
 
@@ -713,7 +712,7 @@ rule convert_strandphaser_input:
         states = "strand_states/{sample}/{windows}.{bpdens}/intitial_strand_state",
         info   = "counts/{sample}/500000_fixed.info"
     output:
-        "strand_states/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/strandphaser_input.txt"
+        "strand_states/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/strandphaser_input.txt"
     log:
         "log/convert_strandphaser_input/{sample}/{windows}.{bpdens}.log"
     script:
@@ -733,7 +732,7 @@ rule prepare_strandphaser_config_per_chrom:
     input:
         "strand_states/{sample}/{windows}.{bpdens}/intitial_strand_state"
     output:
-        "strand_states/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/StrandPhaseR.{chrom}.config"
+        "strand_states/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/StrandPhaseR.{chrom}.config"
     run:
         with open(output[0], "w") as f:
             print("[General]",                    file = f)
@@ -776,8 +775,8 @@ rule run_strandphaser_per_chrom:
         strandphaser = "utils/R-packages/StrandPhaseR/R/StrandPhaseR",
         bamfolder    = "bam/{sample}/selected"
     output:
-        "strand_states/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt",
-        "strand_states/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf",
+        "strand_states/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt",
+        "strand_states/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf",
     log:
         "log/run_strandphaser_per_chrom/{sample}/{windows}.{bpdens}/{chrom}.log"
     shell:
@@ -816,7 +815,7 @@ rule merge_strandphaser_vcfs:
         vcfs=expand("strand_states/{{sample}}/{{windows}}.{{bpdens}}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz", chrom=config["chromosomes"]),
         tbis=expand("strand_states/{{sample}}/{{windows}}.{{bpdens}}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz.tbi", chrom=config["chromosomes"]),
     output:
-        vcf='phased-snvs/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}.vcf.gz'
+        vcf='phased-snvs/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}.vcf.gz'
     log:
         "log/merge_strandphaser_vcfs/{sample}/{windows}.{bpdens}.log"
     shell:
@@ -829,7 +828,7 @@ rule combine_strandphaser_output:
         expand("strand_states/{{sample}}/{{windows}}.{{bpdens}}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt",
                 chrom = config["chromosomes"])
     output:
-        "strand_states/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/strandphaser_output.txt"
+        "strand_states/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/strandphaser_output.txt"
     log:
         "log/combine_strandphaser_output/{sample}/{windows}.{bpdens}.log"
     shell:
@@ -846,7 +845,7 @@ rule convert_strandphaser_output:
         initial_states = "strand_states/{sample}/{windows}.{bpdens}/intitial_strand_state",
         info           = "counts/{sample}/500000_fixed.info"
     output:
-        "strand_states/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/final.txt"
+        "strand_states/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/final.txt"
     log:
         "log/convert_strandphaser_output/{sample}/{windows}.{bpdens}.log"
     script:
@@ -865,7 +864,7 @@ rule haplotag_bams:
         bai='bam/{sample}/selected/{bam}.bam.bai',
         ref = config["reference"],
     output:
-        bam='haplotag/bam/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/{bam}.bam',
+        bam='haplotag/bam/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/{bam}.bam',
     log:
         "log/haplotag_bams/{sample}/{windows}.{bpdens}/{bam}.log"
     shell:
@@ -875,7 +874,7 @@ rule create_haplotag_segment_bed:
     input:
         segments="segmentation2/{sample}/{size}{what}.{bpdens}.txt",
     output:
-        bed="haplotag/bed/{sample}/{size,[0-9]+}{what}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}.bed",
+        bed="haplotag/bed/{sample}/{size,[0-9]+}{what}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}.bed",
     shell:
         "awk 'BEGIN {{s={wildcards.size};OFS=\"\\t\"}} $2!=c {{prev=0}} NR>1 {{print $2,prev*s+1,($3+1)*s; prev=$3+1; c=$2}}' {input.segments} > {output.bed}"
 
@@ -885,7 +884,7 @@ rule create_haplotag_table:
         bai='haplotag/bam/{sample}/{windows}.{bpdens}/{cell}.bam.bai',
         bed = "haplotag/bed/{sample}/{windows}.{bpdens}.bed"
     output:
-        tsv='haplotag/table/{sample}/by-cell/haplotag-counts.{cell}.{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}.tsv'
+        tsv='haplotag/table/{sample}/by-cell/haplotag-counts.{cell}.{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}.tsv'
     log:
         "log/create_haplotag_table/{sample}.{cell}.{windows}.{bpdens}.log"
     script:
@@ -895,7 +894,7 @@ rule merge_haplotag_tables:
     input:
         tsvs=lambda wc: ['haplotag/table/{}/by-cell/haplotag-counts.{}.{}.{}.tsv'.format(wc.sample,cell,wc.windows,wc.bpdens) for cell in BAM_PER_SAMPLE[wc.sample]],
     output:
-        tsv='haplotag/table/{sample}/full/haplotag-counts.{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}.tsv'
+        tsv='haplotag/table/{sample}/full/haplotag-counts.{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}.tsv'
     shell:
         '(head -n1 {input.tsvs[0]} && tail -q -n +2 {input.tsvs}) > {output.tsv}'
 
@@ -904,7 +903,7 @@ rule create_haplotag_likelihoods:
     input:
         haplotag_table='haplotag/table/{sample}/full/haplotag-counts.{windows}.{bpdens}.tsv',
         sv_probs_table = 'sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.Rdata',
-    output: 'haplotag/table/{sample}/haplotag-likelihoods.{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}.Rdata'
+    output: 'haplotag/table/{sample}/haplotag-likelihoods.{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}.Rdata'
     log:
         "log/create_haplotag_likelihoods/{sample}.{windows}.{bpdens}.log"
     script:
@@ -1019,7 +1018,7 @@ rule summary_statistics:
         sv_calls = 'sv_calls/{sample}/{windows}.{bpdens}/{method}.txt',
         complex = "sv_calls/{sample}/{windows}.{bpdens}/{method}.complex.tsv",
     output:
-        tsv = 'stats/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/{method}.tsv',
+        tsv = 'stats/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/{method}.tsv',
     log:
         'log/summary_statistics/{sample}/{windows}.{bpdens}/{method}.log'
     run:
