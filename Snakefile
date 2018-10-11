@@ -349,6 +349,20 @@ rule generate_halo_json:
         "(./utils/counts_to_json.py {input.counts} | gzip > {output.json}) 2> {log}"
 
 
+
+rule plot_clustering:
+    input:
+        sv_calls  = "sv_calls/{sample}/{windows}.{bpdens}/{method}.txt",
+        binbed = "utils/bin_200kb_all.bed",
+    output:
+        position = "sv_calls/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/plots/sv_clustering/{method}-position.pdf",
+        chromosome = "sv_calls/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/plots/sv_clustering/{method}-chromosome.pdf",
+    log:
+        "log/plot_clustering/{sample}/{windows}.{bpdens}.{method}.log"
+    script:
+        "utils/plot-clustering.snakemake.R"
+
+
 ################################################################################
 # Read counting                                                                #
 ################################################################################
