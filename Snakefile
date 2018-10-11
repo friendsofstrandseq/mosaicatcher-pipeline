@@ -278,15 +278,16 @@ ruleorder: plot_SV_calls_simulated > plot_SV_calls
 rule plot_SV_calls:
     input:
         counts = "counts/{sample}/{windows}.txt.gz",
-        calls  = "sv_calls/{sample}/{windows}.{bpdens}/{method}.txt",
-        complex = "sv_calls/{sample}/{windows}.{bpdens}/{method}.complex.tsv",
+        calls  = "sv_calls/{sample}/{windows}.{bpdens}/{method}_filter{filter}.txt",
+        complex = "sv_calls/{sample}/{windows}.{bpdens}/{method}_filter{filter}.complex.tsv",
         strand = "strand_states/{sample}/{windows}.{bpdens}/final.txt",
         segments = "segmentation2/{sample}/{windows}.{bpdens}.txt",
         scsegments = "segmentation-singlecell/{sample}/{windows}.{bpdens}.txt",
+        grouptrack = "postprocessing/group-table/{sample}/{windows}.{bpdens}/{method}.tsv",
     output:
-        "sv_calls/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/plots/sv_calls/{method}.{chrom}.pdf"
+        "sv_calls/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/plots/sv_calls/{method}_filter{filter,(TRUE|FALSE)}.{chrom}.pdf"
     log:
-        "log/plot_SV_calls/{sample}/{windows}.{bpdens}.{method}.{chrom}.log"
+        "log/plot_SV_calls/{sample}/{windows}.{bpdens}.{method}_filter{filter}.{chrom}.log"
     shell:
         """
         Rscript utils/plot-sv-calls.R \
@@ -294,6 +295,7 @@ rule plot_SV_calls:
             singlecellsegments={input.scsegments} \
             strand={input.strand} \
             complex={input.complex} \
+            groups={input.grouptrack} \
             calls={input.calls} \
             {input.counts} \
             {wildcards.chrom} \
@@ -669,11 +671,20 @@ rule postprocessing_filter:
 
 rule postprocessing_merge:
     input: 
-        calls = "postprocessing/filter/{sample}/{window}_fixed_norm.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/simpleCalls_llr{llr}_poppriors{pop_priors,(TRUE|FALSE)}_haplotags{use_haplotags,(TRUE|FALSE)}_gtcutoff{gtcutoff,[0-9\\.]+}_regfactor{regfactor,[0-9]+}.txt"
+        calls = "postprocessing/filter/{sample}/{window}_fixed_norm.{bpdens}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.txt"
     output: 
         calls = "postprocessing/merge/{sample}/{window}_fixed_norm.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/simpleCalls_llr{llr}_poppriors{pop_priors,(TRUE|FALSE)}_haplotags{use_haplotags,(TRUE|FALSE)}_gtcutoff{gtcutoff,[0-9\\.]+}_regfactor{regfactor,[0-9]+}.txt"
     shell:
         'utils/group_nearby_calls_of_same_AF_and_generate_output_table.pl {input.calls}  > {output.calls}'
+
+
+rule postprocessing_sv_group_table:
+    input: 
+        calls = "postprocessing/merge/{sample}/{window}_fixed_norm.{bpdens}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.txt"
+    output: 
+        grouptrack = "postprocessing/group-table/{sample}/{window}_fixed_norm.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+}/simpleCalls_llr{llr}_poppriors{pop_priors,(TRUE|FALSE)}_haplotags{use_haplotags,(TRUE|FALSE)}_gtcutoff{gtcutoff,[0-9\\.]+}_regfactor{regfactor,[0-9]+}.tsv"
+    shell:
+        'utils/create-sv-group-track.py {input.calls}  > {output.grouptrack}'
 
 
 ################################################################################
