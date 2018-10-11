@@ -9,7 +9,7 @@ suppressMessages(library(ggplot2))
 library(scales) %>% invisible
 library(assertthat) %>% invisible
 library(stringr) %>% invisible
-
+library(RColorBrewer) %>% invisible
 
 ################################################################################
 # Settings                                                                     #
@@ -76,6 +76,7 @@ print_usage_and_stop = function(msg = NULL) {
   message("    truth=<file>              Mark the `true`` SVs provided in a table          ")
   message("    strand=<file>             Mark the strand states which calls are based on   ")
   message("    complex=<file>            Mark complex regions given in file                ")
+  message("    groups=<file>             Table with SV call grouping                       ")
   message("    no-none                   Do not hightlight black-listed (i.e. None) bins   ")
   message("                                                                                ")
   message("Generates one plot per chromosome listing all cells below another, separated    ")
@@ -112,7 +113,7 @@ cells_per_page = 8
 show_none  = T
 
 if (length(args)>3) {
-  if (!all(grepl("^(strand|calls|segments|per-page|truth|no-none|complex|singlecellsegments)=?", args[1:(length(args)-3)]))) {
+  if (!all(grepl("^(strand|calls|segments|per-page|truth|no-none|complex|singlecellsegments|groups)=?", args[1:(length(args)-3)]))) {
     print_usage_and_stop("[Error]: Options must be one of `calls`, `segments`, `per-page`, or `truth`") }
   for (op in args[1:(length(args)-3)]) {
     if (grepl("^segments=", op)) f_segments = str_sub(op, 10)
@@ -124,6 +125,7 @@ if (length(args)>3) {
     }
     if (grepl("^strand=", op))   f_strand = str_sub(op, 8)
     if (grepl("^complex=", op))   f_complex = str_sub(op, 9)
+    if (grepl("^groups=", op))   f_groups = str_sub(op, 8)
     if (grepl("^singlecellsegments=", op))   f_scsegments = str_sub(op, 20)
     if (grepl("^no-none$", op)) show_none = F
   }
@@ -249,6 +251,19 @@ if (!is.null(f_complex)) {
 
 }
 
+### Check SV groups file
+if (!is.null(f_groups)) {
+  message(" * Reading SV group file from ", f_groups, "...")
+  groups = fread(f_groups)
+  assert_that("chrom"   %in% colnames(groups),
+              "start"   %in% colnames(groups),
+              "end"     %in% colnames(groups),
+              "group_id"     %in% colnames(groups)) %>% invisible
+  groups[, group_id := paste("SV group", group_id)]
+  groups = groups[chrom == CHROM]
+  message("   --> Found ", nrow(groups), " SV groups in chromosome ", CHROM)
+}
+
 ### Check single cell segmentation file
 if (!is.null(f_scsegments)) {
   message(" * Reading per-cell segmentation regions state file from ", f_scsegments, "...")
@@ -342,6 +357,18 @@ while (i <= n_cells) {
         plt <- plt +
           geom_rect(data = local_strand,
                     aes(xmin = start, xmax = end, ymin = -Inf, ymax = -y_lim, fill = class))
+      }
+    }
+
+    # Add bars for SV group, if available
+    if (!is.null(f_groups)) {
+      message("   * Adding SV groups")
+      if (nrow(groups) > 0) {
+        plt <- plt +
+          geom_rect(data = groups,
+                    aes(xmin = start, xmax = end, ymin = .85*y_lim, ymax = Inf, fill = group_id))
+          # Add colors for SV classes
+          manual_colors = c(manual_colors, setNames(colorRampPalette(brewer.pal(12,"Set2"))(nrow(groups)),groups$group_id))
       }
     }
 
