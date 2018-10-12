@@ -1046,12 +1046,13 @@ rule summary_statistics:
     input:
         segmentation = 'segmentation2/{sample}/{windows}.{bpdens}.txt',
         strandstates = 'strand_states/{sample}/{windows}.{bpdens}/intitial_strand_state',
-        sv_calls = 'sv_calls/{sample}/{windows}.{bpdens}/{method}.txt',
-        complex = "sv_calls/{sample}/{windows}.{bpdens}/{method}.complex.tsv",
+        sv_calls = 'sv_calls/{sample}/{windows}.{bpdens}/{method}_filter{filter}.txt',
+        complex = "sv_calls/{sample}/{windows}.{bpdens}/{method}_filter{filter}.complex.tsv",
+        merged = "postprocessing/merge/{sample}/{windows}.{bpdens}/{method}.txt",
     output:
-        tsv = 'stats/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/{method}.tsv',
+        tsv = 'stats/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/{method}_filter{filter,(TRUE|FALSE)}.tsv',
     log:
-        'log/summary_statistics/{sample}/{windows}.{bpdens}/{method}.log'
+        'log/summary_statistics/{sample}/{windows}.{bpdens}/{method}_filter{filter}.log'
     run:
         p = []
         try:
@@ -1068,6 +1069,9 @@ rule summary_statistics:
                 p.append(f)
         except KeyError:
             pass
+        if wildcards.filter == 'TRUE':
+            p.append('--merged-file')
+            p.append(input.merged)
         additional_params = ' '.join(p)
         shell('utils/callset_summary_stats.py --segmentation {input.segmentation} --strandstates {input.strandstates} --complex-regions {input.complex} {additional_params} {input.sv_calls}  > {output.tsv} 2> {log}')
 
