@@ -4,19 +4,37 @@ import sys
 from argparse import ArgumentParser
 import pandas as pd
 import numpy as np
+from functools import partial
 
+def match_sv_type(sv_type_truth, sv_type_called):
+	sv_type_called = sv_type_called.replace('_h1','').replace('_h2','')
+	sv_type_truth = sv_type_truth.replace('_h1','').replace('_h2','')
+	if sv_type_called == sv_type_truth:
+		return True
+	elif sv_type_truth == 'loss' and (sv_type_called in ['del_hom','del']):
+		return True
+	elif sv_type_truth == 'gain' and (sv_type_called in ['dup_hom','dup','idup']):
+		return True
+	else:
+		return False
 
-def sensitivity_1bpoverlap(calls, true_events):
+def sensitivity_1bpoverlap(calls, true_events, anytype=False):
 	'''Return the number of true calls that have at least 1bp overlap with a predicted call.'''
 	found = 0
 	print('Searching for recovered ground truth SVs (clonal)', file=sys.stderr)
 	# TODO: this algorithm is quadratic time. Could do linear, but fast enough for now.
-	for chrom, start, end, sv_type in true_events[['chrom','start','end','sv_type']].values:
-		if len(calls[(calls.chrom==chrom) & (calls.start<end) & (calls.end>start) & ((calls.sv_call_name == (sv_type+'_h1')) | (calls.sv_call_name == (sv_type+'_h2')))] ) > 0:
-			print('   clonal ground truth call {}:{}-{} ({}) was recovered'.format(chrom,start,end,sv_type), file=sys.stderr)
+	for chrom, start, end, sv_type_truth in true_events[['chrom','start','end','sv_type']].values:
+		d = calls[(calls.chrom==chrom) & (calls.start<end) & (calls.end>start)]
+		match = False
+		for sv_type_called in d['sv_call_name'].values:
+			if match_sv_type(sv_type_truth, sv_type_called) or anytype:
+				match = True
+				break
+		if match:
+			print('   clonal ground truth call {}:{}-{} ({}) was recovered'.format(chrom,start,end,sv_type_truth), file=sys.stderr)
 			found += 1
 		else:
-			print('   clonal ground truth call {}:{}-{} ({}) was missed'.format(chrom,start,end,sv_type), file=sys.stderr)
+			print('   clonal ground truth call {}:{}-{} ({}) was missed'.format(chrom,start,end,sv_type_truth), file=sys.stderr)
 	return found
 
 
@@ -46,6 +64,8 @@ def main():
 		help='Filename to read true single-cell events from.')
 	parser.add_argument('--complex-regions', default=None,
 		help='Filename to read complex regions from.')
+	parser.add_argument('--merged-file', default=None,
+		help='Filename to read merged calls from.')
 
 	#parser.add_argument('--sce_min_distance', default=200000, type=int, 
 		#help='Minimum distance of an SCE to a break in the joint segmentation.')
@@ -80,6 +100,14 @@ def main():
 	results['unique_calls'] = len(calls.groupby(by=['chrom','start','end','sv_call_name']))
 	result_order += ['total_calls','unique_calls']
 
+	# Read merged calls file (if provided)
+	if args.merged_file is not None:
+		merged_calls = pd.read_csv(args.merged_file, sep='\t')
+		results['unique_calls_merged'] = len(merged_calls)
+	else:
+		results['unique_calls_merged'] = 'n/a'
+	result_order.append('unique_calls_merged')
+
 	# Read complex regions file (if provided)
 	if args.complex_regions is not None:
 		complex_regions = pd.read_csv(args.complex_regions, sep='\t')
@@ -93,8 +121,6 @@ def main():
 		results['total_calls_complex'] = len(calls[calls.is_complex])
 		results['unique_calls_complex'] = len(calls[calls.is_complex].groupby(by=['chrom','start','end','sv_call_name']))
 		result_order += ['total_calls_complex','unique_calls_complex']
-
-	print(calls, file=sys.stderr)
 
 	print('Detected {} total calls and {} unique calls in {} single cells'.format(
 		results['total_calls'],
@@ -121,9 +147,16 @@ def main():
 	# If true clonal calls are given, determine the recall
 	if args.true_events_clonal is not None:
 		true_events = pd.read_csv(args.true_events_clonal, sep='\t')
-		results['true_clonal_events_recovered'] = sensitivity_1bpoverlap(sv_table[sv_table.af>=0.8], true_events)
-		results['true_clonal_recall'] = results['true_clonal_events_recovered'] / len(true_events)
-		result_order += ['true_clonal_events_recovered', 'true_clonal_recall']
+		print('CLONAL CALLS at AF80', file=sys.stderr)
+		results['true_clonal_events_recovered_af80'] = sensitivity_1bpoverlap(sv_table[sv_table.af>=0.8], true_events)
+		print('CLONAL CALLS at AF50', file=sys.stderr)
+		results['true_clonal_events_recovered_af50'] = sensitivity_1bpoverlap(sv_table[sv_table.af>=0.5], true_events)
+		print('CLONAL CALLS at AF20', file=sys.stderr)
+		results['true_clonal_events_recovered_af20'] = sensitivity_1bpoverlap(sv_table[sv_table.af>=0.2], true_events)
+		print('CLONAL CALLS at AF20, ANYTYPE', file=sys.stderr)
+		results['true_clonal_events_recovered_af20_anytype'] = sensitivity_1bpoverlap(sv_table[sv_table.af>=0.2], true_events, anytype=True)
+		results['true_clonal_total'] = len(true_events)
+		result_order += ['true_clonal_total', 'true_clonal_events_recovered_af80', 'true_clonal_events_recovered_af50', 'true_clonal_events_recovered_af20', 'true_clonal_events_recovered_af20_anytype']
 
 	# If true single cell calls are given, determine the recall
 	if args.true_events_single_cell is not None:
