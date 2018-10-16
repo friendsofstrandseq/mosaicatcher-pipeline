@@ -66,6 +66,8 @@ def main():
 		help='Filename to read complex regions from.')
 	parser.add_argument('--merged-file', default=None,
 		help='Filename to read merged calls from.')
+	parser.add_argument('--sv-size-cutoff', default=400000, type=int,
+		help='Cutoff to determine which ground truth call are deemed small/large.')
 
 	#parser.add_argument('--sce_min_distance', default=200000, type=int, 
 		#help='Minimum distance of an SCE to a break in the joint segmentation.')
@@ -146,17 +148,22 @@ def main():
 
 	# If true clonal calls are given, determine the recall
 	if args.true_events_clonal is not None:
-		true_events = pd.read_csv(args.true_events_clonal, sep='\t')
-		print('CLONAL CALLS at AF80', file=sys.stderr)
-		results['true_clonal_events_recovered_af80'] = sensitivity_1bpoverlap(sv_table[sv_table.af>=0.8], true_events)
-		print('CLONAL CALLS at AF50', file=sys.stderr)
-		results['true_clonal_events_recovered_af50'] = sensitivity_1bpoverlap(sv_table[sv_table.af>=0.5], true_events)
-		print('CLONAL CALLS at AF20', file=sys.stderr)
-		results['true_clonal_events_recovered_af20'] = sensitivity_1bpoverlap(sv_table[sv_table.af>=0.2], true_events)
-		print('CLONAL CALLS at AF20, ANYTYPE', file=sys.stderr)
-		results['true_clonal_events_recovered_af20_anytype'] = sensitivity_1bpoverlap(sv_table[sv_table.af>=0.2], true_events, anytype=True)
-		results['true_clonal_total'] = len(true_events)
-		result_order += ['true_clonal_total', 'true_clonal_events_recovered_af80', 'true_clonal_events_recovered_af50', 'true_clonal_events_recovered_af20', 'true_clonal_events_recovered_af20_anytype']
+		for size_label in ['small','large']:
+			true_events = pd.read_csv(args.true_events_clonal, sep='\t')
+			if size_label == 'small':
+				true_events = true_events[true_events.end - true_events.start < args.sv_size_cutoff]
+			else:
+				true_events = true_events[true_events.end - true_events.start >= args.sv_size_cutoff]
+			print(size_label.upper(), 'CLONAL CALLS at AF80', file=sys.stderr)
+			results[size_label + '_true_clonal_events_recovered_af80'] = sensitivity_1bpoverlap(sv_table[sv_table.af>=0.8], true_events)
+			print(size_label.upper(), 'CLONAL CALLS at AF50', file=sys.stderr)
+			results[size_label + '_true_clonal_events_recovered_af50'] = sensitivity_1bpoverlap(sv_table[sv_table.af>=0.5], true_events)
+			print(size_label.upper(), 'CLONAL CALLS at AF20', file=sys.stderr)
+			results[size_label + '_true_clonal_events_recovered_af20'] = sensitivity_1bpoverlap(sv_table[sv_table.af>=0.2], true_events)
+			print(size_label.upper(), 'CLONAL CALLS at AF20, ANYTYPE', file=sys.stderr)
+			results[size_label + '_true_clonal_events_recovered_af20_anytype'] = sensitivity_1bpoverlap(sv_table[sv_table.af>=0.2], true_events, anytype=True)
+			results[size_label + '_true_clonal_total'] = len(true_events)
+			result_order += [size_label + '_true_clonal_total', size_label + '_true_clonal_events_recovered_af80', size_label + '_true_clonal_events_recovered_af50', size_label + '_true_clonal_events_recovered_af20', size_label + '_true_clonal_events_recovered_af20_anytype']
 
 	# If true single cell calls are given, determine the recall
 	if args.true_events_single_cell is not None:
