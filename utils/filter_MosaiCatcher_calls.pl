@@ -2,7 +2,7 @@
 use strict;
 
 my $min_N_inv = 3;
-my $min_WC = 0.2;
+my $min_WC = 1/3;
 my $safe_llr_to_ref = 50;
 my $SegDup_file = "./utils/segdups/segDups_hg38_UCSCtrack.bed.gz";
 my $MaxSegDup_overlap = 0.5;
@@ -17,8 +17,8 @@ my $input_file = $ARGV[0];
 if (!$ARGV[0]) {
 	print STDERR "Input filname missinf=g (use e.g. sv_calls_txt_file_all/RPE1-WT/100000_fixed_norm.selected_j0.01_s0.1/simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.05_regfactor6.txt )\n";
 	print STDERR "Filters inversions unless they are seen at least $min_N_inv times.\n";
-	print STDERR "Filters deletions seen in less then $min_WC WC chromosomes\n";
-	print STDERR "Filters duplications seen in less then $min_WC WC chromosomes (but gives inv-dups seen in such context a PASS)\n";
+	print STDERR "Filters deletions seen in not more than $min_WC WC chromosomes\n";
+	print STDERR "Filters duplications seen in not more than $min_WC WC chromosomes (but gives inv-dups seen in such context a PASS)\n";
 	print STDERR "Del and Dup events with llr_to_ref>=$safe_llr_to_ref will never be masked\n";
 	printf STDERR "uses SegDup file $SegDup_file and removes all Dels overlapping with SegDups by >%3.1f%\n", $MaxSegDup_overlap*100;
 	exit;
@@ -193,16 +193,16 @@ foreach my $chrom (sort keys %STARTs) {
 				$iterate+=$val/@{$FILTER_ARR{$chrom}{$STARTs{$chrom}[$i]}{$ENDs{$chrom}[$i]}};
 			}
 			
-			$FILTER{$chrom}{$STARTs{$chrom}[$i]}{$ENDs{$chrom}[$i]}= sprintf ("FAIL(WC:%4.2f)", $iterate) if ($iterate < $min_WC);
-			$FILTER{$chrom}{$STARTs{$chrom}[$i]}{$ENDs{$chrom}[$i]}= "PASS" if ($iterate >= $min_WC or $LLR_TO_REF{$chrom}{$STARTs{$chrom}[$i]}{$ENDs{$chrom}[$i]} >= $safe_llr_to_ref);
+			$FILTER{$chrom}{$STARTs{$chrom}[$i]}{$ENDs{$chrom}[$i]}= sprintf ("FAIL(WC:%4.2f)", $iterate) if ($iterate <= $min_WC);
+			$FILTER{$chrom}{$STARTs{$chrom}[$i]}{$ENDs{$chrom}[$i]}= "PASS" if ($iterate > $min_WC or $LLR_TO_REF{$chrom}{$STARTs{$chrom}[$i]}{$ENDs{$chrom}[$i]} >= $safe_llr_to_ref);
 		   }
 		   if (exists ($TESTED_DUP{$chrom}{$STARTs{$chrom}[$i]}{$ENDs{$chrom}[$i]})) { #check DUP to identify events seen not largely in CC and WW chromosomes
                         my $iterate=0;
                         foreach my $val (@{$FILTER_ARR_DUP{$chrom}{$STARTs{$chrom}[$i]}{$ENDs{$chrom}[$i]}}) {
                                 $iterate+=$val/@{$FILTER_ARR_DUP{$chrom}{$STARTs{$chrom}[$i]}{$ENDs{$chrom}[$i]}};
                         }
-                        $FILTER{$chrom}{$STARTs{$chrom}[$i]}{$ENDs{$chrom}[$i]}= sprintf ("FAIL(WC:%4.2f)", $iterate) if ($iterate < $min_WC);
-			$FILTER{$chrom}{$STARTs{$chrom}[$i]}{$ENDs{$chrom}[$i]}= "PASS" if ($iterate >= $min_WC or $LLR_TO_REF{$chrom}{$STARTs{$chrom}[$i]}{$ENDs{$chrom}[$i]} >= $safe_llr_to_ref);
+                        $FILTER{$chrom}{$STARTs{$chrom}[$i]}{$ENDs{$chrom}[$i]}= sprintf ("FAIL(WC:%4.2f)", $iterate) if ($iterate <= $min_WC);
+			$FILTER{$chrom}{$STARTs{$chrom}[$i]}{$ENDs{$chrom}[$i]}= "PASS" if ($iterate > $min_WC or $LLR_TO_REF{$chrom}{$STARTs{$chrom}[$i]}{$ENDs{$chrom}[$i]} >= $safe_llr_to_ref);
                    }
 		}		
 		unless (exists($FILTER{$chrom}{$STARTs{$chrom}[$i]}{$ENDs{$chrom}[$i]})) {
