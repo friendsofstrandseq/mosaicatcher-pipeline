@@ -58,7 +58,7 @@ RUN apt-get update \
     && apt-get install --no-install-recommends -y $BUILD_DEPS \
     && git clone https://github.com/friendsofstrandseq/mosaicatcher.git \
     && cd mosaicatcher \
-    && git checkout 0.3 \
+    && git checkout 0.3.1-dev \
     && mkdir build \
     && cd build \
     && cmake ../src/ \
