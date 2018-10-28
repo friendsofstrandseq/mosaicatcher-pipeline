@@ -68,7 +68,7 @@ BPDENS = [
 ]
 
 # Todo: specify an exact version of the singularity file!
-singularity: "docker://smei/mosaicatcher-pipeline:latest"
+singularity: "docker://smei/mosaicatcher-pipeline:dev"
 
 localrules:
     all,
