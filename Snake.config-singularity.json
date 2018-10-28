@@ -1,6 +1,7 @@
 {
     "chromosomes"   : ["chrX","chr1","chr2","chr3","chr4","chr5","chr6","chr7","chr8","chr9","chr10","chr11","chr12","chr13","chr14","chr15","chr16","chr17","chr18","chr19","chr20","chr21","chr22","chrX"],
 
+    "snv_sites_to_genotype" : "snv_sites_to_genotype/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz",
 
     "reference"     : "/reference.fa",
     "mosaicatcher"  : "mosaic",
@@ -9,12 +10,6 @@
     "norm_script"   : "/mosaicatcher/R/norm.R",
     "samtools"      : "samtools",
     "bcftools"      : "bcftools",
-
-    "snv_calls"     : {
-        "C7_data"   : "external_info/regenSNVs_GRCh38sites_C7_chr1-22plusX.filtered.vcf.gz",
-        "RPE-BM510" : "external_info/regenSNVs_GRCh38sites_BM510_chr1-22plusX.filtered.vcf.gz",
-        "RPE1-WT"   : "external_info/regenSNVs_GRCh38sites_RPEWTstrandS_chr1-22plusX.filtered.vcf.gz"
-    },
 
     "variable_bins" : {
         "50000"     : "utils/variable_bins.GRCh38.50kb.bed",
