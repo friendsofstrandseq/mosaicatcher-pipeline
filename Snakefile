@@ -67,6 +67,7 @@ BPDENS = [
     "selected_j{}_s{}_scedist{}".format(joint, single, scedist) for joint in [0.1] for single in [0.5] for scedist in [5,20]
 ]
 
+# Todo: specify an exact version of the singularity file!
 singularity: "docker://smei/mosaicatcher-pipeline:latest"
 
 localrules:
@@ -384,7 +385,7 @@ rule generate_exclude_file_1:
         samtools = config["samtools"]
     shell:
         """
-        {params.samtools} view -H {input.bam} | awk '/^@SQ/' > {output} 2> {log}
+        {params.samtools} view -H {input.bam} | awk "/^@SQ/" > {output} 2> {log}
         """
 
 rule generate_exclude_file_2:
