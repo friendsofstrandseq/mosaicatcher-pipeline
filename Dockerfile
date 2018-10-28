@@ -1,9 +1,10 @@
 FROM rocker/r-ver:3.4.3
 
 MAINTAINER Sascha Meiers meiers@embl.de
-LABEL version="1.0"
-LABEL mosaicatcher_version="0.3"
-LABEL strandphaser_version="24eabf99a15c2ab959f7c5667cc22ef994cd0fc5"
+LABEL version="1.1"
+LABEL mosaicatcher_version="0.3.1-dev"
+# LABEL strandphaser_version="24eabf99a15c2ab959f7c5667cc22ef994cd0fc5"
+LABEL strandphaser_version="8011371c3a2f2d3a92116eb9df657b42d0b5e5b4"
 LABEL description="Required software dependencies for the MosaiCatcher pipeline (https://github.com/friendsofstrandseq/pipeline) to be used from within Snakemake."
 
 
@@ -26,6 +27,7 @@ RUN apt-get update \
         zlib1g-dev \
         libxml2-dev \
         gawk \
+        python3 \
         bcftools=1.3.1-1+b1 \
         samtools=1.3.1-3 \
     && apt-get autoremove -y \
@@ -48,7 +50,7 @@ RUN Rscript -e "install.packages(c( \
 RUN Rscript -e "source('http://bioconductor.org/biocLite.R'); \
         biocLite('BSgenome', ask=F); \
         biocLite('BSgenome.Hsapiens.UCSC.hg38', ask=F); \
-        devtools::install_github('daewoooo/StrandPhaseR@24eabf99a15c2ab959f7c5667cc22ef994cd0fc5', dependencies = NA);" \
+        devtools::install_github('daewoooo/StrandPhaseR@8011371c3a2f2d3a92116eb9df657b42d0b5e5b4', dependencies = NA);" \
     && rm -rf /usr/local/lib/R/site-library/BSgenome.Hsapiens.UCSC.hg38/extdata/single_sequences.2bit
 
 # Install MosaiCatcher (and clean up afterwards)
