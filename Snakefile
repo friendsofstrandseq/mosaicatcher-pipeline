@@ -892,14 +892,15 @@ rule haplotag_bams:
         vcf='phased-snvs/{sample}/{windows}.{bpdens}.vcf.gz',
         tbi='phased-snvs/{sample}/{windows}.{bpdens}.vcf.gz.tbi',
         bam='bam/{sample}/selected/{bam}.bam',
-        bai='bam/{sample}/selected/{bam}.bam.bai',
-        ref = config["reference"],
+        bai='bam/{sample}/selected/{bam}.bam.bai'
     output:
         bam='haplotag/bam/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/{bam}.bam',
     log:
         "log/haplotag_bams/{sample}/{windows}.{bpdens}/{bam}.log"
+    params:
+        ref = config["reference"]
     shell:
-        "whatshap haplotag -o {output.bam} -r {input.ref} {input.vcf} {input.bam} > {log} 2>{log}"
+        "whatshap haplotag -o {output.bam} -r {params.ref} {input.vcf} {input.bam} > {log} 2>{log}"
 
 rule create_haplotag_segment_bed:
     input:
@@ -989,17 +990,17 @@ rule regenotype_SNVs:
     input:
         bam   = "snv_calls/{sample}/merged.bam",
         bai   = "snv_calls/{sample}/merged.bam.bai",
-        fa = config["reference"],
         sites = config["snv_sites_to_genotype"],
     output:
         vcf = "snv_genotyping/{sample}/{chrom,chr[0-9A-Z]+}.vcf"
     log:
         "log/snv_genotyping/{sample}/{chrom}.log"
     params:
+        fa = config["reference"],
         bcftools = config["bcftools"]
     shell:
         """
-        (freebayes -f {input.fa} -r {wildcards.chrom} -@ {input.sites} --only-use-input-alleles {input.bam} --genotype-qualities | {params.bcftools} view --exclude-uncalled --genotype het --types snps --include "QUAL>=10" - > {output.vcf}) 2> {log}
+        (freebayes -f {params.fa} -r {wildcards.chrom} -@ {input.sites} --only-use-input-alleles {input.bam} --genotype-qualities | {params.bcftools} view --exclude-uncalled --genotype het --types snps --include "QUAL>=10" - > {output.vcf}) 2> {log}
         """
 
 rule merge_SNV_calls:
