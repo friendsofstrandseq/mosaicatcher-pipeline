@@ -53,6 +53,19 @@ RUN Rscript -e "source('http://bioconductor.org/biocLite.R'); \
         devtools::install_github('daewoooo/StrandPhaseR@8011371c3a2f2d3a92116eb9df657b42d0b5e5b4', dependencies = NA);" \
     && rm -rf /usr/local/lib/R/site-library/BSgenome.Hsapiens.UCSC.hg38/extdata/single_sequences.2bit
 
+# Install FreeBayes
+RUN apt-get update \
+    && BUILD_DEPS="git" \
+    && apt-get install --no-install-recommends -y $BUILD_DEPS \
+    && git clone --recursive git://github.com/ekg/freebayes.git \
+    && cd freebayes \
+    && make \
+    && cd \
+    && ln -s /freebayes/bin/freebayes /usr/local/sbin/freebayes \
+    && apt-get remove -y $BUILD_DEPS \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
+
 # Install MosaiCatcher (and clean up afterwards)
 RUN apt-get update \
     && BUILD_DEPS="cmake \
