@@ -25,6 +25,7 @@ RUN apt-get update \
         libboost-date-time1.62.0 \
         libboost-date-time1.62-dev \
         zlib1g-dev \
+        libbz2-dev \
         libxml2-dev \
         gawk \
         python3 \
