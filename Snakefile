@@ -617,11 +617,12 @@ rule mosaiClassifier_make_call:
 
 rule filter_calls:
     input: 
-        calls = "sv_calls/{sample}/{window}_fixed_norm.{bpdens}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}_filterFALSE.txt"
+        inputcalls = "sv_calls/{sample}/{window}_fixed_norm.{bpdens}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}_filterFALSE.txt",
+        mergedcalls = "postprocessing/merge/{sample}/{window}_fixed_norm.{bpdens}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.txt",
     output: 
         calls = "sv_calls/{sample}/{window}_fixed_norm.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/simpleCalls_llr{llr}_poppriors{pop_priors,(TRUE|FALSE)}_haplotags{use_haplotags,(TRUE|FALSE)}_gtcutoff{gtcutoff,[0-9\\.]+}_regfactor{regfactor,[0-9]+}_filterTRUE.txt"
     shell:
-        'utils/filter_MosaiCatcher_calls.pl {input.calls} | awk \'BEGIN {{OFS="\\t"}} (NR==1) || ($16=="PASS") {{$16=""; print}}\' > {output.calls}'
+        'utils/apply_filter.py {input.inputcalls} {input.mergedcalls} > {output.calls}'
 
 
 rule mosaiClassifier_calc_probs:
