@@ -33,38 +33,16 @@ import os.path
 
 
 METHODS = [
-    #"simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0_regfactor6_filterFALSE",
     "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.005_regfactor6_filterFALSE",
-    #"simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.01_regfactor6_filterFALSE",
-    #"simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.02_regfactor6_filterFALSE",
-    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.03_regfactor6_filterFALSE",
-    #"simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.04_regfactor6_filterFALSE",
-    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.05_regfactor6_filterFALSE",
-    #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0_regfactor6_filterFALSE",
-    "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.005_regfactor6_filterFALSE",
-    #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.01_regfactor6_filterFALSE",
-    #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.02_regfactor6_filterFALSE",
-    "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.03_regfactor6_filterFALSE",
-    #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.04_regfactor6_filterFALSE",
-    #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.05_regfactor6_filterFALSE",
-    #"simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0_regfactor6_filterTRUE",
     "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.005_regfactor6_filterTRUE",
-    #"simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.01_regfactor6_filterTRUE",
-    #"simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.02_regfactor6_filterTRUE",
-    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.03_regfactor6_filterTRUE",
-    #"simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.04_regfactor6_filterTRUE",
-    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.05_regfactor6_filterTRUE",
-    #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0_regfactor6_filterTRUE",
+    "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.005_regfactor6_filterFALSE",
     "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.005_regfactor6_filterTRUE",
-    #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.01_regfactor6_filterTRUE",
-    #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.02_regfactor6_filterTRUE",
-    "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.03_regfactor6_filterTRUE",
-    #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.04_regfactor6_filterTRUE",
-    #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.05_regfactor6_filterTRUE",
+    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.05_regfactor6_filterFALSE",
+    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.05_regfactor6_filterTRUE",
 ]
 
 BPDENS = [
-    "selected_j{}_s{}_scedist{}".format(joint, single, scedist) for joint in [0.1] for single in [0.5] for scedist in [5,20]
+    "selected_j{}_s{}_scedist{}".format(joint, single, scedist) for joint in [0.1] for single in [0.5] for scedist in [20]
 ]
 
 singularity: "docker://smei/mosaicatcher-pipeline:v0.1"
