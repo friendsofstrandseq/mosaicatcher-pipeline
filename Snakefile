@@ -455,7 +455,7 @@ rule merge_blacklist_bins:
         "log/merge_blacklist_bins/{window}.log"
     shell:
         """
-        utils/merge-blacklist.py --merge_distance 500000 {input.norm} --whitelist {input.whitelist} --min_whitelist_interval_size 400000 > {output.merged} 2> {log}
+        utils/merge-blacklist.py --merge_distance 500000 {input.norm} --whitelist {input.whitelist} --min_whitelist_interval_size 100000 > {output.merged} 2> {log}
         """
 
 rule normalize_counts:
