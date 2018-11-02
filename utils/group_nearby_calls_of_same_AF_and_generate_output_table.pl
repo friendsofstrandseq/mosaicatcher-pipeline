@@ -3,7 +3,7 @@ use strict;
 
 
 my $min_AF_for_grouping =0.03;
-my $AF_simiarity_threshold = 0.25;
+my $AF_simiarity_threshold = 0.6;
 my $input_file = $ARGV[0];
 my $safe_llr_to_ref = 30;
 if (!$ARGV[0]) {
