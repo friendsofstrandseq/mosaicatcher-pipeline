@@ -33,11 +33,7 @@ import os.path
 
 
 METHODS = [
-    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.005_regfactor6_filterFALSE",
-    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.005_regfactor6_filterTRUE",
-    "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.005_regfactor6_filterFALSE",
-    "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.005_regfactor6_filterTRUE",
-    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.05_regfactor6_filterFALSE",
+    "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0_regfactor6_filterFALSE",
     "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.05_regfactor6_filterTRUE",
 ]
 
