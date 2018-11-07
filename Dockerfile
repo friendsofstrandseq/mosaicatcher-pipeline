@@ -29,11 +29,12 @@ RUN apt-get update \
         liblzma-dev \
         libxml2-dev \
         gawk \
-        python \
+        python3 \
         bcftools=1.3.1-1+b1 \
         samtools=1.3.1-3 \
     && apt-get autoremove -y \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && ln -s $(which python3) /usr/local/sbin/python
 
 # Install basic R packages from a fixed R version (MRAN)
 RUN Rscript -e "install.packages(c( \
