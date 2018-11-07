@@ -14,6 +14,5 @@ snakemake \
                         -B ${REF}.fai:/reference.fa.fai:ro \
                         -B ${R_REF}:/usr/local/lib/R/site-library/BSgenome.Hsapiens.UCSC.hg38/extdata/single_sequences.2bit:ro" \
     --latency-wait 60 \
-    --timestamp \
     --printshellcmd
 
