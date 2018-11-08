@@ -30,6 +30,7 @@ RUN apt-get update \
         libxml2-dev \
         gawk \
         python3 \
+        python3-scipy \
         bcftools=1.3.1-1+b1 \
         samtools=1.3.1-3 \
     && apt-get autoremove -y \
