@@ -3,7 +3,7 @@ use strict;
 
 my $min_N_inv = 3;
 my $min_WC = 1/3;
-my $safe_llr_to_ref = 50;
+my $safe_llr_to_ref = 30;
 my $SegDup_file = "./utils/segdups/segDups_hg38_UCSCtrack.bed.gz";
 my $MaxSegDup_overlap = 0.5;
 
@@ -20,7 +20,7 @@ if (!$ARGV[0]) {
 	print STDERR "Filters deletions seen in not more than $min_WC WC chromosomes\n";
 	print STDERR "Filters duplications seen in not more than $min_WC WC chromosomes (but gives inv-dups seen in such context a PASS)\n";
 	print STDERR "Del and Dup events with llr_to_ref>=$safe_llr_to_ref will never be masked\n";
-	printf STDERR "uses SegDup file $SegDup_file and removes all Dels overlapping with SegDups by >%3.1f%\n", $MaxSegDup_overlap*100;
+	printf STDERR "uses SegDup file $SegDup_file and removes all Dels overlapping with SegDups by >%4.1f percent \n", $MaxSegDup_overlap*100;
 	exit;
 }
 
