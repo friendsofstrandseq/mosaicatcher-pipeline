@@ -33,38 +33,12 @@ import os.path
 
 
 METHODS = [
-    #"simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0_regfactor6_filterFALSE",
-    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.005_regfactor6_filterFALSE",
-    #"simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.01_regfactor6_filterFALSE",
-    #"simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.02_regfactor6_filterFALSE",
-    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.03_regfactor6_filterFALSE",
-    #"simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.04_regfactor6_filterFALSE",
-    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.05_regfactor6_filterFALSE",
-    #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0_regfactor6_filterFALSE",
-    "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.005_regfactor6_filterFALSE",
-    #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.01_regfactor6_filterFALSE",
-    #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.02_regfactor6_filterFALSE",
-    "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.03_regfactor6_filterFALSE",
-    #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.04_regfactor6_filterFALSE",
-    #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.05_regfactor6_filterFALSE",
-    #"simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0_regfactor6_filterTRUE",
-    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.005_regfactor6_filterTRUE",
-    #"simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.01_regfactor6_filterTRUE",
-    #"simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.02_regfactor6_filterTRUE",
-    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.03_regfactor6_filterTRUE",
-    #"simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.04_regfactor6_filterTRUE",
+    "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0_regfactor6_filterFALSE",
     "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.05_regfactor6_filterTRUE",
-    #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0_regfactor6_filterTRUE",
-    "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.005_regfactor6_filterTRUE",
-    #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.01_regfactor6_filterTRUE",
-    #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.02_regfactor6_filterTRUE",
-    "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.03_regfactor6_filterTRUE",
-    #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.04_regfactor6_filterTRUE",
-    #"simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0.05_regfactor6_filterTRUE",
 ]
 
 BPDENS = [
-    "selected_j{}_s{}_scedist{}".format(joint, single, scedist) for joint in [0.1] for single in [0.5] for scedist in [5,20]
+    "selected_j{}_s{}_scedist{}".format(joint, single, scedist) for joint in [0.1] for single in [0.5] for scedist in [20]
 ]
 
 # Todo: specify an exact version of the singularity file!
@@ -478,7 +452,7 @@ rule merge_blacklist_bins:
         "log/merge_blacklist_bins/{window}.log"
     shell:
         """
-        utils/merge-blacklist.py --merge_distance 500000 {input.norm} --whitelist {input.whitelist} --min_whitelist_interval_size 400000 > {output.merged} 2> {log}
+        utils/merge-blacklist.py --merge_distance 500000 {input.norm} --whitelist {input.whitelist} --min_whitelist_interval_size 100000 > {output.merged} 2> {log}
         """
 
 rule normalize_counts:
@@ -640,11 +614,12 @@ rule mosaiClassifier_make_call:
 
 rule filter_calls:
     input: 
-        calls = "sv_calls/{sample}/{window}_fixed_norm.{bpdens}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}_filterFALSE.txt"
+        inputcalls = "sv_calls/{sample}/{window}_fixed_norm.{bpdens}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}_filterFALSE.txt",
+        mergedcalls = "postprocessing/merge/{sample}/{window}_fixed_norm.{bpdens}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.txt",
     output: 
         calls = "sv_calls/{sample}/{window}_fixed_norm.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/simpleCalls_llr{llr}_poppriors{pop_priors,(TRUE|FALSE)}_haplotags{use_haplotags,(TRUE|FALSE)}_gtcutoff{gtcutoff,[0-9\\.]+}_regfactor{regfactor,[0-9]+}_filterTRUE.txt"
     shell:
-        'utils/filter_MosaiCatcher_calls.pl {input.calls} | awk \'BEGIN {{OFS="\\t"}} (NR==1) || ($16=="PASS") {{$16=""; print}}\' > {output.calls}'
+        'utils/apply_filter.py {input.inputcalls} {input.mergedcalls} > {output.calls}'
 
 
 rule mosaiClassifier_calc_probs:
@@ -702,7 +677,7 @@ rule postprocessing_sv_group_table:
     input: 
         calls = "postprocessing/merge/{sample}/{window}_fixed_norm.{bpdens}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.txt"
     output: 
-        grouptrack = "postprocessing/group-table/{sample}/{window}_fixed_norm.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9]+}/simpleCalls_llr{llr}_poppriors{pop_priors,(TRUE|FALSE)}_haplotags{use_haplotags,(TRUE|FALSE)}_gtcutoff{gtcutoff,[0-9\\.]+}_regfactor{regfactor,[0-9]+}.tsv"
+        grouptrack = "postprocessing/group-table/{sample}/{window}_fixed_norm.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/simpleCalls_llr{llr}_poppriors{pop_priors,(TRUE|FALSE)}_haplotags{use_haplotags,(TRUE|FALSE)}_gtcutoff{gtcutoff,[0-9\\.]+}_regfactor{regfactor,[0-9]+}.tsv"
     shell:
         'utils/create-sv-group-track.py {input.calls}  > {output.grouptrack}'
 
