@@ -932,7 +932,7 @@ rule create_haplotag_segment_bed:
     shell:
         """
         # Issue #1022 (https://bitbucket.org/snakemake/snakemake/issues/1022)
-        awk -v c={wildcard.size} -f utils/command3.awk' {input.segments} > {output.bed}
+        awk -v c={wildcards.size} -f utils/command3.awk {input.segments} > {output.bed}
         """
 
 rule create_haplotag_table:
