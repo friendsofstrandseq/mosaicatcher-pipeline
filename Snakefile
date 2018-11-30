@@ -230,6 +230,7 @@ rule estimate_ploidy:
         "log/estimate_ploidy/{sample}/{chrom}.log"
     shell:
         """
+        PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)
         python utils/ploidy-estimator.py --chromosome {wildcards.chrom} {input} > {output} 2> {log}
         """
 
@@ -327,7 +328,10 @@ rule generate_halo_json:
     log:
         "log/generate_halo_json/{sample}/{windows}.{windows}.log"
     shell:
-        "(./utils/counts_to_json.py {input.counts} | gzip > {output.json}) 2> {log}"
+        """
+        PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)
+        (./utils/counts_to_json.py {input.counts} | gzip > {output.json}) 2> {log}
+        """
 
 
 
@@ -452,7 +456,8 @@ rule merge_blacklist_bins:
         "log/merge_blacklist_bins/{window}.log"
     shell:
         """
-        utils/merge-blacklist.py --merge_distance 500000 {input.norm} --whitelist {input.whitelist} --min_whitelist_interval_size 100000 > {output.merged} 2> {log}
+        PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)
+        utils/merge-blacklist.py --merge_distance 500000 {input.norm} --whitelist {input.whitelist} --min_whitelist_interval_size 100000 > {output.merged} 2>> {log}
         """
 
 rule normalize_counts:
@@ -572,7 +577,23 @@ rule segmentation_selection:
         cellnames = lambda wc: ",".join(cell for cell in CELL_PER_SAMPLE[wc.sample]),
         sce_min_distance = 500000,
     shell:
-        "./utils/detect_strand_states.py --sce_min_distance {params.sce_min_distance} --sce_add_cutoff {wildcards.additional_sce_cutoff}000000 --min_diff_jointseg {wildcards.min_diff_jointseg} --min_diff_singleseg {wildcards.min_diff_singleseg} --output_jointseg {output.jointseg} --output_singleseg {output.singleseg} --output_strand_states {output.strand_states} --samplename {wildcards.sample} --cellnames {params.cellnames} {input.info} {input.counts} {input.jointseg} {input.singleseg} > {log} 2>&1"
+        """
+        PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)
+        ./utils/detect_strand_states.py \
+            --sce_min_distance {params.sce_min_distance} \
+            --sce_add_cutoff {wildcards.additional_sce_cutoff}000000 \
+            --min_diff_jointseg {wildcards.min_diff_jointseg} \
+            --min_diff_singleseg {wildcards.min_diff_singleseg} \
+            --output_jointseg {output.jointseg} \
+            --output_singleseg {output.singleseg} \
+            --output_strand_states {output.strand_states} \
+            --samplename {wildcards.sample} \
+            --cellnames {params.cellnames} \
+            {input.info} \
+            {input.counts} \
+            {input.jointseg} \
+            {input.singleseg} > {log} 2>&1
+        """
 
 
 ################################################################################
@@ -619,7 +640,11 @@ rule filter_calls:
     output: 
         calls = "sv_calls/{sample}/{window}_fixed_norm.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/simpleCalls_llr{llr}_poppriors{pop_priors,(TRUE|FALSE)}_haplotags{use_haplotags,(TRUE|FALSE)}_gtcutoff{gtcutoff,[0-9\\.]+}_regfactor{regfactor,[0-9]+}_filterTRUE.txt"
     shell:
-        'utils/apply_filter.py {input.inputcalls} {input.mergedcalls} > {output.calls}'
+        """
+        PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)
+        utils/apply_filter.py {input.inputcalls} {input.mergedcalls} > {output.calls}
+        """
+
 
 
 rule mosaiClassifier_calc_probs:
@@ -653,7 +678,13 @@ rule call_complex_regions:
     log:
         "log/call_complex_regions/{sample}/{windows}.{bpdens}.{method}.log"
     shell:
-        "utils/call-complex-regions.py --merge_distance 5000000 --ignore_haplotypes --min_cell_count 2 {input.calls} > {output.complex} 2>{log}"
+        """
+        PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)
+        utils/call-complex-regions.py \
+        --merge_distance 5000000 \
+        --ignore_haplotypes \
+        --min_cell_count 2 {input.calls} > {output.complex} 2>{log}
+        """
 
 
 rule postprocessing_filter:
@@ -679,7 +710,10 @@ rule postprocessing_sv_group_table:
     output: 
         grouptrack = "postprocessing/group-table/{sample}/{window}_fixed_norm.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/simpleCalls_llr{llr}_poppriors{pop_priors,(TRUE|FALSE)}_haplotags{use_haplotags,(TRUE|FALSE)}_gtcutoff{gtcutoff,[0-9\\.]+}_regfactor{regfactor,[0-9]+}.tsv"
     shell:
-        'utils/create-sv-group-track.py {input.calls}  > {output.grouptrack}'
+        """
+        PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)
+        utils/create-sv-group-track.py {input.calls}  > {output.grouptrack}
+        """
 
 
 ################################################################################
