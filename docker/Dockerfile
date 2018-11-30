@@ -97,13 +97,8 @@ RUN apt-get update \
     && chmod +x Miniconda3-latest-Linux-x86_64.sh \
     && ./Miniconda3-latest-Linux-x86_64.sh -b -p /miniconda \
     && rm -rf Miniconda3-latest-Linux-x86_64.sh \
-    && conda install \
-        scipy=1.1.0 \
-        pandas=0.23.4 \
-    && conda clean --all \
     && apt-get remove -y $BUILD_DEPS \ 
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
 
-RUN conda create -n mosaic-env scipy=1.1.0 numpy=1.15.4 pandas=0.23.4
 
