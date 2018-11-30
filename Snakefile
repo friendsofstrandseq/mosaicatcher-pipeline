@@ -136,8 +136,11 @@ rule add_vafs_to_simulated_genome:
         max_vaf = config["simulation_max_vaf"],
     shell:
         """
-        awk -v min_vaf={params.min_vaf} -v max_vaf={params.max_vaf} -v seed={wildcards.seed} \
-        'BEGIN {{srand(seed); OFS="\\t"}} {{vaf=min_vaf+rand()*(max_vaf-min_vaf); print $0, vaf}}' {input.tsv} > {output.tsv}
+        # Issue #1022 (https://bitbucket.org/snakemake/snakemake/issues/1022)
+        awk -v min_vaf={params.min_vaf} \
+            -v max_vaf={params.max_vaf} \
+            -v seed={wildcards.seed} \
+        -   f utils/command4.awk {input.tsv} > {output.tsv}
         """
 
 def min_coverage(wildcards):
@@ -439,7 +442,10 @@ rule extract_single_cell_counts:
     output:
         "counts-per-cell/{sample}/{cell}/{window,[0-9]+}_{file_name}.txt.gz"
     shell:
-        "zcat {input} | awk '(NR==1) || $5 ==\"{wildcards.cell}\"' | gzip > {output}"
+        """
+        # Issue #1022 (https://bitbucket.org/snakemake/snakemake/issues/1022)
+        zcat {input} | awk -v name={wildcards.cell} -f utils/command1.awk | gzip > {output}
+        """
 
 
 ################################################################################
@@ -516,7 +522,10 @@ rule fix_segmentation:
     output:
         "segmentation/{sample}/{window,\d+}_{file_name}.txt"
     shell:
-        'awk \'BEGIN {{OFS="\\t"}} {{if ($1=="{wildcards.sample}") $12=int(($14-1)/100000); print}}\' {input} > {output}'
+        """
+        # Issue #1022 (https://bitbucket.org/snakemake/snakemake/issues/1022)
+        awk -v name={wildcards.sample} -v window={wildcards.window} -f utils/command2.awk {input} > {output}
+        """
 
 # Pick a few segmentations and prepare the input files for SV classification
 rule prepare_segments:
@@ -559,7 +568,10 @@ rule fix_segmentation_one_cell:
     output:
         "segmentation-per-cell/{sample}/{cell}/{window,\d+}_{file_name}.txt"
     shell:
-        'awk \'BEGIN {{OFS="\\t"}} {{if ($1=="{wildcards.sample}") $12=int(($14-1)/100000); print}}\' {input} > {output}'
+        """
+        # Issue #1022 (https://bitbucket.org/snakemake/snakemake/issues/1022)
+        awk -v name={wildcards.sample} -v window={wildcards.window} -f utils/command2.awk {input} > {output}
+        """
 
 rule segmentation_selection:
     input:
@@ -918,7 +930,10 @@ rule create_haplotag_segment_bed:
     output:
         bed="haplotag/bed/{sample}/{size,[0-9]+}{what}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}.bed",
     shell:
-        "awk 'BEGIN {{s={wildcards.size};OFS=\"\\t\"}} $2!=c {{prev=0}} NR>1 {{print $2,prev*s+1,($3+1)*s; prev=$3+1; c=$2}}' {input.segments} > {output.bed}"
+        """
+        # Issue #1022 (https://bitbucket.org/snakemake/snakemake/issues/1022)
+        awk -v c={wildcard.size} -f utils/command3.awk' {input.segments} > {output.bed}
+        """
 
 rule create_haplotag_table:
     input:
