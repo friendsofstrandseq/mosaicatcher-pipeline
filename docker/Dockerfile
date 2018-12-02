@@ -31,6 +31,7 @@ RUN apt-get update \
         gawk \
         bcftools=1.3.1-1+b1 \
         samtools=1.3.1-3 \
+        tabix \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/* \
     && ln -s $(which python3) /usr/local/sbin/python
@@ -87,7 +88,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 
-# Install dependencies for python scripts
+# Install Python and MiniConda
 ENV PATH="${PATH}:/miniconda/bin"
 RUN apt-get update \
     && BUILD_DEPS="wget \
@@ -101,4 +102,15 @@ RUN apt-get update \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
 
+
+# Install required python packages
+RUN conda install -c bioconda -c conda-forge \
+    numpy=1.15.4 \
+    pandas=0.23.4 \
+    scipy=1.1.0
+
+# Install Whatshap and Snakemake
+RUN conda install -c bioconda -c conda-forge \
+    whatshap=0.17 \
+    snakemake=5.3.0
 
