@@ -32,6 +32,7 @@ RUN apt-get update \
         bcftools=1.3.1-1+b1 \
         samtools=1.3.1-3 \
         tabix \
+        git \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/* \
     && ln -s $(which python3) /usr/local/sbin/python
@@ -58,21 +59,15 @@ RUN Rscript -e "source('http://bioconductor.org/biocLite.R'); \
 
 # Install FreeBayes
 RUN apt-get update \
-    && BUILD_DEPS="git" \
-    && apt-get install --no-install-recommends -y $BUILD_DEPS \
     && git clone --recursive git://github.com/ekg/freebayes.git \
     && cd freebayes \
     && make \
     && cd \
-    && ln -s /freebayes/bin/freebayes /usr/local/sbin/freebayes \
-    && apt-get remove -y $BUILD_DEPS \
-    && apt-get autoremove -y \
-    && rm -rf /var/lib/apt/lists/*
+    && ln -s /freebayes/bin/freebayes /usr/local/sbin/freebayes
 
 # Install MosaiCatcher (and clean up afterwards)
 RUN apt-get update \
-    && BUILD_DEPS="cmake \
-        git" \
+    && BUILD_DEPS="cmake" \
     && apt-get install --no-install-recommends -y $BUILD_DEPS \
     && git clone https://github.com/friendsofstrandseq/mosaicatcher.git \
     && cd mosaicatcher \
@@ -107,10 +102,16 @@ RUN apt-get update \
 RUN conda install -c bioconda -c conda-forge \
     numpy=1.15.4 \
     pandas=0.23.4 \
-    scipy=1.1.0
+    scipy=1.1.0 \
+    && conda clean -ay
 
 # Install Whatshap and Snakemake
 RUN conda install -c bioconda -c conda-forge \
     whatshap=0.17 \
-    snakemake=5.3.0
+    snakemake=5.3.0 \
+    && conda clean -ay
 
+# At last, install the current version of the pipeline into /pipeline
+RUN git clone https://github.com/friendsofstrandseq/pipeline /pipeline
+
+WORKDIR /pipeline
