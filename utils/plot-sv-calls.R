@@ -308,7 +308,7 @@ while (i <= n_cells) {
     if (!is.null(f_segments)) {
       message("   * Adding segment colors")
       # Segments need to be multiplied by "CELLS"
-      local_seg = CELLS[, cbind(seg, sample_cell), by = sample_cell]
+      local_seg = CELLS[, as.data.table(seg), by = sample_cell]
       if (nrow(local_seg)>0) {
           plt <- plt +
               geom_rect(data = local_seg, alpha = 0.4,
