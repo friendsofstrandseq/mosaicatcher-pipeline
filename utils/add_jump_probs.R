@@ -1,6 +1,6 @@
 library(GenomicRanges)
 library(ggplot2)
-library(rgl)
+#library(rgl) <- remove, because it caused problems for Docker/Singularity
 
 dir <- "/local/home/maryam/research/hackathons/simulation-29May-2018/pipeline/"
 binRCfile <- paste0(dir, "counts/simulation0-50000/50000_fixed.txt.gz")
