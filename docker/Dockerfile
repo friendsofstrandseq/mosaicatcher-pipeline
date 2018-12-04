@@ -33,6 +33,7 @@ RUN apt-get update \
         samtools=1.3.1-3 \
         tabix \
         git \
+        libpcre3-dev \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/* \
     && ln -s $(which python3) /usr/local/sbin/python
@@ -48,12 +49,16 @@ RUN Rscript -e "install.packages(c( \
         'devtools', \
         'reshape2', \
         'doParallel', \
-        'foreach'))"
+        'foreach', \
+        'mc2d', \
+        'pheatmap', \
+        'gplots'))"
 
 # Install StrandPhaseR
 RUN Rscript -e "source('http://bioconductor.org/biocLite.R'); \
         biocLite('BSgenome', ask=F); \
         biocLite('BSgenome.Hsapiens.UCSC.hg38', ask=F); \
+        biocLite('ComplexHeatmap', ask=F); \
         devtools::install_github('daewoooo/StrandPhaseR@8011371c3a2f2d3a92116eb9df657b42d0b5e5b4', dependencies = NA);" \
     && rm -rf /usr/local/lib/R/site-library/BSgenome.Hsapiens.UCSC.hg38/extdata/single_sequences.2bit
 
@@ -110,6 +115,7 @@ RUN conda install -c bioconda -c conda-forge \
     whatshap=0.17 \
     snakemake=5.3.0 \
     && conda clean -ay
+
 
 # At last, install the current version of the pipeline into /pipeline
 RUN git clone https://github.com/friendsofstrandseq/pipeline /pipeline
