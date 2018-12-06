@@ -19,9 +19,9 @@ BAM files from Strand-seq experiments and the final output are SV predictions in
 a tabular format as well as in a graphical representation. To get to this point,
 the workflow goes through the following steps:
 
-  1. Read binning in fixed-width genomic windows of 50kb or 100kb via [mosaicatcher](https://github.com/friendsofstrandseq/mosaicatcher)
-  2. Normalization of coverage in respect to a reference sample (included)
-  3. Strand state detection ([mosaicatcher](https://github.com/friendsofstrandseq/mosaicatcher))
+  1. Read binning in fixed-width genomic windows of 100kb via [mosaicatcher](https://github.com/friendsofstrandseq/mosaicatcher)
+  2. Normalization of coverage with respect to a reference sample (included)
+  3. Strand state detection (included)
   4. Haplotype resolution via [StrandPhaseR](https://github.com/daewoooo/StrandPhaseR)
   5. Multi-variate segmentation of cells ([mosaicatcher](https://github.com/friendsofstrandseq/mosaicatcher))
   6. Bayesian classification of segmentation to find SVs using mosaiClassifier (included)
@@ -64,56 +64,7 @@ below `bam/`. The same settings from the `Snake.config.json` config files are
 applied to all samples.
 
 
-## Installation / Execution
-
-> A Snakemake version of at least 4.8.0 is required for Singularity support.
-> When only an old Snakemake version is available, remove the `singularity`
-> line in `Snakefile` and go for option 2 or 3.
-
-### Option 1: Singularity/Docker image
-
-We provide a [Docker image](https://hub.docker.com/r/smei/mosaicatcher-pipeline/)
-of this pipeline, which can be used in Snakemake together with
-[Singularity](https://singularity.lbl.gov/). This image contains all software
-(but no data) required to run MosaiCatcher.
-
-  1. **Singularity required.** We tested this with version 2.5.1.
-
-  2. **Provide SNP call set (optional).** External VCF files (if available) should be
-     *copied* into a subfolder of the pipeline, which can be read from within the image.
-     Accordingly, you need to specify a relative path in `Snake.config-singularity.json`.
-
-  3. **Run Snakemake with `--use-singularity` option.** The software inside the
-     Singularity image need to access external data, such as the reference genome.
-     These are specified in a separate config file.
-
-     We also stripped off the content of the R package
-     [BSgenome.Hsapiens.UCSC.hg38](http://www.bioconductor.org/packages/release/data/annotation/html/BSgenome.Hsapiens.UCSC.hg38.html)
-     (find it in your local R installation), which need to be made available inside
-     the image by binding these files during execution.
-     This is how the command looks like:
-
-     ```
-     # paths on the host system
-     REF="~/data/refGenomes/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna"
-     R_REF="~/R-lib/3.4.0/BSgenome.Hsapiens.UCSC.hg38/extdata/single_sequences.2bit"
-
-     snakemake \
-        --use-singularity \
-        --singularity-args \
-          "-B ${REF}:/reference.fa:ro \
-           -B ${REF}.fai:/reference.fa.fai:ro \
-           -B ${R_REF}:/usr/local/lib/R/site-library/BSgenome.Hsapiens.UCSC.hg38/extdata/single_sequences.2bit:ro" \
-        --configfile Snake.config-singularity.json
-     ```
-
-     > **Note:** Currently only hg38 is supported within the singularity inmage.
-
-
-
-### Option 2: Bioconda environment
-
-To install the correct environment, you can use Bioconda.
+## Installation using the Bioconda environment
 
 1. **Install MiniConda:**
 In case you do not have Conda yet, it is easiest to just install
@@ -131,63 +82,6 @@ In case you do not have Conda yet, it is easiest to just install
  `Snake.config.json`.
 
 4. **Run** `snakemake`
-
-
-
-### Option 3: Manual setup
-
-1. **Install required software:**
-
-    * Install [mosaicatcher](https://github.com/friendsofstrandseq/mosaicatcher)
-      (*currently you will need the `develop` branch*)
-    * Install *BSgenome.Hsapiens.UCSC.hg38* from [Bioconductor](http://www.bioconductor.org/packages/release/data/annotation/html/BSgenome.Hsapiens.UCSC.hg38.html):
-
-      ```
-      source("https://bioconductor.org/biocLite.R")
-      biocLite('BSgenome.Hsapiens.UCSC.hg38')
-      ```
-
-    * Install [Strand-Phaser](https://github.com/daewoooo/StrandPhaseR).
-      This is no longer installed automatically
-    * Install other required R packages
-
-2. **Set up the configuration of the snakemake pipeline**
-
-	* Open `Snake.config.json` and specify the path to the executatables
-	  (such as Mosaicatcher) and to the R scripts.
-
-3. Run `snakemake`
-
-
-## Cluster support (experimental)
-
-You can ask Snakemake to submit your jobs to a HPC cluster. We provided a config
-file (`cluster.json`) for this purpose, yet it might need to be adapted to your
-infrastructure. Here is an example command:
-
-  ```
-  snakemake -j 100 \
-    --cluster-config Snake.cluster.json \
-    --cluster "sbatch --cpus-per-task {cluster.n} --time {cluster.time} --mem {cluster.mem}"
-  ```
-  
-  Further, it is often advisable to increase the time Snakemake waits for the
-  file system via this flag:
-  
-  ```
-  --latency-wait 60
-  ```
-
-  In the HPC system this was tested (based on SLURM), Snakemake sometimes does not
-  recognize if a job was killed on the cluster and hangs up waiting for it to finish.
-  To overcome this, we provide a small script called `cluster_status.py` which can
-  be passed to Snakemake as shown below. Note that this script might need to be adapted.
-
-  ```
-  --cluster-status cluster_status.py
-  ```
-
-  Finally, of course the cluster mode can be combined with `--use-singularity`.
 
 
 ## SNP calls
