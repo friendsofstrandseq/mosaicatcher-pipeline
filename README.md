@@ -64,7 +64,6 @@ below `bam/`. The same settings from the `Snake.config.json` config files are
 applied to all samples.
 
 
-
 ## Installation / Execution
 
 > A Snakemake version of at least 4.8.0 is required for Singularity support.
