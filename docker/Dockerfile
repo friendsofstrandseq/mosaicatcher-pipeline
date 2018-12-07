@@ -1,9 +1,8 @@
 FROM rocker/r-ver:3.4.3
 
 MAINTAINER Sascha Meiers meiers@embl.de
-LABEL version="1.1"
+LABEL version="0.2"
 LABEL mosaicatcher_version="0.3.1-dev"
-# LABEL strandphaser_version="24eabf99a15c2ab959f7c5667cc22ef994cd0fc5"
 LABEL strandphaser_version="8011371c3a2f2d3a92116eb9df657b42d0b5e5b4"
 LABEL description="Required software dependencies for the MosaiCatcher pipeline (https://github.com/friendsofstrandseq/pipeline) to be used from within Snakemake."
 
