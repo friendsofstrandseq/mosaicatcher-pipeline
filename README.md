@@ -64,7 +64,7 @@ below `bam/`. The same settings from the `Snake.config.json` config files are
 applied to all samples.
 
 
-## Installation using the Bioconda environment
+# Installation using the Bioconda environment
 
 1. **Install MiniConda:**
 In case you do not have Conda yet, it is easiest to just install
@@ -106,3 +106,8 @@ The provided environment `conda-environment.yml` is the result of running:
   ```
 
 This avoids some annoying version downgrades that sometimes happen when creating an environment incrementally.
+
+
+# Installation using Singularity/Docker
+
+Will be updated soon.
