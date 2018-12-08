@@ -1,4 +1,4 @@
-FROM smei/mosaicatcher-pipeline:dev
+FROM smei/mosaicatcher-pipeline
 
 MAINTAINER Sascha Meiers meiers@embl.de
 LABEL version="0.2"
