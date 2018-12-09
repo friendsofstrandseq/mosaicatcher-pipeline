@@ -7,7 +7,7 @@
     "samtools"      : "samtools",
     "bcftools"      : "bcftools",
 
-    "snv_sites_to_genotype": "/MMCI/TM/scratch/MosaiCatcher_data/RPE1_cell_lines/Compare_SNVsCalls/GRCh38_1000G_variableSites/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz",
+    "snv_sites_to_genotype": "snv_sites_to_genotype/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz",
 
     "snv_calls"     : {},
 
