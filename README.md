@@ -25,15 +25,34 @@ the workflow goes through the following steps:
   4. Haplotype resolution via [StrandPhaseR](https://github.com/daewoooo/StrandPhaseR)
   5. Multi-variate segmentation of cells ([mosaicatcher](https://github.com/friendsofstrandseq/mosaicatcher))
   6. Bayesian classification of segmentation to find SVs using mosaiClassifier (included)
-  7. Visualization of results using custom R plots
+  7. Visualization of results using custom R plots (included)
 
+
+## Installation
+
+Choose one of three ways to install and run this workflow:
+
+1. **Install software using Bioconda**
+
+	* Installation instructions [here](docs/Bioconda.md)
+	* Configure `Snake.conf.json` according to your installtion
+	* Add your single-cell data according to the specificaitons given below (Setup)
+
+2. **Run Snakemake using our Singularity image**
+
+	* Requires Snakemake version 5.3.0 and Singularity version 2.5.2
+	* No installations required - example [here](docs/mosaicatcher-pipeline.md)
+	* Add your single-cell data according to the specificaitons given below
+
+3. **Run a complete example data set via Docker**
+
+	* Requires Docker (tested in version 18.09)
+	* Includes a whole data set of 96 RPE-1 cells
+	* Example shown [here](docs/mosaicatcher-pipeline-rpe-1.md)
 
 ## Setup
 
-While there are different options for the installation/execution (see below),
-the following steps are shared by all of them:
-
-1. **Download this pipeline.**
+1. **Download this pipeline.** 
 
    ```
    git clone https://github.com/friendsofstrandseq/pipeline
@@ -63,27 +82,6 @@ the following steps are shared by all of them:
 below `bam/`. The same settings from the `Snake.config.json` config files are
 applied to all samples.
 
-
-# Installation using the Bioconda environment
-
-1. **Install MiniConda:**
-In case you do not have Conda yet, it is easiest to just install
-[MiniConda](https://conda.io/miniconda.html).
-
-2. **Create environment:**
-
-	```
-	conda env create -n strandseqnation -f conda-environment.yml
-	source activate strandseqnation
-	```
-
-3. **Install [mosaicatcher](https://github.com/friendsofstrandseq/mosaicatcher)**
- and update the file paths pointing to it (and to several R scripts) in
- `Snake.config.json`.
-
-4. **Run** `snakemake`
-
-
 ## SNP calls
 
   The pipeline will run simple SNV calling using [samtools](https://github.com/samtools/samtools) and [bcftools](https://github.com/samtools/bcftools) on Strand-seq. If you **already have
@@ -96,16 +94,6 @@ In case you do not have Conda yet, it is easiest to just install
     },
   ```
 
-## Note on how Conda environment was created
-The provided environment `conda-environment.yml` is the result of running:
-
-  ```
-  conda create -y -n strandseqnation snakemake=5.3 r-ggplot2=2.2 python bcftools bioconductor-biobase bioconductor-biocgenerics bioconductor-biocinstaller bioconductor-biocparallel bioconductor-biostrings bioconductor-bsgenome bioconductor-bsgenome.hsapiens.ucsc.hg38 bioconductor-delayedarray bioconductor-fastseg bioconductor-genomeinfodb bioconductor-genomeinfodbdata bioconductor-genomicalignments bioconductor-genomicranges bioconductor-iranges bioconductor-rsamtools bioconductor-rtracklayer bioconductor-s4vectors bioconductor-summarizedexperiment bioconductor-xvector bioconductor-zlibbioc htslib r-data.table r-peer samtools boost boost-cpp cairo certifi cmake pandas pango pip pixman python-dateutil r-assertthat r-base r-bh r-bitops r-colorspace r-cowplot r-curl r-devtools r-dichromat r-digest r-futile.logger r-futile.options r-git2r r-gridextra r-gtable r-hexbin r-httr r-jsonlite r-labeling r-lambda.r r-lattice r-lazyeval r-magrittr r-mass r-matrix r-matrixstats r-memoise r-mime r-munsell r-openssl r-plyr r-r6 r-rcolorbrewer r-rcpp r-rcurl r-reshape2 r-rlang r-rstudioapi r-scales r-snow r-stringi r-stringr r-tibble r-viridislite r-whisker r-withr r-xml setuptools  numpy r-dplyr scipy whatshap freebayes r-mc2d r-pheatmap bioconductor-complexheatmap r-gplots
-
-  conda env export > conda-environment.yml
-  ```
-
-This avoids some annoying version downgrades that sometimes happen when creating an environment incrementally.
 
 
 # Installation using Singularity/Docker
