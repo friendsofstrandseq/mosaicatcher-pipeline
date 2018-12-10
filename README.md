@@ -38,10 +38,10 @@ Choose one of three ways to install and run this workflow:
 	* Configure `Snake.conf.json` according to your installtion
 	* Add your single-cell data according to the specificaitons given below (Setup)
 
-2. **Run Snakemake using our Singularity image**
+2. **Run Snakemake together with a Singularity image**
 
-	* Requires Snakemake version 5.3.0 and Singularity version 2.5.2
-	* No installations required - example [here](docs/mosaicatcher-pipeline.md)
+	* Instructions [here](docs/mosaicatcher-pipeline.md)
+	* Requires [Snakemake](https://bitbucket.org/snakemake/snakemake) and [Singularity](https://www.sylabs.io/docs/). No further installations required
 	* Add your single-cell data according to the specificaitons given below
 
 3. **Run a complete example data set via Docker**
@@ -52,30 +52,34 @@ Choose one of three ways to install and run this workflow:
 
 ## Setup
 
-1. **Download this pipeline.** 
+* **Download this pipeline**
 
-   ```
-   git clone https://github.com/friendsofstrandseq/pipeline
-   ```
+	```
+	git clone https://github.com/friendsofstrandseq/pipeline
+	cd pipeline
+	```
 
-2. **Configuration.** In the config file `Snake.config.json`, specify the reference genome,
-   the chromosomes you would like to analyse.
+* **Add your single-cell data**
 
-3. **Add your data.** Create a subdirectory `bam/sampleName/`	and place the single-cell BAM files (one file per cell) in there:
+	Create a subdirectory `bam/sampleName/`. Your Strand-seq BAM files of this sample go into two folders:
 
-   ```
-   cd pipeline
-   mkdir -p bam/NA12878
-   cp /path/to/my/cells/*.bam     bam/NA12878/
-   cp /path/to/my/cells/*.bam.bai bam/NA12878
-   ```
+	* `all/`for the total set of BAM files
+	* `selected/` for the subset of successful Strand-seq libraries (possibly hard-linked to `all/`)
 
-4. **BAM requirements.** Make sure that all BAM files belonging to the same sample
-   contain the same read group sample tag (`@RG SM:thisIsTheSampleName`), that they
-   are indexed and have PCR duplicates marked (the latter is especially relevant for
-   single-cell data).
+	It is important to follow these rules for single-cell data
 
-5. **SNP call set.** If available, specify SNV calls (VCF) in `Snake.config.json`.
+	* One BAM file per cell
+	* Sorted and indexed
+	* Timestamp of index files must be newer than of the BAM files
+	* Each BAM file must contain a read group (`@RG`) with a common sample name (`SM`),
+	   which must match the folder name (`sampleName` above)
+
+* **Adapt the config file**
+
+	In `Snake.conf.json` you can specify
+
+* **SNP call set, if available**
+	If available, specify SNV calls (VCF) in `Snake.config.json`.
    Note that the sample name in the VCF must match the one in the BAM files.
 
 **Note:** Multiple samples can be run simultaneously. Just create different subfolders
