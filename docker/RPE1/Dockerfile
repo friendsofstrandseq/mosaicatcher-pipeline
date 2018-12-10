@@ -36,7 +36,7 @@ RUN mkdir snv_sites_to_genotype \
 # Download RPE-1 data from ENA
 RUN mkdir -p bam/RPE1-WT/all \
     && cd bam/RPE1-WT/all \
-    && for x in $(grep RPE1WT ../../docker/ena_files.txt); \
+    && for x in $(grep RPE1WT ../../../docker/ena_files.txt); \
         do \
         echo "downloading ${x}"; \
         wget -q ${x%.bai}; \
