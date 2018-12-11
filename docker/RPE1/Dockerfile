@@ -54,3 +54,17 @@ RUN mkdir -p bam/RPE1-WT/selected \
         ln /pipeline/bam/RPE1-WT/all/RPE1WTPE204${x}*.bam; \
         ln /pipeline/bam/RPE1-WT/all/RPE1WTPE204${x}*.bam.bai; \
         done
+
+# Download the reference genome
+RUN cd /\
+    && wget -q ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/000/001/405/GCA_000001405.15_GRCh38/seqs_for_alignment_pipelines.ucsc_ids/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna.gz \
+    && gunzip GCA_000001405.15_GRCh38_no_alt_analysis_set.fna.gz \
+    && mv GCA_000001405.15_GRCh38_no_alt_analysis_set.fna reference.fa \
+    && samtools faidx reference.fa
+
+# Add external data for package BSgenome.Hsapiens.UCSC.hg38
+RUN cd /tmp \
+    && wget -q https://bioconductor.org/packages/3.6/data/annotation/src/contrib/BSgenome.Hsapiens.UCSC.hg38_1.4.1.tar.gz \
+    && tar -xf BSgenome.Hsapiens.UCSC.hg38_1.4.1.tar.gz  \
+    && mv BSgenome.Hsapiens.UCSC.hg38/inst/extdata/single_sequences.2bit /usr/local/lib/R/site-library/BSgenome.Hsapiens.UCSC.hg38/extdata/single_sequences.2bit \
+    && rm -rf BSgenome.Hsapiens.UCSC.hg38*
