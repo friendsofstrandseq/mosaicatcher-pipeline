@@ -39,8 +39,8 @@ RUN mkdir -p bam/RPE1-WT/all \
     && for x in $(grep RPE1WT ../../../docker/ena_files.txt); \
         do \
         echo "downloading ${x}"; \
-        wget -q ${x%.bai}; \
         wget -q ${x}; \
+        wget -q ${x%.bai}; \
         done
 
 # Setup the set of selected RPE-1 cells
