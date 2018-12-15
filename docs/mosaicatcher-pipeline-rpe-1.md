@@ -1,14 +1,8 @@
 # Example workflow using RPE-1 cells
 
+We provide a Docker image ([mosaicatcher-pipeline-rpe-1](https://hub.docker.com/r/smei/mosaicatcher-pipeline-rpe-1)) that was made specifically to re-run a complete analysis on the epethelial cell line data set RPE-1.
 
-----
-**Note:** the Docker image is currently still under construction - stay tuned!
-
-----
-
-We provide a Docker image ([mosaicatcher-pipeline-rpe-1](https://hub.docker.com/r/smei/mosaicatcher-pipeline-rpe-1)) that was made specifically to re-run a complete analysis on the epethelial cell line data sets (RPE-1).
-
-This image includes all required data and is ~35GB large.
+This image includes all required software + data and is ~35GB large.
 
 
 
@@ -27,17 +21,17 @@ Now, from within the Docker container, run snakemake with the `Snake.config-sing
 snakemake --configfile Snake.config-singuliarity.json
 ```
 
-This should reproduce the whole analysis. Note that certain steps, such as running *FreeBayes* may take a long time.
+This should reproduce the whole analysis. Note that certain steps, for example *FreeBayes* may take a long time.
 
 
 ### Extracting results from within Docker
 
 Data within Docker containers is not persistent. To extract the results of running this pipeline, you can bind mount a folder of the host system into the container, as shown above using `-v`.
 
-In this case, just copy the relevant files to the host directory, for example:
+In this case, just copy the relevant files to the host directory, for example like this
 
 ```
-cp -r postprocessing /host/
+root@70768001ace0:/pipeline# cp -r postprocessing /host/
 ```
 
 An alternative to bind mounts are [Docker volumes](https://docs.docker.com/storage/volumes/).
@@ -51,10 +45,12 @@ The RUN commands within the [Dockerfile](../RPE-1/Dockerfile) describe exaclty h
 FROM smei/mosaicatcher-pipeline
 ```
 
-This container is based on the Docker image used for Singularity mode (explained [here](mosaicatcher-pipeline.md)).
+This container is based on the Docker image used for Singularity (explained [here](mosaicatcher-pipeline.md)) - it hence already contains all required software.
 
 
 **Add SNV calls**
+
+At first, a set of SNV calls is prepared, which will be re-genotyped within the given RPE-1 sample. To this end 1000 Genomes SNV calls are downloaded per chromosome using `wget`:
 
 ```
 RUN mkdir snv_sites_to_genotype \
@@ -69,13 +65,14 @@ RUN mkdir snv_sites_to_genotype \
 	done \
 
 ```
-At first, a set of SNV calls is prepared, which will be re-genotyped within the given RPE-1 sample. To this end 1000 Genomes SNV calls are downloaded per chromosome using `wget`. 
+
+Then, VCF files are concatenated into a single file...
 
 ```
     && bcftools concat -Oz -o tmp.vcf.gz -f file-list \
 ```
 
-Then, vcf files are concatenated into a single file...
+...and chromosome names are changed to match the names of the reference genome.
 
 ```
     && bcftools annotate --rename-chrs rename-chrs tmp.vcf.gz \
@@ -83,7 +80,7 @@ Then, vcf files are concatenated into a single file...
         > ../snv_sites_to_genotype/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz \
 ```
 
-...and chromosome names are changed to match the names of the reference genome.
+At last, the VCF is indexed and remaining files are removed.
 
 ```
     && tabix ../snv_sites_to_genotype/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz \
@@ -91,7 +88,6 @@ Then, vcf files are concatenated into a single file...
     && rm -rf tmp
 ```
 
-At last, the VCF is indexed and some clean-up is perfomed
 
 **Add single-cell BAM files**
 
