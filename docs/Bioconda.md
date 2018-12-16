@@ -15,7 +15,9 @@ In case you do not have Conda yet, it is easiest to just install
 
 3. **Install [mosaicatcher](https://github.com/friendsofstrandseq/mosaicatcher)**:
 
-	Build using CMake
+	Build using CMake.
+
+	For optimal integration with [pipeline](https://github.com/friendsofstrandseq/pipeline) version 1.0, please use version `0.3.1-dev`.
 	
  4. **Configure `Snake.config.json`**
 
