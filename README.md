@@ -85,7 +85,9 @@ Choose one of three ways to install and run this workflow:
 
 ## SNV calls for haplotype separation
 
-The MosaiCatcher pipeline utilizes single nucleotide variants (SNVs to distinguish haplotypes. Depending on which prior information is available, the workflow will
+The MosaiCatcher pipeline requires a set of genotyped single nucleotide variants (SNVs) to distinguish haplotypes, including the assignment of individually sequenced strands of a chromosome to a certain chromosome-length haplotype.
+
+Depending on which prior information is available, the workflow will
 
 * Phase SNVs using StrandPhaseR (when given a set of SNV calls)
 * Genotype SNVs in your data (when given potential SNV sites)
