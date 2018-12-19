@@ -4,6 +4,7 @@ We provide a Docker image ([mosaicatcher-pipeline-rpe-1](https://hub.docker.com/
 
 This image includes all required software + data and is ~35GB large.
 
+> Currently, this image has to be rebuilt. Some functionality might not be working. Updates follow soon.
 
 
 ## How to re-run RPE-1 analysis
