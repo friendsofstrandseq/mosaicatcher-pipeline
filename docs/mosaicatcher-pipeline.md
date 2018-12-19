@@ -31,6 +31,8 @@ To reduce the file size of this image (it is now ~2GB), the reference genome (_G
 
 	I.e. `bam` files and SNV calls (if available). See instructions in the [README](../README.md)
 
+	> We noticed a problem with soft-linked BAM files when using Singularity. Hence it is recommended to **copy** or hard-link BAM files into the `bam/xxx/all` and `bam/xxx/selected` folders.
+
 3. **Adapt the config file**
 
 	As described in the [README](../README.md), but now use `Snake.config-singularity.json` which already contains software paths.

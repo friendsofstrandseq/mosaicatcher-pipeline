@@ -4,7 +4,7 @@ We provide a Docker image ([mosaicatcher-pipeline-rpe-1](https://hub.docker.com/
 
 This image includes all required software + data and is ~35GB large.
 
-> Currently, this image has to be rebuilt. Some functionality might not be working. Updates follow soon.
+> Currently, this image has to be rebuilt. Some functionality (such as `Snake.config-singularity-rpe1.json` are not yet available. Updates follow soon!
 
 
 ## How to re-run RPE-1 analysis
@@ -16,10 +16,10 @@ sudo docker run -v $(pwd):/host -ti smei/mosaicatcher-pipeline-rpe-1 bash
 root@70768001ace0:/pipeline#
 ```
 
-Now, from within the Docker container, run snakemake with the `Snake.config-singuliarity.json` config file:
+Now, from within the Docker container, run snakemake with the `Snake.config-singularity-rpe1.json` config file (it differs from `Snake.config-singularity.json` only by specifying the file path of SNV sites).
 
 ```
-snakemake --configfile Snake.config-singuliarity.json
+snakemake --configfile Snake.config-singularity-rpe1.json
 ```
 
 This should reproduce the whole analysis. Note that certain steps, for example *FreeBayes* may take a long time.
