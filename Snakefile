@@ -813,8 +813,14 @@ rule prepare_strandphaser_config_per_chrom:
 
 def locate_snv_vcf(wildcards):
     if "snv_calls" not in config or wildcards.sample not in config["snv_calls"] or config["snv_calls"][wildcards.sample] == "":
-        if "snv_sites_to_genotype" in config and config["snv_sites_to_genotype"] != "":
-            return "snv_genotyping/{}/{}.vcf".format(wildcards.sample, wildcards.chrom)
+        if "snv_sites_to_genotype" in config and config["snv_sites_to_genotype"] != "" :
+            if os.path.isfile(config["snv_sites_to_genotype"]):
+                return "snv_genotyping/{}/{}.vcf".format(wildcards.sample, wildcards.chrom)
+            else:
+                print("[", wildcards.sample, "/", wildcards.chrom, "] `snv_sites_to_genotype` set to \"",
+                      config["snv_sites_to_genotype"], "\" but file does not seem to exist. "
+                      "Start de novo SNV calling", sep = "")
+                return "snv_calls/{}/{}.vcf".format(wildcards.sample, wildcards.chrom)
         else:
             return "snv_calls/{}/{}.vcf".format(wildcards.sample, wildcards.chrom)
     else:
@@ -829,7 +835,7 @@ rule run_strandphaser_per_chrom:
         bamfolder    = "bam/{sample}/selected"
     output:
         "strand_states/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt",
-        "strand_states/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf",
+        "strand_states/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf"
     log:
         "log/run_strandphaser_per_chrom/{sample}/{windows}.{bpdens}/{chrom}.log"
     shell:
