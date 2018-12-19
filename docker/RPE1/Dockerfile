@@ -68,3 +68,12 @@ RUN cd /tmp \
     && tar -xf BSgenome.Hsapiens.UCSC.hg38_1.4.1.tar.gz  \
     && mv BSgenome.Hsapiens.UCSC.hg38/inst/extdata/single_sequences.2bit /usr/local/lib/R/site-library/BSgenome.Hsapiens.UCSC.hg38/extdata/single_sequences.2bit \
     && rm -rf BSgenome.Hsapiens.UCSC.hg38*
+
+
+# Specify the SNV call set within Snake.config-singularity.json
+RUN cd /pipeline \
+    && awk '/snv_sites_to_genotype/ { \
+            print "    \"snv_sites_to_genotype\" : \"snv_sites_to_genotype/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz\","; \
+            next} \
+        1==1 {print}' Snake.config-singularity.json \
+        > Snake.config-singularity-rpe1.json
