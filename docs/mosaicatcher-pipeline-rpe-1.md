@@ -2,9 +2,7 @@
 
 We provide a Docker image ([mosaicatcher-pipeline-rpe-1](https://hub.docker.com/r/smei/mosaicatcher-pipeline-rpe-1)) that was made specifically to re-run a complete analysis on the epethelial cell line data set RPE-1.
 
-This image includes all required software + data and is ~35GB large.
-
-> Currently, this image has to be rebuilt. Some functionality (such as `Snake.config-singularity-rpe1.json` are not yet available. Updates follow soon!
+This image includes all required software + data and is ~30GB large.
 
 
 ## How to re-run RPE-1 analysis
