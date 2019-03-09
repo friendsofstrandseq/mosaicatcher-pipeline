@@ -1,4 +1,4 @@
-# Example workflow using RPE-1 cells
+# Docker workflow (including example data)
 
 We provide a Docker image ([mosaicatcher-pipeline-rpe-1](https://hub.docker.com/r/smei/mosaicatcher-pipeline-rpe-1)) that was made specifically to re-run a complete analysis on the epethelial cell line data set RPE-1.
 
