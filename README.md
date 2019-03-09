@@ -29,7 +29,6 @@ Choose one of three ways to install and run this workflow:
 
 	* Instructions [here](docs/Docker-example.md)
 	* Requires Docker (tested in version 18.09), **no further setup required**
-	* You can also provide your own input data, see [here](docs/Docker.md) 
 
 2. **Run Snakemake together with a Singularity image**
 
