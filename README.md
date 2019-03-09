@@ -27,13 +27,13 @@ Choose one of three ways to install and run this workflow:
 
 1. **Run a complete example via Docker** (easiest to use)
 
-	* Instructions [here](docs/mosaicatcher-pipeline-rpe-1.md)
+	* Instructions [here](docs/Docker-example.md)
 	* Requires Docker (tested in version 18.09), **no further setup required**
 	* You can also provide your own input data, see [here](docs/Docker.md) 
 
 2. **Run Snakemake together with a Singularity image**
 
-	* Instructions [here](docs/mosaicatcher-pipeline.md)
+	* Instructions [here](docs/Singularity.md)
 	* Requires [Snakemake](https://bitbucket.org/snakemake/snakemake) and [Singularity](https://www.sylabs.io/docs/).
 	* Add your data and configuration as described below (Setup)
 
