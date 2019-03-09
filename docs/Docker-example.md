@@ -1,6 +1,6 @@
 # Docker workflow (including example data)
 
-We provide a Docker image ([mosaicatcher-pipeline-rpe-1](https://hub.docker.com/r/smei/mosaicatcher-pipeline-rpe-1)) that was made specifically to re-run a complete analysis on the epethelial cell line data set RPE-1.
+We provide an image ([mosaicatcher-pipeline-rpe-1](https://hub.docker.com/r/smei/mosaicatcher-pipeline-rpe-1)) that was made specifically to re-run a complete analysis on the epethelial cell line data set RPE-1.
 
 This image includes all required software + data and is ~30GB large.
 
@@ -21,6 +21,8 @@ snakemake --configfile Snake.config-singularity-rpe1.json
 ```
 
 This should reproduce the whole analysis. Note that certain steps, for example *FreeBayes* may take a long time.
+
+**Note**: We highly recommend running jobs in parallel, using for example`-j 23` when invoking snakemake.
 
 
 ### Extracting results from within Docker
