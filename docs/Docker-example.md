@@ -44,7 +44,7 @@ The RUN commands within the [Dockerfile](../RPE-1/Dockerfile) describe exaclty h
 FROM smei/mosaicatcher-pipeline
 ```
 
-This container is based on the Docker image used for Singularity (explained [here](mosaicatcher-pipeline.md)) - it hence already contains all required software.
+This container is based on the image used for Singularity (explained [here](Singularity.md)) - it hence already contains all required software.
 
 
 **Add SNV calls**

@@ -114,7 +114,7 @@ when the pipeline is run (see below).
 
 ## Singularity vs. Docker workflow
 
-In the [Docker workflow](./mosaicatcher-pipeline-rpe-1.md) containing an example
+In the [Docker workflow](./Docker-example.md) containing an example
 data set, Snakemake is included within the image. In fact, the
 [mosaicatcher-pipeline-rpe-1](https://hub.docker.com/r/smei/mosaicatcher-pipeline-rpe-1)
 image *is based on* the
@@ -124,4 +124,4 @@ used here.
 The major difference is that here, `snakemake` is run on your system and not from
 within a Docker container. This gives you easy access to all other functionality of
 Snakemake, including multi-core and cluster support. Only each *job* within the workflow
-will be run from *inside* the image.
+will be run *inside* the image.
