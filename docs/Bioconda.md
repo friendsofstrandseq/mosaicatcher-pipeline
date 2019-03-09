@@ -17,7 +17,9 @@ In case you do not have Conda yet, it is easiest to just install
 
 	Build using CMake.
 
-	For optimal integration with [pipeline](https://github.com/friendsofstrandseq/pipeline) version 1.0, please use version `0.3.1-dev`.
+	For optimal integration with [pipeline](https://github.com/friendsofstrandseq/pipeline)
+	version 1.0, please use version
+	[`0.3.1-dev`](https://github.com/friendsofstrandseq/mosaicatcher/tree/0.3.1-dev).
 	
  4. **Configure `Snake.config.json`**
 
@@ -25,7 +27,7 @@ In case you do not have Conda yet, it is easiest to just install
 	
 	* `mosaicatcher` to the software installed in (iii)
 	* `reference` to the reference genome FASTA file (requires an .fai index)
-	* `plot_script` to the `qc.R` script contained within mosaicatcher
+	* `plot_script` to the `qc.R` script contained within mosaicatcher (iii)
 	* `samtools`, `bcftools` to the respective software
 
 ## Note on how Conda environment was created
