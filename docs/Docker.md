@@ -13,9 +13,8 @@ This can be used to easily run the MosaiCatcher workflow on own samples.
 
 ## How to run
 
-Like in the pre-populated image (see [here](Docker-example.md)), this image contains the reference genome *hg38*, snakemake, and all required software.
-
-To add your own data, just mount the respective volumes into the Docker container. Here is an example (where you need to replace the `/path/to` part.
+To add your own data, just mount the respective volumes into the `/pipeline` directory of the Docker container.
+Here is an example (you need to replace the `/path/to` part):
 
 ```
 sudo docker run -ti \
@@ -26,6 +25,9 @@ sudo docker run -ti \
     bash
 root@04f2b2aeb86c:/pipeline#
 ```
+
+> Note that the folders `sv_calls` and `postprocessing` are necessary to store the result files permanently.
+> Otherwise, you can also copy them to the `bam` folder after the pipeline has finished
 
 Then, within the container, you potentially want to change `Snake.config-singularity.json` (for example to specify that your reads are single-ended, or to tell the pipeline that you would like to use a custom SNV call set).
 
