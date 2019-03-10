@@ -23,20 +23,26 @@ the workflow goes through the following steps:
 
 ## Installation
 
-Choose one of three ways to install and run this workflow:
+Choose one of many ways to install and run this workflow, from *easiest to use* to *most flexible*:
 
-1. **Run a complete example via Docker** (easiest to use)
+1. **Run a complete example via Docker**
 
 	* Instructions [here](docs/Docker-example.md)
 	* Requires Docker (tested in version 18.09), **no further setup required**
 
-2. **Run Snakemake together with a Singularity image**
+2. **Run your own data set via Docker**
+
+	* Instructions [here](docs/Docker.md)
+	* Requires Docker (tested in version 18.09) and a manual setup of data (Setup)
+
+3. **Run Snakemake together with a Singularity image**
 
 	* Instructions [here](docs/Singularity.md)
 	* Requires [Snakemake](https://bitbucket.org/snakemake/snakemake) and [Singularity](https://www.sylabs.io/docs/).
 	* Add your data and configuration as described below (Setup)
+	* More flexible than Docker since `snakemake` is run on your system (not within the container)
 
-3. **Install software using Bioconda** (most flexible)
+4. **Install software using Bioconda** (most flexible)
 
 	* Installation instructions [here](docs/Bioconda.md)
 	* Configure `Snake.config.json` to match your software installation
