@@ -42,7 +42,7 @@ Choose one of many ways to install and run this workflow, from *easiest to use* 
 	* Add your data and configuration as described below (Setup)
 	* More flexible than Docker since `snakemake` is run on your system (not within the container)
 
-4. **Install software using Bioconda** (most flexible)
+4. **Install software using Bioconda**
 
 	* Installation instructions [here](docs/Bioconda.md)
 	* Configure `Snake.config.json` to match your software installation
