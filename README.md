@@ -21,6 +21,14 @@ the workflow goes through the following steps:
   7. Visualization of results using custom R plots (included)
 
 
+## System requirements
+
+This workflow is meant to be run in a Unix-based operating system (tested on Ubuntu 18.04). 
+
+However, several [Docker](https://docker.com) images are available for portability (see Installation).
+
+Minimum system requirements vary based on the use case. The whole pipeline can be run in a notebook (8GB RAM, 4 cores, 3GHz CPUs), but we highly recommend running it in a server environment with 32+GB RAM and 24 cores.
+
 ## Installation
 
 Choose one of many ways to install and run this workflow, from *easiest to use* to *most flexible*:
