@@ -19,7 +19,7 @@ In case you do not have Conda yet, it is easiest to just install
 
 	For optimal integration with [pipeline](https://github.com/friendsofstrandseq/pipeline)
 	version 1.0, please use version
-	[`0.3.1-dev`](https://github.com/friendsofstrandseq/mosaicatcher/tree/0.3.1-dev).
+	[`47a06ed`](https://github.com/friendsofstrandseq/mosaicatcher/commit/47a06ed6f742c97d53d736fd11c54ff2fabd53c9).
 	
  4. **Configure `Snake.config.json`**
 
