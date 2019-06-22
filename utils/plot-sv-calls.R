@@ -190,7 +190,7 @@ if (!is.null(f_segments)) {
   if ("k" %in% colnames(seg)) {
     seg[, assert_that(length(unique(k))==1), by = .(chrom)] %>% invisible }
 
-  seg = merge(seg, bins[,.N, by =chrom][, .(chrom, N = c(0,cumsum(N)[1:(.N-1)]))], by = "chrom")
+  seg = merge(seg, bins[,.N, by =chrom][, .(chrom, N = c(0,cumsum(N))[1:(.N-1)])], by = "chrom", allow.cartesian = T)
   seg[, `:=`(from = c(1,bps[1:(.N-1)]+1), to = bps), by = chrom]
   seg[, `:=`(start = bins[from + N]$start,
              end   = bins[to   + N]$end  )]
