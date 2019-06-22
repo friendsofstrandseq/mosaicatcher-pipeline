@@ -45,7 +45,7 @@ plot.clustering <- function(inputfile, bin.bed.filename, position.outputfile, ch
 
 	rownames(result) <- data1_cell_uniq_sort
 	colnames(result) <- data1_pos_uniq_sort$posind
-	result[result==Inf] <- max(result[result!=Inf])
+	result[result==Inf] <- max(c(1, result[result!=Inf]))
 	rownames(result_sv) <- data1_cell_uniq_sort
 	colnames(result_sv) <- data1_pos_uniq_sort$posind
 
@@ -72,6 +72,7 @@ plot.clustering <- function(inputfile, bin.bed.filename, position.outputfile, ch
 	breaksList = seq(4, 30, by = 0.1)
 	breaksList=append(breaksList, max(result))
 	breaksList=append(breaksList, -1, 0)
+	breaksList=unique(sort(breaksList))
 	mycol <- colorpanel(n=length(breaksList)-1,low="lightgoldenrodyellow", mid = "darkorange", high="firebrick2")
 
 	Var1        <- c("magenta", "purple")
@@ -146,16 +147,17 @@ plot.clustering <- function(inputfile, bin.bed.filename, position.outputfile, ch
 	}
 	rownames(result) <- data1_cell_uniq_sort
 	colnames(result) <- data1_pos_uniq_sort$posind
-	result[result==Inf] <- max(result[result!=Inf])
+	result[result==Inf] <- max(c(1,result[result!=Inf]))
 	rownames(result_sv) <- data1_cell_uniq_sort
 	colnames(result_sv) <- data1_pos_uniq_sort$posind
 
 	breaksList = seq(4, 30, by = 0.1)
 	breaksList=append(breaksList, max(result))
 	breaksList=append(breaksList, -1, 0)
+	breaksList=unique(sort(breaksList))
 	mycol <- colorpanel(n=length(breaksList)-1,low="lightgoldenrodyellow", mid = "darkorange", high="firebrick2")
 
-	res<-pheatmap(result, border_color = NA, show_rownames=T, show_colnames=F, cluster_cols=F, cluster_rows=T, clustering_method="ward.D", scale="none", col=mycol, cex=0.5, main=inputfile)
+	res<-pheatmap(result, border_color = NA, show_rownames=T, show_colnames=F, cluster_cols=F, cluster_rows=T, clustering_method="ward.D", scale="none", col=mycol, cex=0.5, main=inputfile, breaks = breaksList)
 
 	##Assign sv calls to the genome-wide bins (200kb)
 	par("mar")
