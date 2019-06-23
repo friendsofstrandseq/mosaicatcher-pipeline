@@ -111,10 +111,9 @@ RUN conda install -c bioconda -c conda-forge \
     scipy=1.1.0 \
     && conda clean -ay
 
-# Install Whatshap and Snakemake
+# Install Whatshap
 RUN conda install -c bioconda -c conda-forge \
     whatshap=0.17 \
-    snakemake=5.3.0 \
     && conda clean -ay
 
 
