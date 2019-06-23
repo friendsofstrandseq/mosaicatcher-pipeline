@@ -1,7 +1,9 @@
 FROM smei/mosaicatcher-pipeline
 
-MAINTAINER Sascha Meiers meiers@embl.de
-LABEL version="0.2"
+MAINTAINER Sascha Meiers sascha.meiers.embl@gmail.com
+LABEL version="0.3"
+LABEL description="This is the same as smei/mosaicatcher-pipeline but including\
+  the reference genome hg38."
 
 # Install wget
 RUN apt-get update \
