@@ -1,8 +1,8 @@
 # Docker workflow (including example data)
 
-We provide an image ([mosaicatcher-pipeline-rpe-1](https://hub.docker.com/r/smei/mosaicatcher-pipeline-rpe-1)) that was made specifically to re-run a complete analysis on the epethelial cell line data set RPE-1.
+We provide an image ([mosaicatcher-pipeline-rpe-1](https://hub.docker.com/r/smei/mosaicatcher-pipeline-rpe1-chr3)) that was made specifically to re-run a complete analysis on a single chromosome of the epethelial cell line data set RPE-1.
 
-This image includes all required software + data and is ~30GB large.
+This image includes all required software + data and is hence several GB large.
 
 
 ## How to re-run RPE-1 analysis
@@ -10,7 +10,7 @@ This image includes all required software + data and is ~30GB large.
 Run Docker as shown below. The image will be fetched automatically from Dockerhub.
 
 ```
-sudo docker run -v $(pwd):/host -ti smei/mosaicatcher-pipeline-rpe-1 bash
+sudo docker run -v $(pwd):/host -ti smei/mosaicatcher-pipeline-rpe1-chr3 bash
 root@70768001ace0:/pipeline#
 ```
 
@@ -22,23 +22,27 @@ snakemake --configfile Snake.config-singularity-rpe1.json
 
 This should reproduce the whole analysis. Note that certain steps, for example *FreeBayes* may take a long time.
 
-**Note**: We highly recommend running jobs in parallel, using for example`-j 23` when invoking snakemake.
+> Note: You can run jobs in parallel, using for example`-j 4` when invoking snakemake.
+
+> Note: An error code of 139 typically means that the Docker container was killed from outside, likely because it reached a memory limit.
 
 
 ### Extracting results from within Docker
 
-Data within Docker containers is not persistent. To extract the results of running this pipeline, you can bind mount a folder of the host system into the container, as shown above using `-v`.
-
-In this case, just copy the relevant files to the host directory, for example like this
+Data within Docker containers is not persistent. To extract the results of running this pipeline copy the results to the `/host` folder after the pipeline has completed, for example as such:
 
 ```
 root@70768001ace0:/pipeline# cp -r postprocessing /host/
 ```
 
-An alternative to bind mounts are [Docker volumes](https://docs.docker.com/storage/volumes/).
+Alternatively you can bind-mount subdirectories of the pipeline directly into the pipeline folder **before starting the docker container**. of the host system into the pipeline folder, as shown above using `-v`.
+
+See [Docker volumes](https://docs.docker.com/storage/volumes/) for reference.
 
 
 ## Explanation of how this container was created
+
+> **Note**: The description below is not up-to-date. Check the `Dockerfile` itself to see the commands that were run
 
 The RUN commands within the [Dockerfile](../RPE-1/Dockerfile) describe exaclty how data is added to the workflow. Here is a step-by-step explanation:
 
