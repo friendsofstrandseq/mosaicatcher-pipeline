@@ -53,6 +53,5 @@ RUN mkdir -p bam/RPE1-WT/selected \
                 50 51 52 53 54 55 56 57 59 62 63 64 65 66 67 68 69 70 71 72 73 \
                 74 76 77 78 80 81 83 84 85 86 89 90 91 92 93 94 95; \
         do \
-        ln /pipeline/bam/RPE1-WT/all/RPE1WTPE204${x}*.bam; \
-        ln /pipeline/bam/RPE1-WT/all/RPE1WTPE204${x}*.bam.bai; \
+        cp -la ../../RPE1-WT/all/RPE1WTPE204${x}* .; \
         done
