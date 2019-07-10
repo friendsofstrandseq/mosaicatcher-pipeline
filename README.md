@@ -33,10 +33,11 @@ Minimum system requirements vary based on the use case. The whole pipeline can b
 
 Choose one of many ways to install and run this workflow, from *easiest to use* to *most flexible*:
 
-1. **Run a complete example via Docker**
+1. **Run a complete example via Docker [Demo data set]**
 
 	* Instructions [here](docs/Docker-example.md)
 	* Requires Docker (tested in version 18.09), **no further setup required**
+	* In case of testing in a Docker Desktop, please make sure the setting of resources (Memory: 3.0 GiB, Swap: 4.0GiB), this can be checked/changed via 'Preferences -> Advanced' in your Docker Desktop software
 
 2. **Run your own data set via Docker**
 
