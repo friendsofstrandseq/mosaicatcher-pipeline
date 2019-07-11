@@ -38,9 +38,12 @@ root@70768001ace0:/pipeline# cp -r postprocessing /host/
 Alternatively you can bind-mount subdirectories of the pipeline directly into the pipeline folder **before starting the docker container**. of the host system into the pipeline folder, as shown above using `-v`.
 
 See [Docker volumes](https://docs.docker.com/storage/volumes/) for reference.
-Following is the example to extract the final merged call set:
+
+> **Note**: Following is the example to extract the final merged call set to your local Desktop using terminal:
+```
 sudo docker cp e255985f228a:/pipeline/postprocessing/merge/RPE1-WT/100000_fixed_norm.selected_j0.1_s0.5_scedist20/simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.05_regfactor6.txt merge/
 sudo docker cp e255985f228a:/pipeline/postprocessing/merge/RPE1-WT/100000_fixed_norm.selected_j0.1_s0.5_scedist20/simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0_regfactor6.txt merge/
+```
 
 ## Explanation of how this container was created
 
