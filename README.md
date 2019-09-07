@@ -62,7 +62,7 @@ Choose one of many ways to install and run this workflow, from *easiest to use* 
 1. **Download this pipeline**
 
 	```
-	git clone https://github.com/friendsofstrandseq/pipeline
+	git clone https://github.com/friendsofstrandseq/mosaicatcher-pipeline pipeline
 	cd pipeline
 	```
 
@@ -102,7 +102,7 @@ Choose one of many ways to install and run this workflow, from *easiest to use* 
 
 ## SNV calls for haplotype separation
 
-The MosaiCatcher pipeline requires a set of genotyped single nucleotide variants (SNVs) to
+The MosaiCatcher Pipeline requires a set of genotyped single nucleotide variants (SNVs) to
 distinguish haplotypes, including the assignment of individually sequenced strands of a
 chromosome to a certain chromosome-length haplotype.
 

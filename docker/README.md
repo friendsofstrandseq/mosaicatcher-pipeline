@@ -1,6 +1,6 @@
 # Docker/Singularity image
 
-This `Dockerfile` bundles required software to run the mosaicatcher pipeline.
+This `Dockerfile` bundles required software to run the Mosaicatcher Pipeline.
 
 It does not contain
 * `snakemake` (which is required to run the pipeline)
