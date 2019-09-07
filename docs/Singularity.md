@@ -55,7 +55,7 @@ when the pipeline is run (see below).
 2. **Download this pipeline** 
 
 	```
-	git clone https://github.com/friendsofstrandseq/pipeline
+	git clone https://github.com/friendsofstrandseq/mosaicatcher-pipeline pipeline
 	cd pipeline
 	```
 
