@@ -105,7 +105,8 @@ RUN apt-get update \
 
 
 # Install required python packages
-RUN conda install -c bioconda -c conda-forge \
+RUN conda install -c bioconda -c conda-forge -qy \
+    python=3.6 \
     numpy=1.15.4 \
     pandas=0.23.4 \
     scipy=1.1.0 \
