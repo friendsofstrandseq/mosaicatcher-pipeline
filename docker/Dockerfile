@@ -119,6 +119,6 @@ RUN conda install -c bioconda -c conda-forge \
 
 
 # At last, install the current version of the pipeline into /pipeline
-RUN git clone https://github.com/friendsofstrandseq/mosaicatcherpipeline /pipeline
+RUN git clone https://github.com/friendsofstrandseq/mosaicatcher-pipeline /pipeline
 
 WORKDIR /pipeline
