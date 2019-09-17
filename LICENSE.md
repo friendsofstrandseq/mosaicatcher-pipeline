@@ -1,19 +1,16 @@
 
 EMBLEM Technology Transfer Academic License
 
-Copyright © 2019 
-Jan O. Korbel (korbel@embl.de) and Ashley D. Sanders (sanders@embl.de) and Tobias Marschall (t.marschall@mpi-inf.mpg.de)
+Copyright © 2019
 
+Jan O. Korbel (korbel@embl.de) and Ashley D. Sanders (sanders@embl.de) and Tobias Marschall (t.marschall@mpi-inf.mpg.de)
 
 The programs can be used free of charge for academic purposes, according to our academic license defined below. Please note that this does not cover any commercial applications.
 
 
+ACADEMIC SOFTWARE LICENSE AGREEMENT FOR END-USERS AT PUBLIC FUNDED ACADEMIC, EDUCATION OR RESEARCH INSTITUTIONS FOR SOFTWARE PRODIVED AT THE WEBSITE https://github.com/friendsofstrandseq/mosaicatcher-pipeline 
 
-
-
-ACADEMIC SOFTWARE LICENSE AGREEMENT FOR END-USERS AT PUBLIC FUNDED ACADEMIC, EDUCATION OR RESEARCH INSTITUTIONS FOR SOFTWARE PRODIVED AT THE WEBSITE https://github.com/friendsofstrandseq/mosaicatcher-pipeline   
-
-EMBL Enterprise Management GmbH (hereinafter "EMBLEM") is willing to license any software provided at https://github.com/friendsofstrandseq/mosaicatcher-pipeline as specified in Annex 1, to you only under condition that you accept all of the terms contained in this license agreement (Agreement). Please read the Agreement carefully. By downloading or installing this software you accept the terms of this Agreement. 
+EMBL Enterprise Management GmbH (hereinafter "EMBLEM") is willing to license any software provided at https://github.com/friendsofstrandseq/mosaicatcher-pipeline, to you only under condition that you accept all of the terms contained in this license agreement (Agreement). Please read the Agreement carefully. By downloading or installing this software you accept the terms of this Agreement. 
 
 If you are not a member of a public funded academic and/or education and/or research institution you must obtain a commercial license from EMBLEM (info@embl-em.de).
 
@@ -77,7 +74,7 @@ LICENSEE will be liable for all damages without limitation, which are caused by 
 LICENSEE has no right to claim any indemnification based on LICENSEE's use of Licensed Software. 
 
 10. Promotional Advertising & References 
-LICENSEE may not use the name of any software specified in Annex 1 in its promotional advertising, product literature, and other similar promotional materials to be disseminated to the public or any portion thereof. LICENSEE agrees not to identify EMBL in any promotional advertising or other promotional materials to be disseminated to the public, or any portion thereof without EMBLEM's prior written consent. For the avoidance of doubt, scientific literature is not defined as advertising and promotional materials. 
+LICENSEE may not use the name of any software specified here in its promotional advertising, product literature, and other similar promotional materials to be disseminated to the public or any portion thereof. LICENSEE agrees not to identify EMBL in any promotional advertising or other promotional materials to be disseminated to the public, or any portion thereof without EMBLEM's prior written consent. For the avoidance of doubt, scientific literature is not defined as advertising and promotional materials. 
 
 LICENSEE agrees to cite the use of the Licensed Software on all related scientific publications, posters, grant applications, institutional reports or brochures. EMBLEM or EMBL shall not use LICENSEE's name in publicity or advertising involving this Agreement or otherwise without LICENSEE's prior written consent which may be withheld at LICENSEE's sole discretion. 
 
