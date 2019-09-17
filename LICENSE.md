@@ -1,0 +1,108 @@
+
+EMBLEM Technology Transfer Academic License
+
+Copyright © 2019 
+Jan O. Korbel (korbel@embl.de) and Ashley D. Sanders (sanders@embl.de) and Tobias Marschall (t.marschall@mpi-inf.mpg.de)
+
+
+The programs can be used free of charge for academic purposes, according to our academic license defined below. Please note that this does not cover any commercial applications.
+
+
+ACADEMIC SOFTWARE LICENSE AGREEMENT FOR END-USERS AT PUBLIC FUNDED ACADEMIC, EDUCATION OR RESEARCH INSTITUTIONS FOR SOFTWARE PRODIVED AT THE WEBSITE https://github.com/friendsofstrandseq/   
+
+EMBL Enterprise Management GmbH (hereinafter "EMBLEM") is willing to license any software provided at https://github.com/friendsofstrandseq/ as specified in Annex 1, to you only under condition that you accept all of the terms contained in this license agreement (Agreement). Please read the Agreement carefully. By downloading or installing this software you accept the terms of this Agreement. 
+
+If you are not a member of a public funded academic and/or education and/or research institution you must obtain a commercial license from EMBLEM (info@embl-em.de).
+
+This software license agreement is entered into by and between EMBL Enterprise Management GmbH (hereinafter "EMBLEM") located at Boxbergring 107, D-69126 Heidelberg, Germany and the "LICENSEE".
+
+WHEREAS EMBLEM has the right to and desires to license https://github.com/friendsofstrandseq/ so that it becomes available for public use and benefit;
+
+WHEREAS EMBL (European Molecular Biology Laboratory, Meyerhofstrasse 1, D-69117 Heidelberg, Germany) have developed and own the copyright in software provided at https://github.com/friendsofstrandseq/, as specified in Annex 1;
+
+WHEREAS LICENSEE is a public funded academic and/or education and/or research institution or an individual working for such institution. 
+
+WHEREAS LICENSEE desires to acquire a free non-exclusive license to use the Software for internal research purposes only. 
+
+NOW, THEREFORE, in consideration of the mutual promises and covenants contained herein, the parties agree as follows:
+
+1. Definitions 
+"Licensed Software" any of the current versions of software which is downloadable from https://github.com/friendsofstrandseq developed by Jan O. Korbel and Ashley D. Sanders and Tobias Marschall and his/her team the “Authors”, pursuant to this Agreement. 
+
+Any opinion, findings, conclusions or recommendations expressed in the Licensed Software are those of the authors and do not necessarily reflect the views of EMBL and EMBLEM. 
+
+ 
+2. License 
+Subject to the terms and conditions of this Agreement a non-exclusive, non-transferable License to use the Licensed Software is made available free of charge for the LICENSEE, which is a non-profit educational, academic and/or research institution. The LICENSEE can use the Software only for academic research projects. This explicitly excludes projects which are contracted to the LICENSEE by any third party for a fee, or projects that are done in collaboration with a third party that is funding the research in whole or in part in exchange for commercial rights on the results and/or possible delay in publication of any relevant results to the academic community. 
+
+This license does not entitle LICENSEE to receive from EMBLEM any copies of the Licensed Software including but not limited to Licensed Software on disks, tapes or CD's, hard-copy documentation, technical support, telephone assistance, or enhancements or updates to the Licensed Software. 
+
+The user and any research assistants, co-workers or other workers who may use the Software agree to not grant licenses on any software that includes the Licensed Software, alone or integrated into other software, to third parties. Modification of the Licensed Software code is prohibited without the prior written consent of EMBLEM. 
+
+3. Ownership 
+Except as expressly licensed in this Agreement, EMBL shall retain title to the Licensed Software, and any upgrades and modifications created by EMBL. 
+
+4. Consideration 
+In consideration for the license rights granted by EMBLEM, LICENSEE will obtain this academic license free of charge. 
+
+5. Copies 
+LICENSEE shall have the right to download the Licensed Software and/or to make 5 (five) copies of the Licensed Software for either internal use or for back-up purposes under this Agreement. 
+
+6. Support 
+EMBLEM shall have no obligation to offer support services to LICENSEE, and nothing contained herein shall be interpreted as to require EMBLEM to provide maintenance, installation services, debugging, consultation, or end-user support of any kind. 
+
+7. Software Protection 
+LICENSEE acknowledges that the Licensed Software is proprietary to EMBL. The software code of the Licensed Software shall be treated as trade secrets and confidential information, and LICENSEE agrees to use their best efforts to hold the same in confidence. LICENSEE's obligation for confidentiality shall not extend to any information which is, or becomes, generally available to the public, is already known to, or subsequently disclosed by third parties to, LICENSEE and is at its free disposal, or is independently developed by LICENSEE or its affiliates without the use of the confidential information disclosed by EMBL, or is required by law or legal process. 
+Except as otherwise expressly permitted in this Agreement, LICENSEE may not (i) modify or create any derivative works of the Licensed Software or documentation to the Licensed Software, including customization, translation or localization; (ii) decompile, disassemble, reverse engineer, or otherwise attempt to derive the source code for the Product; (iii) redistribute, encumber, sell, rent, lease, sublicense, or otherwise transfer rights to the Licensed Software; (iv) remove or alter any trademark, logo, copyright or other proprietary notices, legends, symbols or labels in the Product; or (v) publish any results of benchmark tests run on the Product to a third party without EMBLEM's prior written consent. 
+
+8. Representations of EMBLEM to LICENSEE 
+EMBLEM represents to LICENSEE that (i) EMBLEM has the right to grant the License on the Licensed Software and to enter into this agreement and (ii) EMBLEM undertakes to use best efforts to cooperate with and assist LICENSEE, at LICENSEE's expense, in defending itself against any action based on the alleged infringement of any third party patent, copyright or trade secret rights resulting from or relating to the use or licensing of the Licensed Software by LICENSEE. 
+
+9. Indemnity and Disclaimer of Warranties 
+Except as expressly set forth in this agreement, EMBLEM makes no representations or warranties, expressed or implied. 
+
+The Licensed Software is provided free of charge, and, therefore, on an "as is" basis, without warranty of any kind, explicitly or implicitly, including without limitation the warranties that it is free of defects, virus free, able to operate on an uninterrupted basis, merchantable, fit for a particular purpose or non-interfering. The entire risk as to the quality and performance of the Licensed Software is borne by LICENSEE. 
+
+By way of example, but not limitation, EMBLEM makes no representations or warranties of merchantability or fitness for the Licensed Software and any particular application or that the use of the Licensed Software will not infringe any patents, copyrights or trademarks or other rights of third parties. The entire risk as to the quality and performance of the product is borne by LICENSEE. EMBLEM shall not be liable for any liability or damages with respect to any claim by LICENSEE or any third party on account of, or arising from the license or use of the Software. 
+
+Should the Licensed Software prove defective in any respect, LICENSEE and not EMBL or its affiliates should assume the entire cost of any service and repair. This disclaimer of warranty constitutes an essential part of this agreement. No use of the Licensed Software is authorized hereunder except under this disclaimer. 
+
+In no event will EMBL or its affiliates be liable for any indirect, special, incidental or consequential damages arising out of the use of or inability to use the product, including, without limitation, damages for lost profits, loss of goodwill, work stoppage, computer failure or malfunction, or any and all other commercial damages or losses, even if advised of the possibility thereof, and regardless of the legal or equitable theory (contract, tort or otherwise) upon which the claim is based. 
+
+LICENSEE will be liable for all damages without limitation, which are caused by abuse of the Licensed Software service on EMBL’s server. 
+
+LICENSEE has no right to claim any indemnification based on LICENSEE's use of Licensed Software. 
+
+10. Promotional Advertising & References 
+LICENSEE may not use the name of any software specified in Annex 1 in its promotional advertising, product literature, and other similar promotional materials to be disseminated to the public or any portion thereof. LICENSEE agrees not to identify EMBL in any promotional advertising or other promotional materials to be disseminated to the public, or any portion thereof without EMBLEM's prior written consent. For the avoidance of doubt, scientific literature is not defined as advertising and promotional materials. 
+
+LICENSEE agrees to cite the use of the Licensed Software on all related scientific publications, posters, grant applications, institutional reports or brochures. EMBLEM or EMBL shall not use LICENSEE's name in publicity or advertising involving this Agreement or otherwise without LICENSEE's prior written consent which may be withheld at LICENSEE's sole discretion. 
+
+11. Term 
+This Agreement and the license rights granted herein shall become effective as of the date this Agreement is executed by both parties and shall be perpetual unless terminated in accordance with this Section. 
+
+EMBLEM may terminate this Agreement at any time. 
+
+Either party may terminate this Agreement at any time effective upon the other party's breach of any agreement, covenant, or representation made in this Agreement, such breach remaining uncorrected sixty (60) days after written notice thereof. 
+
+LICENSEE shall have the right, at any time, to terminate this Agreement without cause by written notice to EMBLEM specifying the date of termination. 
+
+12. Governing Law 
+This Agreement shall be construed in accordance with the laws of Germany. Place of Jurisdiction shall be Mannheim. 
+
+13. General 
+The parties agree that this Agreement is the complete and exclusive agreement among the parties and supersedes all proposals and prior agreements whether written or oral, and all other communications among the parties relating to the subject matter of this Agreement. This Agreement cannot be modified except in writing and signed by both parties. Failure by either party at any time to enforce any of the provisions of this Agreement shall not constitute a waiver by such party of such provision nor in any way affect the validity of this Agreement. 
+
+The invalidity of singular provisions does not affect the validity of the entire understanding. The parties are obligated, however, to replace the invalid provisions by a regulation, which comes closest to the economic intent of the invalid provision. The same shall apply mutatis mutandis in case of a gap. 
+
+IN WITNESS WHEREOF, the LICENSEE hereto has caused this Agreement to be duly executed on the date of access to the Licensed Software service and by accepting the license conditions by pressing the Acceptance button. 
+
+I have read this License Agreement and I agree to uphold the terms and conditions of this license.
+ 
+ANNEX 1
+
+The software applications available at https://github.com/friendsofstrandseq/  are:
+-	TranslocatoR
+-	Mosaicatcher-pipeline
+-	pipeline
+
