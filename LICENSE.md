@@ -8,17 +8,20 @@ Jan O. Korbel (korbel@embl.de) and Ashley D. Sanders (sanders@embl.de) and Tobia
 The programs can be used free of charge for academic purposes, according to our academic license defined below. Please note that this does not cover any commercial applications.
 
 
-ACADEMIC SOFTWARE LICENSE AGREEMENT FOR END-USERS AT PUBLIC FUNDED ACADEMIC, EDUCATION OR RESEARCH INSTITUTIONS FOR SOFTWARE PRODIVED AT THE WEBSITE https://github.com/friendsofstrandseq/   
 
-EMBL Enterprise Management GmbH (hereinafter "EMBLEM") is willing to license any software provided at https://github.com/friendsofstrandseq/ as specified in Annex 1, to you only under condition that you accept all of the terms contained in this license agreement (Agreement). Please read the Agreement carefully. By downloading or installing this software you accept the terms of this Agreement. 
+
+
+ACADEMIC SOFTWARE LICENSE AGREEMENT FOR END-USERS AT PUBLIC FUNDED ACADEMIC, EDUCATION OR RESEARCH INSTITUTIONS FOR SOFTWARE PRODIVED AT THE WEBSITE https://github.com/friendsofstrandseq/mosaicatcher-pipeline   
+
+EMBL Enterprise Management GmbH (hereinafter "EMBLEM") is willing to license any software provided at https://github.com/friendsofstrandseq/mosaicatcher-pipeline as specified in Annex 1, to you only under condition that you accept all of the terms contained in this license agreement (Agreement). Please read the Agreement carefully. By downloading or installing this software you accept the terms of this Agreement. 
 
 If you are not a member of a public funded academic and/or education and/or research institution you must obtain a commercial license from EMBLEM (info@embl-em.de).
 
 This software license agreement is entered into by and between EMBL Enterprise Management GmbH (hereinafter "EMBLEM") located at Boxbergring 107, D-69126 Heidelberg, Germany and the "LICENSEE".
 
-WHEREAS EMBLEM has the right to and desires to license https://github.com/friendsofstrandseq/ so that it becomes available for public use and benefit;
+WHEREAS EMBLEM has the right to and desires to license https://github.com/friendsofstrandseq/mosaicatcher-pipeline so that it becomes available for public use and benefit;
 
-WHEREAS EMBL (European Molecular Biology Laboratory, Meyerhofstrasse 1, D-69117 Heidelberg, Germany) have developed and own the copyright in software provided at https://github.com/friendsofstrandseq/, as specified in Annex 1;
+WHEREAS EMBL (European Molecular Biology Laboratory, Meyerhofstrasse 1, D-69117 Heidelberg, Germany) have developed and own the copyright in software provided at https://github.com/friendsofstrandseq/mosaicatcher-pipeline
 
 WHEREAS LICENSEE is a public funded academic and/or education and/or research institution or an individual working for such institution. 
 
@@ -27,7 +30,7 @@ WHEREAS LICENSEE desires to acquire a free non-exclusive license to use the Soft
 NOW, THEREFORE, in consideration of the mutual promises and covenants contained herein, the parties agree as follows:
 
 1. Definitions 
-"Licensed Software" any of the current versions of software which is downloadable from https://github.com/friendsofstrandseq developed by Jan O. Korbel and Ashley D. Sanders and Tobias Marschall and his/her team the “Authors”, pursuant to this Agreement. 
+"Licensed Software" any of the current versions of software which is downloadable from https://github.com/friendsofstrandseq/mosaicatcher-pipeline developed by Jan O. Korbel and Ashley D. Sanders and Tobias Marschall and his/her team the “Authors”, pursuant to this Agreement. 
 
 Any opinion, findings, conclusions or recommendations expressed in the Licensed Software are those of the authors and do not necessarily reflect the views of EMBL and EMBLEM. 
 
@@ -98,11 +101,3 @@ The invalidity of singular provisions does not affect the validity of the entire
 IN WITNESS WHEREOF, the LICENSEE hereto has caused this Agreement to be duly executed on the date of access to the Licensed Software service and by accepting the license conditions by pressing the Acceptance button. 
 
 I have read this License Agreement and I agree to uphold the terms and conditions of this license.
- 
-ANNEX 1
-
-The software applications available at https://github.com/friendsofstrandseq/  are:
--	TranslocatoR
--	Mosaicatcher-pipeline
--	pipeline
-
