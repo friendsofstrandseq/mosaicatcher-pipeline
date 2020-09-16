@@ -1,9 +1,9 @@
 name: strandseqnation
 channels:
-  - bioconda
   - r
-  - defaults
   - conda-forge
+  - bioconda
+  - defaults
 dependencies:
   - _libgcc_mutex=0.1=conda_forge
   - _openmp_mutex=4.5=1_llvm
@@ -15,6 +15,7 @@ dependencies:
   - attrs=19.3.0=py_0
   - bcftools=1.10.2=hd2cd319_0
   - bcrypt=3.1.7=py37h516909a_0
+  - bedops=2.4.39=hc9558a2_0
   - binutils_impl_linux-64=2.33.1=h53a641e_8
   - binutils_linux-64=2.33.1=h9595d00_17
   - bioconductor-biobase=2.42.0=r351h14c3975_1
@@ -43,12 +44,13 @@ dependencies:
   - boost-cpp=1.72.0=h8e57a91_0
   - boto3=1.12.17=py_0
   - botocore=1.15.17=py_0
+  - bwa=0.7.17=hed695b0_7
   - bwidget=1.9.14=0
   - bzip2=1.0.8=h516909a_2
-  - ca-certificates=2020.1.1=0
+  - ca-certificates=2020.4.5.2=hecda079_0
   - cachetools=3.1.1=py_0
   - cairo=1.16.0=hfb77d84_1002
-  - certifi=2019.11.28=py37_0
+  - certifi=2020.4.5.2=py37hc8dfbb8_0
   - cffi=1.14.0=py37hd463f26_0
   - chardet=3.0.4=py37_1003
   - cmake=3.16.4=h28c56e5_0
@@ -147,7 +149,7 @@ dependencies:
   - networkx=2.4=py_1
   - numpy=1.18.1=py37h95a1406_0
   - openjpeg=2.3.1=h981e76c_3
-  - openssl=1.1.1e=h7b6447c_0
+  - openssl=1.1.1g=h516909a_0
   - pandas=1.0.1=py37hb3f55d8_0
   - pango=1.42.4=ha030887_1
   - parallel=20200122=0
@@ -349,5 +351,4 @@ dependencies:
   - zipp=3.1.0=py_0
   - zlib=1.2.11=h516909a_1006
   - zstd=1.4.4=h3b9ef0a_1
-prefix: /MMCI/TM/scratch/maryam/anaconda3/envs/strandseqnation-2020-03-09
-
+prefix: /home/hashraf/miniconda3/envs/strandseqnation_30-7-20
