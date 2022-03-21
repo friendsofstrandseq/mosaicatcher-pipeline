@@ -3,22 +3,35 @@ from collections import defaultdict
 
 configfile: "Snake.config.json"
 
+import os, sys
+
+# print(os.listdir(os.getcwd()))
+sys.path.append('/gstock/Thomas/')
+# print(os.listdir("bam"))
+
 SAMPLE,BAM = glob_wildcards("bam/{sample}/selected/{bam}.bam")
 SAMPLES = sorted(set(SAMPLE))
 
+# # from pprint import pprint
+
+
+
 CELL_PER_SAMPLE= defaultdict(list)
 BAM_PER_SAMPLE = defaultdict(list)
+
+
 for sample,bam in zip(SAMPLE,BAM):
     BAM_PER_SAMPLE[sample].append(bam)
     CELL_PER_SAMPLE[sample].append(bam.replace('.sort.mdup',''))
+
 
 ALLBAMS_PER_SAMPLE = defaultdict(list)
 for sample in SAMPLES:
     ALLBAMS_PER_SAMPLE[sample] = glob_wildcards("bam/{}/all/{{bam}}.bam".format(sample)).bam
 
-print("Detected {} samples:".format(len(SAMPLES)))
-for s in SAMPLES:
-    print("  {}:\t{} cells\t {} selected cells".format(s, len(ALLBAMS_PER_SAMPLE[s]), len(BAM_PER_SAMPLE[s])))
+# print("Detected {} samples:".format(len(SAMPLES)))
+# for s in SAMPLES:
+    # print("  {}:\t{} cells\t {} selected cells".format(s, len(ALLBAMS_PER_SAMPLE[s]), len(BAM_PER_SAMPLE[s])))
 
 
 
@@ -124,7 +137,7 @@ rule simulate_genome:
         maxsize     = 5000000,
         mindistance = 1000000,
     shell:
-        "utils/simulate_SVs.R {wildcards.seed} {params.svcount} {params.minsize} {params.maxsize} {params.mindistance} {output.tsv} > {log} 2>&1"
+        "utils/simulate_SVs.R {wildcards.seed} {params.svcount} {params.minsize} {params.maxsize} {params.mindistance} {output.t"
 
 rule add_vafs_to_simulated_genome:
     input:
@@ -188,7 +201,7 @@ rule simulate_counts:
             -P {output.phases} \
             -S {output.sce} \
             --sample-name simulation{wildcards.seed}-{wildcards.window_size} \
-            {input.config} > {log} 2>&1
+            {input.conf
         """
 
 rule link_to_simulated_counts:
@@ -234,7 +247,7 @@ rule estimate_ploidy:
     shell:
         """
         PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)
-        python utils/ploidy-estimator.py --chromosome {wildcards.chrom} {input} > {output} 2> {log}
+        python utils/ploidy-estimator.py --chromosome {wildcards.chrom} {input} > {output} 
         """
 
 
@@ -255,7 +268,7 @@ rule plot_mosaic_counts:
         plot_command = "Rscript " + config["plot_script"]
     shell:
         """
-        {params.plot_command} {input.counts} {input.info} {output} > {log} 2>&1
+        {params.plot_command} {input.counts} {input.info} {outp
         """
 
 ruleorder: plot_SV_calls_simulated > plot_SV_calls
@@ -284,7 +297,7 @@ rule plot_SV_calls:
             calls={input.calls} \
             {input.counts} \
             {wildcards.chrom} \
-            {output} > {log} 2>&1
+            {outp
         """
 
 rule plot_SV_calls_simulated:
@@ -307,7 +320,7 @@ rule plot_SV_calls_simulated:
             calls={input.calls} \
             {input.counts} \
             {wildcards.chrom} \
-            {output} 2>&1 > {log}
+            {output} }
         """
 
 
@@ -333,7 +346,7 @@ rule generate_halo_json:
     shell:
         """
         PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)
-        (./utils/counts_to_json.py {input.counts} | gzip > {output.json}) 2> {log}
+        (./utils/counts_to_json.py {input.counts} | gzip > {output.json}) 
         """
 
 
@@ -366,7 +379,7 @@ rule generate_exclude_file_1:
         samtools = config["samtools"]
     shell:
         """
-        {params.samtools} view -H {input.bam} | awk "/^@SQ/" > {output} 2> {log}
+        {params.samtools} view -H {input.bam} | awk "/^@SQ/" > {output} 
         """
 
 rule generate_exclude_file_2:
@@ -382,8 +395,8 @@ rule generate_exclude_file_2:
                 for line in f:
                     contig = line.strip().split()[1]
                     contig = contig[3:]
-                    if contig not in params.chroms:
-                        print(contig, file = out)
+                    # if contig not in params.chroms:
+                        # print(contig, file = out)
 
 
 rule mosaic_count_fixed:
@@ -400,6 +413,7 @@ rule mosaic_count_fixed:
         mc_command = config["mosaicatcher"]
     shell:
         """
+        echo mosaic_count_fixed && 
         {params.mc_command} count \
             --verbose \
             --do-not-blacklist-hmm \
@@ -407,8 +421,7 @@ rule mosaic_count_fixed:
             -i {output.info} \
             -x {input.excl} \
             -w {wildcards.window} \
-            {input.bam} \
-        > {log} 2>&1
+            {input.bam} 
         """
 
 rule mosaic_count_variable:
@@ -432,8 +445,7 @@ rule mosaic_count_variable:
             -o {output.counts} \
             -i {output.info} \
             -b {input.bed} \
-            {input.bam} \
-        > {log} 2>&1
+            {input.bam} 
         """
 
 rule extract_single_cell_counts:
@@ -476,7 +488,7 @@ rule normalize_counts:
         "log/normalize_counts/{sample}/{window}_fixed.log"
     shell:
         """
-        Rscript utils/normalize.R {input.counts} {input.norm} {output} 2>&1 > {log}
+        Rscript utils/normalize.R {input.counts} {input.norm} {output} }
         """
 
 rule link_normalized_info_file:
@@ -511,7 +523,7 @@ rule segmentation:
         --forbid-small-segments {params.min_num_segs} \
         -M 50000000 \
         -o {output} \
-        {input} > {log} 2>&1
+        {inp
         """
 
 # TODO: This is a workaround because latest versions of "mosaic segment" don't compute the "bps"
@@ -557,7 +569,7 @@ rule segment_one_cell:
         --forbid-small-segments {params.min_num_segs} \
         -M 50000000 \
         -o {output} \
-        {input} > {log} 2>&1
+        {inp
         """
 
 # TODO: This is a workaround because latest versions of "mosaic segment" don't compute the "bps"
@@ -604,7 +616,7 @@ rule segmentation_selection:
             {input.info} \
             {input.counts} \
             {input.jointseg} \
-            {input.singleseg} > {log} 2>&1
+            {input.singles
         """
 
 
@@ -745,7 +757,7 @@ rule postprocessing_sv_group_table:
         #mc_command = config["mosaicatcher"]
     #shell:
         #"""
-        #{params.mc_command} states -o {output} {input} 2>&1 > {log}
+        #{params.mc_command} states -o {output} {input} }
         #"""
 
 #rule determine_initial_strand_states:
@@ -778,7 +790,7 @@ rule install_StrandPhaseR:
         "log/install_StrandPhaseR.log"
     shell:
         """
-        TAR=$(which tar) Rscript utils/install_strandphaser.R > {log} 2>&1
+        TAR=$(which tar) Rscript utils/install_strandphase
         """
 
 rule prepare_strandphaser_config_per_chrom:
@@ -817,9 +829,9 @@ def locate_snv_vcf(wildcards):
             if os.path.isfile(config["snv_sites_to_genotype"]):
                 return "snv_genotyping/{}/{}.vcf".format(wildcards.sample, wildcards.chrom)
             else:
-                print("[", wildcards.sample, "/", wildcards.chrom, "] `snv_sites_to_genotype` set to \"",
-                      config["snv_sites_to_genotype"], "\" but file does not seem to exist. "
-                      "Start de novo SNV calling", sep = "")
+                # print("[", wildcards.sample, "/", wildcards.chrom, "] `snv_sites_to_genotype` set to \"",
+                    #   config["snv_sites_to_genotype"], "\" but file does not seem to exist. "
+                    #   "Start de novo SNV calling", sep = "")
                 return "snv_calls/{}/{}.vcf".format(wildcards.sample, wildcards.chrom)
         else:
             return "snv_calls/{}/{}.vcf".format(wildcards.sample, wildcards.chrom)
@@ -847,7 +859,7 @@ rule run_strandphaser_per_chrom:
                 {input.wcregions} \
                 {input.snppositions} \
                 $(pwd)/utils/R-packages/ \
-                > {log} 2>&1
+
         """
 
 rule compress_vcf:
@@ -855,10 +867,10 @@ rule compress_vcf:
         vcf="{file}.vcf",
     output:
         vcf="{file}.vcf.gz",
-    log:
-        "log/compress_vcf/{file}.log"
+    # log:
+    #     "log/compress_vcf/{file}.log"
     shell:
-        "(cat {input.vcf} | bgzip > {output.vcf}) > {log} 2>&1"
+        "(cat {input.vcf} | bgzip > {output.vc"
 
 
 rule index_vcf:
@@ -878,7 +890,7 @@ rule merge_strandphaser_vcfs:
     log:
         "log/merge_strandphaser_vcfs/{sample}/{windows}.{bpdens}.log"
     shell:
-        "(bcftools concat -a {input.vcfs} | bcftools view -o {output.vcf} -O z --genotype het --types snps - ) > {log} 2>&1"
+        "(bcftools concat -a {input.vcfs} | bcftools view -o {output.vcf} -O z --genotype het --types snps "
 
 
 
@@ -987,7 +999,7 @@ rule mergeBams:
     threads:
         4
     shell:
-        config["samtools"] + " merge -@ {threads} {output} {input} 2>&1 > {log}"
+        config["samtools"] + " merge -@ {threads} {output} {input} "
 
 rule index_bam:
     input:
@@ -997,7 +1009,7 @@ rule index_bam:
     log:
         "{file}.bam.log"
     shell:
-        config["samtools"] + " index {input} 2> {log}"
+        config["samtools"] + " index {input} "
 
 rule call_SNVs_bcftools_chrom:
     input:
@@ -1014,7 +1026,7 @@ rule call_SNVs_bcftools_chrom:
     shell:
         """
         {params.samtools} mpileup -r {wildcards.chrom} -g -f {params.fa} {input.bam} \
-        | {params.bcftools} call -mv - | {params.bcftools} view --genotype het --types snps - > {output} 2> {log}
+        | {params.bcftools} call -mv - | {params.bcftools} view --genotype het --types snps - > {output} 
         """
 
 rule regenotype_SNVs:
@@ -1031,7 +1043,7 @@ rule regenotype_SNVs:
         bcftools = config["bcftools"]
     shell:
         """
-        (freebayes -f {params.fa} -r {wildcards.chrom} -@ {input.sites} --only-use-input-alleles {input.bam} --genotype-qualities | {params.bcftools} view --exclude-uncalled --genotype het --types snps --include "QUAL>=10" - > {output.vcf}) 2> {log}
+        (freebayes -f {params.fa} -r {wildcards.chrom} -@ {input.sites} --only-use-input-alleles {input.bam} --genotype-qualities | {params.bcftools} view --exclude-uncalled --genotype het --types snps --include "QUAL>=10" - > {output.vcf}) 
         """
 
 rule merge_SNV_calls:
@@ -1042,7 +1054,7 @@ rule merge_SNV_calls:
     log:
         "log/merge_SNV_calls/{sample}.log"
     shell:
-        config["bcftools"] + " concat -O v -o {output} {input} 2>&1 > {log}"
+        config["bcftools"] + " concat -O v -o {output} {input} "
 
 rule split_external_snv_calls:
     input:
@@ -1064,8 +1076,7 @@ rule split_external_snv_calls:
             {input.vcf} \
             {wildcards.chrom} \
         | {params.bcftools} view --genotype het - \
-        > {output.vcf} ) \
-        > {log} 2>&1
+        > {output.vcf} ) 
         """
 
 
@@ -1105,7 +1116,7 @@ rule summary_statistics:
             p.append('--merged-file')
             p.append(input.merged)
         additional_params = ' '.join(p)
-        shell('utils/callset_summary_stats.py --segmentation {input.segmentation} --strandstates {input.strandstates} --complex-regions {input.complex} {additional_params} {input.sv_calls}  > {output.tsv} 2> {log}')
+        shell('utils/callset_summary_stats.py --segmentation {input.segmentation} --strandstates {input.strandstates} --complex-regions {input.complex} {additional_params} {input.sv_calls}  > {output.tsv} ')
 
 rule aggregate_summary_statistics:
     input:
@@ -1125,4 +1136,4 @@ rule aggregate_summary_statistics:
 #        'cell-mixing-eval/{sample}/{windows}.{bpdens}/{method}.log'
 #    run:
 #        names = ','.join(SAMPLES)
-#        shell('utils/evaluate_cell_mixing.py --names {names} {input.truth} {input.sv_calls} > {output.tsv} 2> {log}')
+#        shell('utils/evaluate_cell_mixing.py --names {names} {input.truth} {input.sv_calls} > {output.tsv} ')
