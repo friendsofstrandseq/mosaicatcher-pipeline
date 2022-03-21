@@ -1,50 +1,70 @@
 {
-    "chromosomes"   : ["chr1","chr2","chr3","chr4","chr5","chr6","chr7","chr8","chr9","chr10","chr11","chr12","chr13","chr14","chr15","chr16","chr17","chr18","chr19","chr20","chr21","chr22","chrX"],
-
-    "reference"     : "/MMCI/TM/scratch/ref/GRCh38_no_alt_analysis_set/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna",
-    "mosaicatcher"  : "/MMCI/TM/scratch/strandseq/mosaicatcher-builds/git/build/mosaic",
-    "plot_script"   : "/MMCI/TM/scratch/strandseq/mosaicatcher-builds/git/R/qc.R",
-    "samtools"      : "samtools",
-    "bcftools"      : "bcftools",
-
-    "snv_sites_to_genotype": "snv_sites_to_genotype/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz",
-
-    "snv_calls"     : {},
-
-    "variable_bins" : {
-        "50000"     : "utils/variable_bins.GRCh38.50kb.bed",
-        "100000"    : "utils/variable_bins.GRCh38.100kb.bed"
+    "chromosomes": [
+        "chr1",
+        "chr2",
+        "chr3",
+        "chr4",
+        "chr5",
+        "chr6",
+        "chr7",
+        "chr8",
+        "chr9",
+        "chr10",
+        "chr11",
+        "chr12",
+        "chr13",
+        "chr14",
+        "chr15",
+        "chr16",
+        "chr17",
+        "chr18",
+        "chr19",
+        "chr20",
+        "chr21",
+        "chr22",
+        "chrX"
+    ],
+    "input_bam_location": "/gstock/Thomas/bam/",
+    "output_location": "/gstock/Thomas/Snakemake_output",
+    "snv_sites_to_genotype": "/gstock/Thomas/vcf/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR_new_compressed.vcf.gz",
+    "reference": "/gstock/Thomas/hg38.fa",
+    "mosaicatcher": "/home/weber/Gits/mosaicatcher/build/mosaic",
+    "plot_script": "/home/weber/Gits/mosaicatcher/R/qc.R",
+    "sv_plot_script": "/home/weber/Gits/mosaicatcher/R/chrom.R",
+    "norm_script": "/home/weber/Gits/mosaicatcher/R/norm.R",
+    "samtools": "/biolo/ngs/bin/samtools",
+    "bcftools": "/biolo/ngs/bin/bcftools",
+    "variable_bins": {
+        "50000": "/home/weber/Gits/mosaicatcher-pipeline/utils/variable_bins.GRCh38.50kb.bed",
+        "100000": "/home/weber/Gits/mosaicatcher-pipeline/utils/variable_bins.GRCh38.100kb.bed"
     },
-    "R_reference"   : "BSgenome.Hsapiens.UCSC.hg38",
-
-    "bp_density"    : {
-        "few"       : 0.2,
-        "medium"    : 0.4,
-        "many"      : 0.6
+    "R_reference": "/home/weber/.conda/envs/strandseqnation/lib/R/library/BSgenome.Hsapiens.UCSC.hg38/extdata/single_sequences.2bit",
+    "bp_density": {
+        "few": 0.2,
+        "medium": 0.4,
+        "many": 0.6
     },
-
-    "paired_end"    : true,
-
-    "simulation_min_vaf" : 0.01,
-    "simulation_max_vaf" : 1.0,
-    "simulation_neg_binom_p" : {
-        "50000" : 0.4,
-        "100000" : 0.3,
-        "500000" : 0.1
+    "paired_end": true,
+    "ground_truth_clonal": {
+        "RPE-BM510": ""
     },
-    "simulation_min_reads_per_library" :  500000,
-    "simulation_max_reads_per_library" : 1000000,
-    "simulation_window_sizes" : [50000, 100000],
-    "simulation_cell_count" : 100,
-    "simulation_alpha" : 0.02,
-
-    "genome_size" : 3e9,
-
-    "ground_truth_clonal" : {
-        "RPE-BM510" : "/MMCI/TM/scratch/strandseq/input-data/ground_truth/RPE-BM510_manual/clonal-events.tsv"
+    "ground_truth_single_cell": {
+        "RPE-BM510": ""
     },
-
-    "ground_truth_single_cell" : {
-        "RPE-BM510" : "/MMCI/TM/scratch/strandseq/input-data/ground_truth/RPE-BM510_manual/single-cell-events.tsv"
-    }
+    "simulation_min_vaf": 0.01,
+    "simulation_max_vaf": 1.0,
+    "simulation_neg_binom_p": {
+        "50000": 0.4,
+        "100000": 0.3,
+        "500000": 0.1
+    },
+    "simulation_min_reads_per_library": 500000,
+    "simulation_max_reads_per_library": 1000000,
+    "simulation_window_sizes": [
+        50000,
+        100000
+    ],
+    "simulation_cell_count": 100,
+    "simulation_alpha": 0.02,
+    "genome_size": 3e9
 }
