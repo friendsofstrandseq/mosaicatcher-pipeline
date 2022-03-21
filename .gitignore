@@ -10,4 +10,7 @@ segmentation2/
 snv_calls/
 strand_states/
 sv_probabilities/
-Snakefile~
+# Snakefile~
+*.png
+*.pdf
+*.svg
