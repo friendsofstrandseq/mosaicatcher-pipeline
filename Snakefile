@@ -5,6 +5,9 @@ configfile: "Snake.config.json"
 
 import os, sys
 
+
+
+# TODO : Function to define inputs ; simplify list/dict system
 # print(os.listdir(os.getcwd()))
 sys.path.append('/gstock/Thomas/')
 # print(os.listdir("bam"))
@@ -44,19 +47,23 @@ import os.path
 # * plot all single cell libraries in different window sizes
 # * calculate a segmentation into potential SVs using Mosaicatcher
 
-
+#TODO : check METHODS usage
 METHODS = [
     "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0_regfactor6_filterFALSE",
     "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.05_regfactor6_filterTRUE",
 ]
 
+#TODO : check METHODS usage
 BPDENS = [
     "selected_j{}_s{}_scedist{}".format(joint, single, scedist) for joint in [0.1] for single in [0.5] for scedist in [20]
 ]
 
 # Todo: specify an exact version of the singularity file!
+
+# TODO : compare singularity to Conda x Singularity
 singularity: "docker://smei/mosaicatcher-pipeline"
 
+# TODO : split local & cluster execution rules into groups
 localrules:
     all,
     simul,
@@ -111,6 +118,7 @@ rule all:
 
 
 ################################################################################
+# TODO : TO REMOVE ?
 # Simulation of count data                                                     #
 ################################################################################
 
@@ -234,6 +242,7 @@ ruleorder: link_to_simulated_strand_states > convert_strandphaser_output
 
 
 ################################################################################
+# TODO : optional module (Tania)
 # Ploidy estimation                                                            #
 ################################################################################
 
@@ -253,6 +262,7 @@ rule estimate_ploidy:
 
 
 ################################################################################
+# TODO : optional
 # Plots                                                                        #
 ################################################################################
 
