@@ -65,15 +65,19 @@ print(expand(["{sample}/{cell}"], zip, sample=SAMPLES, cell=[sub_e for e in list
 # exit()
 print(expand([config["output_location"] + "counts-per-cell/{sample}/{cell}/{window}.txt.gz"], zip, sample=SAMPLES, cell=[sub_e for e in list(CELL_PER_SAMPLE.values()) for sub_e in e], window=[100000], ))
 
-# rule all:
-    # input:
+rule all:
+    input:
         # expand(config["output_location"] + "counts/{sample}/{window}.txt.gz", sample=SAMPLES, window=[100000])
         # expand(config["output_location"] + "plots/{sample}/{window}.pdf", sample=SAMPLES, window=[100000])
         # expand(config["output_location"] + "norm_counts/{sample}/{window}.txt.gz", sample=SAMPLES, window=[100000]),
         # expand(config["output_location"] + "norm_counts/{sample}/{window}.info", sample=SAMPLES, window=[100000])
-        # expand(config["output_location"] + "segmentation/{sample}/{window}.txt", sample=SAMPLES, window=[100000])
-        # expand(config["output_location"] + "snv_genotyping/{sample}/{chrom}.vcf", sample=SAMPLES, window=[100000], chrom=config["chromosomes"])
-        # expand(config["output_location"] + "counts-per-cell/{sample}/{cell}/{window}.txt.gz", sample=SAMPLES, cell=[sub_e for e in list(CELL_PER_SAMPLE.values()) for sub_e in e], window=[100000], )
+        # expand(config["output_location"] + "segmentation/{sample}/{window}.txt", sample=SAMPLES, window=[100000]),
+        # expand(config["output_location"] + "snv_calls/{sample}/merged.bam", sample=SAMPLES)
+        expand(config["output_location"] + "snv_genotyping/{sample}/{chrom}.vcf", sample=SAMPLES, window=[100000], chrom=config["chromosomes"]),
+        # expand(config["output_location"] + "counts-per-cell/{sample}/{cell}/{window}.txt.gz", sample=SAMPLES, cell=[sub_e for e in list(CELL_PER_SAMPLE.values()) for sub_e in e], window=[100000], ),
+        # expand(config["output_location"] + "counts-per-cell/{sample}/{cell}/{window}.txt.gz", sample=SAMPLES, cell=[sub_e for e in list(CELL_PER_SAMPLE.values()) for sub_e in e], window=[100000], ),
+        # expand(config["output_location"] + "strand_states/{sample}/{window}.{bpdens}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt", sample=SAMPLES, window=[100000], bpdens=BPDENS, chrom=config["chromosomes"]),
+
 # FIXME : To solve : cell wildcard (dict type) comparatively to others that are list type
 
 
@@ -132,7 +136,7 @@ rule mosaic_count:
         mc_command = config["mosaicatcher"]
     shell:
         """
-        {params.mc_command} count \
+        {params.mc_command} cofunt \
             --verbose \
             --do-not-blacklist-hmm \
             -o {output.counts} \
@@ -169,6 +173,7 @@ rule plot_mosaic_counts:
 ################################################################################
 
 # TODO : Reference blacklist BED file to retrieve easily on Git/Zenodo/remote system
+# TODO : check if inversion file is corresponded to previously published 
 rule merge_blacklist_bins:
     """
     rule fct: Call Python script to merge HGVSC normalization defined file & inversion whitelist file
@@ -252,6 +257,7 @@ rule segmentation:
         """
         {params.mc_command} segment \
         --remove-none \
+        --do-not-remove-bad-cells \
         --forbid-small-segments {params.min_num_segs} \
         -M 50000000 \
         -o {output} \
@@ -336,13 +342,14 @@ rule segment_one_cell:
     shell:
         """
         {params.mc_command} segment \
+        --do-not-remove-bad-cells \
         --remove-none \
         --forbid-small-segments {params.min_num_segs} \
         -M 50000000 \
         -o {output} \
         {input} > {log} 2>&1
         """
-
+    # FIXME : working on */g/korbel2/StrandSeq/20180726_TALL03-DEA5/bam/* data => need to add --do-not-remove-bad-cells in order to prevent from segfault
 
 ################################################################################
 # StrandPhaseR things                                                          #
@@ -358,7 +365,8 @@ rule segmentation_selection:
     output:
         jointseg=config["output_location"] + "segmentation2/{sample}/{window,[0-9]+}.selected_j{min_diff_jointseg}_s{min_diff_singleseg}_scedist{additional_sce_cutoff}.txt",
         singleseg=config["output_location"] + "segmentation-singlecell/{sample}/{window,[0-9]+}.selected_j{min_diff_jointseg}_s{min_diff_singleseg}_scedist{additional_sce_cutoff}.txt",
-        strand_states=config["output_location"] + "strand_states/{sample}/{window,[0-9]+}.selected_j{min_diff_jointseg}_s{min_diff_singleseg}_scedist{additional_sce_cutoff}/intitial_strand_state",
+        # FIXME : Typo : in*t*itial > initial
+        strand_states=config["output_location"] + "strand_states/{sample}/{window,[0-9]+}.selected_j{min_diff_jointseg}_s{min_diff_singleseg}_scedist{additional_sce_cutoff}/initial_strand_state",
     log:
         config["output_location"] + "log/segmentation_selection/{sample}/{window}.selected_j{min_diff_jointseg}_s{min_diff_singleseg}_scedist{additional_sce_cutoff}.log"
     params:
@@ -388,9 +396,11 @@ rule segmentation_selection:
 
 # TODO : replace R script by integrating directly pandas in the pipeline / potentialy use piped output to following rule ?
 # FIXME : window"s" > window
+# FIXME : Typo : in*t*itial > initial
+
 rule convert_strandphaser_input:
     input:
-        states = config["output_location"] + "strand_states/{sample}/{window}.{bpdens}/intitial_strand_state",
+        states = config["output_location"] + "strand_states/{sample}/{window}.{bpdens}/initial_strand_state",
         # URGENT : hard coded 500000 file name ???
         # info   = config["output_location"] + "counts/{sample}/500000.info"
         # FIXME : quick workaround with {window} wc
@@ -407,22 +417,23 @@ rule convert_strandphaser_input:
 # CHECKME : check if possible to write something more snakemak"ic" & compliant with conda/singularity running env
 # WARNING : I/O path definition
 # WARNING : Try to find a solution to install stranphaser in a conda environment => contact david porubsky to move on the bioconductor ?
-aa
-rule install_StrandPhaseR:
-    output:
-        "utils/R-packages/StrandPhaseR/R/StrandPhaseR"
-    log:
-        "log/install_StrandPhaseR.log"
-    shell:
-        """
-        TAR=$(which tar) Rscript utils/install_strandphaser.R > {log} 2>&1
-        """
-aa
+
+# rule install_StrandPhaseR:
+#     output:
+#         "utils/R-packages/StrandPhaseR/R/StrandPhaseR"
+#     log:
+#         "log/install_StrandPhaseR.log"
+#     shell:
+#         """
+#         TAR=$(which tar) Rscript utils/install_strandphaser.R > {log} 2>&1
+#         """
+
 # TODO : replace by clean config file 
 # FIXME : window"s" > window
+# FIXME : Typo : in*t*itial > initial
 rule prepare_strandphaser_config_per_chrom:
     input:
-        config["output_location"] + "strand_states/{sample}/{window}.{bpdens}/intitial_strand_state"
+        config["output_location"] + "strand_states/{sample}/{window}.{bpdens}/initial_strand_state"
     output:
         config["output_location"] + "strand_states/{sample}/{window}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/StrandPhaseR.{chrom}.config"
     run:
@@ -472,7 +483,9 @@ rule run_strandphaser_per_chrom:
         wcregions    = config["output_location"] + "strand_states/{sample}/{window}.{bpdens}/strandphaser_input.txt",
         snppositions = config["snv_sites_to_genotype"],
         configfile   = config["output_location"] + "strand_states/{sample}/{window}.{bpdens}/StrandPhaseR.{chrom}.config",
-        strandphaser = "utils/R-packages/StrandPhaseR/R/StrandPhaseR",
+        # DOCME : used as an input to call the installation ?
+        # strandphaser = "utils/R-packages/StrandPhaseR/R/StrandPhaseR",
+        # strandphaser = config["strandphaser"],
         bamfolder    = config["input_bam_location"] + "{sample}/selected"
     output:
         config["output_location"] + "strand_states/{sample}/{window}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt",
@@ -483,7 +496,7 @@ rule run_strandphaser_per_chrom:
         """
         Rscript utils/StrandPhaseR_pipeline.R \
                 {input.bamfolder} \
-                strand_states/{wildcards.sample}/{wildcards.window}.{wildcards.bpdens}/StrandPhaseR_analysis.{wildcards.chrom} \
+                {config[output_location]}strand_states/{wildcards.sample}/{wildcards.window}.{wildcards.bpdens}/StrandPhaseR_analysis.{wildcards.chrom} \
                 {input.configfile} \
                 {input.wcregions} \
                 {input.snppositions} \
@@ -565,6 +578,6 @@ rule regenotype_SNVs:
             --exclude-uncalled \
             --genotype het \
             --types snps \
-            --include "QUAL>=10" - \
+            --include "QUAL>=10" \
         > {output.vcf}) 2> {log}
         """
