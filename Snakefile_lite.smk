@@ -47,6 +47,7 @@ METHODS = [
     "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.05_regfactor6_filterTRUE",
 ]
 
+# FIXME : move to yaml/json settings or to something else
 BPDENS = [
     "selected_j{}_s{}_scedist{}".format(joint, single, scedist) for joint in [0.1] for single in [0.5] for scedist in [20]
 ]
@@ -190,7 +191,7 @@ rule merge_blacklist_bins:
 # CHECKME : Check R code for normalization 
 rule normalize_counts:
     """
-    rule fct: Normalization of mosaic counts based on merged normalization file produced 
+    rule fct: Normalization of mosaic counts based on merged normalization file produced with a linear relation (count * scaling_factor)
     input: counts: counts file coming from `rule mosaic_count` ; norm: merged normalization file produced by `rule merge_blacklist_bins`
     output: normalized counts based predefined factors for each window
     """
@@ -259,6 +260,7 @@ rule segmentation:
 
 
 # FIXME: This is a workaround because latest versions of "mosaic segment" don't compute the "bps" column properly. Remove once fixed in the C++ code.
+# FIXME: no difference observed before/after awk command
 rule fix_segmentation:
     """
     rule fct:
@@ -276,11 +278,13 @@ rule fix_segmentation:
         """
 
 # Pick a few segmentations and prepare the input files for SV classification
+# TODO : replace R script by integrating directly pandas in the pipeline
+# DOCME : check if doc is correct
 rule prepare_segments:
     """
-    rule fct:
-    input:
-    output:
+    rule fct: selection of appropriate segmentation according breakpoint density (k) selected by the user : many : 60%, medium : 40%, few : 20%
+    input: mosaic segment output segmentation file
+    output: lite file with appropriate k according the quartile defined by the user
     """
     input:
         config["output_location"] + "segmentation/{sample}/{window}.txt"
@@ -297,12 +301,12 @@ rule prepare_segments:
 # Single-Cell Segmentation                                                                 #
 ################################################################################
 
-# TODO : replace awk command with something else
+# TODO : replace awk external file command with something else
 rule extract_single_cell_counts:
     """
-    rule fct:
-    input:
-    output:
+    rule fct: extract from count the rows coming from the given cell
+    input: mosaic count output file for the sample according a given window 
+    output: count per cell file for the sample according a given window
     """
     input:
         config["output_location"] + "counts/{sample}/{window}.txt.gz"
@@ -316,9 +320,9 @@ rule extract_single_cell_counts:
 
 rule segment_one_cell:
     """
-    rule fct:
-    input:
-    output:
+    rule fct: Same as `rule segmentation` : mosaic segment function but for individual cell
+    input: mosaic count splitted by cell produced by `rule extract_single_cell_counts`
+    output: Segmentation file for an individual cell
     """
     input:
         config["output_location"] + "counts-per-cell/{sample}/{cell}/{window}.txt.gz"
@@ -339,18 +343,24 @@ rule segment_one_cell:
         {input} > {log} 2>&1
         """
 
+
+################################################################################
+# StrandPhaseR things                                                          #
+################################################################################
+
+
 rule segmentation_selection:
     input:
-        counts=config["output_location"] + "counts/{sample}/{window}_{file_name}.txt.gz",
-        jointseg=config["output_location"] + "segmentation/{sample}/{window}_{file_name}.txt",
-        singleseg=lambda wc: [config["output_location"] + "segmentation-per-cell/{}/{}/{}_{}.txt".format(wc.sample, cell, wc.window, wc.file_name) for cell in CELL_PER_SAMPLE[wc.sample]],
-        info=config["output_location"] + "counts/{sample}/{window}_{file_name}.info",
+        counts=config["output_location"] + "counts/{sample}/{window}.txt.gz",
+        jointseg=config["output_location"] + "segmentation/{sample}/{window}.txt",
+        singleseg=lambda wc: [config["output_location"] + "segmentation-per-cell/{}/{}/{}.txt".format(wc.sample, cell, wc.window) for cell in CELL_PER_SAMPLE[wc.sample]],
+        info=config["output_location"] + "counts/{sample}/{window}.info",
     output:
-        jointseg=config["output_location"] + "segmentation2/{sample}/{window,[0-9]+}_{file_name}.selected_j{min_diff_jointseg}_s{min_diff_singleseg}_scedist{additional_sce_cutoff}.txt",
-        singleseg=config["output_location"] + "segmentation-singlecell/{sample}/{window,[0-9]+}_{file_name}.selected_j{min_diff_jointseg}_s{min_diff_singleseg}_scedist{additional_sce_cutoff}.txt",
-        strand_states=config["output_location"] + "strand_states/{sample}/{window,[0-9]+}_{file_name}.selected_j{min_diff_jointseg}_s{min_diff_singleseg}_scedist{additional_sce_cutoff}/intitial_strand_state",
+        jointseg=config["output_location"] + "segmentation2/{sample}/{window,[0-9]+}.selected_j{min_diff_jointseg}_s{min_diff_singleseg}_scedist{additional_sce_cutoff}.txt",
+        singleseg=config["output_location"] + "segmentation-singlecell/{sample}/{window,[0-9]+}.selected_j{min_diff_jointseg}_s{min_diff_singleseg}_scedist{additional_sce_cutoff}.txt",
+        strand_states=config["output_location"] + "strand_states/{sample}/{window,[0-9]+}.selected_j{min_diff_jointseg}_s{min_diff_singleseg}_scedist{additional_sce_cutoff}/intitial_strand_state",
     log:
-        config["output_location"] + "log/segmentation_selection/{sample}/{window}_{file_name}.selected_j{min_diff_jointseg}_s{min_diff_singleseg}_scedist{additional_sce_cutoff}.log"
+        config["output_location"] + "log/segmentation_selection/{sample}/{window}.selected_j{min_diff_jointseg}_s{min_diff_singleseg}_scedist{additional_sce_cutoff}.log"
     params:
         cellnames = lambda wc: ",".join(cell for cell in CELL_PER_SAMPLE[wc.sample]),
         sce_min_distance = 500000,
@@ -370,8 +380,117 @@ rule segmentation_selection:
             {input.info} \
             {input.counts} \
             {input.jointseg} \
-            {input.singles
+            {input.singleseg} > {log} 2>&1
         """
+
+
+
+
+# TODO : replace R script by integrating directly pandas in the pipeline / potentialy use piped output to following rule ?
+# FIXME : window"s" > window
+rule convert_strandphaser_input:
+    input:
+        states = config["output_location"] + "strand_states/{sample}/{window}.{bpdens}/intitial_strand_state",
+        # URGENT : hard coded 500000 file name ???
+        # info   = config["output_location"] + "counts/{sample}/500000.info"
+        # FIXME : quick workaround with {window} wc
+        info   = config["output_location"] + "counts/{sample}/{window}.info"
+    output:
+        config["output_location"] + "strand_states/{sample}/{window}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/strandphaser_input.txt"
+    log:
+        config["output_location"] + "log/convert_strandphaser_input/{sample}/{window}.{bpdens}.log"
+    script:
+        "utils/helper.convert_strandphaser_input.R"
+
+
+# TODO : make something similar to mosaic with C++ dep
+# CHECKME : check if possible to write something more snakemak"ic" & compliant with conda/singularity running env
+# WARNING : I/O path definition
+# WARNING : Try to find a solution to install stranphaser in a conda environment => contact david porubsky to move on the bioconductor ?
+aa
+rule install_StrandPhaseR:
+    output:
+        "utils/R-packages/StrandPhaseR/R/StrandPhaseR"
+    log:
+        "log/install_StrandPhaseR.log"
+    shell:
+        """
+        TAR=$(which tar) Rscript utils/install_strandphaser.R > {log} 2>&1
+        """
+aa
+# TODO : replace by clean config file 
+# FIXME : window"s" > window
+rule prepare_strandphaser_config_per_chrom:
+    input:
+        config["output_location"] + "strand_states/{sample}/{window}.{bpdens}/intitial_strand_state"
+    output:
+        config["output_location"] + "strand_states/{sample}/{window}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/StrandPhaseR.{chrom}.config"
+    run:
+        with open(output[0], "w") as f:
+            print("[General]",                    file = f)
+            print("numCPU           = 1",         file = f)
+            print("chromosomes      = '" + wildcards.chrom + "'", file = f)
+            if (config["paired_end"]):
+                print("pairedEndReads   = TRUE",  file = f)
+            else:
+                print("pairedEndReads   = FALSE", file = f)
+            print("min.mapq         = 10",        file = f)
+            print("",                             file = f)
+            print("[StrandPhaseR]",               file = f)
+            print("positions        = NULL",      file = f)
+            print("WCregions        = NULL",      file = f)
+            print("min.baseq        = 20",       file = f)
+            print("num.iterations   = 2",        file = f)
+            print("translateBases   = TRUE",     file = f)
+            print("fillMissAllele   = NULL",     file = f)
+            print("splitPhasedReads = TRUE",     file = f)
+            print("compareSingleCells = TRUE",     file = f)
+            print("callBreaks       = FALSE",    file = f)
+            print("exportVCF        = '", wildcards.sample, "'", sep = "", file = f)
+            print("bsGenome         = '", config["R_reference"], "'", sep = "", file = f)
+
+
+
+# TODO : TMP solution 
+# CHECKME : need to check with people if SNP genotyping file is mandatory => will simplify things
+def locate_snv_vcf(wildcards):
+    if "snv_calls" not in config or wildcards.sample not in config["snv_calls"] or config["snv_calls"][wildcards.sample] == "":
+        if "snv_sites_to_genotype" in config and config["snv_sites_to_genotype"] != "" :
+            if os.path.isfile(config["snv_sites_to_genotype"]):
+                return "snv_genotyping/{}/{}.vcf".format(wildcards.sample, wildcards.chrom)
+            else:
+                return "snv_calls/{}/{}.vcf".format(wildcards.sample, wildcards.chrom)
+        else:
+            return "snv_calls/{}/{}.vcf".format(wildcards.sample, wildcards.chrom)
+    else:
+        return "external_snv_calls/{}/{}.vcf".format(wildcards.sample, wildcards.chrom)
+
+
+# FIXME : window"s" > window
+rule run_strandphaser_per_chrom:
+    input:
+        wcregions    = config["output_location"] + "strand_states/{sample}/{window}.{bpdens}/strandphaser_input.txt",
+        snppositions = config["snv_sites_to_genotype"],
+        configfile   = config["output_location"] + "strand_states/{sample}/{window}.{bpdens}/StrandPhaseR.{chrom}.config",
+        strandphaser = "utils/R-packages/StrandPhaseR/R/StrandPhaseR",
+        bamfolder    = config["input_bam_location"] + "{sample}/selected"
+    output:
+        config["output_location"] + "strand_states/{sample}/{window}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt",
+        config["output_location"] + "strand_states/{sample}/{window}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf"
+    log:
+        "log/run_strandphaser_per_chrom/{sample}/{window}.{bpdens}/{chrom}.log"
+    shell:
+        """
+        Rscript utils/StrandPhaseR_pipeline.R \
+                {input.bamfolder} \
+                strand_states/{wildcards.sample}/{wildcards.window}.{wildcards.bpdens}/StrandPhaseR_analysis.{wildcards.chrom} \
+                {input.configfile} \
+                {input.wcregions} \
+                {input.snppositions} \
+                $(pwd)/utils/R-packages/ \
+
+        """
+
 
 ################################################################################
 # Call SNVs                                                                    #
