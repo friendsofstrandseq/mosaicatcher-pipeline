@@ -1,17 +1,18 @@
 # input_bam_location: "/g/korbel2/weber/MosaiCatcher_files/bam/"
 input_bam_location: "/g/korbel2/weber/MosaiCatcher_files/bam_KG_full/"
 output_location: "/g/korbel2/weber/MosaiCatcher_output_sample_KG/"
-# snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz"
+snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz"
 # FIXME : TMP debuging
-snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/split_by_chr/1000G_chr21.vcf.gz"
+# snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/split_by_chr/1000G_chr21.vcf.gz"
 
-reference: "/g/korbel2/weber/MosaiCatcher_files/refgenomes_human_local/chr21.fa"
+reference: "/g/korbel2/weber/MosaiCatcher_files/refgenomes_human_local/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna"
 
 # TODO : add a SMK rule to clone & compile mosaic
 mosaicatcher: "/g/korbel2/weber/Gits/mosaicatcher/build/mosaic"
 
 # FIXME : TMP solution for strandphaser location
 strandphaser: "/home/tweber/.conda/envs/strandseqnation/lib/R/library/StrandPhaseR/R/StrandPhaseR"
+Rscript: "/home/tweber/.conda/envs/strandseqnation/bin/Rscript"
 
 # TODO : remove hard coded paths for R scripts coming from MC
 plot_script: "/g/korbel2/weber/Gits/mosaicatcher/R/qc.R"
@@ -54,29 +55,29 @@ simulation_window_sizes:
 simulation_cell_count: 100
 simulation_alpha: 0.02
 genome_size: 3000000000
-chromosomes:
-  - chr21
 # chromosomes:
-#   - chr1
-#   - chr2
-#   - chr3
-#   - chr4
-#   - chr5
-#   - chr6
-#   - chr7
-#   - chr8
-#   - chr9
-#   - chr10
-#   - chr11
-#   - chr12
-#   - chr13
-#   - chr14
-#   - chr15
-#   - chr16
-#   - chr17
-#   - chr18
-#   - chr19
-#   - chr20
 #   - chr21
-#   - chr22
-#   - chrX
+chromosomes:
+  - chr1
+  - chr2
+  - chr3
+  - chr4
+  - chr5
+  - chr6
+  - chr7
+  - chr8
+  - chr9
+  - chr10
+  - chr11
+  - chr12
+  - chr13
+  - chr14
+  - chr15
+  - chr16
+  - chr17
+  - chr18
+  - chr19
+  - chr20
+  - chr21
+  - chr22
+  - chrX
