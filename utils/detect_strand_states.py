@@ -217,6 +217,8 @@ def evaluate_sce_list(sce_list, strand_state_list, breaks):
 
 
 def main():
+
+	# ARGS
 	parser = ArgumentParser(prog='detect_strand_states.py', description=__doc__)
 	parser.add_argument('--samplename', default="UNNAMED",
 		help='Sample name (to be mentioned in output files)')
@@ -259,6 +261,10 @@ def main():
 	print('Reading count table from', args.counts, file=sys.stderr)
 	count_table = CountTable(args.counts)
 	print(' ... done.', file=sys.stderr)
+
+
+	# START
+
 
 	jointseg = Segmentation(args.jointseg)
 	jointseg.select_k(min_diff = args.min_diff_jointseg)
