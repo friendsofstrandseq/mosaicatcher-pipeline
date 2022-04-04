@@ -88,10 +88,13 @@ rule all:
         # expand(config["output_location"] + "norm_counts/{sample}/{window}.info", sample=SAMPLES, window=[100000])
         # expand(config["output_location"] + "segmentation/{sample}/{window}.txt", sample=SAMPLES, window=[100000]),
         # expand(config["output_location"] + "snv_calls/{sample}/merged.bam", sample=SAMPLES)
-        expand(config["output_location"] + "snv_genotyping/{sample}/{chrom}.vcf", sample=SAMPLES, window=[100000], chrom=config["chromosomes"]),
+        # expand(config["output_location"] + "snv_genotyping/{sample}/{chrom}.vcf", sample=SAMPLES, window=[100000], chrom=config["chromosomes"]),
         # expand(config["output_location"] + "counts-per-cell/{sample}/{cell}/{window}.txt.gz", sample=SAMPLES, cell=[sub_e for e in list(CELL_PER_SAMPLE.values()) for sub_e in e], window=[100000], ),
         # expand(config["output_location"] + "counts-per-cell/{sample}/{cell}/{window}.txt.gz", sample=SAMPLES, cell=[sub_e for e in list(CELL_PER_SAMPLE.values()) for sub_e in e], window=[100000], ),
-        expand(config["output_location"] + "strand_states/{sample}/{window}.{bpdens}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt", sample=SAMPLES, window=[100000], bpdens=BPDENS, chrom=config["chromosomes"]),
+        # expand(config["output_location"] + "strand_states/{sample}/{window}.{bpdens}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt", sample=SAMPLES, window=[100000], bpdens=BPDENS, chrom=config["chromosomes"]),
+        # expand(config["output_location"] + "strand_states/{sample}/{window}.{bpdens}/final.txt", sample=SAMPLES, window=[100000], bpdens=BPDENS, chrom=config["chromosomes"]),
+        expand(config["output_location"] + "haplotag/table/{sample}/haplotag-likelihoods.{window}.{bpdens}.Rdata", sample=SAMPLES, window=[100000], bpdens=BPDENS, chrom=config["chromosomes"]),
+        
 
 # FIXME : To solve : cell wildcard (dict type) comparatively to others that are list type
 
@@ -278,9 +281,10 @@ rule segmentation:
         {input} > {log} 2>&1
         """
 
+# FIXME: no difference observed before/after awk command
+
 
 # FIXME: This is a workaround because latest versions of "mosaic segment" don't compute the "bps" column properly. Remove once fixed in the C++ code.
-# FIXME: no difference observed before/after awk command
 rule fix_segmentation:
     """
     rule fct:
@@ -376,9 +380,27 @@ RPE1-WT	RPE1WTPE20492	chr10	27300000	110600000	WC
 RPE1-WT	RPE1WTPE20492	chr10	110600000	127100000	CC
 RPE1-WT	RPE1WTPE20492	chr10	127100000	133797422	WC
 """
+"selected_j0.1_s0.5_scedist20"
+"""
+PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)
+./utils/detect_strand_states.py \
+    --sce_min_distance 500 000 \
+    --sce_add_cutoff 20 000 000 \
+    --min_diff_jointseg 0.1 \
+    --min_diff_singleseg 0.5 \
+    --output_jointseg {output.jointseg} \
+    --output_singleseg {output.singleseg} \
+    --output_strand_states {output.strand_states} \
+    --samplename {wildcards.sample} \
+    --cellnames {params.cellnames} \
+    {input.info} \
+    {input.counts} \
+    {input.jointseg} \
+    {input.singleseg} > {log} 2>&1
+"""
 rule segmentation_selection:
     """
-    rule fct: Based on counts and segmentation (both joint & single-cell), give the orientation of each chromosome sequenced (WC, WW, CC) for each cell & sample
+    rule fct:
     input: mosaic read counts (txt.gz) & stats info (.info) + joint & sc segmentation 
     output: initial_strand_state used for the following by strandphaser
     """
@@ -537,6 +559,153 @@ rule run_strandphaser_per_chrom:
                 $(pwd)/utils/R-packages/ \
 
         """
+
+rule compress_vcf:
+    """
+    rule fct:
+    input:
+    output:
+    """
+    input:
+        vcf="{file}.vcf",
+    output:
+        vcf="{file}.vcf.gz",
+    # log:
+    #     "log/compress_vcf/{file}.log"
+    shell:
+        "bgzip {input.vcf}"
+
+
+rule index_vcf:
+    """
+    rule fct:
+    input:
+    output:
+    """
+    input:
+        vcf="{file}.vcf.gz",
+    output:
+        tbi="{file}.vcf.gz.tbi",
+    shell:
+        "tabix -p vcf {input.vcf}"
+
+rule merge_strandphaser_vcfs:
+    input:
+        vcfs=expand(config["output_location"] + "strand_states/{{sample}}/{{window}}.{{bpdens}}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz", chrom=config["chromosomes"]),
+        tbis=expand(config["output_location"] + "strand_states/{{sample}}/{{window}}.{{bpdens}}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz.tbi", chrom=config["chromosomes"]),
+    output:
+        vcf=config["output_location"] + "phased-snvs/{sample}/{window}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}.vcf.gz"
+    log:
+        "log/merge_strandphaser_vcfs/{sample}/{window}.{bpdens}.log"
+    shell:
+        "(bcftools concat -a {input.vcfs} | bcftools view -o {output.vcf} -O z --genotype het --types snps - ) > {log} 2>&1"
+
+
+
+rule combine_strandphaser_output:
+    input:
+        expand(config["output_location"] + "strand_states/{{sample}}/{{window}}.{{bpdens}}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt", chrom = config["chromosomes"])
+    output:
+        config["output_location"] +  "strand_states/{sample}/{window}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/strandphaser_output.txt"
+    log:
+        "log/combine_strandphaser_output/{sample}/{window}.{bpdens}.log"
+    shell:
+        """
+        set +o pipefail
+        cat {input} | head -n1 > {output};
+        tail -q -n+2 {input} >> {output};
+        """
+
+
+rule convert_strandphaser_output:
+    input:
+        phased_states  = config["output_location"] + "strand_states/{sample}/{window}.{bpdens}/strandphaser_output.txt",
+        initial_states = config["output_location"] + "strand_states/{sample}/{window}.{bpdens}/initial_strand_state",
+        # info           = config["output_location"] + "counts/{sample}/500000_fixed.info"
+        info           = config["output_location"] + "counts/{sample}/{window}.info"
+    output:
+        config["output_location"] + "strand_states/{sample}/{window}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/final.txt"
+    log:
+        "log/convert_strandphaser_output/{sample}/{window}.{bpdens}.log"
+    script:
+        "utils/helper.convert_strandphaser_output.R"
+
+
+
+################################################################################
+# Haplotagging                                                                 #
+################################################################################
+
+rule haplotag_bams:
+    input:
+        vcf = config["output_location"] + "phased-snvs/{sample}/{window}.{bpdens}.vcf.gz",
+        tbi = config["output_location"] + "phased-snvs/{sample}/{window}.{bpdens}.vcf.gz.tbi",
+        bam = config["input_bam_location"] + "{sample}/selected/{bam}.bam",
+        bai = config["input_bam_location"] + "{sample}/selected/{bam}.bam.bai"
+    output:
+        bam = config["output_location"] + "haplotag/bam/{sample}/{window}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/{bam}.bam",
+    log:
+        config["output_location"] + "log/haplotag_bams/{sample}/{window}.{bpdens}/{bam}.log"
+    params:
+        ref = config["reference"]
+    shell:
+        "whatshap haplotag -o {output.bam} -r {params.ref} {input.vcf} {input.bam} > {log} 2>{log}"
+
+rule create_haplotag_segment_bed:
+    input:
+        segments = config["output_location"] + "segmentation2/{sample}/{size}{what}.{bpdens}.txt",
+    output:
+        bed = config["output_location"] + "haplotag/bed/{sample}/{size,[0-9]+}{what}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}.bed",
+    shell:
+        """
+        # Issue #1022 (https://bitbucket.org/snakemake/snakemake/issues/1022)
+        awk -v s={wildcards.size} -f utils/command3.awk {input.segments} > {output.bed}
+        """
+
+rule create_haplotag_table:
+    input:
+        bam = config["output_location"] + "haplotag/bam/{sample}/{window}.{bpdens}/{cell}.bam",
+        bai = config["output_location"] + "haplotag/bam/{sample}/{window}.{bpdens}/{cell}.bam.bai",
+        bed = config["output_location"] + "haplotag/bed/{sample}/{window}.{bpdens}.bed"
+    output:
+        tsv = config["output_location"] + "haplotag/table/{sample}/by-cell/haplotag-counts.{cell}.{window}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}.tsv"
+    log:
+        config["output_location"] + "log/create_haplotag_table/{sample}.{cell}.{window}.{bpdens}.log"
+    script:
+        "utils/haplotagTable.snakemake.R"
+
+rule merge_haplotag_tables:
+    input:
+        tsvs = lambda wc: [config["output_location"] + "haplotag/table/{}/by-cell/haplotag-counts.{}.{}.{}.tsv".format(wc.sample,cell,wc.window,wc.bpdens) for cell in BAM_PER_SAMPLE[wc.sample]],
+    output:
+        tsv = config["output_location"] + "haplotag/table/{sample}/full/haplotag-counts.{window}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}.tsv"
+    shell:
+        "(head -n1 {input.tsvs[0]} && tail -q -n +2 {input.tsvs}) > {output.tsv}"
+
+
+rule mosaiClassifier_calc_probs:
+    input:
+        counts = config["output_location"] + "counts/{sample}/{window}.txt.gz",
+        info   = config["output_location"] + "counts/{sample}/{window}.info",
+        states = config["output_location"] + "strand_states/{sample}/{window}.{bpdens}/final.txt",
+        bp     = config["output_location"] + "segmentation2/{sample}/{window}.{bpdens}.txt"
+    output:
+        output = config["output_location"] + "sv_probabilities/{sample}/{window}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/probabilities.Rdata"
+    log:
+        config["output_location"] + "log/mosaiClassifier_calc_probs/{sample}/{window}.{bpdens}.log"
+    script:
+        "utils/mosaiClassifier.snakemake.R"
+
+rule create_haplotag_likelihoods:
+    input:
+        haplotag_table = config["output_location"] + "haplotag/table/{sample}/full/haplotag-counts.{window}.{bpdens}.tsv",
+        sv_probs_table = config["output_location"] + "sv_probabilities/{sample}/{window}.{bpdens}/probabilities.Rdata",
+    output: 
+        config["output_location"] + "haplotag/table/{sample}/haplotag-likelihoods.{window}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}.Rdata"
+    log:
+        config["output_location"] + "log/create_haplotag_likelihoods/{sample}.{window}.{bpdens}.log"
+    script:
+        "utils/haplotagProbs.snakemake.R"
 
 
 ################################################################################
