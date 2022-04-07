@@ -2,7 +2,7 @@ import math
 from collections import defaultdict
 
 configfile: "Snake.config_embl.yaml"
-
+import pandas as pd
 import os, sys
 from pprint import pprint
 
@@ -13,8 +13,8 @@ from pprint import pprint
 # TODO Use remote file system to download example files
 
 SAMPLE,BAM = glob_wildcards(config["input_bam_location"] + "{sample}/selected/{bam}.bam")
-pprint(SAMPLE)
-pprint(BAM)
+# pprint(SAMPLE)
+# pprint(BAM)
 SAMPLES = sorted(set(SAMPLE))
 
 CELL_PER_SAMPLE= defaultdict(list)
@@ -35,8 +35,8 @@ print("Detected {} samples:".format(len(SAMPLES)))
 for s in SAMPLES:
     print("  {}:\t{} cells\t {} selected cells".format(s, len(ALLBAMS_PER_SAMPLE[s]), len(BAM_PER_SAMPLE[s])))
 
-pprint(BAM_PER_SAMPLE)
-pprint(CELL_PER_SAMPLE)
+# pprint(BAM_PER_SAMPLE)
+# pprint(CELL_PER_SAMPLE)
 
 # FIXME : tmp solution to remove bad cells => need to fix this with combination of ASHLEYS ?
 
@@ -46,8 +46,8 @@ BAM_PER_SAMPLE = {k:sorted([e  for e in v if e.split('.')[0] not in exclude_list
 CELL_PER_SAMPLE = {k:sorted([e for e in v if e not in exclude_list]) for k,v in CELL_PER_SAMPLE.items()}
 
 
-pprint(BAM_PER_SAMPLE)
-pprint(CELL_PER_SAMPLE)
+# pprint(BAM_PER_SAMPLE)
+# pprint(CELL_PER_SAMPLE)
 
 # Current state of the pipeline:
 # ==============================
@@ -67,22 +67,27 @@ BPDENS = [
     "selected_j{}_s{}_scedist{}".format(joint, single, scedist) for joint in [0.1] for single in [0.5] for scedist in [20]
 ]
 
-print(BPDENS)
-# Todo: specify an exact version of the singularity file!
+# print(BPDENS)
+# # Todo: specify an exact version of the singularity file!
 
 
-print(SAMPLES)
-print(CELL_PER_SAMPLE)
-print(CELL_PER_SAMPLE.values())
-print([sub_e for e in list(CELL_PER_SAMPLE.values()) for sub_e in e])
-# print(expand([SAMPLES, [sub_e for e in list(CELL_PER_SAMPLE.values()) for sub_e in e]]))
-print(expand(["{sample}/{cell}"], zip, sample=SAMPLES, cell=[sub_e for e in list(CELL_PER_SAMPLE.values()) for sub_e in e]))
-# exit()
-print(expand([config["output_location"] + "counts-per-cell/{sample}/{cell}/{window}.txt.gz"], zip, sample=SAMPLES, cell=[sub_e for e in list(CELL_PER_SAMPLE.values()) for sub_e in e], window=[100000], ))
+# print(SAMPLES)
+# print(CELL_PER_SAMPLE)
+# print(CELL_PER_SAMPLE.values())
+# print([sub_e for e in list(CELL_PER_SAMPLE.values()) for sub_e in e])
+# # print(expand([SAMPLES, [sub_e for e in list(CELL_PER_SAMPLE.values()) for sub_e in e]]))
+# print(expand(["{sample}/{cell}"], zip, sample=SAMPLES, cell=[sub_e for e in list(CELL_PER_SAMPLE.values()) for sub_e in e]))
+# # exit()
+# print(expand([config["output_location"] + "counts-per-cell/{sample}/{cell}/{window}.txt.gz"], zip, sample=SAMPLES, cell=[sub_e for e in list(CELL_PER_SAMPLE.values()) for sub_e in e], window=[100000], ))
+
+
+final_list = [config['input_bam_location'] + "{}/{}.bam".format(key, nested_key) for key in BAM_PER_SAMPLE for nested_key in BAM_PER_SAMPLE[key] ]
+
+
 
 rule all:
     input:
-        # expand(config["output_location"] + "counts/{sample}/{window}.txt.gz", sample=SAMPLES, window=[100000])
+        expand(config["output_location"] + "counts/{sample}/{window}.txt.gz", sample=SAMPLES, window=[100000]),
         # expand(config["output_location"] + "plots/{sample}/{window}.pdf", sample=SAMPLES, window=[100000])
         # expand(config["output_location"] + "norm_counts/{sample}/{window}.txt.gz", sample=SAMPLES, window=[100000]),
         # expand(config["output_location"] + "norm_counts/{sample}/{window}.info", sample=SAMPLES, window=[100000])
@@ -94,9 +99,44 @@ rule all:
         # expand(config["output_location"] + "strand_states/{sample}/{window}.{bpdens}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt", sample=SAMPLES, window=[100000], bpdens=BPDENS, chrom=config["chromosomes"]),
         # expand(config["output_location"] + "strand_states/{sample}/{window}.{bpdens}/final.txt", sample=SAMPLES, window=[100000], bpdens=BPDENS, chrom=config["chromosomes"]),
         expand(config["output_location"] + "haplotag/table/{sample}/haplotag-likelihoods.{window}.{bpdens}.Rdata", sample=SAMPLES, window=[100000], bpdens=BPDENS, chrom=config["chromosomes"]),
-        
+        # expand(config["input_bam_location"] +  "{sample}/{folder}/{bam}.{chrom}.txt", 
+        #         sample=SAMPLES, 
+        #         folder=["all", "selected"], 
+        #         bam=final_list, 
+        #         chrom=config['chromosomes'])
 
 # FIXME : To solve : cell wildcard (dict type) comparatively to others that are list type
+
+
+################################################################################
+# TMP solution by extracting chrom in BAM files                                #
+################################################################################
+
+
+# rule simplify_bam_files:
+#     input:
+#         bam = config["input_bam_location"] +  "{sample}/{folder}/{bam}.bam"
+#     output:
+#         bam_with_header = config["output_location"] + "lite_bam_with_full_header/" +  "{sample}/{folder}/{bam}.bam"
+#         bam_without_header = config["output_location"] + "lite_bam_with_lite_header/" +  "{sample}/{folder}/{bam}.bam"
+
+#     log:
+#         config["input_bam_location"] +  "bam_modif/{sample}/{folder}/{bam}.log"
+#     shell:
+#         """
+#         cat \
+#             <(samtools view -H {input.bam} | grep -P "^@HD|^@RG|^\@SQ\\tSN:chr21|^@PG") \
+#             <(samtools view {input.bam} chr21) |\
+#         samtools view -bo {output.bam_without_header} \
+#         > {log} 2>&1 ;
+#          cat \
+#             <(samtools view -H {input.bam}) \
+#             <(samtools view {input.bam} chr21) |\
+#         samtools view -bo {output.bam_with_header} \
+#         > {log} 2>&1 ;       
+#         """
+
+
 
 
 ################################################################################
@@ -104,35 +144,35 @@ rule all:
 ################################################################################
 
 # CHECKME : exclude file rule useful ?
-# rule generate_exclude_file_1:
-#     output:
-#         temp("log/exclude_file.temp")
-#     input:
-#         bam = expand("bam/{sample}/selected/{bam}.bam", sample = SAMPLES[0], bam = BAM_PER_SAMPLE[SAMPLES[0]][0])
-#     log:
-#         "log/generate_exclude_file_1.log"
-#     params:
-#         samtools = config["samtools"]
-#     shell:
-#         """
-#         {params.samtools} view -H {input.bam} | awk "/^@SQ/" > {output} 
-#         """
+rule generate_exclude_file_1:
+    output:
+        config["output_location"] + "log/exclude_file.temp"
+    input:
+        bam = expand(config["input_bam_location"] +  "{sample}/selected/{bam}.bam", sample = SAMPLES[0], bam = BAM_PER_SAMPLE[SAMPLES[0]][0])
+    log:
+        config["output_location"] + "log/generate_exclude_file_1.log"
+    params:
+        samtools = config["samtools"]
+    shell:
+        """
+        {params.samtools} view -H {input.bam} | awk "/^@SQ/" > {output} 
+        """
 
-# rule generate_exclude_file_2:
-#     output:
-#         "log/exclude_file"
-#     input:
-#         "log/exclude_file.temp"
-#     params:
-#         chroms = config["chromosomes"]
-#     run:
-#         with open(input[0]) as f:
-#             with open(output[0],"w") as out:
-#                 for line in f:
-#                     contig = line.strip().split()[1]
-#                     contig = contig[3:]
-#                     # if contig not in params.chroms:
-#                         # print(contig, file = out)
+rule generate_exclude_file_2:
+    output:
+        config["output_location"] + "log/exclude_file"
+    input:
+        config["output_location"] + "log/exclude_file.temp"
+    params:
+        chroms = config["chromosomes"]
+    run:
+        with open(input[0]) as f:
+            with open(output[0],"w") as out:
+                for line in f:
+                    contig = line.strip().split()[1]
+                    contig = contig[3:]
+                    # if contig not in params.chroms:
+                        # print(contig, file = out)
 # CHECKME : same as above for input ???
 # TODO : Simplify expand command 
 # DOCME : mosaic count read orientation ?
@@ -144,9 +184,11 @@ rule mosaic_count:
     """
     input:
         bam = lambda wc: expand(config["input_bam_location"] + wc.sample +  "/selected/{bam}.bam", bam = BAM_PER_SAMPLE[wc.sample]) if wc.sample in BAM_PER_SAMPLE else "FOOBAR",
-        # excl = "log/exclude_file"
+        bai = lambda wc: expand(config["input_bam_location"] + wc.sample +  "/selected/{bam}.bam.bai", bam = BAM_PER_SAMPLE[wc.sample]) if wc.sample in BAM_PER_SAMPLE else "FOOBAR",
+
+        # excl = config["output_location"] + "log/exclude_file"
     output:
-        counts = config["output_location"] + "counts/{sample}/{window}.txt.gz",
+        counts = config["output_location"] + "counts/{sample}/{window}.txt.fixme.gz",
         info   = config["output_location"] + "counts/{sample}/{window}.info"
     log:
         config["output_location"] + "log/{sample}/mosaic_count.{window}.log"
@@ -163,6 +205,18 @@ rule mosaic_count:
             {input.bam} 
         > {log} 2>&1
         """
+
+rule tmp_filter_mosaic_count_by_chr:
+    input:
+        config["output_location"] + "counts/{sample}/{window}.txt.fixme.gz"
+    output:
+        config["output_location"] + "counts/{sample}/{window}.txt.gz"
+    run:
+        df = pd.read_csv(input[0], compression='gzip', sep='\t')
+        df = df.loc[df['chrom'].isin(wildcards.chromosomes)]
+        df.to_csv(output[0], compression='gzip', sep='\t', index=False)
+
+
 
 # FIXME : Missing plots in final PDF ; R script + inputs to check
 rule plot_mosaic_counts:
@@ -683,6 +737,11 @@ rule merge_haplotag_tables:
         "(head -n1 {input.tsvs[0]} && tail -q -n +2 {input.tsvs}) > {output.tsv}"
 
 
+################################################################################
+# MosaiClassifier                                                              #
+################################################################################
+
+
 rule mosaiClassifier_calc_probs:
     input:
         counts = config["output_location"] + "counts/{sample}/{window}.txt.gz",
@@ -704,10 +763,35 @@ rule create_haplotag_likelihoods:
         config["output_location"] + "haplotag/table/{sample}/haplotag-likelihoods.{window}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}.Rdata"
     log:
         config["output_location"] + "log/create_haplotag_likelihoods/{sample}.{window}.{bpdens}.log"
+    params:
+        chroms = config["chromosomes"]
+    shell:
+        "/home/tweber/.conda/envs/strandseqnation/bin/Rscript afac/haplotagProbs.snakemake.R {input.haplotag_table} {input.sv_probs_table} {output}"
+
+rule mosaiClassifier_calc_probs:
+    input:
+        counts = "counts/{sample}/{windows}.txt.gz",
+        info   = "counts/{sample}/{windows}.info",
+        states = "strand_states/{sample}/{windows}.{bpdens}/final.txt",
+        bp     = "segmentation2/{sample}/{windows}.{bpdens}.txt"
+    output:
+        output = "sv_probabilities/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/probabilities.Rdata"
+    log:
+        "log/mosaiClassifier_calc_probs/{sample}/{windows}.{bpdens}.log"
     script:
-        "utils/haplotagProbs.snakemake.R"
+        "utils/mosaiClassifier.snakemake.R"
 
+rule mosaiClassifier_make_call_biallelic:
+    input:
+        probs = "sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.Rdata"
+    output:
+        "sv_calls/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/biAllelic_llr{llr}.txt"
+    log:
+        "log/mosaiClassifier_make_call_biallelic/{sample}/{windows}.{bpdens}.{llr}.log"
+    script:
+        "utils/mosaiClassifier_call_biallelic.snakemake.R"
 
+        
 ################################################################################
 # Call SNVs                                                                    #
 ################################################################################
@@ -722,7 +806,7 @@ rule mergeBams:
     input:
         lambda wc: expand(config["input_bam_location"] + wc.sample + "/all/{bam}.bam", bam = ALLBAMS_PER_SAMPLE[wc.sample]) if wc.sample in ALLBAMS_PER_SAMPLE else "FOOBAR",
     output:
-        config["output_location"] + "snv_calls/{sample}/merged.bam"
+        config["output_location"] + "snv_calls/{sample}/merged.unsorted.bam"
     log:
         config["output_location"] + "log/mergeBams/{sample}.log"
     threads:
@@ -731,6 +815,15 @@ rule mergeBams:
         # FIXME : Samtools 1.10 from Conda env not working ; 1.9 from Seneca working > change it into conda env yml file
         config["samtools"] + " merge -@ {threads} {output} {input} 2>&1 > {log}"
         # "samtools" + " merge -@ {threads} {output} {input} 2>&1 > {log}"
+
+rule sort_bam:
+    input:
+        config["output_location"] + "snv_calls/{sample}/merged.unsorted.bam"
+    output:
+        config["output_location"] + "snv_calls/{sample}/merged.bam"
+    shell:
+        config["samtools"] + " sort {input} -o {output}"
+
 
 # TODO : to move in utils category
 rule index_bam:
