@@ -1,11 +1,12 @@
 # input_bam_location: "/g/korbel2/weber/MosaiCatcher_files/bam/"
 input_bam_location: "/g/korbel2/weber/MosaiCatcher_files/bam_KG_full/"
-output_location: "/g/korbel2/weber/MosaiCatcher_output_sample_KG/"
+output_location: "/g/korbel2/weber/MosaiCatcher_output/MosaiCatcher_output_sample_KG/"
 snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz"
 # FIXME : TMP debuging
 # snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/split_by_chr/1000G_chr21.vcf.gz"
 
 reference: "/g/korbel2/weber/MosaiCatcher_files/refgenomes_human_local/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna"
+# reference: "/g/korbel2/weber/MosaiCatcher_files/refgenomes_human_local/chr21.fna"
 
 # TODO : add a SMK rule to clone & compile mosaic
 mosaicatcher: "/g/korbel2/weber/Gits/mosaicatcher/build/mosaic"
