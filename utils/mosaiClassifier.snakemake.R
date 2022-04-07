@@ -11,6 +11,13 @@ strand <- fread(snakemake@input[["states"]])
 segs <- fread(snakemake@input[["bp"]])
 
 
+# FIXME : tmp solution to fix error : Segments must covered all bins, which happen for small scaffolds
+chroms <- snakemake@config[["chromosomes"]]
+
+counts <- counts[counts$chrom %in% chroms, ]
+strand <- strand[strand$chrom %in% chroms, ]
+segs <- segs[segs$chrom %in% chroms, ]
+
 # haplotypeMode?
 if ("CW" %in% strand$class) {
   haplotypeMode <- T
