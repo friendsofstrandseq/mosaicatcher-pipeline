@@ -87,7 +87,9 @@ final_list = [config['input_bam_location'] + "{}/{}.bam".format(key, nested_key)
 
 rule all:
     input:
-        expand(config["output_location"] + "counts/{sample}/{window}.txt.gz", sample=SAMPLES, window=[100000]),
+        expand(config["output_location"] + "plots/{sample}/{window}.pdf", sample = SAMPLES, window = [100000]),
+
+        # expand(config["output_location"] + "counts/{sample}/{window}.txt.gz", sample=SAMPLES, window=[100000]),
         # expand(config["output_location"] + "plots/{sample}/{window}.pdf", sample=SAMPLES, window=[100000])
         # expand(config["output_location"] + "norm_counts/{sample}/{window}.txt.gz", sample=SAMPLES, window=[100000]),
         # expand(config["output_location"] + "norm_counts/{sample}/{window}.info", sample=SAMPLES, window=[100000])
@@ -98,12 +100,52 @@ rule all:
         # expand(config["output_location"] + "counts-per-cell/{sample}/{cell}/{window}.txt.gz", sample=SAMPLES, cell=[sub_e for e in list(CELL_PER_SAMPLE.values()) for sub_e in e], window=[100000], ),
         # expand(config["output_location"] + "strand_states/{sample}/{window}.{bpdens}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt", sample=SAMPLES, window=[100000], bpdens=BPDENS, chrom=config["chromosomes"]),
         # expand(config["output_location"] + "strand_states/{sample}/{window}.{bpdens}/final.txt", sample=SAMPLES, window=[100000], bpdens=BPDENS, chrom=config["chromosomes"]),
-        expand(config["output_location"] + "haplotag/table/{sample}/haplotag-likelihoods.{window}.{bpdens}.Rdata", sample=SAMPLES, window=[100000], bpdens=BPDENS, chrom=config["chromosomes"]),
+        # expand(config["output_location"] + "haplotag/table/{sample}/haplotag-likelihoods.{window}.{bpdens}.Rdata", sample=SAMPLES, window=[100000], bpdens=BPDENS, chrom=config["chromosomes"]),
+        # expand(config["output_location"] + "sv_probabilities/{sample}/{window}.{bpdens}/probabilities.Rdata", sample=SAMPLES, window=[100000], bpdens=BPDENS, chrom=config["chromosomes"]),
+        # expand(config["output_location"] + "sv_calls/{sample}/{window}.{bpdens}/biAllelic_llr4.txt", sample=SAMPLES, window=[100000], bpdens=BPDENS, chrom=config["chromosomes"]),
+        # expand(config["output_location"] + "sv_calls/{sample}/{window}.{bpdens}/biAllelic_llr4.complex.tsv", sample=SAMPLES, window=[100000], bpdens=BPDENS, chrom=config["chromosomes"]),
+        # expand(config["output_location"] + "postprocessing/merge/{sample}/{window}.{bpdens}/{method}.txt",
+        #        sample = SAMPLES,
+        #        window = [100000],
+        #        bpdens = BPDENS,
+        #        method = list(set(m.replace('_filterTRUE','').replace('_filterFALSE','') for m in METHODS))),
+        # expand(config["output_location"] + "stats-merged/{sample}/stats.tsv", sample = SAMPLES),
+
         # expand(config["input_bam_location"] +  "{sample}/{folder}/{bam}.{chrom}.txt", 
         #         sample=SAMPLES, 
         #         folder=["all", "selected"], 
         #         bam=final_list, 
         #         chrom=config['chromosomes'])
+        expand(config["output_location"] + "sv_calls/{sample}/{window}.{bpdens}/plots/sv_calls/{method}.{chrom}.pdf",
+               sample = SAMPLE,
+               chrom = config["chromosomes"],
+               window = [100000],
+               bpdens = BPDENS,
+               method = METHODS),
+        # expand("ploidy/{sample}/ploidy.{chrom}.txt", sample = SAMPLES, chrom = config["chromosomes"]),
+        expand(config["output_location"] + "sv_calls/{sample}/{window}.{bpdens}/plots/sv_consistency/{method}.consistency-barplot-{plottype}.pdf",
+               sample = SAMPLES,
+               window = [100000],
+               bpdens = BPDENS,
+               method = METHODS,
+               plottype = ["byaf","bypos"]),
+        expand(config["output_location"] + "sv_calls/{sample}/{window}.{bpdens}/plots/sv_clustering/{method}-{plottype}.pdf",
+               sample = SAMPLES,
+               window = [100000],
+               bpdens = BPDENS,
+               method = METHODS,
+               plottype = ["position","chromosome"]),
+        expand(config["output_location"] + "halo/{sample}/{window}.json.gz",
+               sample = SAMPLES,
+               window = [100000]),
+        expand(config["output_location"] + "ploidy/{sample}/ploidy.{chrom}.txt", sample = SAMPLES, chrom = config["chromosomes"]),
+
+        # expand("stats-merged/{sample}/stats.tsv", sample = SAMPLES),
+        # expand("postprocessing/merge/{sample}/{window}.{bpdens}/{method}.txt",
+        #        sample = SAMPLES,
+        #        window = [100000],
+        #        bpdens = BPDENS,
+        #        method = list(set(m.replace('_filterTRUE','').replace('_filterFALSE','') for m in METHODS))),
 
 # FIXME : To solve : cell wildcard (dict type) comparatively to others that are list type
 
@@ -218,26 +260,7 @@ rule tmp_filter_mosaic_count_by_chr:
 
 
 
-# FIXME : Missing plots in final PDF ; R script + inputs to check
-rule plot_mosaic_counts:
-    """
-    rule fct: Plot function of read counts for each bam file
-    input: mosaic count outputs (counts & info)
-    output: Generate figure based on couting results
-    """
-    input:
-        counts = config["output_location"] + "counts/{sample}/{window}.txt.gz",
-        info   = config["output_location"] + "counts/{sample}/{window}.info"
-    output:
-        config["output_location"] + "plots/{sample}/{window}.pdf"
-    log:
-        config["output_location"] + "log/plot_mosaic_counts/{sample}/{window}.log"
-    params:
-        plot_command = "Rscript " + config["plot_script"]
-    shell:
-        """
-        {params.plot_command} {input.counts} {input.info} {output} > {log} 2>&1
-        """
+
 
 
 ################################################################################
@@ -423,9 +446,8 @@ rule segment_one_cell:
         """
     # URGENT : If one bad cell is detected => pipeline stop => need to fix this 
 
-################################################################################
-# StrandPhaseR things                                                          #
-################################################################################
+
+
 
 # DOCME : how to handle when multiple chrom orientation 
 """
@@ -492,6 +514,49 @@ rule segmentation_selection:
         """
 
 
+################################################################################
+# REGENOTYPE SNV                                                               #
+################################################################################
+
+rule regenotype_SNVs:
+    """
+    rule fct:
+    input:
+    output:
+    """
+    input:
+        bam   = config["output_location"] + "snv_calls/{sample}/merged.bam",
+        bai   = config["output_location"] + "snv_calls/{sample}/merged.bam.bai",
+        sites = config["snv_sites_to_genotype"],
+    output:
+        vcf = config["output_location"] + "snv_genotyping/{sample}/{chrom,chr[0-9A-Z]+}.vcf"
+    log:
+        config["output_location"] + "log/snv_genotyping/{sample}/{chrom}.log"
+    params:
+        fa = config["reference"],
+        # bcftools = config["bcftools"]
+    shell:
+    # CHECKME : Samtools / BCFtools / freebayes path definition through conda env
+    # CHECKME : interest of using -r parameters for freebayes => split by chroms
+        """
+        (freebayes \
+            -f {params.fa} \
+            -r {wildcards.chrom} \
+            -@ {input.sites} \
+            --only-use-input-alleles {input.bam} \
+            --genotype-qualities \
+        | bcftools view \
+            --exclude-uncalled \
+            --genotype het \
+            --types snps \
+            --include "QUAL>=10" \
+        > {output.vcf}) 2> {log}
+        """
+
+
+################################################################################
+# StrandPhaseR things                                                          #
+################################################################################
 
 
 # TODO : replace R script by integrating directly pandas in the pipeline / potentialy use piped output to following rule ?
@@ -583,6 +648,8 @@ rule prepare_strandphaser_config_per_chrom:
 #         return "external_snv_calls/{}/{}.vcf".format(wildcards.sample, wildcards.chrom)
 
 
+
+
 rule run_strandphaser_per_chrom:
     """
     rule fct: run strandphaser for each chromosome 
@@ -614,34 +681,6 @@ rule run_strandphaser_per_chrom:
 
         """
 
-rule compress_vcf:
-    """
-    rule fct:
-    input:
-    output:
-    """
-    input:
-        vcf="{file}.vcf",
-    output:
-        vcf="{file}.vcf.gz",
-    # log:
-    #     "log/compress_vcf/{file}.log"
-    shell:
-        "bgzip {input.vcf}"
-
-
-rule index_vcf:
-    """
-    rule fct:
-    input:
-    output:
-    """
-    input:
-        vcf="{file}.vcf.gz",
-    output:
-        tbi="{file}.vcf.gz.tbi",
-    shell:
-        "tabix -p vcf {input.vcf}"
 
 rule merge_strandphaser_vcfs:
     input:
@@ -737,10 +776,12 @@ rule merge_haplotag_tables:
         "(head -n1 {input.tsvs[0]} && tail -q -n +2 {input.tsvs}) > {output.tsv}"
 
 
+
+
+
 ################################################################################
 # MosaiClassifier                                                              #
 ################################################################################
-
 
 rule mosaiClassifier_calc_probs:
     input:
@@ -757,43 +798,280 @@ rule mosaiClassifier_calc_probs:
 
 rule create_haplotag_likelihoods:
     input:
-        haplotag_table = config["output_location"] + "haplotag/table/{sample}/full/haplotag-counts.{window}.{bpdens}.tsv",
-        sv_probs_table = config["output_location"] + "sv_probabilities/{sample}/{window}.{bpdens}/probabilities.Rdata",
+        haplotag_table = config["output_location"] + 'haplotag/table/{sample}/full/haplotag-counts.{window}.{bpdens}.tsv',
+        sv_probs_table = config["output_location"] + 'sv_probabilities/{sample}/{window}.{bpdens}/probabilities.Rdata',
     output: 
-        config["output_location"] + "haplotag/table/{sample}/haplotag-likelihoods.{window}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}.Rdata"
+        config["output_location"] + 'haplotag/table/{sample}/haplotag-likelihoods.{window}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}.Rdata'
     log:
         config["output_location"] + "log/create_haplotag_likelihoods/{sample}.{window}.{bpdens}.log"
-    params:
-        chroms = config["chromosomes"]
-    shell:
-        "/home/tweber/.conda/envs/strandseqnation/bin/Rscript afac/haplotagProbs.snakemake.R {input.haplotag_table} {input.sv_probs_table} {output}"
-
-rule mosaiClassifier_calc_probs:
-    input:
-        counts = "counts/{sample}/{windows}.txt.gz",
-        info   = "counts/{sample}/{windows}.info",
-        states = "strand_states/{sample}/{windows}.{bpdens}/final.txt",
-        bp     = "segmentation2/{sample}/{windows}.{bpdens}.txt"
-    output:
-        output = "sv_probabilities/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/probabilities.Rdata"
-    log:
-        "log/mosaiClassifier_calc_probs/{sample}/{windows}.{bpdens}.log"
     script:
-        "utils/mosaiClassifier.snakemake.R"
+        "utils/haplotagProbs.snakemake.R"
 
+rule mosaiClassifier_make_call:
+    input:
+        probs = config["output_location"] + 'haplotag/table/{sample}/haplotag-likelihoods.{window}.{bpdens}.Rdata'
+    output:
+        config["output_location"] + "sv_calls/{sample}/{window}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/simpleCalls_llr{llr}_poppriors{pop_priors,(TRUE|FALSE)}_haplotags{use_haplotags,(TRUE|FALSE)}_gtcutoff{gtcutoff,[0-9\\.]+}_regfactor{regfactor,[0-9]+}_filterFALSE.txt"
+    params:
+        minFrac_used_bins = 0.8
+    log:
+        config["output_location"] + "log/mosaiClassifier_make_call/{sample}/{window}.{bpdens}.llr{llr}.poppriors{pop_priors}.haplotags{use_haplotags}.gtcutoff{gtcutoff}.regfactor{regfactor}.log"
+    script:
+        "utils/mosaiClassifier_call.snakemake.R"
+
+
+
+# CHECKME : check if still useful ?
 rule mosaiClassifier_make_call_biallelic:
     input:
-        probs = "sv_probabilities/{sample}/{windows}.{bpdens}/probabilities.Rdata"
+        probs = config["output_location"] + "sv_probabilities/{sample}/{window}.{bpdens}/probabilities.Rdata"
     output:
-        "sv_calls/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/biAllelic_llr{llr}.txt"
+        config["output_location"] + "sv_calls/{sample}/{window}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/biAllelic_llr{llr}.txt"
     log:
-        "log/mosaiClassifier_make_call_biallelic/{sample}/{windows}.{bpdens}.{llr}.log"
+        config["output_location"] + "log/mosaiClassifier_make_call_biallelic/{sample}/{window}.{bpdens}.{llr}.log"
     script:
         "utils/mosaiClassifier_call_biallelic.snakemake.R"
 
-        
+
+
 ################################################################################
-# Call SNVs                                                                    #
+# PostProcessing                                                               #
+################################################################################
+
+
+# DOCME : perl in conda
+
+rule postprocessing_filter:
+    input: 
+        calls = config["output_location"] + "sv_calls/{sample}/{window}.{bpdens}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}_filterFALSE.txt"
+    output: 
+        calls = config["output_location"] + "postprocessing/filter/{sample}/{window}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/simpleCalls_llr{llr}_poppriors{pop_priors,(TRUE|FALSE)}_haplotags{use_haplotags,(TRUE|FALSE)}_gtcutoff{gtcutoff,[0-9\\.]+}_regfactor{regfactor,[0-9]+}.txt"
+    shell:
+        'utils/filter_MosaiCatcher_calls.pl {input.calls}  > {output.calls}'
+
+rule postprocessing_merge:
+    input: 
+        calls = config["output_location"] + "postprocessing/filter/{sample}/{window}.{bpdens}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.txt"
+    output: 
+        calls = config["output_location"] + "postprocessing/merge/{sample}/{window}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/simpleCalls_llr{llr}_poppriors{pop_priors,(TRUE|FALSE)}_haplotags{use_haplotags,(TRUE|FALSE)}_gtcutoff{gtcutoff,[0-9\\.]+}_regfactor{regfactor,[0-9]+}.txt"
+    shell:
+        'utils/group_nearby_calls_of_same_AF_and_generate_output_table.pl {input.calls}  > {output.calls}'
+
+
+rule postprocessing_sv_group_table:
+    input: 
+        calls = config["output_location"] + "postprocessing/merge/{sample}/{window}.{bpdens}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.txt"
+    output: 
+        grouptrack = config["output_location"] + "postprocessing/group-table/{sample}/{window}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/simpleCalls_llr{llr}_poppriors{pop_priors,(TRUE|FALSE)}_haplotags{use_haplotags,(TRUE|FALSE)}_gtcutoff{gtcutoff,[0-9\\.]+}_regfactor{regfactor,[0-9]+}.tsv"
+    shell:
+        """
+        PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)
+        utils/create-sv-group-track.py {input.calls}  > {output.grouptrack}
+        """
+
+
+
+rule filter_calls:
+    input: 
+        inputcalls = config["output_location"] + "sv_calls/{sample}/{window}.{bpdens}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}_filterFALSE.txt",
+        mergedcalls = config["output_location"] + "postprocessing/merge/{sample}/{window}.{bpdens}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.txt",
+    output: 
+        calls = config["output_location"] + "sv_calls/{sample}/{window}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/simpleCalls_llr{llr}_poppriors{pop_priors,(TRUE|FALSE)}_haplotags{use_haplotags,(TRUE|FALSE)}_gtcutoff{gtcutoff,[0-9\\.]+}_regfactor{regfactor,[0-9]+}_filterTRUE.txt"
+    shell:
+        """
+        PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)
+        utils/apply_filter.py {input.inputcalls} {input.mergedcalls} > {output.calls}
+        """
+
+
+
+rule call_complex_regions:
+    input:
+        calls  = config["output_location"] + "sv_calls/{sample}/{window}.{bpdens}/{method}_filter{filter}.txt",
+    output:
+        complex = config["output_location"] + "sv_calls/{sample}/{window}.{bpdens}/{method}_filter{filter}.complex.tsv",
+    log:
+        config["output_location"] + "log/call_complex_regions/{sample}/{window}.{bpdens}.{method}_filter{filter}.log"
+    shell:
+        """
+        PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)
+        utils/call-complex-regions.py \
+        --merge_distance 5000000 \
+        --ignore_haplotypes \
+        --min_cell_count 2 {input.calls} > {output.complex} 2>{log}
+        """
+
+
+
+################################################################################
+# Summary statistics on sv calls                                               #
+################################################################################
+
+
+rule summary_statistics:
+    input:
+        segmentation = config["output_location"] + 'segmentation2/{sample}/{window}.{bpdens}.txt',
+        strandstates = config["output_location"] + 'strand_states/{sample}/{window}.{bpdens}/initial_strand_state',
+        sv_calls = config["output_location"] + 'sv_calls/{sample}/{window}.{bpdens}/{method}_filter{filter}.txt',
+        complex = config["output_location"] + "sv_calls/{sample}/{window}.{bpdens}/{method}_filter{filter}.complex.tsv",
+        merged = config["output_location"] + "postprocessing/merge/{sample}/{window}.{bpdens}/{method}.txt",
+    output:
+        tsv = config["output_location"] + 'stats/{sample}/{window}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/{method}_filter{filter,(TRUE|FALSE)}.tsv',
+    log:
+        config["output_location"] + 'log/summary_statistics/{sample}/{window}.{bpdens}/{method}_filter{filter}.log'
+    run:
+        p = []
+        try:
+            f = config["ground_truth_clonal"][wildcards.sample]
+            if len(f) > 0:
+                p.append('--true-events-clonal')
+                p.append(f)
+        except KeyError:
+            pass
+        try:
+            f = config["ground_truth_single_cell"][wildcards.sample]
+            if len(f) > 0:
+                p.append('--true-events-single-cell')
+                p.append(f)
+        except KeyError:
+            pass
+        if wildcards.filter == 'TRUE':
+            p.append('--merged-file')
+            p.append(input.merged)
+        additional_params = ' '.join(p)
+        shell('utils/callset_summary_stats.py --segmentation {input.segmentation} --strandstates {input.strandstates} --complex-regions {input.complex} {additional_params} {input.sv_calls}  > {output.tsv} ')
+
+rule aggregate_summary_statistics:
+    input:
+        tsv=expand(config["output_location"] + "stats/{{sample}}/{window}.{bpdens}/{method}.tsv", window = [100000], bpdens = BPDENS, method = METHODS),
+    output:
+        tsv=config["output_location"] + "stats-merged/{sample}/stats.tsv"
+    shell:
+        "(head -n1 {input.tsv[0]} && (tail -n1 -q {input.tsv} | sort -k1) ) > {output}"
+    
+
+# CHECKME : to check & see if it's working
+################################################################################
+# Ploidy estimation                                                            #
+################################################################################
+# TODO : merge into one file by sample 
+rule estimate_ploidy:
+    input:
+        config["output_location"] + "counts/{sample}/100000.txt.gz"
+    output:
+        config["output_location"] + "ploidy/{sample}/ploidy.{chrom}.txt"
+    log:
+        config["output_location"] + "log/estimate_ploidy/{sample}/{chrom}.log"
+    shell:
+        """
+        PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)
+        python utils/ploidy-estimator.py --chromosome {wildcards.chrom} {input} > {output} 
+        """
+
+
+################################################################################
+# Plots                                                                        #
+################################################################################
+# FIXME : Missing plots in final PDF ; R script + inputs to check
+# CHECKME : check if possible to switch from PDF to svg (or both) to produce lighter files
+rule plot_mosaic_counts:
+    """
+    rule fct: Plot function of read counts for each bam file
+    input: mosaic count outputs (counts & info)
+    output: Generate figure based on couting results
+    """
+    input:
+        counts = config["output_location"] + "counts/{sample}/{window}.txt.gz",
+        info   = config["output_location"] + "counts/{sample}/{window}.info"
+    output:
+        config["output_location"] + "plots/{sample}/{window}.pdf"
+    log:
+        config["output_location"] + "log/plot_mosaic_counts/{sample}/{window}.log"
+    params:
+        plot_command = config["Rscript"] + " " + config["plot_script"]
+    shell:
+        """
+        {params.plot_command} {input.counts} {input.info} {output} > {log} 2>&1
+        """
+
+
+rule generate_halo_json:
+    input:
+        counts = config["output_location"] + "counts/{sample}/{windows}.txt.gz",
+    output:
+        json = config["output_location"] + "halo/{sample}/{windows}.json.gz",
+    log:
+        config["output_location"] + "log/generate_halo_json/{sample}/{windows}.{windows}.log"
+    shell:
+        """
+        PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)
+        (./utils/counts_to_json.py {input.counts} | gzip > {output.json}) 
+        """
+
+
+rule plot_SV_calls:
+    input:
+        counts = config["output_location"] + "counts/{sample}/{windows}.txt.gz",
+        calls  = config["output_location"] + "sv_calls/{sample}/{windows}.{bpdens}/{method}_filter{filter}.txt",
+        complex = config["output_location"] + "sv_calls/{sample}/{windows}.{bpdens}/{method}_filter{filter}.complex.tsv",
+        strand = config["output_location"] + "strand_states/{sample}/{windows}.{bpdens}/final.txt",
+        segments = config["output_location"] + "segmentation2/{sample}/{windows}.{bpdens}.txt",
+        scsegments = config["output_location"] + "segmentation-singlecell/{sample}/{windows}.{bpdens}.txt",
+        grouptrack = config["output_location"] + "postprocessing/group-table/{sample}/{windows}.{bpdens}/{method}.tsv",
+    output:
+        config["output_location"] + "sv_calls/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/plots/sv_calls/{method}_filter{filter,(TRUE|FALSE)}.{chrom}.pdf"
+    log:
+        config["output_location"] + "log/plot_SV_calls/{sample}/{windows}.{bpdens}.{method}_filter{filter}.{chrom}.log"
+    shell:
+        """
+        {config[Rscript]} utils/plot-sv-calls.R \
+            segments={input.segments} \
+            singlecellsegments={input.scsegments} \
+            strand={input.strand} \
+            complex={input.complex} \
+            groups={input.grouptrack} \
+            calls={input.calls} \
+            {input.counts} \
+            {wildcards.chrom} \
+            {output} > {log} 2>&1
+        """
+
+
+
+rule plot_SV_consistency_barplot:
+    input:
+        sv_calls  = config["output_location"] + "sv_calls/{sample}/{windows}.{bpdens}/{method}.txt",
+    output:
+        barplot_bypos = config["output_location"] + "sv_calls/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/plots/sv_consistency/{method}.consistency-barplot-bypos.pdf",
+        barplot_byaf = config["output_location"] + "sv_calls/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/plots/sv_consistency/{method}.consistency-barplot-byaf.pdf",
+    log:
+        config["output_location"] + "log/plot_SV_consistency/{sample}/{windows}.{bpdens}.{method}.log"
+    shell:
+        """
+        {config[Rscript]} utils/sv_consistency_barplot.snakemake.R
+        """
+
+
+
+
+rule plot_clustering:
+    input:
+        sv_calls  = config["output_location"] + "sv_calls/{sample}/{windows}.{bpdens}/{method}.txt",
+        binbed = "utils/bin_200kb_all.bed",
+    output:
+        position = config["output_location"] + "sv_calls/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/plots/sv_clustering/{method}-position.pdf",
+        chromosome = config["output_location"] + "sv_calls/{sample}/{windows}.{bpdens,selected_j[0-9\\.]+_s[0-9\\.]+_scedist[0-9\\.]+}/plots/sv_clustering/{method}-chromosome.pdf",
+    log:
+        config["output_location"] + "log/plot_clustering/{sample}/{windows}.{bpdens}.{method}.log"
+    shell:
+        """
+        {config[Rscript]} utils/plot-clustering.snakemake.R {input.sv_calls} {input.binbed} {output.position} {output.chromosome}
+        """
+
+
+
+################################################################################
+# UTILS                                                                        #
 ################################################################################
 
 # TODO : to move in utils category
@@ -843,37 +1121,31 @@ rule index_bam:
         # "samtools" + " index {input} 2> {log}"
 
 
-rule regenotype_SNVs:
+rule compress_vcf:
     """
     rule fct:
     input:
     output:
     """
     input:
-        bam   = config["output_location"] + "snv_calls/{sample}/merged.bam",
-        bai   = config["output_location"] + "snv_calls/{sample}/merged.bam.bai",
-        sites = config["snv_sites_to_genotype"],
+        vcf="{file}.vcf",
     output:
-        vcf = config["output_location"] + "snv_genotyping/{sample}/{chrom,chr[0-9A-Z]+}.vcf"
-    log:
-        config["output_location"] + "log/snv_genotyping/{sample}/{chrom}.log"
-    params:
-        fa = config["reference"],
-        # bcftools = config["bcftools"]
+        vcf="{file}.vcf.gz",
+    # log:
+    #     "log/compress_vcf/{file}.log"
     shell:
-    # CHECKME : Samtools / BCFtools / freebayes path definition through conda env
-    # CHECKME : interest of using -r parameters for freebayes => split by chroms
-        """
-        (freebayes \
-            -f {params.fa} \
-            -r {wildcards.chrom} \
-            -@ {input.sites} \
-            --only-use-input-alleles {input.bam} \
-            --genotype-qualities \
-        | bcftools view \
-            --exclude-uncalled \
-            --genotype het \
-            --types snps \
-            --include "QUAL>=10" \
-        > {output.vcf}) 2> {log}
-        """
+        "bgzip {input.vcf}"
+
+
+rule index_vcf:
+    """
+    rule fct:
+    input:
+    output:
+    """
+    input:
+        vcf="{file}.vcf.gz",
+    output:
+        tbi="{file}.vcf.gz.tbi",
+    shell:
+        "tabix -p vcf {input.vcf}"
