@@ -2,6 +2,8 @@
 
 start
 
+:input;
+
 if (Genotyping) then (no)
     :Read count on raw BAM \n (mosaic count);
     :Normalization \n (normalize.R);
