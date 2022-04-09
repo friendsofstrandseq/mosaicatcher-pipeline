@@ -1,0 +1,116 @@
+digraph snakemake_dag {
+    graph[bgcolor=white, margin=0];
+    node[shape=box, style=rounded, fontname=sans,                 fontsize=10, penwidth=2];
+    edge[penwidth=2, color=grey];
+	0[label = "all", color = "0.11 0.6 0.85", style="rounded"];
+	1[label = "plot_mosaic_counts", color = "0.58 0.6 0.85", style="rounded"];
+	2[label = "plot_SV_calls", color = "0.23 0.6 0.85", style="rounded"];
+	3[label = "plot_SV_consistency_barplot", color = "0.31 0.6 0.85", style="rounded"];
+	4[label = "plot_clustering", color = "0.55 0.6 0.85", style="rounded"];
+	5[label = "generate_halo_json", color = "0.07 0.6 0.85", style="rounded"];
+	6[label = "estimate_ploidy", color = "0.16 0.6 0.85", style="rounded"];
+	7[label = "tmp_filter_mosaic_count_by_chr", color = "0.34 0.6 0.85", style="rounded"];
+	8[label = "mosaic_count", color = "0.09 0.6 0.85", style="rounded"];
+	9[label = "mosaiClassifier_make_call", color = "0.28 0.6 0.85", style="rounded"];
+	10[label = "call_complex_regions", color = "0.43 0.6 0.85", style="rounded"];
+	11[label = "convert_strandphaser_output", color = "0.50 0.6 0.85", style="rounded"];
+	12[label = "segmentation_selection", color = "0.18 0.6 0.85", style="rounded"];
+	13[label = "postprocessing_sv_group_table", color = "0.33 0.6 0.85", style="rounded"];
+	14[label = "filter_calls", color = "0.54 0.6 0.85", style="rounded"];
+	15[label = "index_bam", color = "0.64 0.6 0.85", style="rounded"];
+	16[label = "create_haplotag_likelihoods", color = "0.14 0.6 0.85", style="rounded"];
+	17[label = "combine_strandphaser_output", color = "0.04 0.6 0.85", style="rounded"];
+	18[label = "fix_segmentation", color = "0.65 0.6 0.85", style="rounded"];
+	19[label = "segment_one_cell", color = "0.35 0.6 0.85", style="rounded"];
+	20[label = "postprocessing_merge", color = "0.17 0.6 0.85", style="rounded"];
+	21[label = "merge_haplotag_tables", color = "0.52 0.6 0.85", style="rounded"];
+	22[label = "mosaiClassifier_calc_probs", color = "0.61 0.6 0.85", style="rounded"];
+	23[label = "run_strandphaser_per_chrom", color = "0.37 0.6 0.85", style="rounded"];
+	24[label = "segmentation", color = "0.38 0.6 0.85", style="rounded"];
+	25[label = "extract_single_cell_counts", color = "0.00 0.6 0.85", style="rounded"];
+	26[label = "postprocessing_filter", color = "0.13 0.6 0.85", style="rounded"];
+	27[label = "create_haplotag_table", color = "0.60 0.6 0.85", style="rounded"];
+	28[label = "convert_strandphaser_input", color = "0.06 0.6 0.85", style="rounded"];
+	29[label = "regenotype_SNVs", color = "0.45 0.6 0.85", style="rounded"];
+	30[label = "prepare_strandphaser_config_per_chrom", color = "0.44 0.6 0.85", style="rounded"];
+	31[label = "haplotag_bams", color = "0.40 0.6 0.85", style="rounded"];
+	32[label = "create_haplotag_segment_bed", color = "0.10 0.6 0.85", style="rounded"];
+	33[label = "sort_bam", color = "0.24 0.6 0.85", style="rounded"];
+	34[label = "merge_strandphaser_vcfs", color = "0.03 0.6 0.85", style="rounded"];
+	35[label = "index_vcf", color = "0.57 0.6 0.85", style="rounded"];
+	36[label = "mergeBams", color = "0.20 0.6 0.85", style="rounded"];
+	37[label = "compress_vcf", color = "0.47 0.6 0.85", style="rounded"];
+	2 -> 0
+	5 -> 0
+	4 -> 0
+	1 -> 0
+	3 -> 0
+	6 -> 0
+	8 -> 1
+	7 -> 1
+	12 -> 2
+	7 -> 2
+	11 -> 2
+	14 -> 2
+	10 -> 2
+	9 -> 2
+	13 -> 2
+	9 -> 3
+	14 -> 3
+	9 -> 4
+	14 -> 4
+	7 -> 5
+	7 -> 6
+	8 -> 7
+	15 -> 8
+	16 -> 9
+	9 -> 10
+	14 -> 10
+	8 -> 11
+	12 -> 11
+	17 -> 11
+	19 -> 12
+	8 -> 12
+	7 -> 12
+	18 -> 12
+	20 -> 13
+	20 -> 14
+	9 -> 14
+	33 -> 15
+	31 -> 15
+	22 -> 16
+	21 -> 16
+	23 -> 17
+	24 -> 18
+	25 -> 19
+	26 -> 20
+	27 -> 21
+	11 -> 22
+	8 -> 22
+	7 -> 22
+	12 -> 22
+	29 -> 23
+	30 -> 23
+	28 -> 23
+	7 -> 24
+	7 -> 25
+	9 -> 26
+	15 -> 27
+	32 -> 27
+	31 -> 27
+	8 -> 28
+	12 -> 28
+	15 -> 29
+	33 -> 29
+	12 -> 30
+	15 -> 31
+	35 -> 31
+	34 -> 31
+	12 -> 32
+	36 -> 33
+	35 -> 34
+	37 -> 34
+	34 -> 35
+	37 -> 35
+	23 -> 37
+}
