@@ -33,6 +33,7 @@ variable_bins:
 R_reference: "BSgenome.Hsapiens.UCSC.hg38"
 
 # CHECKME : Parameters optimization ?
+llr: 4
 bp_density:
   few: 0.2
   medium: 0.4
