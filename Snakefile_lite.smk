@@ -1,7 +1,7 @@
 import math
 from collections import defaultdict
 
-configfile: "Snake.config_embl.yaml"
+configfile: "config/Snake.config_embl.yaml"
 import pandas as pd
 import os, sys
 from pprint import pprint
@@ -12,23 +12,64 @@ from pprint import pprint
 # TODO I/O : Function to define inputs ; simplify list/dict system
 # TODO Use remote file system to download example files
 
-SAMPLE,BAM = glob_wildcards(config["input_bam_location"] + "{sample}/selected/{bam}.bam")
-# pprint(SAMPLE)
-# pprint(BAM)
-SAMPLES = sorted(set(SAMPLE))
-
-CELL_PER_SAMPLE= defaultdict(list)
-BAM_PER_SAMPLE = defaultdict(list)
 
 
-for sample,bam in zip(SAMPLE,BAM):
-    BAM_PER_SAMPLE[sample].append(bam)
-    CELL_PER_SAMPLE[sample].append(bam.replace(".sort.mdup",""))
+
+def handle_input_data(thisdir, exclude_list=list):
+    """
+        
+    """
+    # Parsing folder
+    data = [(r,file.replace('.bam', '')) for r, d, f in os.walk(thisdir) for file in f if ".bam" in file and ".bai" not in file]
+    
+    # Building pandas df based on folder structure
+    df = pd.DataFrame(data,columns=['Folder','File'])
+
+    # Defining cols
+    df['all/selected'] = df['Folder'].apply(lambda r: r.split('/')[-1])
+    df['Sample'] = df['Folder'].apply(lambda r: r.split('/')[-2])
+    df['Cell'] = df['File'].apply(lambda r: r.split('.')[0])
+    df['Full_path'] = df['Folder'] + "/" + df['File']
+
+    # Filtering based on exclude list defined
+    df_config_files = df.loc[~df['Cell'].isin(exclude_list)]
+
+    # Export dicts
+    SAMPLES = sorted(df_config_files.Sample.unique().tolist())
+    BAM_PER_SAMPLE = df_config_files.loc[df_config_files['all/selected'] == "selected"].groupby('Sample')['File'].apply(list).to_dict()
+    CELL_PER_SAMPLE = df_config_files.loc[df_config_files['all/selected'] == "selected"].groupby('Sample')['Cell'].apply(list).to_dict()
+    ALLBAMS_PER_SAMPLE = df_config_files.loc[df_config_files['all/selected'] == "all"].groupby('Sample')['File'].apply(list).to_dict()
+
+    return SAMPLES, BAM_PER_SAMPLE, CELL_PER_SAMPLE, ALLBAMS_PER_SAMPLE, df_config_files
 
 
-ALLBAMS_PER_SAMPLE = defaultdict(list)
-for sample in SAMPLES:
-    ALLBAMS_PER_SAMPLE[sample] = glob_wildcards(config["input_bam_location"] + "{}/all/{{bam}}.bam".format(sample)).bam
+# FIXME : tmp solution to remove bad cells => need to fix this with combination of ASHLEYS ?
+# TODO : other solution by giving in config file, CLI input ?
+
+exclude_list = ['BM510x3PE20490']
+
+SAMPLES, BAM_PER_SAMPLE, CELL_PER_SAMPLE, ALLBAMS_PER_SAMPLE, df_config_files = handle_input_data(thisdir=config["input_bam_location"], exclude_list=exclude_list)
+
+
+
+
+# SAMPLE, BAM = glob_wildcards(config["input_bam_location"] + "{sample}/selected/{bam}.bam")
+
+# SAMPLES = sorted(set(SAMPLE))
+
+# CELL_PER_SAMPLE= defaultdict(list)
+# BAM_PER_SAMPLE = defaultdict(list)
+
+
+# for sample,bam in zip(SAMPLE,BAM):
+#     BAM_PER_SAMPLE[sample].append(bam)
+#     CELL_PER_SAMPLE[sample].append(bam.replace(".sort.mdup",""))
+
+
+# ALLBAMS_PER_SAMPLE = defaultdict(list)
+# for sample in SAMPLES:
+#     ALLBAMS_PER_SAMPLE[sample] = glob_wildcards(config["input_bam_location"] + "{}/all/{{bam}}.bam".format(sample)).bam
+# pprint(ALLBAMS_PER_SAMPLE)
 
 
 print("Detected {} samples:".format(len(SAMPLES)))
@@ -38,12 +79,11 @@ for s in SAMPLES:
 # pprint(BAM_PER_SAMPLE)
 # pprint(CELL_PER_SAMPLE)
 
-# FIXME : tmp solution to remove bad cells => need to fix this with combination of ASHLEYS ?
 
-exclude_list = ['BM510x3PE20490']
+# BAM_PER_SAMPLE = {k:sorted([e  for e in v if e.split('.')[0] not in exclude_list]) for k,v in BAM_PER_SAMPLE.items()}
+# CELL_PER_SAMPLE = {k:sorted([e for e in v if e not in exclude_list]) for k,v in CELL_PER_SAMPLE.items()}
 
-BAM_PER_SAMPLE = {k:sorted([e  for e in v if e.split('.')[0] not in exclude_list]) for k,v in BAM_PER_SAMPLE.items()}
-CELL_PER_SAMPLE = {k:sorted([e for e in v if e not in exclude_list]) for k,v in CELL_PER_SAMPLE.items()}
+
 
 
 # pprint(BAM_PER_SAMPLE)
@@ -117,7 +157,7 @@ rule all:
         #         bam=final_list, 
         #         chrom=config['chromosomes'])
         expand(config["output_location"] + "sv_calls/{sample}/{window}.{bpdens}/plots/sv_calls/{method}.{chrom}.pdf",
-               sample = SAMPLE,
+               sample = SAMPLES,
                chrom = config["chromosomes"],
                window = [100000],
                bpdens = BPDENS,
