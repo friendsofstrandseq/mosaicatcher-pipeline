@@ -1,3 +1,10 @@
+# Current state of the pipeline:
+# ==============================
+# * count reads in the BAM files (in fixed and variable-width bins of various sizes)
+# * determine strand states of each chromosome in each single cell, including SCEs
+# * plot all single cell libraries in different window sizes
+# * calculate a segmentation into potential SVs using Mosaicatcher
+
 import math
 from collections import defaultdict
 
@@ -5,21 +12,18 @@ configfile: "config/Snake.config_embl.yaml"
 import pandas as pd
 import os, sys
 from pprint import pprint
-
-# print(os.listdir(os.getcwd()))
-# print(os.listdir("bam"))
+import pysam
+from tqdm import tqdm
 
 # TODO I/O : Function to define inputs ; simplify list/dict system
 # TODO Use remote file system to download example files
-
-
 
 
 def handle_input_data(thisdir, exclude_list=list):
     """
         
     """
-    # Parsing folder
+    # Parsing folder and retrieve only files with .bam extension
     data = [(r,file.replace('.bam', '')) for r, d, f in os.walk(thisdir) for file in f if ".bam" in file and ".bai" not in file]
     
     # Building pandas df based on folder structure
@@ -29,7 +33,7 @@ def handle_input_data(thisdir, exclude_list=list):
     df['all/selected'] = df['Folder'].apply(lambda r: r.split('/')[-1])
     df['Sample'] = df['Folder'].apply(lambda r: r.split('/')[-2])
     df['Cell'] = df['File'].apply(lambda r: r.split('.')[0])
-    df['Full_path'] = df['Folder'] + "/" + df['File']
+    df['Full_path'] = df['Folder'] + "/" + df['File'] + ".bam"
 
     # Filtering based on exclude list defined
     df_config_files = df.loc[~df['Cell'].isin(exclude_list)]
@@ -43,6 +47,24 @@ def handle_input_data(thisdir, exclude_list=list):
     return SAMPLES, BAM_PER_SAMPLE, CELL_PER_SAMPLE, ALLBAMS_PER_SAMPLE, df_config_files
 
 
+def check_bam_header(bam_file_path):
+    """
+        
+    """
+
+    # Get BAM file header with pysam
+    h = pysam.view("-H", bam_file_path)
+    h = [e.split("\t") for e in h.split("\n")]
+    sm_tag_list = list(set([sub_e.replace("SM:", "") for e in h for sub_e in e if "SM:" in sub_e]))
+
+    # Folder name based on path
+    folder_name = bam_file_path.split("/")[-3]
+
+    # Assertions
+    assert len(sm_tag_list) == 1, "Two different SM tags in the header of BAM file {}".format(bam_file_path)
+    assert sm_tag_list[0] == folder_name, 'Folder name "{}" must correspond to SM tag in BAM file "{}"'.format(folder_name, bam_file_path)
+
+
 # FIXME : tmp solution to remove bad cells => need to fix this with combination of ASHLEYS ?
 # TODO : other solution by giving in config file, CLI input ?
 
@@ -50,173 +72,36 @@ exclude_list = ['BM510x3PE20490']
 
 SAMPLES, BAM_PER_SAMPLE, CELL_PER_SAMPLE, ALLBAMS_PER_SAMPLE, df_config_files = handle_input_data(thisdir=config["input_bam_location"], exclude_list=exclude_list)
 
-
-
-
-# SAMPLE, BAM = glob_wildcards(config["input_bam_location"] + "{sample}/selected/{bam}.bam")
-
-# SAMPLES = sorted(set(SAMPLE))
-
-# CELL_PER_SAMPLE= defaultdict(list)
-# BAM_PER_SAMPLE = defaultdict(list)
-
-
-# for sample,bam in zip(SAMPLE,BAM):
-#     BAM_PER_SAMPLE[sample].append(bam)
-#     CELL_PER_SAMPLE[sample].append(bam.replace(".sort.mdup",""))
-
-
-# ALLBAMS_PER_SAMPLE = defaultdict(list)
-# for sample in SAMPLES:
-#     ALLBAMS_PER_SAMPLE[sample] = glob_wildcards(config["input_bam_location"] + "{}/all/{{bam}}.bam".format(sample)).bam
-# pprint(ALLBAMS_PER_SAMPLE)
-
+print(df_config_files)
+tqdm.pandas(desc="Checking if BAM SM tags correspond to folder names")
+df_config_files["Full_path"].progress_apply(check_bam_header, )
 
 print("Detected {} samples:".format(len(SAMPLES)))
 for s in SAMPLES:
     print("  {}:\t{} cells\t {} selected cells".format(s, len(ALLBAMS_PER_SAMPLE[s]), len(BAM_PER_SAMPLE[s])))
 
-# pprint(BAM_PER_SAMPLE)
-# pprint(CELL_PER_SAMPLE)
 
 
-# BAM_PER_SAMPLE = {k:sorted([e  for e in v if e.split('.')[0] not in exclude_list]) for k,v in BAM_PER_SAMPLE.items()}
-# CELL_PER_SAMPLE = {k:sorted([e for e in v if e not in exclude_list]) for k,v in CELL_PER_SAMPLE.items()}
+# METHODS = [
+#     "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0_regfactor6_filterFALSE",
+#     "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.05_regfactor6_filterTRUE",
+# ]
 
-
-
-
-# pprint(BAM_PER_SAMPLE)
-# pprint(CELL_PER_SAMPLE)
-
-# Current state of the pipeline:
-# ==============================
-# * count reads in the BAM files (in fixed and variable-width bins of various sizes)
-# * determine strand states of each chromosome in each single cell, including SCEs
-# * plot all single cell libraries in different window sizes
-# * calculate a segmentation into potential SVs using Mosaicatcher
-
-
-METHODS = [
-    "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0_regfactor6_filterFALSE",
-    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.05_regfactor6_filterTRUE",
-]
-
-# FIXME : move to yaml/json settings or to something else
-BPDENS = [
-    "selected_j{}_s{}_scedist{}".format(joint, single, scedist) for joint in [0.1] for single in [0.5] for scedist in [20]
-]
-
-# print(BPDENS)
-# # Todo: specify an exact version of the singularity file!
-
-
-# print(SAMPLES)
-# print(CELL_PER_SAMPLE)
-# print(CELL_PER_SAMPLE.values())
-# print([sub_e for e in list(CELL_PER_SAMPLE.values()) for sub_e in e])
-# # print(expand([SAMPLES, [sub_e for e in list(CELL_PER_SAMPLE.values()) for sub_e in e]]))
-# print(expand(["{sample}/{cell}"], zip, sample=SAMPLES, cell=[sub_e for e in list(CELL_PER_SAMPLE.values()) for sub_e in e]))
-# # exit()
-# print(expand([config["output_location"] + "counts-per-cell/{sample}/{cell}/{window}.txt.gz"], zip, sample=SAMPLES, cell=[sub_e for e in list(CELL_PER_SAMPLE.values()) for sub_e in e], window=[100000], ))
-
-
-final_list = [config['input_bam_location'] + "{}/{}.bam".format(key, nested_key) for key in BAM_PER_SAMPLE for nested_key in BAM_PER_SAMPLE[key] ]
-
+# # FIXME : move to yaml/json settings or to something else
+# BPDENS = [
+#     "selected_j{}_s{}_scedist{}".format(joint, single, scedist) for joint in [0.1] for single in [0.5] for scedist in [20]
+# ]
 
 
 rule all:
     input:
-        expand(config["output_location"] + "plots/{sample}/{window}.pdf", sample = SAMPLES, window = [100000]),
+        expand(config["output_location"] + "counts/{sample}/{window}.txt.gz", sample=SAMPLES, window=[100000]),
 
-        # expand(config["output_location"] + "counts/{sample}/{window}.txt.gz", sample=SAMPLES, window=[100000]),
-        # expand(config["output_location"] + "plots/{sample}/{window}.pdf", sample=SAMPLES, window=[100000])
-        # expand(config["output_location"] + "norm_counts/{sample}/{window}.txt.gz", sample=SAMPLES, window=[100000]),
-        # expand(config["output_location"] + "norm_counts/{sample}/{window}.info", sample=SAMPLES, window=[100000])
-        # expand(config["output_location"] + "segmentation/{sample}/{window}.txt", sample=SAMPLES, window=[100000]),
-        # expand(config["output_location"] + "snv_calls/{sample}/merged.bam", sample=SAMPLES)
-        # expand(config["output_location"] + "snv_genotyping/{sample}/{chrom}.vcf", sample=SAMPLES, window=[100000], chrom=config["chromosomes"]),
-        # expand(config["output_location"] + "counts-per-cell/{sample}/{cell}/{window}.txt.gz", sample=SAMPLES, cell=[sub_e for e in list(CELL_PER_SAMPLE.values()) for sub_e in e], window=[100000], ),
-        # expand(config["output_location"] + "counts-per-cell/{sample}/{cell}/{window}.txt.gz", sample=SAMPLES, cell=[sub_e for e in list(CELL_PER_SAMPLE.values()) for sub_e in e], window=[100000], ),
-        # expand(config["output_location"] + "strand_states/{sample}/{window}.{bpdens}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt", sample=SAMPLES, window=[100000], bpdens=BPDENS, chrom=config["chromosomes"]),
-        # expand(config["output_location"] + "strand_states/{sample}/{window}.{bpdens}/final.txt", sample=SAMPLES, window=[100000], bpdens=BPDENS, chrom=config["chromosomes"]),
-        # expand(config["output_location"] + "haplotag/table/{sample}/haplotag-likelihoods.{window}.{bpdens}.Rdata", sample=SAMPLES, window=[100000], bpdens=BPDENS, chrom=config["chromosomes"]),
-        # expand(config["output_location"] + "sv_probabilities/{sample}/{window}.{bpdens}/probabilities.Rdata", sample=SAMPLES, window=[100000], bpdens=BPDENS, chrom=config["chromosomes"]),
-        # expand(config["output_location"] + "sv_calls/{sample}/{window}.{bpdens}/biAllelic_llr4.txt", sample=SAMPLES, window=[100000], bpdens=BPDENS, chrom=config["chromosomes"]),
-        # expand(config["output_location"] + "sv_calls/{sample}/{window}.{bpdens}/biAllelic_llr4.complex.tsv", sample=SAMPLES, window=[100000], bpdens=BPDENS, chrom=config["chromosomes"]),
-        # expand(config["output_location"] + "postprocessing/merge/{sample}/{window}.{bpdens}/{method}.txt",
-        #        sample = SAMPLES,
-        #        window = [100000],
-        #        bpdens = BPDENS,
-        #        method = list(set(m.replace('_filterTRUE','').replace('_filterFALSE','') for m in METHODS))),
-        # expand(config["output_location"] + "stats-merged/{sample}/stats.tsv", sample = SAMPLES),
 
-        # expand(config["input_bam_location"] +  "{sample}/{folder}/{bam}.{chrom}.txt", 
-        #         sample=SAMPLES, 
-        #         folder=["all", "selected"], 
-        #         bam=final_list, 
-        #         chrom=config['chromosomes'])
-        expand(config["output_location"] + "sv_calls/{sample}/{window}.{bpdens}/plots/sv_calls/{method}.{chrom}.pdf",
-               sample = SAMPLES,
-               chrom = config["chromosomes"],
-               window = [100000],
-               bpdens = BPDENS,
-               method = METHODS),
-        # expand("ploidy/{sample}/ploidy.{chrom}.txt", sample = SAMPLES, chrom = config["chromosomes"]),
-        expand(config["output_location"] + "sv_calls/{sample}/{window}.{bpdens}/plots/sv_consistency/{method}.consistency-barplot-{plottype}.pdf",
-               sample = SAMPLES,
-               window = [100000],
-               bpdens = BPDENS,
-               method = METHODS,
-               plottype = ["byaf","bypos"]),
-        expand(config["output_location"] + "sv_calls/{sample}/{window}.{bpdens}/plots/sv_clustering/{method}-{plottype}.pdf",
-               sample = SAMPLES,
-               window = [100000],
-               bpdens = BPDENS,
-               method = METHODS,
-               plottype = ["position","chromosome"]),
-        expand(config["output_location"] + "halo/{sample}/{window}.json.gz",
-               sample = SAMPLES,
-               window = [100000]),
-        expand(config["output_location"] + "ploidy/{sample}/ploidy.{chrom}.txt", sample = SAMPLES, chrom = config["chromosomes"]),
 
-        # expand("stats-merged/{sample}/stats.tsv", sample = SAMPLES),
-        # expand("postprocessing/merge/{sample}/{window}.{bpdens}/{method}.txt",
-        #        sample = SAMPLES,
-        #        window = [100000],
-        #        bpdens = BPDENS,
-        #        method = list(set(m.replace('_filterTRUE','').replace('_filterFALSE','') for m in METHODS))),
+
 
 # FIXME : To solve : cell wildcard (dict type) comparatively to others that are list type
-
-
-################################################################################
-# TMP solution by extracting chrom in BAM files                                #
-################################################################################
-
-
-# rule simplify_bam_files:
-#     input:
-#         bam = config["input_bam_location"] +  "{sample}/{folder}/{bam}.bam"
-#     output:
-#         bam_with_header = config["output_location"] + "lite_bam_with_full_header/" +  "{sample}/{folder}/{bam}.bam"
-#         bam_without_header = config["output_location"] + "lite_bam_with_lite_header/" +  "{sample}/{folder}/{bam}.bam"
-
-#     log:
-#         config["input_bam_location"] +  "bam_modif/{sample}/{folder}/{bam}.log"
-#     shell:
-#         """
-#         cat \
-#             <(samtools view -H {input.bam} | grep -P "^@HD|^@RG|^\@SQ\\tSN:chr21|^@PG") \
-#             <(samtools view {input.bam} chr21) |\
-#         samtools view -bo {output.bam_without_header} \
-#         > {log} 2>&1 ;
-#          cat \
-#             <(samtools view -H {input.bam}) \
-#             <(samtools view {input.bam} chr21) |\
-#         samtools view -bo {output.bam_with_header} \
-#         > {log} 2>&1 ;       
-#         """
 
 
 
@@ -227,10 +112,10 @@ rule all:
 
 # CHECKME : exclude file rule useful ?
 rule generate_exclude_file_1:
-    output:
-        config["output_location"] + "log/exclude_file.temp"
     input:
         bam = expand(config["input_bam_location"] +  "{sample}/selected/{bam}.bam", sample = SAMPLES[0], bam = BAM_PER_SAMPLE[SAMPLES[0]][0])
+    output:
+        config["output_location"] + "log/exclude_file.temp"
     log:
         config["output_location"] + "log/generate_exclude_file_1.log"
     params:
@@ -241,10 +126,10 @@ rule generate_exclude_file_1:
         """
 
 rule generate_exclude_file_2:
-    output:
-        config["output_location"] + "log/exclude_file"
     input:
         config["output_location"] + "log/exclude_file.temp"
+    output:
+        config["output_location"] + "log/exclude_file"
     params:
         chroms = config["chromosomes"]
     run:
@@ -255,6 +140,8 @@ rule generate_exclude_file_2:
                     contig = contig[3:]
                     # if contig not in params.chroms:
                         # print(contig, file = out)
+
+                        
 # CHECKME : same as above for input ???
 # TODO : Simplify expand command 
 # DOCME : mosaic count read orientation ?
@@ -418,26 +305,6 @@ rule fix_segmentation:
         awk -v name={wildcards.sample} -v window={wildcards.window} -f utils/command2.awk {input} > {output}
         """
 
-# Pick a few segmentations and prepare the input files for SV classification
-# TODO : replace R script by integrating directly pandas in the pipeline
-# CHECKME : used ???
-# DOCME : check if doc is correct
-rule prepare_segments:
-    """
-    rule fct: selection of appropriate segmentation according breakpoint density (k) selected by the user : many : 60%, medium : 40%, few : 20%
-    input: mosaic segment output segmentation file
-    output: lite file with appropriate k according the quartile defined by the user
-    """
-    input:
-        config["output_location"] + "segmentation/{sample}/{window}.txt"
-    output:
-        config["output_location"] + "segmentation2/{sample}/{window}.{bpdens,(many|medium|few)}.txt"
-    log:
-        config["output_location"] + "log/prepare_segments/{sample}/{window}.{bpdens}.log"
-    params:
-        quantile = lambda wc: config["bp_density"][wc.bpdens]
-    script:
-        "utils/helper.prepare_segments.R"
 
 ################################################################################
 # Single-Cell Segmentation                                                                 #
@@ -1189,3 +1056,73 @@ rule index_vcf:
         tbi="{file}.vcf.gz.tbi",
     shell:
         "tabix -p vcf {input.vcf}"
+
+
+
+"""
+# RXIV
+
+rule all:
+    input:
+        expand(config["output_location"] + "plots/{sample}/{window}.pdf", sample = SAMPLES, window = [100000]),
+
+        # expand(config["output_location"] + "counts/{sample}/{window}.txt.gz", sample=SAMPLES, window=[100000]),
+        # expand(config["output_location"] + "plots/{sample}/{window}.pdf", sample=SAMPLES, window=[100000])
+        # expand(config["output_location"] + "norm_counts/{sample}/{window}.txt.gz", sample=SAMPLES, window=[100000]),
+        # expand(config["output_location"] + "norm_counts/{sample}/{window}.info", sample=SAMPLES, window=[100000])
+        # expand(config["output_location"] + "segmentation/{sample}/{window}.txt", sample=SAMPLES, window=[100000]),
+        # expand(config["output_location"] + "snv_calls/{sample}/merged.bam", sample=SAMPLES)
+        # expand(config["output_location"] + "snv_genotyping/{sample}/{chrom}.vcf", sample=SAMPLES, window=[100000], chrom=config["chromosomes"]),
+        # expand(config["output_location"] + "counts-per-cell/{sample}/{cell}/{window}.txt.gz", sample=SAMPLES, cell=[sub_e for e in list(CELL_PER_SAMPLE.values()) for sub_e in e], window=[100000], ),
+        # expand(config["output_location"] + "counts-per-cell/{sample}/{cell}/{window}.txt.gz", sample=SAMPLES, cell=[sub_e for e in list(CELL_PER_SAMPLE.values()) for sub_e in e], window=[100000], ),
+        # expand(config["output_location"] + "strand_states/{sample}/{window}.{bpdens}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt", sample=SAMPLES, window=[100000], bpdens=BPDENS, chrom=config["chromosomes"]),
+        # expand(config["output_location"] + "strand_states/{sample}/{window}.{bpdens}/final.txt", sample=SAMPLES, window=[100000], bpdens=BPDENS, chrom=config["chromosomes"]),
+        # expand(config["output_location"] + "haplotag/table/{sample}/haplotag-likelihoods.{window}.{bpdens}.Rdata", sample=SAMPLES, window=[100000], bpdens=BPDENS, chrom=config["chromosomes"]),
+        # expand(config["output_location"] + "sv_probabilities/{sample}/{window}.{bpdens}/probabilities.Rdata", sample=SAMPLES, window=[100000], bpdens=BPDENS, chrom=config["chromosomes"]),
+        # expand(config["output_location"] + "sv_calls/{sample}/{window}.{bpdens}/biAllelic_llr4.txt", sample=SAMPLES, window=[100000], bpdens=BPDENS, chrom=config["chromosomes"]),
+        # expand(config["output_location"] + "sv_calls/{sample}/{window}.{bpdens}/biAllelic_llr4.complex.tsv", sample=SAMPLES, window=[100000], bpdens=BPDENS, chrom=config["chromosomes"]),
+        # expand(config["output_location"] + "postprocessing/merge/{sample}/{window}.{bpdens}/{method}.txt",
+        #        sample = SAMPLES,
+        #        window = [100000],
+        #        bpdens = BPDENS,
+        #        method = list(set(m.replace('_filterTRUE','').replace('_filterFALSE','') for m in METHODS))),
+        # expand(config["output_location"] + "stats-merged/{sample}/stats.tsv", sample = SAMPLES),
+
+        # expand(config["input_bam_location"] +  "{sample}/{folder}/{bam}.{chrom}.txt", 
+        #         sample=SAMPLES, 
+        #         folder=["all", "selected"], 
+        #         bam=final_list, 
+        #         chrom=config['chromosomes'])
+        expand(config["output_location"] + "sv_calls/{sample}/{window}.{bpdens}/plots/sv_calls/{method}.{chrom}.pdf",
+               sample = SAMPLES,
+               chrom = config["chromosomes"],
+               window = [100000],
+               bpdens = BPDENS,
+               method = METHODS),
+        # expand("ploidy/{sample}/ploidy.{chrom}.txt", sample = SAMPLES, chrom = config["chromosomes"]),
+        expand(config["output_location"] + "sv_calls/{sample}/{window}.{bpdens}/plots/sv_consistency/{method}.consistency-barplot-{plottype}.pdf",
+               sample = SAMPLES,
+               window = [100000],
+               bpdens = BPDENS,
+               method = METHODS,
+               plottype = ["byaf","bypos"]),
+        expand(config["output_location"] + "sv_calls/{sample}/{window}.{bpdens}/plots/sv_clustering/{method}-{plottype}.pdf",
+               sample = SAMPLES,
+               window = [100000],
+               bpdens = BPDENS,
+               method = METHODS,
+               plottype = ["position","chromosome"]),
+        expand(config["output_location"] + "halo/{sample}/{window}.json.gz",
+               sample = SAMPLES,
+               window = [100000]),
+        expand(config["output_location"] + "ploidy/{sample}/ploidy.{chrom}.txt", sample = SAMPLES, chrom = config["chromosomes"]),
+
+        # expand("stats-merged/{sample}/stats.tsv", sample = SAMPLES),
+        # expand("postprocessing/merge/{sample}/{window}.{bpdens}/{method}.txt",
+        #        sample = SAMPLES,
+        #        window = [100000],
+        #        bpdens = BPDENS,
+        #        method = list(set(m.replace('_filterTRUE','').replace('_filterFALSE','') for m in METHODS))),
+
+
+"""
