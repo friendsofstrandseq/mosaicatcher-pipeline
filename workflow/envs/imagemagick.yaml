@@ -1,5 +1,0 @@
-name: plots
-channels:
-  - conda-forge
-dependencies:
-  - imagemagick
