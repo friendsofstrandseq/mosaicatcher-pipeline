@@ -14,3 +14,5 @@ sv_probabilities/
 *.pdf
 *.svg
 workflow/.snakemake
+build/
+.panoptes.db
