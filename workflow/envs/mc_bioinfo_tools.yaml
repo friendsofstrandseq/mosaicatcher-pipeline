@@ -8,3 +8,4 @@ dependencies:
   - tabix
   - freebayes
   - bcftools
+  - whatshap
