@@ -13,3 +13,4 @@ sv_probabilities/
 *.png
 *.pdf
 *.svg
+workflow/.snakemake
