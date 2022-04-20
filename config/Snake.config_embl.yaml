@@ -33,32 +33,7 @@ variable_bins:
 R_reference: "BSgenome.Hsapiens.UCSC.hg38"
 
 # CHECKME : Parameters optimization ?
-llr: 4
-bp_density:
-  few: 0.2
-  medium: 0.4
-  many: 0.6
-paired_end: true
-ground_truth_clonal:
-  RPE-BM510: ""
-ground_truth_single_cell:
-  RPE-BM510: ""
-simulation_min_vaf: 0.01
-simulation_max_vaf: 1
-simulation_neg_binom_p:
-  "50000": 0.4
-  "100000": 0.3
-  "500000": 0.1
-simulation_min_reads_per_library: 500000
-simulation_max_reads_per_library: 1000000
-simulation_window_sizes:
-  - 50000
-  - 100000
-simulation_cell_count: 100
-simulation_alpha: 0.02
-genome_size: 3000000000
-# chromosomes:
-#   - chr21
+
 chromosomes:
   - chr1
   - chr2
@@ -83,3 +58,30 @@ chromosomes:
   - chr21
   - chr22
   - chrX
+
+# Parameters
+## WINDOW
+window: 100000
+
+## METHODS
+
+llr: 4
+poppriors: TRUE
+haplotags:
+  - TRUE
+  - FALSE
+gtcutoff:
+  - 0
+  - 0.05
+regfactor: 6
+filter:
+  - TRUE
+  - FALSE
+
+## BPDENS
+### JOINT SEG
+j: 0.1
+### SINGLE SEG
+s: 0.5
+### SCE DISTANCE
+scedist: 20
