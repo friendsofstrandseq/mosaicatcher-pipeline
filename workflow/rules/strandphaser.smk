@@ -23,7 +23,7 @@ rule convert_strandphaser_input:
     log:
         config["output_location"] + "log/strandphaser/convert_strandphaser_input/{sample}.log"
     conda:
-        "../envs/strandphaser.yaml"
+        "../envs/rtools.yaml"
     script:
         "../scripts/strandphaser_scripts/helper.convert_strandphaser_input.R"
 
@@ -52,7 +52,7 @@ rule install_rlib_strandphaser:
     log:
         'log/strandphaser/strandphaser_install.log'
     conda:
-        "../envs/strandphaser.yaml"
+        "../envs/rtools.yaml"
     resources:
         mem_total_mb = 4096,
         mem_per_cpu_mb = 4096
@@ -111,17 +111,19 @@ rule run_strandphaser_per_chrom:
         wcregions    = config["output_location"] + "strandphaser/{sample}/strandphaser_input.txt",
         snppositions = config["output_location"] + "snv_genotyping/{sample}/{chrom}.vcf",
         configfile   = config["output_location"] + "strandphaser/{sample}/StrandPhaseR.{chrom}.config",
-        # DOCME : used as an input to call the installation
-        # strandphaser = "utils/R-packages/StrandPhaseR/R/StrandPhaseR",
-        # strandphaser = config["strandphaser"],
         bamfolder    = config["input_bam_location"] + "{sample}/selected"
     output:
         config["output_location"] + "strandphaser/{sample}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt",
-        config["output_location"] + "strandphaser/{sample}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf"
+        config["output_location"] + "strandphaser/{sample}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf",
+        report(
+            config["output_location"] + "strandphaser/{sample}/StrandPhaseR_analysis.{chrom}/SingleCellHaps/{chrom}_singleCellHaps.pdf",
+            category="StrandPhaseR",
+            caption="../report/strandphaser_haplotypes.rst",
+        )
     log:
         "log/run_strandphaser_per_chrom/{sample}/{chrom}.log"
     conda:
-        "../envs/strandphaser.yaml"
+        "../envs/rtools.yaml"
     shell:
         # {config[Rscript]}
         """
@@ -135,20 +137,20 @@ rule run_strandphaser_per_chrom:
 
         """
 
-
 rule merge_strandphaser_vcfs:
     input:
         vcfs=expand(config["output_location"] + "strandphaser/{{sample}}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz", chrom=config["chromosomes"]),
         tbis=expand(config["output_location"] + "strandphaser/{{sample}}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz.tbi", chrom=config["chromosomes"]),
     output:
-        vcf=config["output_location"] + "strandphaser/phased-snvs/{sample}.vcf.gz"
+        vcfgz=config["output_location"] + "strandphaser/phased-snvs/{sample}.vcf.gz"
     log:
         "log/merge_strandphaser_vcfs/{sample}.log"
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     shell:
-        "(bcftools concat -a {input.vcfs} | bcftools view -o {output.vcf} -O z --genotype het --types snps - ) > {log} 2>&1"
-
+        """
+        (bcftools concat -a {input.vcfs} | bcftools view -o {output.vcfgz} -O z --genotype het --types snps - ) > {log} 2>&1
+        """
 
 
 rule combine_strandphaser_output:
@@ -177,7 +179,7 @@ rule convert_strandphaser_output:
     log:
         "log/convert_strandphaser_output/{sample}.log"
     conda:
-        "../envs/strandphaser.yaml"
+        "../envs/rtools.yaml"
     script:
         "../scripts/strandphaser_scripts/helper.convert_strandphaser_output.R"
 
