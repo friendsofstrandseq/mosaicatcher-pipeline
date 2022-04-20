@@ -1,0 +1,3 @@
+/g/korbel2/weber/workspace/mosaicatcher-update/build/CMakeFiles/rebuild_cache.dir
+/g/korbel2/weber/workspace/mosaicatcher-update/build/CMakeFiles/mosaic.dir
+/g/korbel2/weber/workspace/mosaicatcher-update/build/CMakeFiles/edit_cache.dir

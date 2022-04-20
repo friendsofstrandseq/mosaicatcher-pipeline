@@ -1,0 +1,208 @@
+import math
+from collections import defaultdict
+import pandas as pd
+import os, sys
+from pprint import pprint
+import pysam
+from tqdm import tqdm
+
+configfile: "config/config.yaml"
+
+
+# # TODO : automatic html report
+# report: "report/workflow.rst"
+
+print("###################################")
+print("# MOSAICATCHER SNAKEMAKE PIPELINE #")
+print("###################################")
+
+# TODO : check config/config CLI ... 
+
+print("Mode selected : {}".format(config["mode"]))
+print("Plots output enabled : {}".format(config["plot"]))
+
+
+
+if os.path.isfile(config["config_df_location"]) is False:
+
+    ######################################################################
+    # TODO : move to another file 
+
+    # Parsing folder and retrieve only files with .bam extension
+    data = [(r, file.replace(".bam", "")) for r, d, f in os.walk(config["input_bam_location"]) for file in f if ".bam" in file and ".bai" not in file]
+
+    # Building pandas df based on folder structure
+    df = pd.DataFrame(data, columns=["Folder", "File"])
+
+    # Defining cols
+    df["all/selected"] = df["Folder"].apply(lambda r: r.split("/")[-1])
+    df["Sample"] = df["Folder"].apply(lambda r: r.split("/")[-2])
+    df["Cell"] = df["File"].apply(lambda r  : r.split(".")[0])
+    df["Full_path"] = df["Folder"] + "/" + df["File"] + ".bam"
+
+    # Filtering based on exclude list defined
+    df_config_files = df.loc[~df["Cell"].isin(config["exclude_list"])]
+
+    def check_bam_header(bam_file_path):
+        """_summary_
+
+        Args:
+            bam_file_path (_type_): _description_
+        """
+
+        # Get BAM file header with pysam
+        h = pysam.view("-H", bam_file_path)
+        h = [e.split("\t") for e in h.split("\n")]
+        sm_tag_list = list(set([sub_e.replace("SM:", "") for e in h for sub_e in e if "SM:" in sub_e]))
+
+        # Folder name based on path
+        folder_name = bam_file_path.split("/")[-3]
+
+        # Assertions
+        assert len(sm_tag_list) == 1, "Two different SM tags in the header of BAM file {}".format(bam_file_path)
+        assert sm_tag_list[0] == folder_name, 'Folder name "{}" must correspond to SM tag in BAM file "{}"'.format(
+            folder_name, bam_file_path
+        )
+
+    print("Check if BAM SM tag correspond to folder name : {}".format(config["check_sm_tag_in_bam_header"]))
+    if config["check_sm_tag_in_bam_header"] is True:
+        tqdm.pandas(desc="Checking if BAM SM tags correspond to folder names")
+        df_config_files["Full_path"].progress_apply(check_bam_header)
+        print("BAM SM tag are corresponding to folder names")
+  
+    df_config_files.to_csv(config["config_df_location"], sep="\t", index=False)
+
+else:
+    df_config_files = pd.read_csv(config["config_df_location"], sep="\t")
+
+samples = sorted(df_config_files.Sample.unique().tolist())
+samples = ["RPE1-WT"]
+all_dict = df_config_files.loc[df_config_files["all/selected"] == "all"].groupby("Sample")["Cell"].nunique().to_dict()
+selected_dict = df_config_files.loc[df_config_files["all/selected"] == "selected"].groupby("Sample")["Cell"].nunique().to_dict()
+dict_cells_nb_per_sample = df_config_files.loc[df_config_files["all/selected"] == "selected"].groupby("Sample")["Cell"].nunique().to_dict()
+
+print("Detected {} samples:".format(df_config_files.Sample.nunique()))
+[print("  {}:\t{} cells\t {} selected cells".format(s, all_dict[s], selected_dict[s])) for s in samples]
+
+######################################################################
+
+
+# include: "rules/input_check.smk"
+include: "rules/count.smk"
+include: "rules/segmentation.smk"
+include: "rules/plots.smk"
+include: "rules/regenotyping.smk"
+include: "rules/utils.smk"
+include: "rules/strandphaser.smk"
+
+
+if config["plot"] == True:
+
+    dict_cells_nb_per_sample = config_df.loc[config_df["all/selected"] == "selected"].groupby("Sample")["Cell"].nunique().to_dict()
+    tmp_dict = config_df.loc[config_df["all/selected"] == "selected", ["Sample", "Cell"]].groupby("Sample")["Cell"].apply(lambda r: sorted(list(r))).to_dict()
+    tmp_dict = {s:{i+1:c for i,c in enumerate(cell_list)} for s,cell_list in tmp_dict.items()}
+    for s in tmp_dict.keys():
+        tmp_dict[s][0] = "SummaryPage"
+
+
+
+# MODE MOSAIC COUNT
+if config["mode"] == "count":
+    if config["plot"] == True:
+        rule all:
+            input:
+                [config["output_location"] + "plots/{}/{}_{}.png".format(sample, tmp_dict[sample][i], i) for sample in samples for i in range(dict_cells_nb_per_sample[sample] + 1)],
+
+    elif config["plot"] == False:
+        rule all:
+            input:
+                [config["output_location"] + "counts/{}.txt.gz".format(sample) for sample in samples]
+
+# MODE MOSAIC SEGMENTATION
+elif config["mode"] == "segmentation":
+
+    if config["plot"] == True:
+        rule all:
+            input:
+                [config["output_location"] + "plots/{}/{}_{}.png".format(sample, tmp_dict[sample][i], i) for sample in samples for i in range(dict_cells_nb_per_sample[sample] + 1)],
+                [config["output_location"] + "segmentation/{}/Selection_initial_strand_state".format(sample) for sample in samples]
+    
+    elif config["plot"] == False:
+        rule all:
+            input:
+                [config["output_location"] + "segmentation/{}/Selection_initial_strand_state".format(sample) for sample in samples]
+
+# MODE MOSAIC STRANDPHASING
+elif config["mode"] == "strandphasing":
+
+    if config["plot"] == True:
+        rule all:
+            input:
+                rules.install_rlib_strandphaser.output,
+                [config["output_location"] + "plots/{}/{}_{}.png".format(sample, tmp_dict[sample][i], i) for sample in samples for i in range(dict_cells_nb_per_sample[sample] + 1)],
+                [config["output_location"] + "strandphaser/{}/StrandPhaseR_final_output.txt".format(sample) for sample in samples]
+    
+    elif config["plot"] == False:
+        rule all:
+            input:
+                [config["output_location"] + "strandphaser/{}/StrandPhaseR_final_output.txt".format(sample) for sample in samples]
+
+
+
+# TODO : check snakemake min version to run
+# from snakemake.utils import min_version
+
+##### set minimum snakemake version #####
+# min_version("6.4.1")
+
+
+
+
+
+
+# ##### setup singularity #####
+
+
+# # this container defines the underlying OS for each job when using the workflow
+# # with --use-conda --use-singularity
+# container: "docker://continuumio/miniconda3"
+
+
+# rule all:
+#     input:
+#         "config/config_df.tsv"
+
+# # ##### load rules #####
+
+# rule all:
+#     input:
+#         [config["output_location"] + "plots/{}-{}-{}.png".format(sample, i, tmp_dict[sample][i]) for sample in ["RPE1-WT"] for i in range(dict_cells_nb_per_sample[sample] + 1)]
+
+
+# # from scripts.handle_input import HandleInput
+# # hi = HandleInput(
+# #     config["input_bam_location"],
+# #     config["config_df_location"],
+# #     config["exclude_list"]
+# # )
+# # config_df = hi.config_df
+# # print(config_df)
+
+# ##### target rules #####
+
+# # import pandas as pd
+# # config_df = pd.read_csv("config/config_df.tsv", sep="\t")
+# # dict_cells_nb_per_sample = config_df.loc[config_df["all/selected"] == "selected"].groupby("Sample")["Cell"].nunique().to_dict()
+# # tmp_dict = config_df.loc[config_df["all/selected"] == "selected", ["Sample", "Cell"]].groupby("Sample")["Cell"].apply(lambda r: sorted(list(r))).to_dict()
+# # tmp_dict = {s:{i+1:c for i,c in enumerate(cell_list)} for s,cell_list in tmp_dict.items()}
+# # for s in tmp_dict.keys():
+# #     tmp_dict[s][0] = "Summary_page"
+
+
+
+
+#         # [config["output_location"] + "plots/{}-{}.png".format(sample, i) for sample in ["RPE1-WT"] for i in range(dict_cells_nb_per_sample[sample] + 1)]
+#         # [config["output_location"] + "plots/{}-{}-{}.png".format(sample, i, tmp_dict[sample][i]) for sample in ["RPE1-WT"] for i in range(dict_cells_nb_per_sample[sample] + 1)]
+
+
+
