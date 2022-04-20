@@ -50,8 +50,8 @@ rule compress_vcf:
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     shell:
+        # "(cat {input.vcf} | bgzip > {output.vcf}) > {log} 2>&1"
         "bgzip {input.vcf}"
-
 
 rule index_vcf:
     """

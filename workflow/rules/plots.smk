@@ -45,8 +45,8 @@ if config["plot"] is True:
         output: Generate figure based on couting results
         """
         input:
-            counts = config["output_location"] + "counts/{sample}.txt.gz",
-            info   = config["output_location"] + "counts/{sample}.info"
+            counts = config["output_location"] + "counts/{sample}/{sample}.txt.gz",
+            info   = config["output_location"] + "counts/{sample}/{sample}.info"
         output:
             config["output_location"] + "plots/{sample}/Count_complete.pdf"
             # report(
