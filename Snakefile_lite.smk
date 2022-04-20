@@ -73,6 +73,8 @@ exclude_list = ['BM510x3PE20490']
 SAMPLES, BAM_PER_SAMPLE, CELL_PER_SAMPLE, ALLBAMS_PER_SAMPLE, df_config_files = handle_input_data(thisdir=config["input_bam_location"], exclude_list=exclude_list)
 
 print(df_config_files)
+print(df_config_files['Full_path'][0])
+
 tqdm.pandas(desc="Checking if BAM SM tags correspond to folder names")
 df_config_files["Full_path"].progress_apply(check_bam_header, )
 
@@ -82,20 +84,21 @@ for s in SAMPLES:
 
 
 
-# METHODS = [
-#     "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0_regfactor6_filterFALSE",
-#     "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.05_regfactor6_filterTRUE",
-# ]
+METHODS = [
+    "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0_regfactor6_filterFALSE",
+    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.05_regfactor6_filterTRUE",
+]
 
 # # FIXME : move to yaml/json settings or to something else
-# BPDENS = [
-#     "selected_j{}_s{}_scedist{}".format(joint, single, scedist) for joint in [0.1] for single in [0.5] for scedist in [20]
-# ]
+BPDENS = [
+    "selected_j{}_s{}_scedist{}".format(joint, single, scedist) for joint in [0.1] for single in [0.5] for scedist in [20]
+]
 
 
 rule all:
     input:
-        expand(config["output_location"] + "counts/{sample}/{window}.txt.gz", sample=SAMPLES, window=[100000]),
+        # expand(config["output_location"] + "counts/{sample}/{window}.txt.gz", sample=SAMPLES, window=[100000]),
+        expand(config["output_location"] + "counts/{sample}.txt.gz", sample=SAMPLES),
 
 
 
@@ -110,36 +113,32 @@ rule all:
 # Read counting                                                                #
 ################################################################################
 
-# CHECKME : exclude file rule useful ?
-rule generate_exclude_file_1:
+rule generate_exclude_file_for_mosaic_count:
+    """
+    rule fct: 
     input:
-        bam = expand(config["input_bam_location"] +  "{sample}/selected/{bam}.bam", sample = SAMPLES[0], bam = BAM_PER_SAMPLE[SAMPLES[0]][0])
     output:
-        config["output_location"] + "log/exclude_file.temp"
-    log:
-        config["output_location"] + "log/generate_exclude_file_1.log"
-    params:
-        samtools = config["samtools"]
-    shell:
-        """
-        {params.samtools} view -H {input.bam} | awk "/^@SQ/" > {output} 
-        """
-
-rule generate_exclude_file_2:
+    """
     input:
-        config["output_location"] + "log/exclude_file.temp"
+        bam = df_config_files['Full_path'][0]
     output:
         config["output_location"] + "log/exclude_file"
     params:
         chroms = config["chromosomes"]
     run:
-        with open(input[0]) as f:
-            with open(output[0],"w") as out:
-                for line in f:
-                    contig = line.strip().split()[1]
-                    contig = contig[3:]
-                    # if contig not in params.chroms:
-                        # print(contig, file = out)
+        # READ BAM FILE HEADER OF FIRST BAM IN THE PANDAS DF
+        h = pysam.view("-H", input[0])
+        h = [e.split("\t") for e in h.split("\n") if "@SQ" in e]
+
+        # CONVERT TO PANDAS DF
+        df_h = pd.DataFrame(h, columns=["TAG", "Contig", "LN"])
+
+        # PROCESS CONTIGS
+        output_h = pd.DataFrame(df_h["Contig"].str.replace("SN:", ""))
+        output_h = output_h.loc[~output_h["Contig"].isin(params.chroms)]
+        
+        # EXPORT
+        output_h["Contig"].to_csv(output[0], index=False, sep='\t', header=False)
 
                         
 # CHECKME : same as above for input ???
@@ -154,15 +153,15 @@ rule mosaic_count:
     input:
         bam = lambda wc: expand(config["input_bam_location"] + wc.sample +  "/selected/{bam}.bam", bam = BAM_PER_SAMPLE[wc.sample]) if wc.sample in BAM_PER_SAMPLE else "FOOBAR",
         bai = lambda wc: expand(config["input_bam_location"] + wc.sample +  "/selected/{bam}.bam.bai", bam = BAM_PER_SAMPLE[wc.sample]) if wc.sample in BAM_PER_SAMPLE else "FOOBAR",
-
-        # excl = config["output_location"] + "log/exclude_file"
+        excl = config["output_location"] + "log/exclude_file"
     output:
-        counts = config["output_location"] + "counts/{sample}/{window}.txt.fixme.gz",
-        info   = config["output_location"] + "counts/{sample}/{window}.info"
+        counts = config["output_location"] + "counts/{sample}.txt.gz",
+        info   = config["output_location"] + "counts/{sample}.info"
     log:
-        config["output_location"] + "log/{sample}/mosaic_count.{window}.log"
+        config["output_location"] + "log/{sample}/mosaic_count.log"
     params:
-        mc_command = config["mosaicatcher"]
+        mc_command = config["mosaicatcher"],
+        window = config["window"]
     shell:
         """
         {params.mc_command} count \
@@ -170,23 +169,11 @@ rule mosaic_count:
             --do-not-blacklist-hmm \
             -o {output.counts} \
             -i {output.info} \
-            -w {wildcards.window} \
+            -w {params.window} \
+            -x {input.excl} \
             {input.bam} 
         > {log} 2>&1
         """
-
-rule tmp_filter_mosaic_count_by_chr:
-    input:
-        config["output_location"] + "counts/{sample}/{window}.txt.fixme.gz"
-    output:
-        config["output_location"] + "counts/{sample}/{window}.txt.gz"
-    run:
-        df = pd.read_csv(input[0], compression='gzip', sep='\t')
-        df = df.loc[df['chrom'].isin(wildcards.chromosomes)]
-        df.to_csv(output[0], compression='gzip', sep='\t', index=False)
-
-
-
 
 
 
