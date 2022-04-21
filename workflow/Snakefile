@@ -76,13 +76,27 @@ else:
     df_config_files = pd.read_csv(config["config_df_location"], sep="\t")
 
 samples = sorted(df_config_files.Sample.unique().tolist())
-samples = ["RPE1-WT"]
+# samples = ["RPE1-WT"]
+
+
 all_dict = df_config_files.loc[df_config_files["all/selected"] == "all"].groupby("Sample")["Cell"].nunique().to_dict()
 selected_dict = df_config_files.loc[df_config_files["all/selected"] == "selected"].groupby("Sample")["Cell"].nunique().to_dict()
 dict_cells_nb_per_sample = df_config_files.loc[df_config_files["all/selected"] == "selected"].groupby("Sample")["Cell"].nunique().to_dict()
 
 print("Detected {} samples:".format(df_config_files.Sample.nunique()))
 [print("  {}:\t{} cells\t {} selected cells".format(s, all_dict[s], selected_dict[s])) for s in samples]
+
+
+
+methods = [
+    "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0_regfactor6_filterFALSE",
+    "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.05_regfactor6_filterTRUE",
+]
+
+
+
+
+
 
 ######################################################################
 
@@ -95,6 +109,7 @@ include: "rules/regenotyping.smk"
 include: "rules/utils.smk"
 include: "rules/strandphaser.smk"
 include: "rules/haplotagging.smk"
+include: "rules/mosaiclassifier.smk"
 
 
 if config["plot"] == True:
@@ -153,11 +168,10 @@ elif config["mode"] == "strandphasing":
 elif config["mode"] == "haplotagging":
 
     if config["plot"] == True:
-        pass
         rule all:
             input:
                 rules.install_rlib_strandphaser.output,
-                [config["output_location"] + "plots/{}/{}_{}.png".format(sample, tmp_dict[sample][i], i) for sample in samples for i in range(dict_cells_nb_per_sample[sample] + 1)],
+                [config["output_location"] + "plots/{}/{}_{}.pdf".format(sample, tmp_dict[sample][i], i) for sample in samples for i in range(dict_cells_nb_per_sample[sample] + 1)],
                 [config["output_location"] + "haplotag/table/{}/haplotag_counts_merged.tsv".format(sample) for sample in samples]
     
     elif config["plot"] == False:
@@ -167,21 +181,19 @@ elif config["mode"] == "haplotagging":
                 [config["output_location"] + "haplotag/table/{}/haplotag_counts_merged.tsv".format(sample) for sample in samples]
 
 # MODE MOSAIC CLASSIFIER
-elif config["mode"] == "mosaiclassier":
-
+elif config["mode"] == "mosaiclassifier":
     if config["plot"] == True:
-        pass
         rule all:
             input:
                 rules.install_rlib_strandphaser.output,
-                [config["output_location"] + "plots/{}/{}_{}.png".format(sample, tmp_dict[sample][i], i) for sample in samples for i in range(dict_cells_nb_per_sample[sample] + 1)],
-                [config["output_location"] + "haplotag/table/{}/haplotag_counts_merged.tsv".format(sample) for sample in samples]
+                [config["output_location"] + "plots/{}/{}_{}.pdf".format(sample, tmp_dict[sample][i], i) for sample in samples for i in range(dict_cells_nb_per_sample[sample] + 1)],
+                [config["output_location"] + "mosaiclassifier/sv_calls/{}/{}.html".format(sample, m) for sample in samples for m in methods]
     
     elif config["plot"] == False:
         rule all:
             input:
                 rules.install_rlib_strandphaser.output,
-                [config["output_location"] + "haplotag/table/{}/haplotag_counts_merged.tsv".format(sample) for sample in samples]
+                [config["output_location"] + "mosaiclassifier/sv_calls/{}/{}.html".format(sample, m) for sample in samples for m in methods]
 
 
 
