@@ -1,10 +1,13 @@
+import os
+os.environ['OPENBLAS_NUM_THREADS'] = '1'
 import pandas as pd
 config_df = pd.read_csv("config/config_df.tsv", sep="\t")
 tmp_dict = config_df.loc[config_df["all/selected"] == "selected", ["Sample", "Cell"]].groupby("Sample")["Cell"].apply(lambda r: sorted(list(r))).to_dict()
 tmp_dict = {s:{i+1:c for i,c in enumerate(cell_list)} for s,cell_list in tmp_dict.items()}
 for s in tmp_dict.keys():
     tmp_dict[s][0] = "SummaryPage"
-    
+
+print(tmp_dict)
 ################################################################################
 # Plots                                                                        #
 ################################################################################
@@ -48,7 +51,7 @@ if config["plot"] is True:
             counts = config["output_location"] + "counts/{sample}/{sample}.txt.gz",
             info   = config["output_location"] + "counts/{sample}/{sample}.info"
         output:
-            config["output_location"] + "plots/{sample}/Count_complete.pdf"
+            config["output_location"] + "plots/{sample}/CountComplete.pdf"
             # report(
             #     config["output_location"] + "plots/{sample}/Count_complete.pdf",
             #     category="Mosaic counts raw",
@@ -56,40 +59,31 @@ if config["plot"] is True:
         log:
             config["output_location"] + "log/plot_mosaic_counts/{sample}.log"
         conda:
-            "../envs/plots.yaml"
+            "../envs/rtools.yaml"
         shell:
             """
             Rscript scripts/plotting/qc.R {input.counts} {input.info} {output} > {log} 2>&1
             """
 
-    ruleorder: divide_pdf_into_png > rename_png_cells
-
-    rule divide_pdf_into_png:
+    rule divide_pdf:
         input:
-            config["output_location"] + "plots/{sample}/Count_complete.pdf"
-        output:
-            config["output_location"] + "plots/{sample}/{i, \d+}.tmp.png"
-        conda:
-            "../envs/imagemagick.yaml"
-        shell:
-            'convert {input}"[{wildcards.i}]" {output}'
-
-
-    rule rename_png_cells:
-        input:
-            config["output_location"] + "plots/{sample}/{i, \d+}.tmp.png"
+            config["output_location"] + "plots/{sample}/CountComplete.pdf"
         output:
             report(
-                config["output_location"] + "plots/{sample}/{cell}_{i, \d+}.png",
+                config["output_location"] + "plots/{sample}/{cell}_{i, \d+}.pdf",
                     caption="../report/mosaic_counts.rst",
                     category="Mosaic counts",
             )
         run:
-            # import shutil
-            input_name = input[0]
+
+            from PyPDF2 import PdfFileWriter, PdfFileReader
+            inputpdf = PdfFileReader(input[0], "rb")
             cell_name = tmp_dict[wildcards.sample][int(wildcards.i)] 
-            os.rename(input[0], os.path.dirname(input_name) + "/{}_{}.png".format(cell_name, wildcards.i))
-            # shutil.copy(input[0], os.path.dirname(input_name) + "/{}_{}_{}.png".format(wildcards.sample, wildcards.i, cell_name))
+            output = PdfFileWriter()
+            output.addPage(inputpdf.getPage(int(wildcards.i)))
+            tmp_output_path = os.path.dirname(input[0]) + "/{}_{}.pdf".format(cell_name, wildcards.i)
+            with open(tmp_output_path, "wb") as outputStream:
+                output.write(outputStream)
 
 
 

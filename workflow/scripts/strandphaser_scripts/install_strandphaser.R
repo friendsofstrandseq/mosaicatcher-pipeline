@@ -8,7 +8,7 @@
 # Long time execution : ~20 min
 
 # install.packages("devtools", repos = "http://cran.us.r-project.org")
-# library(devtools)
+library(devtools)
 # if (!requireNamespace("BiocManager", quietly=TRUE))
 #     install.packages("BiocManager", repos = "http://cran.us.r-project.org")
 # BiocManager::install("GenomicRanges")
