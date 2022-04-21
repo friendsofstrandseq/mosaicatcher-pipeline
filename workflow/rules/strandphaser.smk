@@ -45,12 +45,13 @@ rule convert_strandphaser_input:
 #         Rscript utils/install_strandphaser.R > {log} 2>&1
 #         """
 
+ruleorder: install_rlib_strandphaser > run_strandphaser_per_chrom
 
 rule install_rlib_strandphaser:
     output:
          check = touch(config['output_location'] + 'strandphaser/R_setup/strandphaser_version-{}.ok'.format(config['git_commit_strandphaser']))
     log:
-        'log/strandphaser/strandphaser_install.log'
+        config["output_location"] + 'log/strandphaser/strandphaser_install.log'
     conda:
         "../envs/rtools.yaml"
     resources:
@@ -60,7 +61,7 @@ rule install_rlib_strandphaser:
         version = config['git_commit_strandphaser'],
         repo = config['git_repo_strandphaser']
     shell:
-        'LC_MEASUREMENT=C TAR=$(which tar) Rscript scripts/strandphaser_scripts/install_strandphaser.R {params.version} {params.repo} &> {log}'
+        'LC_MEASUREMENT=C LC_CTYPE=C TAR=$(which tar) Rscript scripts/strandphaser_scripts/install_strandphaser.R {params.version} {params.repo} &> {log}'
 
 
 # TODO : replace by clean config file if possible or by temporary removed file 
@@ -111,7 +112,9 @@ rule run_strandphaser_per_chrom:
         wcregions    = config["output_location"] + "strandphaser/{sample}/strandphaser_input.txt",
         snppositions = config["output_location"] + "snv_genotyping/{sample}/{chrom}.vcf",
         configfile   = config["output_location"] + "strandphaser/{sample}/StrandPhaseR.{chrom}.config",
-        bamfolder    = config["input_bam_location"] + "{sample}/selected"
+        bamfolder    = config["input_bam_location"] + "{sample}/selected",
+        # TODO : tmp solution
+        strandphaser_install = config['output_location'] + 'strandphaser/R_setup/strandphaser_version-{}.ok'.format(config['git_commit_strandphaser'])
     output:
         config["output_location"] + "strandphaser/{sample}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt",
         config["output_location"] + "strandphaser/{sample}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf",
