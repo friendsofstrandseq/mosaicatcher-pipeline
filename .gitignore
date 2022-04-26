@@ -1,6 +1,7 @@
 .DS_Store
 .snakemake/
 bam/
+*@
 chroms/
 counts/
 log/
@@ -13,7 +14,7 @@ sv_probabilities/
 *.png
 *.pdf
 *.svg
-workflow/.snakemake
+#workflow/.snakemake
 build/
 .panoptes.db
 *.html
