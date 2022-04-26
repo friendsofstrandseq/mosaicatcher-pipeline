@@ -6,6 +6,3 @@ dependencies:
   - pandas
   - pysam
   - tqdm
-  - cmake=3.16.4=h28c56e5_0
-  - boost=1.72.0
-  - htslib=1.10.2
