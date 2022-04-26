@@ -26,3 +26,11 @@ dependencies:
   - r-reshape2=1.4.3
   - r-scales=1.1.0
   - r-zoo=1.8_3
+  - r-dplyr=0.8.5
+  - r-mc2d=0.1_18
+  - r-pheatmap=1.0.12
+  - bioconductor-complexheatmap=2.0.0
+  - r-gplots=3.0.3
+  - r-scales=1.1.0
+  - r-rcolorbrewer=1.1_2
+  - r-stringr=1.4.0
