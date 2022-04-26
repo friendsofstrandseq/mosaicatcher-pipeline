@@ -8,6 +8,8 @@ from tqdm import tqdm
 
 configfile: "config/config.yaml"
 
+container: "docker://continuumio/miniconda3:4.4.10"
+
 
 # # TODO : automatic html report
 # report: "report/workflow.rst"
@@ -102,6 +104,7 @@ methods = [
 
 
 # include: "rules/input_check.smk"
+include: "rules/setup.smk"
 include: "rules/count.smk"
 include: "rules/segmentation.smk"
 include: "rules/plots.smk"
@@ -110,7 +113,14 @@ include: "rules/utils.smk"
 include: "rules/strandphaser.smk"
 include: "rules/haplotagging.smk"
 include: "rules/mosaiclassifier.smk"
+include: "rules/postprocessing.smk"
+include: "rules/stats.smk"
 
+
+if config["mode"] == "setup":
+    rule all:
+        input:
+            rules.compile_mosaic.output,
 
 if config["plot"] == True:
 
@@ -127,7 +137,7 @@ if config["mode"] == "count":
     if config["plot"] == True:
         rule all:
             input:
-                [config["output_location"] + "plots/{}/{}_{}.png".format(sample, tmp_dict[sample][i], i) for sample in samples for i in range(dict_cells_nb_per_sample[sample] + 1)],
+                [config["output_location"] + "plots/{}/counts/{}_{}.png".format(sample, tmp_dict[sample][i], i) for sample in samples for i in range(dict_cells_nb_per_sample[sample] + 1)],
 
     elif config["plot"] == False:
         rule all:
@@ -140,7 +150,7 @@ elif config["mode"] == "segmentation":
     if config["plot"] == True:
         rule all:
             input:
-                [config["output_location"] + "plots/{}/{}_{}.png".format(sample, tmp_dict[sample][i], i) for sample in samples for i in range(dict_cells_nb_per_sample[sample] + 1)],
+                [config["output_location"] + "plots/{}/counts/{}_{}.png".format(sample, tmp_dict[sample][i], i) for sample in samples for i in range(dict_cells_nb_per_sample[sample] + 1)],
                 [config["output_location"] + "segmentation/{}/Selection_initial_strand_state".format(sample) for sample in samples]
     
     elif config["plot"] == False:
@@ -155,7 +165,7 @@ elif config["mode"] == "strandphasing":
         rule all:
             input:
                 rules.install_rlib_strandphaser.output,
-                [config["output_location"] + "plots/{}/{}_{}.png".format(sample, tmp_dict[sample][i], i) for sample in samples for i in range(dict_cells_nb_per_sample[sample] + 1)],
+                [config["output_location"] + "plots/{}/counts/{}_{}.png".format(sample, tmp_dict[sample][i], i) for sample in samples for i in range(dict_cells_nb_per_sample[sample] + 1)],
                 [config["output_location"] + "strandphaser/{}/StrandPhaseR_final_output.txt".format(sample) for sample in samples]
     
     elif config["plot"] == False:
@@ -171,7 +181,7 @@ elif config["mode"] == "haplotagging":
         rule all:
             input:
                 rules.install_rlib_strandphaser.output,
-                [config["output_location"] + "plots/{}/{}_{}.pdf".format(sample, tmp_dict[sample][i], i) for sample in samples for i in range(dict_cells_nb_per_sample[sample] + 1)],
+                [config["output_location"] + "plots/{}/counts/{}_{}.pdf".format(sample, tmp_dict[sample][i], i) for sample in samples for i in range(dict_cells_nb_per_sample[sample] + 1)],
                 [config["output_location"] + "haplotag/table/{}/haplotag_counts_merged.tsv".format(sample) for sample in samples]
     
     elif config["plot"] == False:
@@ -186,14 +196,21 @@ elif config["mode"] == "mosaiclassifier":
         rule all:
             input:
                 rules.install_rlib_strandphaser.output,
-                [config["output_location"] + "plots/{}/{}_{}.pdf".format(sample, tmp_dict[sample][i], i) for sample in samples for i in range(dict_cells_nb_per_sample[sample] + 1)],
-                [config["output_location"] + "mosaiclassifier/sv_calls/{}/{}.html".format(sample, m) for sample in samples for m in methods]
+                [config["output_location"] + "plots/{}/counts/{}.{}.pdf".format(sample, tmp_dict[sample][i], i) for sample in samples for i in range(dict_cells_nb_per_sample[sample] + 1)],
+                [config["output_location"] + "mosaiclassifier/sv_calls/{}/{}.tsv".format(sample, m) for sample in samples for m in methods],
+                expand(config["output_location"] + "plots/{sample}/sv_calls/{method}.{chrom}.pdf", sample = samples, chrom = config["chromosomes"], method = methods),
+                expand(config["output_location"] + "plots/{sample}/sv_consistency/{method}.consistency-barplot-{plottype}.pdf", sample = samples, method = methods, plottype = ["byaf","bypos"]),
+                expand(config["output_location"] + "plots/{sample}/sv_clustering/{method}-{plottype}.pdf", sample = samples, method = methods, plottype = ["position","chromosome"]),
+                expand(config["output_location"] + "stats/{sample}/stats-merged.tsv", sample = samples),
+
     
     elif config["plot"] == False:
         rule all:
             input:
                 rules.install_rlib_strandphaser.output,
-                [config["output_location"] + "mosaiclassifier/sv_calls/{}/{}.html".format(sample, m) for sample in samples for m in methods]
+                [config["output_location"] + "mosaiclassifier/sv_calls/{}/{}.tsv".format(sample, m) for sample in samples for m in methods],
+                [config["output_location"] + "mosaiclassifier/sv_calls/{}/{}.complex.tsv".format(sample, m) for sample in samples for m in methods],
+                 expand(config["output_location"] + "stats/{sample}/stats-merged.tsv", sample = samples),
 
 
 
