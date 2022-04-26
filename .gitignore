@@ -16,3 +16,4 @@ sv_probabilities/
 workflow/.snakemake
 build/
 .panoptes.db
+*.html

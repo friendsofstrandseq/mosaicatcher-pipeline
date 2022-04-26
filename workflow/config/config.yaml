@@ -8,7 +8,7 @@ config_df_location: "config/config_df.tsv"
 input_bam_ena: "/g/korbel2/weber/MosaiCatcher_files/bam_KG_full/"
 input_bam_location: "/g/korbel2/weber/MosaiCatcher_files/bam_KG_full/"
 
-output_location: "/g/korbel2/weber/MosaiCatcher_output/MosaiCatcher_output_sample_KG_dryrun/"
+output_location: "/g/korbel2/weber/MosaiCatcher_output/MosaiCatcher_output_sample_KG_multi_chr/"
 snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz"
 # FIXME : TMP debuging
 # snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/split_by_chr/1000G_chr21.vcf.gz"
@@ -45,33 +45,33 @@ R_reference: "BSgenome.Hsapiens.UCSC.hg38"
 exclude_list:
   - BM510x3PE20490
 
-chromosomes:
-  - chr21
-
 # chromosomes:
-#   - chr1
-#   - chr2
-#   - chr3
-#   - chr4
-#   - chr5
-#   - chr6
-#   - chr7
-#   - chr8
-#   - chr9
-#   - chr10
-#   - chr11
-#   - chr12
-#   - chr13
-#   - chr14
-#   - chr15
-#   - chr16
-#   - chr17
-#   - chr18
-#   - chr19
-#   - chr20
 #   - chr21
-#   - chr22
-#   - chrX
+
+chromosomes:
+  - chr1
+  - chr2
+  - chr3
+  - chr4
+  - chr5
+  - chr6
+  - chr7
+  - chr8
+  - chr9
+  - chr10
+  - chr11
+  - chr12
+  - chr13
+  - chr14
+  - chr15
+  - chr16
+  - chr17
+  - chr18
+  - chr19
+  - chr20
+  - chr21
+  - chr22
+  - chrX
 
 # Strandphaser
 git_commit_strandphaser: "69c9fb4"
@@ -85,6 +85,9 @@ paired_end: True
 window: 100000
 
 ## METHODS
+methods:
+  - "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0_regfactor6_filterFALSE"
+  - "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.05_regfactor6_filterTRUE"
 
 llr: 4
 poppriors: TRUE
@@ -108,3 +111,5 @@ min_diff_singleseg: 0.5
 additional_sce_cutoff: 20000000
 ### SCE MIN DISTANCE
 sce_min_distance: 500000
+
+segdups: "data/segdups/segDups_hg38_UCSCtrack.bed.gz"
