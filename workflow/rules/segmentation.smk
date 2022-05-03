@@ -36,8 +36,9 @@ rule segmentation:
         --forbid-small-segments {params.min_num_segs} \
         -M 50000000 \
         -o {output} \
-        {input} > {log} 2>&1
+        {input} 
         """
+        # {input} > {log} 2>&1
 
 # FIXME: no difference observed before/after awk command
 

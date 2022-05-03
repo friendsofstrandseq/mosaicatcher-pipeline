@@ -6,3 +6,4 @@ dependencies:
   - pandas
   - pysam
   - tqdm
+  - perl

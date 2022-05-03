@@ -12,6 +12,8 @@ rule postprocessing_filter:
         calls = config["output_location"] + "mosaiclassifier/sv_calls/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}_filterFALSE.tsv"
     output: 
         calls = config["output_location"] + "mosaiclassifier/postprocessing/filter/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.tsv"
+    conda: 
+        "../envs/mc_base.yaml"
     shell:
         """
         export LC_CTYPE=en_US.UTF-8 
@@ -24,6 +26,8 @@ rule postprocessing_merge:
         calls = config["output_location"] + "mosaiclassifier/postprocessing/filter/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.tsv"
     output: 
         calls = config["output_location"] + "mosaiclassifier/postprocessing/merge/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.tsv"
+    conda: 
+        "../envs/mc_base.yaml"
     shell:
         """
         export LC_CTYPE=en_US.UTF-8 
@@ -37,6 +41,8 @@ rule postprocessing_sv_group_table:
         calls = config["output_location"] + "mosaiclassifier/postprocessing/merge/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.tsv"
     output: 
         grouptrack = config["output_location"] + "mosaiclassifier/postprocessing/group-table/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.tsv"
+    conda: 
+        "../envs/mc_base.yaml"
     shell:
         """
         PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)
@@ -54,6 +60,8 @@ rule filter_calls:
     output: 
         # calls = config["output_location"] + "mosaiclassifier/sv_calls/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}_filterTRUE.tsv"
         calls = config["output_location"] + "mosaiclassifier/sv_calls/{sample}/{method}_filterTRUE.tsv"
+    conda: 
+        "../envs/mc_base.yaml"
     shell:
         """
         PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)

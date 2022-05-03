@@ -19,6 +19,8 @@ rule summary_statistics:
         tsv = config["output_location"] + 'stats/{sample}/{method}_filter{filter}.tsv',
     log:
         config["output_location"] + 'log/summary_statistics/{sample}/{method}_filter{filter}.log'
+    # conda: 
+    #     "../envs/mc_base.yaml"
     run:
         p = []
         try:
@@ -41,11 +43,11 @@ rule summary_statistics:
         additional_params = ' '.join(p)
         shell('scripts/stats/callset_summary_stats.py --segmentation {input.segmentation} --strandstates {input.strandstates} --complex-regions {input.complex} {additional_params} {input.sv_calls}  > {output.tsv} ')
 
-# rule aggregate_summary_statistics:
-#     input:
-#         tsv=expand(config["output_location"] + "stats/{sample}/{method}.tsv", method=config['methods'], sample=samples),
-#     output:
-#         # tsv=report(config["output_location"] + "stats/{sample}/stats-merged.tsv", category="Stats", labels={"Type" : "Complete stats"})
-#         tsv=config["output_location"] + "stats/{sample}/stats-merged.tsv", category="Stats", labels={"Type" : "Complete stats"}
-#     shell:
-#         "(head -n1 {input.tsv[0]} && (tail -n1 -q {input.tsv} | sort -k1) ) > {output}"
+rule aggregate_summary_statistics:
+    input:
+        tsv=expand(config["output_location"] + "stats/{sample}/{method}.tsv", method=config['methods'], sample=samples),
+    output:
+        tsv=report(config["output_location"] + "stats/{sample}/stats-merged.tsv", category="Stats", labels={"Type" : "Complete stats"})
+        # tsv=config["output_location"] + "stats/{sample}/stats-merged.tsv", category="Stats", labels={"Type" : "Complete stats"}
+    shell:
+        "(head -n1 {input.tsv[0]} && (tail -n1 -q {input.tsv} | sort -k1) ) > {output}"
