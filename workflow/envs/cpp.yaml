@@ -3,7 +3,8 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - make
+  - make=4.3=h516909a_0
   - cmake=3.16.4=h28c56e5_0
-  - boost=1.72.0
+  - boost-cpp=1.72.0=h8e57a91_0
   - htslib=1.10.2=h78d89cc_0
+  - pkg-config=0.29.2=h516909a_1006
