@@ -26,4 +26,4 @@ afac/
 *.zip
 *.db
 workflow/static/
-!mosaic_logo.png
+!docs/mosaic_logo.png
