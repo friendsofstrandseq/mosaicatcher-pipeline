@@ -1,2 +1,8 @@
 
 /g/korbel2/weber/workspace/mosaicatcher-update/workflow/.snakemake/conda/efce729cd9fa8c17d9069c88e3ea8c4e
+/g/korbel2/weber/workspace/mosaicatcher-update/workflow/.snakemake/conda/3788d39fbf1c275d2f59b3c04095a5e9
+/g/korbel2/weber/workspace/mosaicatcher-update/workflow/.snakemake/conda/65d65572a30753e49e970fe9607cc4f4
+/g/korbel2/weber/workspace/mosaicatcher-update/workflow/.snakemake/conda/b0bb57cd4b77592c6a4933daec0680d9
+/g/korbel2/weber/workspace/mosaicatcher-update/workflow/.snakemake/conda/5f46ea0d0a3b05eb9f18a6b48bf24ef7
+/g/korbel2/weber/workspace/mosaicatcher-update/workflow/.snakemake/conda/f6e43dfbcbaf393428a25ebde2b7e489
+/g/korbel2/weber/workspace/mosaicatcher-update/workflow/.snakemake/conda/b42044cf37b5a86324b0a1bf256c3955
