@@ -82,6 +82,8 @@ rule call_complex_regions:
         complex_regions = config["output_location"] + "mosaiclassifier/sv_calls/{sample}/{method}.complex.tsv",
     log:
         config["output_location"] + "log/call_complex_regions/{sample}/{method}.log"
+    conda:
+        "../envs/mc_base.yaml"
     shell:
         """
         PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)

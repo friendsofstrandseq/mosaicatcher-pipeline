@@ -1,6 +1,0 @@
-- Snakemake version => --wms-monitor option
-
-# Meeting Hyobin 01/04
-scTrip results
-/g/korbel2/StrandSeq/20180727_MosiacatcherResults/saarbruecken_2019-07-11/all-2018-11-02
-
