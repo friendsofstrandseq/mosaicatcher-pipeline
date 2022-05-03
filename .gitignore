@@ -1,4 +1,5 @@
 .DS_Store
+.vscode
 .snakemake/
 bam/
 *@
@@ -18,3 +19,9 @@ sv_probabilities/
 build/
 .panoptes.db
 *.html
+workflow/scripts/__pycache__
+__pycache__
+afac/
+*.zip
+*.db
+workflow/static/

@@ -1,28 +1,41 @@
+print("###################################")
+print("# MOSAICATCHER SNAKEMAKE PIPELINE #")
+print("###################################")
+
 import math
 from collections import defaultdict
 import pandas as pd
 import os, sys
 from pprint import pprint
-import pysam
-from tqdm import tqdm
+# import pysam
+# from tqdm import tqdm
 
 configfile: "config/config.yaml"
 
-container: "docker://continuumio/miniconda3:4.4.10"
+mode_selected = config["mode"].lower()
+correct_modes = ["setup", "count", "segmentation", "haplotagging", "strandphasing", "mosaiclassifier"]
+assert mode_selected in correct_modes, "Wrong mode selected : {}\nFollowing list of modes are available : {}".format(config["mode"], ", ".join(correct_modes))
+
+plot_option_selected = config["plot"]
+assert type(plot_option_selected) is bool, "Wrong plot option selected : {}\nPlease enter a valid value (True / False)".format(config["plot"]) 
+
+if config["output_location"].endswith("/") is False:
+    config["output_location"] +=  "/"
+    print("/ was missing at end of output location, continuing ...")
+
+
+# # this container defines the underlying OS for each job when using the workflow
+# # with --use-conda --use-singularity
 
 
 # # TODO : automatic html report
-# report: "report/workflow.rst"
+report: "report/workflow.rst"
 
-print("###################################")
-print("# MOSAICATCHER SNAKEMAKE PIPELINE #")
-print("###################################")
 
 # TODO : check config/config CLI ... 
 
-print("Mode selected : {}".format(config["mode"]))
+print("Mode selected : {}".format(mode_selected))
 print("Plots output enabled : {}".format(config["plot"]))
-
 
 
 if os.path.isfile(config["config_df_location"]) is False:
@@ -53,7 +66,7 @@ if os.path.isfile(config["config_df_location"]) is False:
         """
 
         # Get BAM file header with pysam
-        h = pysam.view("-H", bam_file_path)
+        # h = pysam.view("-H", bam_file_path)
         h = [e.split("\t") for e in h.split("\n")]
         sm_tag_list = list(set([sub_e.replace("SM:", "") for e in h for sub_e in e if "SM:" in sub_e]))
 
@@ -68,7 +81,7 @@ if os.path.isfile(config["config_df_location"]) is False:
 
     print("Check if BAM SM tag correspond to folder name : {}".format(config["check_sm_tag_in_bam_header"]))
     if config["check_sm_tag_in_bam_header"] is True:
-        tqdm.pandas(desc="Checking if BAM SM tags correspond to folder names")
+        # tqdm.pandas(desc="Checking if BAM SM tags correspond to folder names")
         df_config_files["Full_path"].progress_apply(check_bam_header)
         print("BAM SM tag are corresponding to folder names")
   
@@ -77,10 +90,12 @@ if os.path.isfile(config["config_df_location"]) is False:
 else:
     df_config_files = pd.read_csv(config["config_df_location"], sep="\t")
 
+
+# Samples list
 samples = sorted(df_config_files.Sample.unique().tolist())
 # samples = ["RPE1-WT"]
 
-
+# Output dictionnaries
 all_dict = df_config_files.loc[df_config_files["all/selected"] == "all"].groupby("Sample")["Cell"].nunique().to_dict()
 selected_dict = df_config_files.loc[df_config_files["all/selected"] == "selected"].groupby("Sample")["Cell"].nunique().to_dict()
 dict_cells_nb_per_sample = df_config_files.loc[df_config_files["all/selected"] == "selected"].groupby("Sample")["Cell"].nunique().to_dict()
@@ -88,20 +103,18 @@ dict_cells_nb_per_sample = df_config_files.loc[df_config_files["all/selected"] =
 print("Detected {} samples:".format(df_config_files.Sample.nunique()))
 [print("  {}:\t{} cells\t {} selected cells".format(s, all_dict[s], selected_dict[s])) for s in samples]
 
+######################################################################
 
+# TODO : move to somewhere else
 
 methods = [
     "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0_regfactor6_filterFALSE",
     "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.05_regfactor6_filterTRUE",
 ]
 
-
-
-
-
-
 ######################################################################
 
+# IMPORT SMK RULES
 
 # include: "rules/input_check.smk"
 include: "rules/setup.smk"
@@ -117,12 +130,10 @@ include: "rules/postprocessing.smk"
 include: "rules/stats.smk"
 
 
-if config["mode"] == "setup":
-    rule all:
-        input:
-            rules.compile_mosaic.output,
 
-if config["plot"] == True:
+
+# IF PLOT OPTION ENABLED, BUILD TMP DICT TO CALL OUTPUT 
+if plot_option_selected == True:
 
     dict_cells_nb_per_sample = config_df.loc[config_df["all/selected"] == "selected"].groupby("Sample")["Cell"].nunique().to_dict()
     tmp_dict = config_df.loc[config_df["all/selected"] == "selected", ["Sample", "Cell"]].groupby("Sample")["Cell"].apply(lambda r: sorted(list(r))).to_dict()
@@ -131,68 +142,80 @@ if config["plot"] == True:
         tmp_dict[s][0] = "SummaryPage"
 
 
+######################
+# MODES OF EXECUTION #
+######################
+
+# SETUP ENV
+if mode_selected == "setup":
+    rule all:
+        input:
+            # rules.install_rlib_strandphaser.output,
+            rules.compile_mosaic.output,
 
 # MODE MOSAIC COUNT
-if config["mode"] == "count":
-    if config["plot"] == True:
+elif mode_selected == "count":
+    if plot_option_selected == True:
         rule all:
             input:
-                [config["output_location"] + "plots/{}/counts/{}_{}.png".format(sample, tmp_dict[sample][i], i) for sample in samples for i in range(dict_cells_nb_per_sample[sample] + 1)],
+                [config["output_location"] + "plots/{}/counts/{}.{}.pdf".format(sample, tmp_dict[sample][i], i) for sample in samples for i in range(dict_cells_nb_per_sample[sample] + 1)],
 
-    elif config["plot"] == False:
+    elif plot_option_selected == False:
         rule all:
             input:
-                [config["output_location"] + "counts/{}/{}.txt.gz".format(sample, sample) for sample in samples]
+                [config["output_location"] +  "counts/{}/{}.txt.fixme.gz".format(sample, sample) for sample in samples]
+                # rules.mosaic_count_dev.output,
+                # rules.mosaic_count_dev.output.info,
 
 # MODE MOSAIC SEGMENTATION
-elif config["mode"] == "segmentation":
+elif mode_selected == "segmentation":
 
-    if config["plot"] == True:
+    if plot_option_selected == True:
         rule all:
             input:
-                [config["output_location"] + "plots/{}/counts/{}_{}.png".format(sample, tmp_dict[sample][i], i) for sample in samples for i in range(dict_cells_nb_per_sample[sample] + 1)],
+                [config["output_location"] + "plots/{}/counts/{}.{}.pdf".format(sample, tmp_dict[sample][i], i) for sample in samples for i in range(dict_cells_nb_per_sample[sample] + 1)],
                 [config["output_location"] + "segmentation/{}/Selection_initial_strand_state".format(sample) for sample in samples]
     
-    elif config["plot"] == False:
+    elif plot_option_selected == False:
         rule all:
             input:
                 [config["output_location"] + "segmentation/{}/Selection_initial_strand_state".format(sample) for sample in samples]
 
 # MODE STRANDPHASING
-elif config["mode"] == "strandphasing":
+elif mode_selected == "strandphasing":
 
-    if config["plot"] == True:
+    if plot_option_selected == True:
         rule all:
             input:
                 rules.install_rlib_strandphaser.output,
-                [config["output_location"] + "plots/{}/counts/{}_{}.png".format(sample, tmp_dict[sample][i], i) for sample in samples for i in range(dict_cells_nb_per_sample[sample] + 1)],
+                [config["output_location"] + "plots/{}/counts/{}.{}.pdf".format(sample, tmp_dict[sample][i], i) for sample in samples for i in range(dict_cells_nb_per_sample[sample] + 1)],
                 [config["output_location"] + "strandphaser/{}/StrandPhaseR_final_output.txt".format(sample) for sample in samples]
     
-    elif config["plot"] == False:
+    elif plot_option_selected == False:
         rule all:
             input:
                 rules.install_rlib_strandphaser.output,
                 [config["output_location"] + "strandphaser/{}/StrandPhaseR_final_output.txt".format(sample) for sample in samples]
 
 # MODE HAPLOTAGGING
-elif config["mode"] == "haplotagging":
+elif mode_selected == "haplotagging":
 
-    if config["plot"] == True:
+    if plot_option_selected == True:
         rule all:
             input:
                 rules.install_rlib_strandphaser.output,
-                [config["output_location"] + "plots/{}/counts/{}_{}.pdf".format(sample, tmp_dict[sample][i], i) for sample in samples for i in range(dict_cells_nb_per_sample[sample] + 1)],
+                [config["output_location"] + "plots/{}/counts/{}.{}.pdf".format(sample, tmp_dict[sample][i], i) for sample in samples for i in range(dict_cells_nb_per_sample[sample] + 1)],
                 [config["output_location"] + "haplotag/table/{}/haplotag_counts_merged.tsv".format(sample) for sample in samples]
     
-    elif config["plot"] == False:
+    elif plot_option_selected == False:
         rule all:
             input:
                 rules.install_rlib_strandphaser.output,
                 [config["output_location"] + "haplotag/table/{}/haplotag_counts_merged.tsv".format(sample) for sample in samples]
 
 # MODE MOSAIC CLASSIFIER
-elif config["mode"] == "mosaiclassifier":
-    if config["plot"] == True:
+elif mode_selected == "mosaiclassifier":
+    if plot_option_selected == True:
         rule all:
             input:
                 rules.install_rlib_strandphaser.output,
@@ -204,70 +227,12 @@ elif config["mode"] == "mosaiclassifier":
                 expand(config["output_location"] + "stats/{sample}/stats-merged.tsv", sample = samples),
 
     
-    elif config["plot"] == False:
+    elif plot_option_selected == False:
         rule all:
             input:
                 rules.install_rlib_strandphaser.output,
                 [config["output_location"] + "mosaiclassifier/sv_calls/{}/{}.tsv".format(sample, m) for sample in samples for m in methods],
                 [config["output_location"] + "mosaiclassifier/sv_calls/{}/{}.complex.tsv".format(sample, m) for sample in samples for m in methods],
                  expand(config["output_location"] + "stats/{sample}/stats-merged.tsv", sample = samples),
-
-
-
-# TODO : check snakemake min version to run
-# from snakemake.utils import min_version
-
-##### set minimum snakemake version #####
-# min_version("6.4.1")
-
-
-
-
-
-
-# ##### setup singularity #####
-
-
-# # this container defines the underlying OS for each job when using the workflow
-# # with --use-conda --use-singularity
-# container: "docker://continuumio/miniconda3"
-
-
-# rule all:
-#     input:
-#         "config/config_df.tsv"
-
-# # ##### load rules #####
-
-# rule all:
-#     input:
-#         [config["output_location"] + "plots/{}-{}-{}.png".format(sample, i, tmp_dict[sample][i]) for sample in ["RPE1-WT"] for i in range(dict_cells_nb_per_sample[sample] + 1)]
-
-
-# # from scripts.handle_input import HandleInput
-# # hi = HandleInput(
-# #     config["input_bam_location"],
-# #     config["config_df_location"],
-# #     config["exclude_list"]
-# # )
-# # config_df = hi.config_df
-# # print(config_df)
-
-# ##### target rules #####
-
-# # import pandas as pd
-# # config_df = pd.read_csv("config/config_df.tsv", sep="\t")
-# # dict_cells_nb_per_sample = config_df.loc[config_df["all/selected"] == "selected"].groupby("Sample")["Cell"].nunique().to_dict()
-# # tmp_dict = config_df.loc[config_df["all/selected"] == "selected", ["Sample", "Cell"]].groupby("Sample")["Cell"].apply(lambda r: sorted(list(r))).to_dict()
-# # tmp_dict = {s:{i+1:c for i,c in enumerate(cell_list)} for s,cell_list in tmp_dict.items()}
-# # for s in tmp_dict.keys():
-# #     tmp_dict[s][0] = "Summary_page"
-
-
-
-
-#         # [config["output_location"] + "plots/{}-{}.png".format(sample, i) for sample in ["RPE1-WT"] for i in range(dict_cells_nb_per_sample[sample] + 1)]
-#         # [config["output_location"] + "plots/{}-{}-{}.png".format(sample, i, tmp_dict[sample][i]) for sample in ["RPE1-WT"] for i in range(dict_cells_nb_per_sample[sample] + 1)]
-
 
 
