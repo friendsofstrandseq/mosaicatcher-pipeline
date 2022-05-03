@@ -19,8 +19,9 @@ sv_probabilities/
 build/
 .panoptes.db
 *.html
-workflow/scripts/__pycache__
 __pycache__
+workflow/scripts/__pycache__
+*.pyc
 afac/
 *.zip
 *.db
