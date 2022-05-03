@@ -6,9 +6,11 @@ config_df_location: "config/config_df.tsv"
 
 # Input BAM location
 input_bam_ena: "/g/korbel2/weber/MosaiCatcher_files/bam_KG_full/"
-input_bam_location: "/g/korbel2/weber/MosaiCatcher_files/bam_KG_full/"
+# input_bam_location: "/g/korbel2/weber/MosaiCatcher_files/bam_KG_full/"
+input_bam_location: "/g/korbel2/weber/MosaiCatcher_files/PRJEB30027/bam/"
 
-output_location: "/g/korbel2/weber/MosaiCatcher_output/MosaiCatcher_output_sample_KG_multi_chr/"
+output_location: "/g/korbel2/weber/MosaiCatcher_output/MosaiCatcher_output_ENA_example_full_test_count2/"
+# output_location: "/g/korbel2/weber/MosaiCatcher_output/MosaiCatcher_output_ENA_example_full"
 snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz"
 # FIXME : TMP debuging
 # snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/split_by_chr/1000G_chr21.vcf.gz"
