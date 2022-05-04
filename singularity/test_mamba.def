@@ -1,0 +1,7 @@
+Bootstrap: docker
+From: condaforge/mambaforge
+
+%post
+    which mamba 
+    mamba --help
+
