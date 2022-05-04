@@ -1,4 +1,4 @@
-![MosaiCatcher](mosaic_logo.png)
+![MosaiCatcher](docs/mosaic_logo.png)
 ====================================
 
 Structural variant calling from single-cell Strand-seq data - summarized in a single [Snakemake](https://bitbucket.org/snakemake/snakemake) pipeline.
