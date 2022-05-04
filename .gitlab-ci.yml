@@ -24,7 +24,8 @@ before_script:
     libgpgme11-dev \
     squashfs-tools \
     libseccomp-dev \
-    pkg-config
+    pkg-config \
+    wget
   - bash
   - wget https://github.com/sylabs/singularity/releases/download/v3.9.9/singularity-ce_3.9.9-focal_amd64.deb
   - dpkg -i singularity-ce_3.9.9-focal_amd64.deb
