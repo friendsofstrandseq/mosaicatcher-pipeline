@@ -14,7 +14,8 @@ rule generate_exclude_file_for_mosaic_count:
     output:
     """
     input:
-        "config/config_df.tsv"
+        "config/config_df.tsv",
+        config['output_location'] + "mosaic.txt"
     output:
         "config/exclude_file.txt"
     params:
@@ -36,13 +37,13 @@ rule mosaic_count:
     """
     input:
         bam = lambda wc: expand(config["input_bam_location"] + wc.sample +  "/selected/{bam}.bam", bam = bam_per_sample[wc.sample]) if wc.sample in bam_per_sample else "FOOBAR",
-        # bai = lambda wc: expand(config["input_bam_location"] + wc.sample +  "/selected/{bam}.bam.bai", bam = bam_per_sample[wc.sample]) if wc.sample in bam_per_sample else "FOOBAR",
+        bai = lambda wc: expand(config["input_bam_location"] + wc.sample +  "/selected/{bam}.bam.bai", bam = bam_per_sample[wc.sample]) if wc.sample in bam_per_sample else "FOOBAR",
         excl = "config/exclude_file.txt",
     output:
         counts = config["output_location"] + "counts/{sample}/{sample}.txt.fixme.gz",
         info   = config["output_location"] + "counts/{sample}/{sample}.info"
     log:
-        "log/counts/{sample}/mosaic_count.log"
+        config["output_location"] + "log/counts/{sample}/mosaic_count.log"
     container:
         "library://weber8thomas/remote-build/mosaic:0.3"
     params:
@@ -147,9 +148,9 @@ rule extract_single_cell_counts:
     output: count per cell file for the sample according a given window
     """
     input:
-        "counts/{sample}/{sample}.txt.gz"
+        config["output_location"] + "counts/{sample}/{sample}.txt.gz"
     output:
-        "counts/{sample}/counts-per-cell/{cell}.txt.gz"
+        config["output_location"] + "counts/{sample}/counts-per-cell/{cell}.txt.gz"
     shell:
         """
         # Issue #1022 (https://bitbucket.org/snakemake/snakemake/issues/1022)
