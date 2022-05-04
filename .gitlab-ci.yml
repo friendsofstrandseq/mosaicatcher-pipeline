@@ -1,0 +1,26 @@
+image:
+  name: mambaorg/micromamba:latest
+
+stages: # List of stages for jobs, and their order of execution
+  - run
+  - test
+  - build
+
+before_script:
+  - mamba create -n snakemake_env -c bioconda -c conda-forge snakemake pandas "singularity>=3.8"
+  - source activate snakemake_env
+
+run:
+  stage: run
+  script:
+    - snakemake --use-conda --cores 10 --config plot=True mode=count -p --conda-frontend mamba --use-singularity
+
+test:
+  stage: test
+  script:
+    - zcat counts/RPE-BM510/RPE-BM510.txt.gz | head -n 50
+
+build:
+  stage: build
+  script:
+    - snakemake --use-conda --cores 10 --config plot=True mode=count -p --conda-frontend mamba --use-singularity --report report_test.zip
