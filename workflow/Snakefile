@@ -1,6 +1,4 @@
-print("###################################")
-print("# MOSAICATCHER SNAKEMAKE PIPELINE #")
-print("###################################")
+
 
 import math
 from collections import defaultdict
@@ -21,7 +19,11 @@ assert type(plot_option_selected) is bool, "Wrong plot option selected : {}\nPle
 
 if config["output_location"].endswith("/") is False:
     config["output_location"] +=  "/"
-    print("/ was missing at end of output location, continuing ...")
+    # print("/ was missing at end of output folder, continuing ...")
+
+if config["input_bam_location"].endswith("/") is False:
+    config["input_bam_location"] +=  "/"
+    # print("/ was missing at end of input folder, continuing ...")
 
 
 # # this container defines the underlying OS for each job when using the workflow
@@ -34,8 +36,6 @@ report: "report/workflow.rst"
 
 # TODO : check config/config CLI ... 
 
-print("Mode selected : {}".format(mode_selected))
-print("Plots output enabled : {}".format(config["plot"]))
 
 
 # TODO: enable again when .gitignore will be solved
@@ -80,7 +80,7 @@ def check_bam_header(bam_file_path):
         folder_name, bam_file_path
     )
 
-print("Check if BAM SM tag correspond to folder name : {}".format(config["check_sm_tag_in_bam_header"]))
+# print("Check if BAM SM tag correspond to folder name : {}".format(config["check_sm_tag_in_bam_header"]))
 if config["check_sm_tag_in_bam_header"] is True:
     # tqdm.pandas(desc="Checking if BAM SM tags correspond to folder names")
     df_config_files["Full_path"].progress_apply(check_bam_header)
@@ -101,8 +101,6 @@ all_dict = df_config_files.loc[df_config_files["all/selected"] == "all"].groupby
 selected_dict = df_config_files.loc[df_config_files["all/selected"] == "selected"].groupby("Sample")["Cell"].nunique().to_dict()
 dict_cells_nb_per_sample = df_config_files.loc[df_config_files["all/selected"] == "selected"].groupby("Sample")["Cell"].nunique().to_dict()
 
-print("Detected {} samples:".format(df_config_files.Sample.nunique()))
-[print("  {}:\t{} cells\t {} selected cells".format(s, all_dict[s], selected_dict[s])) for s in samples]
 
 ######################################################################
 
@@ -172,8 +170,11 @@ elif mode_selected == "count":
 elif mode_selected == "segmentation":
 
     if plot_option_selected == True:
+        # print([config["output_location"] + "counts/{}/counts-per-cell/{}.txt.gz".format(sample, tmp_dict[sample][i], i) for sample in samples for i in range(dict_cells_nb_per_sample[sample] + 1)])
         rule all:
             input:
+                # [config["output_location"] + "counts/{}/counts-per-cell/{}.txt.gz".format(sample, tmp_dict[sample][i], i) for sample in samples for i in range(dict_cells_nb_per_sample[sample] + 1) if i > 0],
+                # [config["output_location"] + "segmentation/{}/{}.txt.fixme".format(sample, sample) for sample in samples],
                 [config["output_location"] + "plots/{}/counts/{}.{}.pdf".format(sample, tmp_dict[sample][i], i) for sample in samples for i in range(dict_cells_nb_per_sample[sample] + 1)],
                 [config["output_location"] + "segmentation/{}/Selection_initial_strand_state".format(sample) for sample in samples]
     
@@ -237,3 +238,14 @@ elif mode_selected == "mosaiclassifier":
                  expand(config["output_location"] + "stats/{sample}/stats-merged.tsv", sample = samples),
 
 
+rule hello_mosaic:
+    output:
+        touch(config['output_location'] + "mosaic.txt")
+    run:
+        print("###################################")
+        print("# MOSAICATCHER SNAKEMAKE PIPELINE #")
+        print("###################################")
+        print("Mode selected : {}".format(mode_selected))
+        print("Plots output enabled : {}".format(config["plot"]))
+        print("Detected {} samples:".format(df_config_files.Sample.nunique()))
+        [print("  {}:\t{} cells\t {} selected cells".format(s, all_dict[s], selected_dict[s])) for s in samples]
