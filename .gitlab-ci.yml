@@ -9,6 +9,7 @@ stages: # List of stages for jobs, and their order of execution
 before_script:
   - mamba create -n snakemake_env -c bioconda -c conda-forge snakemake pandas "singularity>=3.8"
   - source activate snakemake_env
+  - cd workflow/
 
 run:
   stage: run
