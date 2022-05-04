@@ -1,5 +1,5 @@
 image:
-  name: mambaorg/micromamba:latest
+  name: condaforge/mambaforge
 
 stages: # List of stages for jobs, and their order of execution
   - run
