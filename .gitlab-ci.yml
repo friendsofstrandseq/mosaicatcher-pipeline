@@ -24,7 +24,7 @@ before_script:
 run:
   stage: run
   script:
-    - snakemake --use-conda --cores 10 --config plot=True mode=count -p --conda-frontend mamba --use-singularity --singularity-args "-B "
+    - snakemake --use-conda --cores 10 --config plot=True mode=count -p --conda-frontend mamba --use-singularity
 
 test:
   stage: test

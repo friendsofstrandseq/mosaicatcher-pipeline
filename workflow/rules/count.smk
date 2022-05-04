@@ -63,9 +63,9 @@ rule mosaic_count:
 
 rule order_mosaic_count_output:
     input:
-        "counts/{sample}/{sample}.txt.fixme.gz"
+        config["output_location"] + "counts/{sample}/{sample}.txt.fixme.gz"
     output:
-        "counts/{sample}/{sample}.txt.gz"
+        config["output_location"] + "counts/{sample}/{sample}.txt.gz"
     run:
         df = pd.read_csv(input[0], compression='gzip', sep='\t')
         df = df.sort_values(by=["sample", "cell", "chrom", "start"])
