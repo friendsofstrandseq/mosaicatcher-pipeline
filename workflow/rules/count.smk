@@ -44,7 +44,7 @@ rule mosaic_count:
     log:
         "log/counts/{sample}/mosaic_count.log"
     container:
-        "library://weber8thomas/remote-builds/rb-626be574738713c5e1555763:latest"
+        "library://weber8thomas/remote-build/mosaic:0.3"
     params:
         window = config["window"]
     shell:
