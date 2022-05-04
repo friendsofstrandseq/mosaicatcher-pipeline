@@ -24,72 +24,9 @@ rule generate_exclude_file_for_mosaic_count:
     script:
         "../scripts/utils/generate_exclude_file.py"
 
-# TODO : find a solution to compile mosaic count automatically
-# rule compile_mosaic:
-#     """
-#     rule fct:
-#     input:
-#     output:
-#     """
-#     input: 
-#         "../src/"
-#     output:
-#         "../build/mosaic"
-#     conda:
-#         "../envs/mc_base.yaml"
-#     shell:
-#         """
-#         mkdir -p ../build
-#         cd ../build
-#         cmake ../src
-#         make
-#         cd ../worfklow
-#         """
 
 # TODO : Simplify expand command 
 # DOCME : mosaic count read orientation ?
-
-# rule mosaic_count_dev:
-#     input:
-#         # bam = lambda wc: expand("bam/" + wc.sample +  "/selected/{bam}.bam", bam = bam_per_sample[wc.sample]) if wc.sample in bam_per_sample else "FOOBAR",
-#     #     # bai = lambda wc: expand("/bam/" + wc.sample +  "/selected/{bam}.bam.bai", bam = bam_per_sample[wc.sample]) if wc.sample in bam_per_sample else "FOOBAR",
-#         excl = "config/exclude_file.txt",
-#     #     # mosaic = "../build/mosaic"
-#     output:
-#         # counts = temp("counts/{sample}/{sample}.txt.fixme.gz"),
-#         # info   = "counts/{sample}/{sample}.info"
-#         "test_o.txt"
-#     # log:
-#     #     "log/counts/{sample}/mosaic_count.log"
-#     container:
-#         "library://weber8thomas/remote-builds/rb-626be574738713c5e1555763:latest"
-#     params:
-#         # mc_command = config["mosaicatcher"],
-#         # i = "",
-#         # o = "",
-#         window = config["window"],
-#         input_bam_location = config["input_bam_location"] 
-#     shell:
-#         """
-#         pwd
-#         ls -lah  
-#         echo 
-#         # ls -lah {config[input_bam_location]}
-#         ls -lah /bam
-#         # ls -lah {params.input_bam_location}
-#         cat /{input.excl}
-#         """
-#         # """
-#         # /mosaicatcher/build/mosaic count \
-#         #     --verbose \
-#         #     --do-not-blacklist-hmm \
-#         #     -o {output.counts} \
-#         #     -i {output.info} \
-#         #     -w {params.window} \
-#         #     -x {input.excl} \
-#         #     {input.bam} \
-#         # > {log} 2>&1
-#         # """ 
 
 rule mosaic_count:
     """
@@ -99,9 +36,8 @@ rule mosaic_count:
     """
     input:
         bam = lambda wc: expand(config["input_bam_location"] + wc.sample +  "/selected/{bam}.bam", bam = bam_per_sample[wc.sample]) if wc.sample in bam_per_sample else "FOOBAR",
-        # bai = lambda wc: expand("/bam/" + wc.sample +  "/selected/{bam}.bam.bai", bam = bam_per_sample[wc.sample]) if wc.sample in bam_per_sample else "FOOBAR",
+        # bai = lambda wc: expand(config["input_bam_location"] + wc.sample +  "/selected/{bam}.bam.bai", bam = bam_per_sample[wc.sample]) if wc.sample in bam_per_sample else "FOOBAR",
         excl = "config/exclude_file.txt",
-        # mosaic = "../build/mosaic"
     output:
         counts = config["output_location"] + "counts/{sample}/{sample}.txt.fixme.gz",
         info   = config["output_location"] + "counts/{sample}/{sample}.info"
@@ -110,9 +46,6 @@ rule mosaic_count:
     container:
         "library://weber8thomas/remote-builds/rb-626be574738713c5e1555763:latest"
     params:
-        # mc_command = config["mosaicatcher"],
-        # i = "",
-        # o = "",
         window = config["window"]
     shell:
         """
@@ -133,7 +66,6 @@ rule order_mosaic_count_output:
         "counts/{sample}/{sample}.txt.fixme.gz"
     output:
         "counts/{sample}/{sample}.txt.gz"
-
     run:
         df = pd.read_csv(input[0], compression='gzip', sep='\t')
         df = df.sort_values(by=["sample", "cell", "chrom", "start"])
