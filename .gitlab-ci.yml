@@ -1,8 +1,8 @@
 image:
   name: ubuntu:20.04
 
-# stages:
-#   - run
+stages:
+  - run
 
 # run:
 #   stage: run
@@ -28,6 +28,11 @@ before_script:
   - bash
   - wget https://github.com/sylabs/singularity/releases/download/v3.9.9/singularity-ce_3.9.9-focal_amd64.deb
   - dpkg -i singularity-ce_3.9.9-focal_amd64.deb
+
+run:
+  stage: run
+  script:
+    - singularity --help
 # run:
 #   stage: run
 #   script:
