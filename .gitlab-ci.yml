@@ -1,5 +1,5 @@
 image:
-  name: condaforge/mambaforge
+  name: ubuntu:20.04
 
 # stages:
 #   - run
@@ -11,27 +11,34 @@ image:
 #     - ls -l
 #     - ls -l /
 
-stages: # List of stages for jobs, and their order of execution
-  - run
-  - test
-  - build
+# stages: # List of stages for jobs, and their order of execution
+#   - run
+#   - test
+#   - build
 
 before_script:
-  - mamba create -n snakemake_env -c bioconda -c conda-forge snakemake pandas "singularity>=3.8"
-  - source activate snakemake_env
-  - cd workflow/
+  - sudo apt-get update && sudo apt-get install -y \
+    build-essential \
+    libssl-dev \
+    uuid-dev \
+    libgpgme11-dev \
+    squashfs-tools \
+    libseccomp-dev \
+    pkg-config
+  - bash
+  - wget https://github.com/sylabs/singularity/releases/download/v3.9.9/singularity-ce_3.9.9-focal_amd64.deb
+  - dpkg -i singularity-ce_3.9.9-focal_amd64.deb
+# run:
+#   stage: run
+#   script:
+#     - snakemake --use-conda --cores 10 --config plot=True mode=count -p --conda-frontend mamba --use-singularity
 
-run:
-  stage: run
-  script:
-    - snakemake --use-conda --cores 10 --config plot=True mode=count -p --conda-frontend mamba --use-singularity
+# test:
+#   stage: test
+#   script:
+#     - zcat counts/RPE-BM510/RPE-BM510.txt.gz | head -n 50
 
-test:
-  stage: test
-  script:
-    - zcat counts/RPE-BM510/RPE-BM510.txt.gz | head -n 50
-
-build:
-  stage: build
-  script:
-    - snakemake --use-conda --cores 10 --config plot=True mode=count -p --conda-frontend mamba --use-singularity --report report_test.zip
+# build:
+#   stage: build
+#   script:
+#     - snakemake --use-conda --cores 10 --config plot=True mode=count -p --conda-frontend mamba --use-singularity --report report_test.zip
