@@ -1,27 +1,36 @@
 image:
   name: condaforge/mambaforge
 
-stages: # List of stages for jobs, and their order of execution
+stages:
   - run
-  - test
-  - build
-
-before_script:
-  - mamba create -n snakemake_env -c bioconda -c conda-forge snakemake pandas "singularity>=3.8"
-  - source activate snakemake_env
-  - cd workflow/
 
 run:
   stage: run
   script:
-    - snakemake --use-conda --cores 10 --config plot=True mode=count -p --conda-frontend mamba --use-singularity
+    - pwd
+    - ls -l
+    - ls -l /
+# stages: # List of stages for jobs, and their order of execution
+#   - run
+#   - test
+#   - build
 
-test:
-  stage: test
-  script:
-    - zcat counts/RPE-BM510/RPE-BM510.txt.gz | head -n 50
+# before_script:
+#   - mamba create -n snakemake_env -c bioconda -c conda-forge snakemake pandas "singularity>=3.8"
+#   - source activate snakemake_env
+#   - cd workflow/
 
-build:
-  stage: build
-  script:
-    - snakemake --use-conda --cores 10 --config plot=True mode=count -p --conda-frontend mamba --use-singularity --report report_test.zip
+# run:
+#   stage: run
+#   script:
+#     - snakemake --use-conda --cores 10 --config plot=True mode=count -p --conda-frontend mamba --use-singularity --singularity-args "-B "
+
+# test:
+#   stage: test
+#   script:
+#     - zcat counts/RPE-BM510/RPE-BM510.txt.gz | head -n 50
+
+# build:
+#   stage: build
+#   script:
+#     - snakemake --use-conda --cores 10 --config plot=True mode=count -p --conda-frontend mamba --use-singularity --report report_test.zip
