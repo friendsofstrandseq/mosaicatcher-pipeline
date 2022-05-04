@@ -38,57 +38,58 @@ print("Mode selected : {}".format(mode_selected))
 print("Plots output enabled : {}".format(config["plot"]))
 
 
-if os.path.isfile(config["config_df_location"]) is False:
+# TODO: enable again when .gitignore will be solved
+# if os.path.isfile(config["config_df_location"]) is False:
 
-    ######################################################################
-    # TODO : move to another file 
+######################################################################
+# TODO : move to another file 
 
-    # Parsing folder and retrieve only files with .bam extension
-    data = [(r, file.replace(".bam", "")) for r, d, f in os.walk(config["input_bam_location"]) for file in f if ".bam" in file and ".bai" not in file]
+# Parsing folder and retrieve only files with .bam extension
+data = [(r, file.replace(".bam", "")) for r, d, f in os.walk(config["input_bam_location"]) for file in f if ".bam" in file and ".bai" not in file]
 
-    # Building pandas df based on folder structure
-    df = pd.DataFrame(data, columns=["Folder", "File"])
+# Building pandas df based on folder structure
+df = pd.DataFrame(data, columns=["Folder", "File"])
 
-    # Defining cols
-    df["all/selected"] = df["Folder"].apply(lambda r: r.split("/")[-1])
-    df["Sample"] = df["Folder"].apply(lambda r: r.split("/")[-2])
-    df["Cell"] = df["File"].apply(lambda r  : r.split(".")[0])
-    df["Full_path"] = df["Folder"] + "/" + df["File"] + ".bam"
+# Defining cols
+df["all/selected"] = df["Folder"].apply(lambda r: r.split("/")[-1])
+df["Sample"] = df["Folder"].apply(lambda r: r.split("/")[-2])
+df["Cell"] = df["File"].apply(lambda r  : r.split(".")[0])
+df["Full_path"] = df["Folder"] + "/" + df["File"] + ".bam"
 
-    # Filtering based on exclude list defined
-    df_config_files = df.loc[~df["Cell"].isin(config["exclude_list"])]
+# Filtering based on exclude list defined
+df_config_files = df.loc[~df["Cell"].isin(config["exclude_list"])]
 
-    def check_bam_header(bam_file_path):
-        """_summary_
+def check_bam_header(bam_file_path):
+    """_summary_
 
-        Args:
-            bam_file_path (_type_): _description_
-        """
+    Args:
+        bam_file_path (_type_): _description_
+    """
 
-        # Get BAM file header with pysam
-        # h = pysam.view("-H", bam_file_path)
-        h = [e.split("\t") for e in h.split("\n")]
-        sm_tag_list = list(set([sub_e.replace("SM:", "") for e in h for sub_e in e if "SM:" in sub_e]))
+    # Get BAM file header with pysam
+    # h = pysam.view("-H", bam_file_path)
+    h = [e.split("\t") for e in h.split("\n")]
+    sm_tag_list = list(set([sub_e.replace("SM:", "") for e in h for sub_e in e if "SM:" in sub_e]))
 
-        # Folder name based on path
-        folder_name = bam_file_path.split("/")[-3]
+    # Folder name based on path
+    folder_name = bam_file_path.split("/")[-3]
 
-        # Assertions
-        assert len(sm_tag_list) == 1, "Two different SM tags in the header of BAM file {}".format(bam_file_path)
-        assert sm_tag_list[0] == folder_name, 'Folder name "{}" must correspond to SM tag in BAM file "{}"'.format(
-            folder_name, bam_file_path
-        )
+    # Assertions
+    assert len(sm_tag_list) == 1, "Two different SM tags in the header of BAM file {}".format(bam_file_path)
+    assert sm_tag_list[0] == folder_name, 'Folder name "{}" must correspond to SM tag in BAM file "{}"'.format(
+        folder_name, bam_file_path
+    )
 
-    print("Check if BAM SM tag correspond to folder name : {}".format(config["check_sm_tag_in_bam_header"]))
-    if config["check_sm_tag_in_bam_header"] is True:
-        # tqdm.pandas(desc="Checking if BAM SM tags correspond to folder names")
-        df_config_files["Full_path"].progress_apply(check_bam_header)
-        print("BAM SM tag are corresponding to folder names")
-  
-    df_config_files.to_csv(config["config_df_location"], sep="\t", index=False)
+print("Check if BAM SM tag correspond to folder name : {}".format(config["check_sm_tag_in_bam_header"]))
+if config["check_sm_tag_in_bam_header"] is True:
+    # tqdm.pandas(desc="Checking if BAM SM tags correspond to folder names")
+    df_config_files["Full_path"].progress_apply(check_bam_header)
+    print("BAM SM tag are corresponding to folder names")
 
-else:
-    df_config_files = pd.read_csv(config["config_df_location"], sep="\t")
+df_config_files.to_csv(config["config_df_location"], sep="\t", index=False)
+
+# else:
+#     df_config_files = pd.read_csv(config["config_df_location"], sep="\t")
 
 
 # Samples list
