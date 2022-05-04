@@ -27,5 +27,5 @@ afac/
 *.db
 workflow/static/
 !docs/mosaic_logo.png
-config/
-!config/config.yaml
+config/config_df.tsv
+config/exclude_file.txt
