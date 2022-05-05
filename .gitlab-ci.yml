@@ -3,18 +3,7 @@ image:
 
 stages:
   - run
-
-# run:
-#   stage: run
-#   script:
-#     - pwd
-#     - ls -l
-#     - ls -l /
-
-# stages: # List of stages for jobs, and their order of execution
-#   - run
-#   - test
-#   - build
+  - test
 
 before_script:
   # SINGULARITY INSTALL
