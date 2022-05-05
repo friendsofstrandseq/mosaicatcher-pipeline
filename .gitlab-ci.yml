@@ -24,10 +24,11 @@ before_script:
   # - wget https://github.com/sylabs/singularity/releases/download/v3.9.9/singularity-ce_3.9.9-focal_amd64.deb
   # - dpkg -i singularity-ce_3.9.9-focal_amd64.deb
   # MAMBA INSTALL
-  - wget https://github.com/conda-forge/miniforge/releases/download/4.12.0-0/Miniforge3-4.12.0-0-Linux-x86_64.sh
-  - sh Miniforge3-4.12.0-0-Linux-x86_64.sh -b -p /miniforge3
-  - PATH="${PATH}:/miniforge3/bin"
-  - ls -l /miniforge3
+  - wget https://github.com/conda-forge/miniforge/releases/download/4.12.0-0/Mambaforge-pypy3-4.12.0-0-Linux-x86_64.sh
+  - sh Mambaforge-pypy3-4.12.0-0-Linux-x86_64.sh -b -p /mambaforge
+  - PATH="${PATH}:/mambaforge/bin"
+  - ls -l /mambaforge
+  - ls -l /mambaforge/bin
 
 # Test
 
