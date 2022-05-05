@@ -19,7 +19,7 @@ stages:
 before_script:
   - DEBIAN_FRONTEND=noninteractive apt-get update
   - TZ=Etc/UTC
-  - DEBIAN_FRONTEND=noninteractive apt install -y build-essential libssl-dev uuid-dev libgpgme11-dev squashfs-tools libseccomp-dev pkg-config wget
+  - DEBIAN_FRONTEND=noninteractive apt install -y build-essential libssl-dev uuid-dev libgpgme11-dev squashfs-tools libseccomp-dev pkg-config cryptsetup-bin wget
   - wget https://github.com/sylabs/singularity/releases/download/v3.9.9/singularity-ce_3.9.9-focal_amd64.deb
   - dpkg -i singularity-ce_3.9.9-focal_amd64.deb
 # Test
