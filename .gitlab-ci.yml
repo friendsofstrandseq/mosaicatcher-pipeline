@@ -17,17 +17,25 @@ stages:
 #   - build
 
 before_script:
+  # SINGULARITY INSTALL
   - DEBIAN_FRONTEND=noninteractive apt-get update
   - TZ=Etc/UTC
   - DEBIAN_FRONTEND=noninteractive apt install -y build-essential libssl-dev uuid-dev libgpgme11-dev squashfs-tools libseccomp-dev pkg-config cryptsetup-bin wget
-  - wget https://github.com/sylabs/singularity/releases/download/v3.9.9/singularity-ce_3.9.9-focal_amd64.deb
-  - dpkg -i singularity-ce_3.9.9-focal_amd64.deb
+  # - wget https://github.com/sylabs/singularity/releases/download/v3.9.9/singularity-ce_3.9.9-focal_amd64.deb
+  # - dpkg -i singularity-ce_3.9.9-focal_amd64.deb
+  # MAMBA INSTALL
+  - wget https://github.com/conda-forge/miniforge/releases/download/4.12.0-0/Miniforge3-4.12.0-0-Linux-x86_64.sh
+  - sh Miniforge3-4.12.0-0-Linux-x86_64.sh -b /miniconda
+  - PATH="${PATH}:/miniconda/bin"
+  - ls -l /miniconda
+
 # Test
 
 run:
   stage: run
   script:
-    - singularity --help
+    # - singularity --help
+    - mamba --help
 # run:
 #   stage: run
 #   script:
