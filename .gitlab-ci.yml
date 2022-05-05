@@ -25,9 +25,9 @@ before_script:
   # - dpkg -i singularity-ce_3.9.9-focal_amd64.deb
   # MAMBA INSTALL
   - wget https://github.com/conda-forge/miniforge/releases/download/4.12.0-0/Miniforge3-4.12.0-0-Linux-x86_64.sh
-  - sh Miniforge3-4.12.0-0-Linux-x86_64.sh -b /miniconda
-  - PATH="${PATH}:/miniconda/bin"
-  - ls -l /miniconda
+  - sh Miniforge3-4.12.0-0-Linux-x86_64.sh -b -p /miniforge3
+  - PATH="${PATH}:/miniforge3/bin"
+  - ls -l /miniforge3
 
 # Test
 
