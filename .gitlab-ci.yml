@@ -20,7 +20,7 @@ before_script:
   - ls -l /mambaforge/bin
   # SNAKEMAKE INSTALL & ACTIVATE
   - mamba create -n mosaicatcher_env -c bioconda -c conda-forge snakemake pandas imagemagick
-  - mamba activate mosaicatcher_env
+  - source activate mosaicatcher_env
   - which snakemake
 
 run:
