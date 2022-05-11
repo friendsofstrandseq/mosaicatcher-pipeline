@@ -1,7 +1,7 @@
 .DS_Store
 .vscode/
 .snakemake/
-bam/
+#bam/
 *@
 chroms/
 counts/
@@ -22,8 +22,10 @@ build/
 __pycache__
 workflow/scripts/__pycache__
 *.pyc
-afac/
+# afac/
 *.zip
 *.db
 workflow/static/
 !docs/mosaic_logo.png
+config/config_df.tsv
+config/exclude_file.txt
