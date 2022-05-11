@@ -22,7 +22,7 @@ build/
 __pycache__
 workflow/scripts/__pycache__
 *.pyc
-afac/
+# afac/
 *.zip
 *.db
 workflow/static/

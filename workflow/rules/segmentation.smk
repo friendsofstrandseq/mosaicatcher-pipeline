@@ -1,6 +1,6 @@
 import math
 import pandas as pd
-config_df = pd.read_csv("config/config_df.tsv", sep="\t")
+config_df = pd.read_csv(config["output_location"] + "config/config_df.tsv", sep="\t")
 # print(config_df)
 cell_per_sample = config_df.loc[config_df["all/selected"] == "selected"].groupby("Sample")["Cell"].apply(list).to_dict()
 
