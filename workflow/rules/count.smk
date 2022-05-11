@@ -1,11 +1,24 @@
 import pandas as pd
-config_df = pd.read_csv("config/config_df.tsv", sep="\t")
-# print(config_df)
-bam_per_sample = config_df.loc[config_df["all/selected"] == "selected"].groupby("Sample")["File"].apply(list).to_dict()
+config_df = pd.read_csv(config["output_location"] + "config/config_df.tsv", sep="\t")
 
+
+pd.options.display.max_colwidth = 40
+# bam_per_sample_local = config_df.loc[config_df["Selected"] == True].groupby("Sample")["File"].apply(list).to_dict()
+bam_per_sample_local = config_df.loc[config_df["all/selected"] == "selected"].groupby("Sample")["File"].apply(list).to_dict()
+print(bam_per_sample_local)
 ################################################################################
 # Read counting                                                                #
 ################################################################################
+
+# rule generate_list_chroms:
+#     output:
+#         config["output_location"] + "config/chroms_include"
+#     run:
+#         with open(output[0], 'w') as w:
+#             for c in config["chromosomes"]:
+#                 print(c)
+#                 w.write(c + "\n")
+        
 
 rule generate_exclude_file_for_mosaic_count:
     """
@@ -14,16 +27,21 @@ rule generate_exclude_file_for_mosaic_count:
     output:
     """
     input:
-        "config/config_df.tsv",
-        config['output_location'] + "mosaic.txt"
+        config["output_location"] + "config/config_df.tsv",
+        # chroms_include = config['output_location'] + "config/chroms_include",
+        bam = config["input_bam_location"]
     output:
-        "config/exclude_file.txt"
+        config["output_location"] + "config/exclude_file"
     params:
         chroms = config["chromosomes"]
     conda:
         "../envs/mc_base.yaml"
+    # shell:
+    #     "python scripts/utils/generate_exclude_file.py {input} {output} {params.chroms}"
     script:
         "../scripts/utils/generate_exclude_file.py"
+
+
 
 
 # TODO : Simplify expand command 
@@ -36,9 +54,9 @@ rule mosaic_count:
     output: counts: read counts for the BAM file according defined window ; info file : summary statistics 
     """
     input:
-        bam = lambda wc: expand(config["input_bam_location"] + wc.sample +  "/selected/{bam}.bam", bam = bam_per_sample[wc.sample]) if wc.sample in bam_per_sample else "FOOBAR",
-        bai = lambda wc: expand(config["input_bam_location"] + wc.sample +  "/selected/{bam}.bam.bai", bam = bam_per_sample[wc.sample]) if wc.sample in bam_per_sample else "FOOBAR",
-        excl = "config/exclude_file.txt",
+        bam = lambda wc: expand(config["input_bam_location"] + wc.sample +  "/all/{bam}.bam", bam = bam_per_sample_local[str(wc.sample)] if wc.sample in bam_per_sample_local else "FOOBAR"),
+        # bai = lambda wc: expand(config["input_bam_location"] + wc.sample +  "/{bam}.bam.bai", bam = bam_per_sample_local[wc.sample]) if wc.sample in bam_per_sample_local else "FOOBAR",
+        excl = config["output_location"] + "config/exclude_file",
     output:
         counts = config["output_location"] + "counts/{sample}/{sample}.txt.fixme.gz",
         info   = config["output_location"] + "counts/{sample}/{sample}.info"
@@ -55,8 +73,8 @@ rule mosaic_count:
             --do-not-blacklist-hmm \
             -o {output.counts} \
             -i {output.info} \
-            -w {params.window} \
             -x {input.excl} \
+            -w {params.window} \
             {input.bam} \
         > {log} 2>&1
         """

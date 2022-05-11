@@ -1,5 +1,5 @@
 import pandas as pd
-config_df = pd.read_csv("config/config_df.tsv", sep="\t")
+config_df = pd.read_csv(config["output_location"] + "config/config_df.tsv", sep="\t")
 allbams_per_sample = df_config_files.loc[df_config_files["all/selected"] == "all"].groupby("Sample")["File"].apply(list).to_dict()
 
 
