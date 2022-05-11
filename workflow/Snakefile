@@ -1,4 +1,6 @@
-
+print("###################################")
+print("# MOSAICATCHER SNAKEMAKE PIPELINE #")
+print("###################################")
 
 import math
 from collections import defaultdict
@@ -11,11 +13,18 @@ from pprint import pprint
 configfile: "config/config.yaml"
 
 mode_selected = config["mode"].lower()
-correct_modes = ["setup", "count", "segmentation", "haplotagging", "strandphasing", "mosaiclassifier"]
+correct_modes = ["setup", "count", "segmentation", "haplotagging", "strandphasing", "mosaiclassifier", "test"]
 assert mode_selected in correct_modes, "Wrong mode selected : {}\nFollowing list of modes are available : {}".format(config["mode"], ", ".join(correct_modes))
 
 plot_option_selected = config["plot"]
 assert type(plot_option_selected) is bool, "Wrong plot option selected : {}\nPlease enter a valid value (True / False)".format(config["plot"]) 
+
+print("Mode selected : {}".format(mode_selected))
+print("Plots output enabled : {}".format(config["plot"]))
+
+
+print('Input folder selected : {}'.format(config['input_bam_location']))
+print('Output folder selected : {}'.format(config['output_location']))
 
 if config["output_location"].endswith("/") is False:
     config["output_location"] +=  "/"
@@ -30,7 +39,6 @@ if config["input_bam_location"].endswith("/") is False:
 # # with --use-conda --use-singularity
 
 
-# # TODO : automatic html report
 report: "report/workflow.rst"
 
 
@@ -39,67 +47,104 @@ report: "report/workflow.rst"
 
 
 # TODO: enable again when .gitignore will be solved
-# if os.path.isfile(config["config_df_location"]) is False:
+if os.path.isfile(config["output_location"] + "config/config_df.tsv") is False:
 
-######################################################################
-# TODO : move to another file 
+    ######################################################################
+    # TODO : move to another file 
 
-# Parsing folder and retrieve only files with .bam extension
-data = [(r, file.replace(".bam", "")) for r, d, f in os.walk(config["input_bam_location"]) for file in f if ".bam" in file and ".bai" not in file]
+    # complete_df_list = list()
+    # input_dir = config["input_bam_location"]
+    # for sample in os.listdir(input_dir):
+    #     print(sample)
+    #     l_files_all = [f for f in os.listdir(input_dir + sample + "/all/") if f.endswith('.bam')]
+    #     l_files_selected = [f for f in os.listdir(input_dir + sample + "/selected/") if f.endswith('.bam')]
+    #     join = list(set(l_files_all).intersection(set(l_files_selected)))
+    #     df = pd.DataFrame([{"File" : f} for f in l_files_all])
+    #     df.loc[df["File"].isin(join), "Selected"] = True
+    #     df["File"] = df["File"].str.replace(".bam", "")
+    #     df["Selected"] = df["Selected"].fillna(False)
+    #     df["Folder"] = input_dir
+    #     df["Sample"] = sample
+    #     df["Cell"] = df["File"].apply(lambda r  : r.split(".")[0])
+    #     df["Full_path"] = df["Folder"] + sample + "/all/" + df["File"] + ".bam"
+    #     print(df)
+    #     complete_df_list.append(df)
+    # complete_df = pd.concat(complete_df_list)
+    # print(complete_df)
+    
+    # df_config_files = complete_df.copy()
 
-# Building pandas df based on folder structure
-df = pd.DataFrame(data, columns=["Folder", "File"])
+    # Defining cols
+    # df["all/selected"] = df["Folder"].apply(lambda r: r.split("/")[-1])
+    
 
-# Defining cols
-df["all/selected"] = df["Folder"].apply(lambda r: r.split("/")[-1])
-df["Sample"] = df["Folder"].apply(lambda r: r.split("/")[-2])
-df["Cell"] = df["File"].apply(lambda r  : r.split(".")[0])
-df["Full_path"] = df["Folder"] + "/" + df["File"] + ".bam"
 
-# Filtering based on exclude list defined
-df_config_files = df.loc[~df["Cell"].isin(config["exclude_list"])]
+    # Parsing folder and retrieve only files with .bam extension
+    data = [(r, file.replace(".bam", "")) for r, d, f in os.walk(config["input_bam_location"]) for file in f if ".bam" in file and ".bai" not in file]
 
-def check_bam_header(bam_file_path):
-    """_summary_
+    # Building pandas df based on folder structure
+    df = pd.DataFrame(data, columns=["Folder", "File"])
 
-    Args:
-        bam_file_path (_type_): _description_
-    """
+    # Defining cols
+    df["all/selected"] = df["Folder"].apply(lambda r: r.split("/")[-1])
+    df["Sample"] = df["Folder"].apply(lambda r: r.split("/")[-2])
+    df["Cell"] = df["File"].apply(lambda r  : r.split(".")[0])
+    df["Full_path"] = df["Folder"] + "/" + df["File"] + ".bam"
 
-    # Get BAM file header with pysam
-    # h = pysam.view("-H", bam_file_path)
-    h = [e.split("\t") for e in h.split("\n")]
-    sm_tag_list = list(set([sub_e.replace("SM:", "") for e in h for sub_e in e if "SM:" in sub_e]))
+    # Filtering based on exclude list defined
+    df_config_files = df.loc[~df["Cell"].isin(config["exclude_list"])]
 
-    # Folder name based on path
-    folder_name = bam_file_path.split("/")[-3]
+    def check_bam_header(bam_file_path):
+        """_summary_
 
-    # Assertions
-    assert len(sm_tag_list) == 1, "Two different SM tags in the header of BAM file {}".format(bam_file_path)
-    assert sm_tag_list[0] == folder_name, 'Folder name "{}" must correspond to SM tag in BAM file "{}"'.format(
-        folder_name, bam_file_path
-    )
+        Args:
+            bam_file_path (_type_): _description_
+        """
 
-# print("Check if BAM SM tag correspond to folder name : {}".format(config["check_sm_tag_in_bam_header"]))
-if config["check_sm_tag_in_bam_header"] is True:
-    # tqdm.pandas(desc="Checking if BAM SM tags correspond to folder names")
-    df_config_files["Full_path"].progress_apply(check_bam_header)
-    print("BAM SM tag are corresponding to folder names")
+        # Get BAM file header with pysam
+        # h = pysam.view("-H", bam_file_path)
+        h = [e.split("\t") for e in h.split("\n")]
+        sm_tag_list = list(set([sub_e.replace("SM:", "") for e in h for sub_e in e if "SM:" in sub_e]))
 
-df_config_files.to_csv(config["config_df_location"], sep="\t", index=False)
+        # Folder name based on path
+        folder_name = bam_file_path.split("/")[-3]
 
-# else:
-#     df_config_files = pd.read_csv(config["config_df_location"], sep="\t")
+        # Assertions
+        assert len(sm_tag_list) == 1, "Two different SM tags in the header of BAM file {}".format(bam_file_path)
+        assert sm_tag_list[0] == folder_name, 'Folder name "{}" must correspond to SM tag in BAM file "{}"'.format(
+            folder_name, bam_file_path
+        )
 
+    # print("Check if BAM SM tag correspond to folder name : {}".format(config["check_sm_tag_in_bam_header"]))
+    if config["check_sm_tag_in_bam_header"] is True:
+        # tqdm.pandas(desc="Checking if BAM SM tags correspond to folder names")
+        df_config_files["Full_path"].progress_apply(check_bam_header)
+        print("BAM SM tag are corresponding to folder names")
+
+    os.makedirs(config["output_location"] + "config", exist_ok=True)
+    df_config_files.to_csv(config["output_location"] + "config/config_df.tsv", sep="\t", index=False)
+
+else:
+    df_config_files = pd.read_csv(config["output_location"] + "config/config_df.tsv", sep="\t")
+    print(df_config_files)
 
 # Samples list
 samples = sorted(df_config_files.Sample.unique().tolist())
-# samples = ["RPE1-WT"]
+print(samples)
+# samples = ["H2NCTAFX2_GM20509B_20s000579-1-1"]
 
 # Output dictionnaries
-all_dict = df_config_files.loc[df_config_files["all/selected"] == "all"].groupby("Sample")["Cell"].nunique().to_dict()
+all_dict = df_config_files.groupby("Sample")["Cell"].nunique().to_dict()
 selected_dict = df_config_files.loc[df_config_files["all/selected"] == "selected"].groupby("Sample")["Cell"].nunique().to_dict()
+# selected_dict = df_config_files.loc[df_config_files["Selected"] == True].groupby("Sample")["Cell"].nunique().to_dict()
 dict_cells_nb_per_sample = df_config_files.loc[df_config_files["all/selected"] == "selected"].groupby("Sample")["Cell"].nunique().to_dict()
+# dict_cells_nb_per_sample = df_config_files.loc[df_config_files["Selected"] == True].groupby("Sample")["Cell"].nunique().to_dict()
+print(all_dict)
+print(selected_dict)
+print(dict_cells_nb_per_sample)
+
+print("Detected {} samples:".format(df_config_files.Sample.nunique()))
+[print("  {}:\t{} cells\t {} selected cells".format(s, all_dict[s], selected_dict[s])) for s in samples]
 
 
 ######################################################################
@@ -118,24 +163,25 @@ methods = [
 # include: "rules/input_check.smk"
 include: "rules/setup.smk"
 include: "rules/count.smk"
-include: "rules/segmentation.smk"
-include: "rules/plots.smk"
-include: "rules/regenotyping.smk"
-include: "rules/utils.smk"
-include: "rules/strandphaser.smk"
-include: "rules/haplotagging.smk"
-include: "rules/mosaiclassifier.smk"
-include: "rules/postprocessing.smk"
-include: "rules/stats.smk"
+# include: "rules/segmentation.smk"
+# include: "rules/plots.smk"
+# include: "rules/regenotyping.smk"
+# include: "rules/utils.smk"
+# include: "rules/strandphaser.smk"
+# include: "rules/haplotagging.smk"
+# include: "rules/mosaiclassifier.smk"
+# include: "rules/postprocessing.smk"
+# include: "rules/stats.smk"
+
+
 
 
 
 
 # IF PLOT OPTION ENABLED, BUILD TMP DICT TO CALL OUTPUT 
 if plot_option_selected == True:
-
-    dict_cells_nb_per_sample = config_df.loc[config_df["all/selected"] == "selected"].groupby("Sample")["Cell"].nunique().to_dict()
-    tmp_dict = config_df.loc[config_df["all/selected"] == "selected", ["Sample", "Cell"]].groupby("Sample")["Cell"].apply(lambda r: sorted(list(r))).to_dict()
+    dict_cells_nb_per_sample = df_config_files.loc[df_config_files["all/selected"] == "selected"].groupby("Sample")["Cell"].nunique().to_dict()
+    tmp_dict = df_config_files.loc[df_config_files["all/selected"] == "selected", ["Sample", "Cell"]].groupby("Sample")["Cell"].apply(lambda r: sorted(list(r))).to_dict()
     tmp_dict = {s:{i+1:c for i,c in enumerate(cell_list)} for s,cell_list in tmp_dict.items()}
     for s in tmp_dict.keys():
         tmp_dict[s][0] = "SummaryPage"
@@ -144,6 +190,22 @@ if plot_option_selected == True:
 ######################
 # MODES OF EXECUTION #
 ######################
+
+
+# # TEST MODE
+# if mode_selected == "test":
+
+# rule test:
+#     output:
+#         "test.txt"
+#     shell:
+#         "echo HELLO > {output}"
+#     rule all:
+#         input:
+#             # rules.install_rlib_strandphaser.output,
+#             rules.test.output,
+
+
 
 # SETUP ENV
 if mode_selected == "setup":
@@ -160,6 +222,7 @@ elif mode_selected == "count":
                 [config["output_location"] + "plots/{}/counts/{}.{}.pdf".format(sample, tmp_dict[sample][i], i) for sample in samples for i in range(dict_cells_nb_per_sample[sample] + 1)],
 
     elif plot_option_selected == False:
+        print([config["output_location"] +  "counts/{}/{}.txt.fixme.gz".format(sample, sample) for sample in samples])
         rule all:
             input:
                 [config["output_location"] +  "counts/{}/{}.txt.fixme.gz".format(sample, sample) for sample in samples]
@@ -237,15 +300,3 @@ elif mode_selected == "mosaiclassifier":
                 [config["output_location"] + "mosaiclassifier/sv_calls/{}/{}.complex.tsv".format(sample, m) for sample in samples for m in methods],
                  expand(config["output_location"] + "stats/{sample}/stats-merged.tsv", sample = samples),
 
-
-rule hello_mosaic:
-    output:
-        touch(config['output_location'] + "mosaic.txt")
-    run:
-        print("###################################")
-        print("# MOSAICATCHER SNAKEMAKE PIPELINE #")
-        print("###################################")
-        print("Mode selected : {}".format(mode_selected))
-        print("Plots output enabled : {}".format(config["plot"]))
-        print("Detected {} samples:".format(df_config_files.Sample.nunique()))
-        [print("  {}:\t{} cells\t {} selected cells".format(s, all_dict[s], selected_dict[s])) for s in samples]
