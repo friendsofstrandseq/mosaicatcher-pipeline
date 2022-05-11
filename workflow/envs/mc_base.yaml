@@ -7,3 +7,4 @@ dependencies:
   - pysam
   - tqdm
   - perl
+  - pypdf2
