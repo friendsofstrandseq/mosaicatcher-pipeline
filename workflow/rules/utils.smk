@@ -26,13 +26,13 @@ rule index_bam:
         "{file}.bam"
     output:
         "{file}.bam.bai"
-    log:
-        "{file}.bam.log"
+    # log:
+    #     "{file}.bam.log"
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     shell:
         # config["samtools"] + " index {input} 2> {log}"
-        "samtools" + " index {input} 2> {log}"
+        "samtools" + " index {input}"
 
 
 rule compress_vcf:

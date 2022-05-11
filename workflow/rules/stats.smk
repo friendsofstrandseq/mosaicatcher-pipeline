@@ -1,5 +1,5 @@
 import pandas as pd
-config_df = pd.read_csv("config/config_df.tsv", sep="\t")
+config_df = pd.read_csv(config["output_location"] + "config/config_df.tsv", sep="\t")
 samples = sorted(df_config_files.Sample.unique().tolist())
 
 ################################################################################
@@ -47,7 +47,17 @@ rule aggregate_summary_statistics:
     input:
         tsv=expand(config["output_location"] + "stats/{sample}/{method}.tsv", method=config['methods'], sample=samples),
     output:
-        tsv=report(config["output_location"] + "stats/{sample}/stats-merged.tsv", category="Stats", labels={"Type" : "Complete stats"})
-        # tsv=config["output_location"] + "stats/{sample}/stats-merged.tsv", category="Stats", labels={"Type" : "Complete stats"}
+        # tsv=report(config["output_location"] + "stats/{sample}/stats-merged.tsv", category="Stats", labels={"Type" : "Complete stats"})
+        tsv=config["output_location"] + "stats/{sample}/stats-merged.tsv"
     shell:
         "(head -n1 {input.tsv[0]} && (tail -n1 -q {input.tsv} | sort -k1) ) > {output}"
+
+# rule summary_statistics_to_pdf:
+#     input:
+#         config["output_location"] + "stats/{sample}/stats-merged.tsv"
+#     output:
+#         report(config["output_location"] + "stats/{sample}/stats-merged.pdf", category="Stats", labels={"Type" : "Complete stats"})
+#     run:
+#         import pandas as pd
+#         df = pd.read_csv(input[0], sep='\t')
+#         df.to_pdf
