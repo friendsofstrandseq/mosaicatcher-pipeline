@@ -30,6 +30,7 @@ config/config_df.tsv
 config/exclude_file.txt
 
 # Docs
+docs/build/
 build/
 *.html
 workflow/static/
@@ -50,3 +51,8 @@ workflow/test.txt
 # afac/
 # workflow/.snakemake
 # bam/
+
+## Personal note: files/folders specific to dev branch
+# .gitlab-ci.yml // to use with LFS example data in dev branch
+# singularity/ folder
+# afac/ debugging & dev folder
