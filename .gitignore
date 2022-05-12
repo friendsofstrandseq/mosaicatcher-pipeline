@@ -46,6 +46,7 @@ workflow/test.txt
 
 # Exceptions
 !docs/mosaic_logo.png
+!workflow/data/segdups/segDups_hg38_UCSCtrack.bed.gz
 
 ## Others
 workflow/.snakemake
@@ -53,5 +54,5 @@ bam/
 
 ## Personal note: files/folders specific to dev branch
 .gitlab-ci.yml # to use with LFS example data in dev branch
-singularity/   
-afac/ 
+singularity/
+afac/
