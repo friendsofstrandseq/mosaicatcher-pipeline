@@ -47,6 +47,7 @@ workflow/test.txt
 # Exceptions
 !docs/mosaic_logo.png
 !workflow/data/segdups/segDups_hg38_UCSCtrack.bed.gz
+!workflow/config/config.yaml
 
 ## Others
 workflow/.snakemake
