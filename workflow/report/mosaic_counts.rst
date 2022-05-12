@@ -1,1 +1,1 @@
-Mosaic Count plots for sample {{ snakemake.wildcards.file }} and cell {{ snakemake.wildcards.cell }}. 
+Mosaic Count plots for sample {{ snakemake.wildcards.sample }} and cell {{ snakemake.wildcards.cell }}. 
