@@ -1,0 +1,41 @@
+Bootstrap: library
+From: ubuntu:20.04
+
+%post
+    # SINGULARITY INSTALL
+    DEBIAN_FRONTEND=noninteractive apt-get update
+    TZ=Etc/UTC
+    DEBIAN_FRONTEND=noninteractive apt install -y build-essential libssl-dev uuid-dev libgpgme11-dev squashfs-tools libseccomp-dev pkg-config cryptsetup-bin wget git
+    wget https://github.com/sylabs/singularity/releases/download/v3.9.9/singularity-ce_3.9.9-focal_amd64.deb
+    dpkg -i singularity-ce_3.9.9-focal_amd64.deb
+    # ls /boot*
+    # ls /boot/*
+    # ls /boot/vmlinuz*
+
+    
+    # # MAMBA INSTALL
+    wget https://github.com/conda-forge/miniforge/releases/download/4.12.0-0/Mambaforge-pypy3-4.12.0-0-Linux-x86_64.sh
+    sh Mambaforge-pypy3-4.12.0-0-Linux-x86_64.sh -b -p /mambaforge
+    PATH="${PATH}:/mambaforge/bin"
+    # ls -l /mambaforge
+    # ls -l /mambaforge/bin
+
+    # # SNAKEMAKE INSTALL & ACTIVATE
+    mamba create -n mosaicatcher_env -c bioconda -c conda-forge snakemake pandas imagemagick
+    # mamba init bash
+    # bash
+    # . ~/.bashrc
+    # mamba activate mosaicatcher_env
+    # which snakemake
+
+    #### GIT CLONE #####
+    git config --global http.sslVerify false
+    GIT_LFS_SKIP_SMUDGE=1  
+    git clone -b dev https://git.embl.de/tweber/mosaicatcher-update.git
+
+    # # RUN PIPELINE
+    # cd workflow/
+    # snakemake --use-conda --cores 10 --config plot=False mode=count -p --conda-frontend mamba --use-singularity
+
+    # # TEST
+    # zcat counts/RPE-BM510/RPE-BM510.txt.gz | head -n 50
