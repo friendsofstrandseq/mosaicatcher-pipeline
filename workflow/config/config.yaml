@@ -1,59 +1,31 @@
+#######################################
+#   MOSAICATCHER CONFIGURATION FILE.  #
+#######################################
+
+#######################################
+## Command-line options
+#######################################
+
+### Modes ["count", "segmentation", "mosaiclassifier"]
 mode: "count"
+### Plot enabled [True] or disabled [False]
 plot: False
-check_sm_tag_in_bam_header: "False"
+### Enable / Disable comparison for each BAM file between folder name & SM tag
+check_sm_tag: False
 
-# Input BAM location
-input_bam_ena: "/g/korbel2/weber/MosaiCatcher_files/bam_KG_full/"
-# input_bam_location: "/g/korbel2/weber/MosaiCatcher_files/bam_KG_full/"
-# input_bam_location: "/g/korbel2/weber/MosaiCatcher_files/PRJEB30027/bam/"
-# input_bam_location: "/g/korbel2/weber/MosaiCatcher_files/LCL_TALL/"
-input_bam_location: "/g/korbel2/weber/MosaiCatcher_files/bam_KG_full/"
+## Input BAM location
+input_bam_location: "TEST_EXAMPLE_DATA/bam/"
+## Output location
+output_location: "TEST_OUTPUT"
 
-# output_location: "/g/korbel2/weber/MosaiCatcher_output/MosaiCatcher_output_ENA_example_full_test_count2/"
-# output_location: "/g/korbel2/weber/MosaiCatcher_output/Mosaicatcher_output_singularity_LCL-TALL/"
-output_location: "/g/korbel2/weber/MosaiCatcher_output/Mosaicatcher_output_singularity_bam_KG_full/"
-# output_location: "/g/korbel2/weber/MosaiCatcher_output/MosaiCatcher_output_sample_KG_chr21/"
+# External files
+## 1000G SNV sites to genotype : https://sandbox.zenodo.org/record/1060653/files/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz
 snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz"
-# FIXME : TMP debuging
-# snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/split_by_chr/1000G_chr21.vcf.gz"
 
+# Reference genome : https://sandbox.zenodo.org/record/1060653/files/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna
 reference: "/g/korbel2/weber/MosaiCatcher_files/refgenomes_human_local/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna"
-# reference: "/g/korbel2/weber/MosaiCatcher_files/refgenomes_human_local/chr21.fna"
 
-# TODO : add a SMK rule to clone & compile mosaic
-mosaicatcher: "/g/korbel2/weber/Gits/mosaicatcher/build/mosaic"
-
-# FIXME : TMP solution for strandphaser location
-strandphaser: "/home/tweber/.conda/envs/strandseqnation/lib/R/library/StrandPhaseR/R/StrandPhaseR"
-Rscript: "/home/tweber/.conda/envs/strandseqnation/bin/Rscript"
-
-# TODO : remove hard coded paths for R scripts coming from MC
-plot_script: "/g/korbel2/weber/Gits/mosaicatcher/R/qc.R"
-sv_plot_script: "/g/korbel2/weber/Gits/mosaicatcher/R/chrom.R"
-norm_script: "/g/korbel2/weber/Gits/mosaicatcher/R/norm.R"
-
-# CHECKME : check implicit natural path through Conda env
-samtools: "/g/funcgen/bin/samtools"
-# bcftools: "/biolo/ngs/bin/bcftools"
-
-# TODO : path reference
-variable_bins:
-  "50000": "/g/korbel2/weber/workspace/pipeline/utils/variable_bins.GRCh38.50kb.bed"
-  "100000": "/g/korbel2/weber/workspace/pipeline/utils/variable_bins.GRCh38.100kb.bed"
-
-# TODO : find another solution with conda for R_ref
-R_reference: "BSgenome.Hsapiens.UCSC.hg38"
-
-# CHECKME : Parameters optimization ?
-
-exclude_list:
-  - BM510x3PE20490
-
-# chromosomes:
-#   - chrX
-#   - chr22
-#   - chr19
-
+# Chromosomes list to process
 chromosomes:
   - chr1
   - chr2
@@ -79,13 +51,25 @@ chromosomes:
   - chr22
   - chrX
 
+##############################
+# Advanced configuration.  #
+##############################
+
+# External static data
+# R Ref
+R_reference: "BSgenome.Hsapiens.UCSC.hg38"
+# SegDups file
+segdups: "data/segdups/segDups_hg38_UCSCtrack.bed.gz"
+
+# Exclude cells
+exclude_list: []
+
 # Strandphaser
 git_commit_strandphaser: "69c9fb4"
 git_repo_strandphaser: "https://github.com/daewoooo/StrandPhaseR"
 
-# Parameters
-
-paired_end: True
+# CHECKME : Parameters optimization ?
+# PARAMETERS
 
 ## WINDOW
 window: 100000
@@ -117,5 +101,3 @@ min_diff_singleseg: 0.5
 additional_sce_cutoff: 20000000
 ### SCE MIN DISTANCE
 sce_min_distance: 500000
-
-segdups: "data/segdups/segDups_hg38_UCSCtrack.bed.gz"
