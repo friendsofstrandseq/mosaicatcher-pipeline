@@ -1,8 +1,22 @@
+# Hidden folders & files
 .DS_Store
 .vscode/
 .snakemake/
-#bam/
+.panoptes.db
+
+# Tmp files & execution outputs
+*.pyc
+*.zip
+*.gz
+*.db
+*.png
+*.pdf
+*.svg
+
+# Links
 *@
+
+# Mosaicatcher folders
 chroms/
 counts/
 log/
@@ -12,20 +26,26 @@ segmentation2/
 snv_calls/
 strand_states/
 sv_probabilities/
-*.png
-*.pdf
-*.svg
-#workflow/.snakemake
-build/
-.panoptes.db
-*.html
-__pycache__
-workflow/scripts/__pycache__
-*.pyc
-# afac/
-*.zip
-*.db
-workflow/static/
-!docs/mosaic_logo.png
 config/config_df.tsv
 config/exclude_file.txt
+
+# Docs
+build/
+*.html
+workflow/static/
+
+# Python
+__pycache__
+workflow/scripts/__pycache__
+
+# Zenodo
+workflow/sandbox.zenodo.org/
+TEST_*/
+
+# Exceptions
+!docs/mosaic_logo.png
+
+## Others
+# afac/
+# workflow/.snakemake
+# bam/
