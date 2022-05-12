@@ -247,11 +247,6 @@ snakemake \
     --report report.zip
 ```
 
-snakemake --use-conda --cores 40 --config plot=True mode=mosaiclassifier output_location=/g/korbel2/weber/MosaiCatcher_output/Mosaicatcher_output_singularity_LCL
-
-
--TALL/ input_bam_location=/g/korbel2/weber/MosaiCatcher_files/T-ALL_P1/ -p --conda-frontend mamba --use-singularity --singularity-args "-B /g:/g" --rerun-incomplete --latency-wait 60 --report report_LCL.zip --report-stylesheet report/custom-stylesheet.css  
-
 ## 📕 References
 
 
