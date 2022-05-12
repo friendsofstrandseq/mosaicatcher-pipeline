@@ -1,11 +1,24 @@
 import pandas as pd
-config_df = pd.read_csv("config/config_df.tsv", sep="\t")
-# print(config_df)
-bam_per_sample = config_df.loc[config_df["all/selected"] == "selected"].groupby("Sample")["File"].apply(list).to_dict()
+config_df = pd.read_csv(config["output_location"] + "config/config_df.tsv", sep="\t")
 
+
+pd.options.display.max_colwidth = 40
+# bam_per_sample_local = config_df.loc[config_df["Selected"] == True].groupby("Sample")["File"].apply(list).to_dict()
+bam_per_sample_local = config_df.loc[config_df["all/selected"] == "selected"].groupby("Sample")["File"].apply(list).to_dict()
+print(bam_per_sample_local)
 ################################################################################
 # Read counting                                                                #
 ################################################################################
+
+# rule generate_list_chroms:
+#     output:
+#         config["output_location"] + "config/chroms_include"
+#     run:
+#         with open(output[0], 'w') as w:
+#             for c in config["chromosomes"]:
+#                 print(c)
+#                 w.write(c + "\n")
+        
 
 rule generate_exclude_file_for_mosaic_count:
     """
@@ -14,82 +27,25 @@ rule generate_exclude_file_for_mosaic_count:
     output:
     """
     input:
-        "config/config_df.tsv"
+        config["output_location"] + "config/config_df.tsv",
+        # chroms_include = config['output_location'] + "config/chroms_include",
+        bam = config["input_bam_location"]
     output:
-        "config/exclude_file.txt"
+        config["output_location"] + "config/exclude_file"
     params:
         chroms = config["chromosomes"]
     conda:
         "../envs/mc_base.yaml"
+    # shell:
+    #     "python scripts/utils/generate_exclude_file.py {input} {output} {params.chroms}"
     script:
         "../scripts/utils/generate_exclude_file.py"
 
-# TODO : find a solution to compile mosaic count automatically
-# rule compile_mosaic:
-#     """
-#     rule fct:
-#     input:
-#     output:
-#     """
-#     input: 
-#         "../src/"
-#     output:
-#         "../build/mosaic"
-#     conda:
-#         "../envs/mc_base.yaml"
-#     shell:
-#         """
-#         mkdir -p ../build
-#         cd ../build
-#         cmake ../src
-#         make
-#         cd ../worfklow
-#         """
+
+
 
 # TODO : Simplify expand command 
 # DOCME : mosaic count read orientation ?
-
-# rule mosaic_count_dev:
-#     input:
-#         # bam = lambda wc: expand("bam/" + wc.sample +  "/selected/{bam}.bam", bam = bam_per_sample[wc.sample]) if wc.sample in bam_per_sample else "FOOBAR",
-#     #     # bai = lambda wc: expand("/bam/" + wc.sample +  "/selected/{bam}.bam.bai", bam = bam_per_sample[wc.sample]) if wc.sample in bam_per_sample else "FOOBAR",
-#         excl = "config/exclude_file.txt",
-#     #     # mosaic = "../build/mosaic"
-#     output:
-#         # counts = temp("counts/{sample}/{sample}.txt.fixme.gz"),
-#         # info   = "counts/{sample}/{sample}.info"
-#         "test_o.txt"
-#     # log:
-#     #     "log/counts/{sample}/mosaic_count.log"
-#     container:
-#         "library://weber8thomas/remote-builds/rb-626be574738713c5e1555763:latest"
-#     params:
-#         # mc_command = config["mosaicatcher"],
-#         # i = "",
-#         # o = "",
-#         window = config["window"],
-#         input_bam_location = config["input_bam_location"] 
-#     shell:
-#         """
-#         pwd
-#         ls -lah  
-#         echo 
-#         # ls -lah {config[input_bam_location]}
-#         ls -lah /bam
-#         # ls -lah {params.input_bam_location}
-#         cat /{input.excl}
-#         """
-#         # """
-#         # /mosaicatcher/build/mosaic count \
-#         #     --verbose \
-#         #     --do-not-blacklist-hmm \
-#         #     -o {output.counts} \
-#         #     -i {output.info} \
-#         #     -w {params.window} \
-#         #     -x {input.excl} \
-#         #     {input.bam} \
-#         # > {log} 2>&1
-#         # """ 
 
 rule mosaic_count:
     """
@@ -98,21 +54,17 @@ rule mosaic_count:
     output: counts: read counts for the BAM file according defined window ; info file : summary statistics 
     """
     input:
-        bam = lambda wc: expand(config["input_bam_location"] + wc.sample +  "/selected/{bam}.bam", bam = bam_per_sample[wc.sample]) if wc.sample in bam_per_sample else "FOOBAR",
-        # bai = lambda wc: expand("/bam/" + wc.sample +  "/selected/{bam}.bam.bai", bam = bam_per_sample[wc.sample]) if wc.sample in bam_per_sample else "FOOBAR",
-        excl = "config/exclude_file.txt",
-        # mosaic = "../build/mosaic"
+        bam = lambda wc: expand(config["input_bam_location"] + wc.sample +  "/all/{bam}.bam", bam = bam_per_sample_local[str(wc.sample)] if wc.sample in bam_per_sample_local else "FOOBAR"),
+        # bai = lambda wc: expand(config["input_bam_location"] + wc.sample +  "/{bam}.bam.bai", bam = bam_per_sample_local[wc.sample]) if wc.sample in bam_per_sample_local else "FOOBAR",
+        excl = config["output_location"] + "config/exclude_file",
     output:
         counts = config["output_location"] + "counts/{sample}/{sample}.txt.fixme.gz",
         info   = config["output_location"] + "counts/{sample}/{sample}.info"
     log:
-        "log/counts/{sample}/mosaic_count.log"
+        config["output_location"] + "log/counts/{sample}/mosaic_count.log"
     container:
-        "library://weber8thomas/remote-builds/rb-626be574738713c5e1555763:latest"
+        "library://weber8thomas/remote-build/mosaic:0.3"
     params:
-        # mc_command = config["mosaicatcher"],
-        # i = "",
-        # o = "",
         window = config["window"]
     shell:
         """
@@ -121,8 +73,8 @@ rule mosaic_count:
             --do-not-blacklist-hmm \
             -o {output.counts} \
             -i {output.info} \
-            -w {params.window} \
             -x {input.excl} \
+            -w {params.window} \
             {input.bam} \
         > {log} 2>&1
         """
@@ -130,10 +82,9 @@ rule mosaic_count:
 
 rule order_mosaic_count_output:
     input:
-        "counts/{sample}/{sample}.txt.fixme.gz"
+        config["output_location"] + "counts/{sample}/{sample}.txt.fixme.gz"
     output:
-        "counts/{sample}/{sample}.txt.gz"
-
+        config["output_location"] + "counts/{sample}/{sample}.txt.gz"
     run:
         df = pd.read_csv(input[0], compression='gzip', sep='\t')
         df = df.sort_values(by=["sample", "cell", "chrom", "start"])
@@ -215,9 +166,9 @@ rule extract_single_cell_counts:
     output: count per cell file for the sample according a given window
     """
     input:
-        "counts/{sample}/{sample}.txt.gz"
+        config["output_location"] + "counts/{sample}/{sample}.txt.gz"
     output:
-        "counts/{sample}/counts-per-cell/{cell}.txt.gz"
+        config["output_location"] + "counts/{sample}/counts-per-cell/{cell}.txt.gz"
     shell:
         """
         # Issue #1022 (https://bitbucket.org/snakemake/snakemake/issues/1022)
