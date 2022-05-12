@@ -1,0 +1,69 @@
+Bootstrap: library
+From: ubuntu:16.04
+
+%post
+    # UNIX 
+    apt-get update \
+    && apt-get install --no-install-recommends -y \
+        libssl-dev \
+        libboost-date-time-dev \
+        libboost-program-options-dev \
+        libboost-system-dev \
+        libboost-filesystem-dev \
+        libboost-iostreams-dev \
+        libboost-random-dev \
+        zlib1g-dev \
+        libbz2-dev \
+        liblzma-dev \
+        libxml2-dev \
+        cmake \
+        make \
+        g++ \
+        wget \
+        ca-certificates \
+        gfortran \
+        git \
+        libpcre3-dev \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
+
+    # SOLVE GIT ISSUE
+    git config --global http.sslVerify false
+
+    # INSTALL MAMBA FORGE
+    wget -c https://github.com/conda-forge/miniforge/releases/download/4.12.0-0/Mambaforge-4.12.0-0-Linux-x86_64.sh
+    /bin/bash Mambaforge-4.12.0-0-Linux-x86_64.sh -bfp /usr/local
+    # /usr/local/mamba --help
+
+    # INSTALL MOSAIC C++
+    apt-get update \
+    && BUILD_DEPS="cmake" \
+    && apt-get install --no-install-recommends -y $BUILD_DEPS \
+    && git clone https://github.com/friendsofstrandseq/mosaicatcher.git \
+    && cd mosaicatcher \
+    && git checkout 47a06ed6f742c97d53d736fd11c54ff2fabd53c9 \
+    && mkdir build \
+    && cd build \
+    && cmake -DCMAKE_CXX_COMPILER=/usr/bin/g++ -DCMAKE_C_COMPILER=/usr/bin/gcc -DCMAKE_MAKE_PROGRAM=/usr/bin/make ../src/ \
+    && cmake -DCMAKE_CXX_COMPILER=/usr/bin/g++ -DCMAKE_C_COMPILER=/usr/bin/gcc -DCMAKE_MAKE_PROGRAM=/usr/bin/make --build . \
+    && make \
+    && cd \
+    && ln -s /mosaicatcher/build/mosaic /bin/mosaic \
+    && apt-get remove -y $BUILD_DEPS \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
+
+    
+
+    # SNAKEMAKE BASE ENV
+    # TODO : VERSION TO FIX
+    mamba create -n snakemake_env -c bioconda -c conda-forge snakemake
+
+    # GIT CLONE MOSAICATCHER
+    git clone https://git.embl.de/tweber/mosaicatcher-update.git
+    cd workflow/
+    
+    snakemake --cores 1 --conda-create-envs-only --use-conda    
+
+%runscript
+    mamba --help
