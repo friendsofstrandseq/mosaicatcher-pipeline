@@ -46,6 +46,7 @@ workflow/test.txt
 
 # Exceptions
 !docs/mosaic_logo.png
+!workflow/config/config.yaml
 
 ## Others
 # afac/
