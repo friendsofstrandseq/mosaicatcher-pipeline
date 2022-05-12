@@ -25,7 +25,7 @@ rule segmentation:
     log:
         config["output_location"] + "log/segmentation/{sample}/{sample}.log"
     params:
-        mc_command = config["mosaicatcher"],
+        # mc_command = config["mosaicatcher"],
         min_num_segs = lambda wc: math.ceil(200000 / float(config["window"]))  # bins to represent 200 kb
     container:
         "library://weber8thomas/remote-build/mosaic:0.3"

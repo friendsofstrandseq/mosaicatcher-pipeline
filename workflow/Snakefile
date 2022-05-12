@@ -13,11 +13,13 @@ from pprint import pprint
 configfile: "config/config.yaml"
 
 mode_selected = config["mode"].lower()
-correct_modes = ["setup", "count", "segmentation", "haplotagging", "strandphasing", "mosaiclassifier", "test"]
+correct_modes = ["setup", "count", "segmentation", "haplotagging", "strandphasing", "mosaiclassifier", "download_example_data"]
 assert mode_selected in correct_modes, "Wrong mode selected : {}\nFollowing list of modes are available : {}".format(config["mode"], ", ".join(correct_modes))
 
 plot_option_selected = config["plot"]
 assert type(plot_option_selected) is bool, "Wrong plot option selected : {}\nPlease enter a valid value (True / False)".format(config["plot"]) 
+
+print(os.getcwd())
 
 print("Mode selected : {}".format(mode_selected))
 print("Plots output enabled : {}".format(config["plot"]))
@@ -115,8 +117,8 @@ if os.path.isfile(config["output_location"] + "config/config_df.tsv") is False:
             folder_name, bam_file_path
         )
 
-    # print("Check if BAM SM tag correspond to folder name : {}".format(config["check_sm_tag_in_bam_header"]))
-    if config["check_sm_tag_in_bam_header"] is True:
+    # print("Check if BAM SM tag correspond to folder name : {}".format(config["check_sm_tag"]))
+    if config["check_sm_tag"] is True:
         # tqdm.pandas(desc="Checking if BAM SM tags correspond to folder names")
         df_config_files["Full_path"].progress_apply(check_bam_header)
         print("BAM SM tag are corresponding to folder names")
@@ -163,15 +165,16 @@ methods = [
 # include: "rules/input_check.smk"
 include: "rules/setup.smk"
 include: "rules/count.smk"
-# include: "rules/segmentation.smk"
-# include: "rules/plots.smk"
-# include: "rules/regenotyping.smk"
-# include: "rules/utils.smk"
-# include: "rules/strandphaser.smk"
-# include: "rules/haplotagging.smk"
-# include: "rules/mosaiclassifier.smk"
-# include: "rules/postprocessing.smk"
-# include: "rules/stats.smk"
+include: "rules/segmentation.smk"
+include: "rules/plots.smk"
+include: "rules/regenotyping.smk"
+include: "rules/utils.smk"
+include: "rules/strandphaser.smk"
+include: "rules/haplotagging.smk"
+include: "rules/mosaiclassifier.smk"
+include: "rules/postprocessing.smk"
+include: "rules/stats.smk"
+include: "rules/examples.smk"
 
 
 
@@ -190,20 +193,6 @@ if plot_option_selected == True:
 ######################
 # MODES OF EXECUTION #
 ######################
-
-
-# # TEST MODE
-# if mode_selected == "test":
-
-# rule test:
-#     output:
-#         "test.txt"
-#     shell:
-#         "echo HELLO > {output}"
-#     rule all:
-#         input:
-#             # rules.install_rlib_strandphaser.output,
-#             rules.test.output,
 
 
 
@@ -300,3 +289,11 @@ elif mode_selected == "mosaiclassifier":
                 [config["output_location"] + "mosaiclassifier/sv_calls/{}/{}.complex.tsv".format(sample, m) for sample in samples for m in methods],
                  expand(config["output_location"] + "stats/{sample}/stats-merged.tsv", sample = samples),
 
+
+
+# # TEST MODE
+elif mode_selected == "download_example_data":
+
+    rule all:
+        input:
+            rules.dl_example_data.output,
