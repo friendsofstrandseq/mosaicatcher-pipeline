@@ -1,11 +1,6 @@
 import os
 os.environ['OPENBLAS_NUM_THREADS'] = '1'
-import pandas as pd
-config_df = pd.read_csv("config/config_df.tsv", sep="\t")
-tmp_dict = config_df.loc[config_df["all/selected"] == "selected", ["Sample", "Cell"]].groupby("Sample")["Cell"].apply(lambda r: sorted(list(r))).to_dict()
-tmp_dict = {s:{i+1:c for i,c in enumerate(cell_list)} for s,cell_list in tmp_dict.items()}
-for s in tmp_dict.keys():
-    tmp_dict[s][0] = "SummaryPage"
+
 
 ################################################################################
 # Plots                                                                        #
@@ -76,16 +71,14 @@ if config["plot"] is True:
                     subcategory = "{sample}",
                     labels={"Cell" : "{cell}", "Nb" : "{i}"}
             )
-        run:
+        conda:
+            "../envs/mc_base.yaml"
+        params:
+            config_df = config["output_location"] + "config/config_df.tsv"
+        script:
+            "../scripts/plotting/dividing_pdf.py"
 
-            from PyPDF2 import PdfFileWriter, PdfFileReader
-            inputpdf = PdfFileReader(input[0], "rb")
-            cell_name = tmp_dict[wildcards.sample][int(wildcards.i)] 
-            output = PdfFileWriter()
-            output.addPage(inputpdf.getPage(int(wildcards.i)))
-            tmp_output_path = os.path.dirname(input[0]) + "/{}.{}.pdf".format(cell_name, wildcards.i)
-            with open(tmp_output_path, "wb") as outputStream:
-                output.write(outputStream)
+
 
 
 

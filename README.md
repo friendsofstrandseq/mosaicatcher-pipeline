@@ -36,13 +36,14 @@ Minimum system requirements vary based on the use case. We highly recommend runn
 
 ### 🐍 1. Mosaicatcher basic conda environment install
 
-MosaiCatcher leverages snakemake built-in features such as execution within container and conda predefined modular environments. That's why it is only necessary to create a light environment that contains [snakemake](https://github.com/snakemake/snakemake) (to execute the pipeline), [pandas](https://github.com/pandas-dev/pandas) (to handle basic configuration). If you plan to generate HTML Web report including plots, it is also necessary to install [imagemagick](https://github.com/ImageMagick/ImageMagick).
+MosaiCatcher leverages snakemake built-in features such as execution within container and conda predefined modular environments. That's why it is only necessary to create an environment that relies on [snakemake](https://github.com/snakemake/snakemake) (to execute the pipeline) and [pandas](https://github.com/pandas-dev/pandas) (to handle basic configuration). If you plan to generate HTML Web report including plots, it is also necessary to install [imagemagick](https://github.com/ImageMagick/ImageMagick).
 
 If possible, it is also highly recommanded to install and use mamba package manager instead of conda, which is much more efficient.
 
 ```
 conda install -c conda-forge mamba
 mamba create -n mosaicatcher_env -c conda-forge -c bioconda snakemake pandas imagemagick
+conda activate mosaicatcher_env
 ```
 
 

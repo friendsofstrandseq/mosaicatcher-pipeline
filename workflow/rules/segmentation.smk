@@ -1,6 +1,6 @@
 import math
 import pandas as pd
-config_df = pd.read_csv("config/config_df.tsv", sep="\t")
+config_df = pd.read_csv(config["output_location"] + "config/config_df.tsv", sep="\t")
 # print(config_df)
 cell_per_sample = config_df.loc[config_df["all/selected"] == "selected"].groupby("Sample")["Cell"].apply(list).to_dict()
 
@@ -21,23 +21,33 @@ rule segmentation:
     input:
         config["output_location"] + "counts/{sample}/{sample}.txt.gz"
     output:
-        temp(config["output_location"] + "segmentation/{sample}/{sample}.txt.fixme")
+        config["output_location"] + "segmentation/{sample}/{sample}.txt.fixme"
     log:
         config["output_location"] + "log/segmentation/{sample}/{sample}.log"
     params:
-        mc_command = config["mosaicatcher"],
+        # mc_command = config["mosaicatcher"],
         min_num_segs = lambda wc: math.ceil(200000 / float(config["window"]))  # bins to represent 200 kb
-    conda:
-        "../envs/mc_base.yaml"
+    container:
+        "library://weber8thomas/remote-build/mosaic:0.3"
     shell:
         """
-        {params.mc_command} segment \
+        /mosaicatcher/build/mosaic segment \
         --remove-none \
         --forbid-small-segments {params.min_num_segs} \
         -M 50000000 \
         -o {output} \
-        {input} 
+        {input} > {log} 2>&1
         """
+    # conda:
+    #     "../envs/mc_base.yaml"
+        # """
+        # {params.mc_command} segment \
+        # --remove-none \
+        # --forbid-small-segments {params.min_num_segs} \
+        # -M 50000000 \
+        # -o {output} \
+        # {input} 
+        # """
         # {input} > {log} 2>&1
 
 # FIXME: no difference observed before/after awk command
@@ -78,14 +88,14 @@ rule segment_one_cell:
         config["output_location"] + "segmentation/{sample}/segmentation-per-cell/{cell}.txt"
     log:
         config["output_location"] + "log/segmentation/{sample}/segmentation-per-cell/{cell}.log"
-    conda:
-        "../envs/mc_base.yaml"
+    container:
+        "library://weber8thomas/remote-build/mosaic:0.3"
     params:
-        mc_command = config["mosaicatcher"],
+        # mc_command = config["mosaicatcher"],
         min_num_segs = lambda wc: math.ceil(200000 / float(config["window"])) # bins to represent 200 kb
     shell:
         """
-        {params.mc_command} segment \
+        /mosaicatcher/build/mosaic segment \
         --remove-none \
         --forbid-small-segments {params.min_num_segs} \
         -M 50000000 \
