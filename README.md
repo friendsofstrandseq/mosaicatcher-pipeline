@@ -42,7 +42,7 @@ If possible, it is also highly recommanded to install and use mamba package mana
 
 ```
 conda install -c conda-forge mamba
-mamba create -n mosaicatcher_env snakemake pandas imagemagick
+mamba create -n mosaicatcher_env -c conda-forge -c bioconda snakemake pandas imagemagick
 ```
 
 
@@ -53,7 +53,7 @@ After cloning the repo, go into the `workflow` directory which correspond to the
 
 ```
 git clone https://git.embl.de/tweber/mosaicatcher-update.git
-cd workflow/
+cd mosaicatcher-update/workflow/
 ```
 
 ### ⚙️ 3. MosaiCatcher config and execution
