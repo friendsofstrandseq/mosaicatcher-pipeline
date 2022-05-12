@@ -1,130 +1,263 @@
-![MosaiCatcher](docs/mosaic_logo.png)
-====================================
-
-Structural variant calling from single-cell Strand-seq data - summarized in a single [Snakemake](https://bitbucket.org/snakemake/snakemake) pipeline.
+<!-- ![MosaiCatcher](docs/mosaic_logo.png) -->
+<img src="docs/image2vector.svg" width="500"/>
 
 
-## Overview of this workflow
+Structural variant calling from single-cell Strand-seq data - summarized in a single [Snakemake](https://github.com/snakemake/snakemake) pipeline.
 
-This workflow uses [Snakemake](https://bitbucket.org/snakemake/snakemake) to
+
+##  Overview of this workflow
+
+This workflow uses [Snakemake](https://github.com/snakemake/snakemake) to
 execute all steps of MosaiCatcher in order. The starting point are single-cell
 BAM files from Strand-seq experiments and the final output are SV predictions in
 a tabular format as well as in a graphical representation. To get to this point,
 the workflow goes through the following steps:
 
-  1. Binning of sequencing reads in genomic windows of 100kb via [mosaicatcher](https://github.com/friendsofstrandseq/mosaicatcher)
-  2. Normalization of coverage with respect to a reference sample (included)
-  3. Strand state detection (included)
-  4. Haplotype resolution via [StrandPhaseR](https://github.com/daewoooo/StrandPhaseR)
-  5. Multi-variate segmentation of cells ([mosaicatcher](https://github.com/friendsofstrandseq/mosaicatcher))
-  6. Bayesian classification of segmentation to find SVs using mosaiClassifier (included)
-  7. Visualization of results using custom R plots (included)
+  1. Binning of sequencing reads in genomic windows of 100kb via [mosaic](https://github.com/friendsofstrandseq/mosaicatcher)
+  2. Strand state detection
+  3. [Optional]Normalization of coverage with respect to a reference sample
+  4. Multi-variate segmentation of cells ([mosaic](https://github.com/friendsofstrandseq/mosaicatcher))
+  5. Haplotype resolution via [StrandPhaseR](https://github.com/daewoooo/StrandPhaseR)
+  6. Bayesian classification of segmentation to find SVs using MosaiClassifier
+  7. Visualization of results using custom R plots
+
 
 
 ## System requirements
 
-This workflow is meant to be run in a Unix-based operating system (tested on Ubuntu 18.04). 
+This workflow is meant to be run in a Unix-based operating system (tested on Ubuntu 18.04 & CentOS 7). 
 
-However, several [Docker](https://docker.com) images are available for portability (see Installation).
+Minimum system requirements vary based on the use case. We highly recommend running it in a server environment with 32+GB RAM and 24 cores.
 
-Minimum system requirements vary based on the use case. The whole pipeline can be run in a notebook (8GB RAM, 4 cores, 3GHz CPUs), but we highly recommend running it in a server environment with 32+GB RAM and 24 cores.
+
+- [Conda install instructions](https://conda.io/miniconda.html)
+- [Singularity install instructions](https://sylabs.io/guides/3.0/user-guide/quick_start.html#quick-installation-steps)
 
 ## Installation
 
-Choose one of many ways to install and run this workflow, from *easiest to use* to *most flexible*:
+### 🐍 1. Mosaicatcher basic conda environment install
 
-1. **Run a complete example via Docker [Demo data set]**
+MosaiCatcher leverages snakemake built-in features such as execution within container and conda predefined modular environments. That's why it is only necessary to create a light environment that contains [snakemake](https://github.com/snakemake/snakemake) (to execute the pipeline), [pandas](https://github.com/pandas-dev/pandas) (to handle basic configuration). If you plan to generate HTML Web report including plots, it is also necessary to install [imagemagick](https://github.com/ImageMagick/ImageMagick).
 
-	* Instructions [here](docs/Docker-example.md)
-	* Requires Docker (tested in version 18.09), **no further setup required**
-	* In case of testing in a Docker Desktop, please make sure the setting of resources (Memory: 3.0 GiB, Swap: 4.0GiB), this can be checked/changed via 'Preferences -> Advanced' in your Docker Desktop software
-
-2. **Run your own data set via Docker**
-
-	* Instructions [here](docs/Docker.md)
-	* Requires Docker (tested in version 18.09) and a manual setup of data (Setup)
-
-3. **Run Snakemake together with a Singularity image**
-
-	* Instructions [here](docs/Singularity.md)
-	* Requires [Snakemake](https://bitbucket.org/snakemake/snakemake) and [Singularity](https://www.sylabs.io/docs/).
-	* Add your data and configuration as described below (Setup)
-	* More flexible than Docker since `snakemake` is run on your system (not within the container)
-
-4. **Install software using Bioconda**
-
-	* Installation instructions [here](docs/Bioconda.md)
-	* Configure `Snake.config.json` to match your software installation
-	* Add your data and configuration as described below (Setup)
-
-## Setup
-
-1. **Download this pipeline**
-
-	```
-	git clone https://github.com/friendsofstrandseq/mosaicatcher-pipeline pipeline
-	cd pipeline
-	```
-
-2. **Add your single-cell data**
-
-	Create a subdirectory `bam/sampleName/`. Your Strand-seq BAM files of this sample go into two folders:
-
-	* `all/`for the total set of BAM files
-	* `selected/` for the subset of successful Strand-seq libraries (possibly hard-linked to `all/`)
-
-	It is important to follow these rules for single-cell data
-
-	* One BAM file per cell
-	* Sorted and indexed
-	* Timestamp of index files must be newer than of the BAM files
-	* Each BAM file must contain a read group (`@RG`) with a common sample name (`SM`),
-	   which must match the folder name (`sampleName` above)
-
-3. **Adapt the config file**
-
-	Set options to describe your data in `Snake.config.json`. If you use Singularity, please use `Snake.config-singularity.json` instead.
-
-	Here is a digest of the relevant variables:
-
-	* `reference`: The path to the reference genome (FASTA file). Must be indexed (FAI)
-	* `chromosomes`: Specify which chromosomes should be analyzed. By default `chr1` - `chr22` and `chrX`
-	* `R_reference` The version of the reference genome being used by R scripts. You will need to install 
-	the respective R package (e.g. 
-	[BSgenome.Hsapiens.UCSC.hg38](https://bioconductor.org/packages/release/data/annotation/html/BSgenome.Hsapiens.UCSC.hg38.html))
-	on your system to be able to get this file. The reference version should match the one in `reference`.
-	Note that the Singularity/Docker image only ship with *BSgenome.Hsapiens.UCSC.hg38*.
-	* `paired_end`: Specifies whether you are using paired-end reads or not (default: true)
-	* `snv_calls`: SNV call set for your sample - see below. Must be *vcf.gz* and indexed via tabix
-	* `snv_sites_to_genotype`: SNV positions to be genotyped - see below. Must be *vcf.gz* and indexed
-	via tabix
-
-
-## SNV calls for haplotype separation
-
-The MosaiCatcher Pipeline requires a set of genotyped single nucleotide variants (SNVs) to
-distinguish haplotypes, including the assignment of individually sequenced strands of a
-chromosome to a certain chromosome-length haplotype.
-
-Depending on which prior information is available, the workflow will try to
-
-* Phase SNVs using StrandPhaseR (when given a set of genotyped SNV calls)
-* Genotype & phase SNVs in your data (when given potential SNV sites)
-* Call, genotype & phase SNVs on your sample (when given no SNV information)
-
-To provide a list of SNV sites, set `snv_sites_to_genotype` in the config file; to provide genotyped
-final SNV calls, set `snv_calls`. Must be set per sample:
+If possible, it is also highly recommanded to install and use mamba package manager instead of conda, which is much more efficient.
 
 ```
-"snv_calls"     : {
-	"NA12878" : "path/to/snp/calls.vcf.gz"
-},
+conda install -c conda-forge mamba
+mamba create -n mosaicatcher_env snakemake pandas imagemagick
 ```
 
-Make sure the files are [tabix](https://github.com/samtools/tabix)-indexed.
 
-## References
 
-For information on Strand-seq see
+### ⤵️ 2. Clone repository & go into workflow directory
 
-> Falconer E *et al.*, 2012 (doi: [10.1038/nmeth.2206](https://doi.org/10.1038/nmeth.2206))
+After cloning the repo, go into the `workflow` directory which correspond to the pipeline entry point. 
+
+```
+git clone https://git.embl.de/tweber/mosaicatcher-update.git
+cd workflow/
+```
+
+### ⚙️ 3. MosaiCatcher config and execution
+
+MosaiCatcher takes different arguments to run. Default configuration (`worfklow/config/config.yaml`) looks like the following. 
+
+```yaml
+# Required arguments
+
+## Modes ["count", "segmentation", "mosaiclassifier"]
+mode: "count"
+## Plot enabled [True] or disabled [False]
+plot: False
+## Enable / Disable comparison for each BAM file between folder name & SM tag
+check_sm_tag: False
+
+# Chromosomes list to process
+chromosomes: [chr1, chr2, chr3, chr4, chr5, chr6, chr7, chr8, chr9, chr10, chr11, chr12, chr13, chr14, chr15, chr16, chr17, chr18, chr19, chr20, chr21, chr22, chrX]
+
+
+# I/O path
+
+## Input BAM location
+input_bam_location: "TEST_EXAMPLE_DATA/bam/"
+## Output location
+output_location: "TEST_OUTPUT"
+
+
+# External files 
+
+## 1000G SNV sites to genotype : https://sandbox.zenodo.org/record/1060653/files/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz
+snv_sites_to_genotype: "/path/to/SNV_sites"
+
+## Reference genome : https://sandbox.zenodo.org/record/1060653/files/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna
+reference: "/path/to/ref"
+```
+You can either change it or override YAML file by using snakemake CLI arguments as the following : 
+```
+--config mode=segmentation plot=False input_bam_location=/HELLO_WORLD output_location=/AU_REVOIR
+```
+The `--config` argument will here overrides value of each of the keys present in the YAML file.
+
+
+
+#### 3A. Download example data automatically with snakemake [Optional] 
+
+```
+snakemake -c1 --config mode=download_example_data input_bam_location=/path/to/INPUT
+```
+**Warning:** Download example data currently requires 65GB of free space disk. 
+
+
+#### 3B. Prepare input data 
+
+In its current flavour, MosaiCatcher requires that input data must be formatted the following way :
+
+
+```bash
+Parent_folder
+|-- Sample_1
+|   |-- all
+|   |   |-- Cell_01.sort.mdup.bam
+|   |   |-- Cell_02.sort.mdup.bam
+|   |   |-- Cell_03.sort.mdup.bam
+|   |   `-- Cell_04.sort.mdup.bam
+|   `-- selected
+|       |-- Cell_01.sort.mdup.bam
+|       |-- Cell_02.sort.mdup.bam
+|       `-- Cell_04.sort.mdup.bam
+`-- Sample_2
+    |-- all
+    |   |-- Cell_21.sort.mdup.bam
+    |   |-- Cell_22.sort.mdup.bam
+    |   |-- Cell_23.sort.mdup.bam
+    |   `-- Cell_24.sort.mdup.bam
+    `-- selected
+        |-- Cell_22.sort.mdup.bam
+        |-- Cell_23.sort.mdup.bam
+        `-- Cell_24.sort.mdup.bam
+```
+
+In a `Parent_Folder`, create a subdirectory `Parent_Folder/sampleName/` for each `sample`. Your Strand-seq BAM files of this sample go into two folders:
+
+* `all/` for the total set of BAM files
+* `selected/` for the subset of successful Strand-seq libraries (possibly hard-linked to `all/`)
+
+It is important to follow these rules for single-cell data
+
+* One BAM file per cell
+* Sorted and indexed
+  * If BAM files are not indexed, please use a writable folder in order that the pipeline generate itself the index `.bai` files
+* Timestamp of index files must be newer than of the BAM files
+* Each BAM file must contain a read group (`@RG`) with a common sample name (`SM`), which must match the folder name (`sampleName` above)
+
+
+### ⚡️ 4. Run the pipeline
+
+After defining your configuration, you can launch the pipeline the following way:
+
+
+```bash
+snakemake \
+    --use-conda  \
+    --cores 40  \
+    --config \
+        plot=True \
+        mode=mosaiclassifier \ 
+        output_location=/path/to/OUTPUT_FOLDER/ \
+        input_bam_location=/path/to_/INPUT_FOLDER/  \
+    --printshellcmds \
+    --conda-frontend mamba \
+    --use-singularity \
+    --singularity-args "-B /:/"
+```
+
+
+#### Snakemake & Singularity arguments
+
+```
+--cores 1
+```
+Use at most N CPU cores/jobs in parallel. If N is omitted or ‘all’, the limit is set to the number of available CPU cores. In case of cluster/cloud execution, this argument sets the number of total cores used over all jobs (made available to rules via workflow.cores).
+
+```
+--printshellcmds, -p
+```
+Recommended to print out the shell commands that will be executed.
+
+```
+--use-conda
+```
+If defined in the rule, run job in a conda environment. If this flag is not set, the conda directive is ignored and use the current environment (and path system) to execute the command.
+
+```
+--conda-frontend mamba|conda 
+```
+Choose the conda frontend for installing environments. Mamba is much faster and highly recommended. Default: “mamba”
+
+
+
+```
+--use-singularity 
+```
+If defined in the rule, run job within a singularity container. If this flag is not set, the singularity directive is ignored.
+
+```
+--singularity-args "-B /:/"
+```
+Pass additional args to singularity. `-B` stands for binding point between the host and the container.
+
+---
+**ℹ️ Note**
+
+Currently, raise the following WARNING message : 
+```
+WARNING: Skipping mount /etc/localtime [binds]: /etc/localtime doesn't exist in container
+```
+---
+
+Obviously, all other snakemake CLI options can also be used. 
+
+
+
+#### MosaiCatcher arguments
+
+!# TODO : simplified pipeline image  
+
+MosaiCatcher currently supports three different modes of execution : `count`, `segmentation` and `mosaiclassifier`.
+- `count` (selected by default) will only performs `Mosaic count` binning and count reads for each bin produced
+- `segmentation` will run the pipeline until the `Mosaic segmentation` and selection of the correct segments
+- `mosaiclassifier` will run the complete pipeline until the detection of SV in each selected cell of the samples
+
+To select your mode of execution, use the following argument `--config mode=[count|segmentation|mosaiclassifier]`
+
+For each of these modes, you can *enable* or *disable* the plots generation by using `--config plot=[True|False]`
+
+
+###  📊 5. Generate report  Optional]
+
+Optionally, you can also MosaiCatcher rules that produce plots 
+
+```bash
+snakemake \
+    --use-conda  \
+    --cores 40  \
+    --config \
+        plot=True \
+        mode=mosaiclassifier \ 
+        output_location=OUTPUT_FOLDER \
+        input_bam_location=INPUT_FOLDER  \
+    --report report.zip
+```
+
+snakemake --use-conda --cores 40 --config plot=True mode=mosaiclassifier output_location=/g/korbel2/weber/MosaiCatcher_output/Mosaicatcher_output_singularity_LCL
+
+
+-TALL/ input_bam_location=/g/korbel2/weber/MosaiCatcher_files/T-ALL_P1/ -p --conda-frontend mamba --use-singularity --singularity-args "-B /g:/g" --rerun-incomplete --latency-wait 60 --report report_LCL.zip --report-stylesheet report/custom-stylesheet.css  
+
+## 📕 References
+
+
+> Strand-seq publication: Falconer, E., Hills, M., Naumann, U. et al. DNA template strand sequencing of single-cells maps genomic rearrangements at high resolution. Nat Methods 9, 1107–1112 (2012). https://doi.org/10.1038/nmeth.2206
+
+> scTRIP/MosaiCatcher original publication: Sanders, A.D., Meiers, S., Ghareghani, M. et al. Single-cell analysis of structural variations and complex rearrangements with tri-channel processing. Nat Biotechnol 38, 343–354 (2020). https://doi.org/10.1038/s41587-019-0366-x
+
+
