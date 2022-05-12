@@ -1,5 +1,4 @@
-<!-- ![MosaiCatcher](docs/mosaic_logo.png) -->
-<img src="docs/image2vector.svg" width="500"/>
+![MosaiCatcher](docs/mosaic_logo.png)
 
 
 Structural variant calling from single-cell Strand-seq data - summarized in a single [Snakemake](https://github.com/snakemake/snakemake) pipeline.
