@@ -26,8 +26,8 @@ segmentation2/
 snv_calls/
 strand_states/
 sv_probabilities/
-workflow/config/config_df.tsv
-workflow/config/exclude_file.txt
+config/config_df.tsv
+config/exclude_file.txt
 
 # Docs
 docs/build/
@@ -46,14 +46,14 @@ workflow/test.txt
 
 # Exceptions
 !docs/mosaic_logo.png
-!workflow/data/segdups/segDups_hg38_UCSCtrack.bed.gz
 !workflow/config/config.yaml
 
 ## Others
-workflow/.snakemake
-bam/
+# afac/
+# workflow/.snakemake
+# bam/
 
 ## Personal note: files/folders specific to dev branch
-.gitlab-ci.yml # to use with LFS example data in dev branch
-singularity/
-afac/
+# .gitlab-ci.yml // to use with LFS example data in dev branch
+# singularity/ folder
+# afac/ debugging & dev folder

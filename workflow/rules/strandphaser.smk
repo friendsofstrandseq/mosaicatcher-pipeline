@@ -128,20 +128,19 @@ rule run_strandphaser_per_chrom:
         #     labels={"Sample" : "{sample}", "Chrom" : "{chrom}"}
         # )
     log:
-        "log/run_strandphaser_per_chrom/{sample}/{chrom}.log"
+        config["output_location"] + "log/run_strandphaser_per_chrom/{sample}/{chrom}.log"
     conda:
         "../envs/rtools.yaml"
     shell:
         # {config[Rscript]}
         """
-        Rscript scripts/strandphaser_scripts/StrandPhaseR_pipeline.R \
+        LC_CTYPE=C Rscript scripts/strandphaser_scripts/StrandPhaseR_pipeline.R \
                 {input.bamfolder} \
                 {config[output_location]}strandphaser/{wildcards.sample}/StrandPhaseR_analysis.{wildcards.chrom} \
                 {input.configfile} \
                 {input.wcregions} \
                 {input.snppositions} \
-                $(pwd)/utils/R-packages/ \
-
+                $(pwd)/utils/R-packages/ > {log} 2>&1
         """
 
 rule merge_strandphaser_vcfs:
@@ -151,7 +150,7 @@ rule merge_strandphaser_vcfs:
     output:
         vcfgz=config["output_location"] + "strandphaser/phased-snvs/{sample}.vcf.gz"
     log:
-        "log/merge_strandphaser_vcfs/{sample}.log"
+        config["output_location"] + "log/merge_strandphaser_vcfs/{sample}.log"
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     shell:
@@ -166,7 +165,7 @@ rule combine_strandphaser_output:
     output:
         config["output_location"] +  "strandphaser/{sample}/strandphaser_phased_haps_merged.txt"
     log:
-        "log/combine_strandphaser_output/{sample}.log"
+        config["output_location"] + "log/combine_strandphaser_output/{sample}.log"
     shell:
         """
         set +o pipefail
@@ -184,7 +183,7 @@ rule convert_strandphaser_output:
     output:
         config["output_location"] + "strandphaser/{sample}/StrandPhaseR_final_output.txt"
     log:
-        "log/convert_strandphaser_output/{sample}.log"
+        config["output_location"] + "log/convert_strandphaser_output/{sample}.log"
     conda:
         "../envs/rtools.yaml"
     script:
