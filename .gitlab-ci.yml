@@ -1,40 +1,4 @@
-image:
-  name: ubuntu:20.04
-
-stages:
-  - run
-  - test
-
-before_script:
-  # SINGULARITY INSTALL
-  - DEBIAN_FRONTEND=noninteractive apt-get update
-  - TZ=Etc/UTC
-  - DEBIAN_FRONTEND=noninteractive apt install -y build-essential libssl-dev uuid-dev libgpgme11-dev squashfs-tools libseccomp-dev pkg-config cryptsetup-bin wget
-  - wget https://github.com/sylabs/singularity/releases/download/v3.9.9/singularity-ce_3.9.9-focal_amd64.deb
-  - dpkg -i singularity-ce_3.9.9-focal_amd64.deb
-  # MAMBA INSTALL
-  - wget https://github.com/conda-forge/miniforge/releases/download/4.12.0-0/Mambaforge-pypy3-4.12.0-0-Linux-x86_64.sh
-  - sh Mambaforge-pypy3-4.12.0-0-Linux-x86_64.sh -b -p /mambaforge
-  - PATH="${PATH}:/mambaforge/bin"
-  - ls -l /mambaforge
-  - ls -l /mambaforge/bin
-  # SNAKEMAKE INSTALL & ACTIVATE
-  - mamba create -n mosaicatcher_env -c bioconda -c conda-forge snakemake pandas imagemagick
-  - source activate mosaicatcher_env
-  - which snakemake
-
-run:
-  stage: run
+build:
   script:
-    - singularity --help
-    - mamba --help
-    - cd workflow/
-    - snakemake --use-conda --cores 10 --config plot=False mode=count -p --conda-frontend mamba --use-singularity
-test:
-  stage: test
-  script:
-    - zcat counts/RPE-BM510/RPE-BM510.txt.gz | head -n 50
-# build:
-#   stage: build
-#   script:
-#     - snakemake --use-conda --cores 10 --config plot=True mode=count -p --conda-frontend mamba --use-singularity --report report_test.zip
+    - echo "Hello World"
+
