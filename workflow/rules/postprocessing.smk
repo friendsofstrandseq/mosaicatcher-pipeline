@@ -4,7 +4,6 @@
 ################################################################################
 
 
-# DOCME : perl in conda
 
 # CHECKME : segdup file only in hg38
 rule postprocessing_filter:
