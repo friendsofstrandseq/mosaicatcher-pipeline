@@ -1,6 +1,7 @@
 import os
 os.environ['OPENBLAS_NUM_THREADS'] = '1'
 
+# TODO : option for segmentation : enable/disable back colors
 
 ################################################################################
 # Plots                                                                        #
@@ -31,8 +32,6 @@ os.environ['OPENBLAS_NUM_THREADS'] = '1'
 
         
 
-# FIXME : Missing plots in final PDF ; R script + inputs to check
-# CHECKME : check if possible to switch from PDF to svg (or both) to produce lighter files
 if config["plot"] is True:
 
     rule plot_mosaic_counts:
@@ -148,7 +147,6 @@ if config["plot"] is True:
 
 
 
-        ## CHECKME : check halo ? 
         # rule generate_halo_json:
         #     input:
         #         counts = config["output_location"] + "counts/{sample}/{windows}.txt.gz",

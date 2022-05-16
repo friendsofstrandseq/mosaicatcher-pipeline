@@ -52,10 +52,23 @@ conda activate mosaicatcher_env
 
 After cloning the repo, go into the `workflow` directory which correspond to the pipeline entry point. 
 
+
+
+
 ```
-git clone https://git.embl.de/tweber/mosaicatcher-update.git
+GIT_LFS_SKIP_SMUDGE=1 git clone https://git.embl.de/tweber/mosaicatcher-update.git
 cd mosaicatcher-update/workflow/
 ```
+
+---
+
+**ℹ️ Note**
+
+`GIT_LFS_SKIP_SMUDGE=1` is currently added to `git clone` command to prevent cloning of the LFS files tracked by git (35GB of data).
+*(Will be corrected in next release)*
+
+---
+
 
 ### ⚙️ 3. MosaiCatcher config and execution
 
@@ -91,12 +104,23 @@ snv_sites_to_genotype: "/path/to/SNV_sites"
 ## Reference genome : https://sandbox.zenodo.org/record/1060653/files/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna
 reference: "/path/to/ref"
 ```
+
 You can either change it or override YAML file by using snakemake CLI arguments as the following : 
+
 ```
 --config mode=segmentation plot=False input_bam_location=/HELLO_WORLD output_location=/AU_REVOIR
 ```
+
 The `--config` argument will here overrides value of each of the keys present in the YAML file.
 
+Following commands allow to retrieve 1000G VCF file (+ .tbi index) as well as Fasta reference genome file (+ .fai index).
+
+```
+wget https://sandbox.zenodo.org/record/1060653/files/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz
+wget https://sandbox.zenodo.org/record/1060653/files/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz.tbi
+wget https://sandbox.zenodo.org/record/1060653/files/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna
+wget https://sandbox.zenodo.org/record/1060653/files/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna.fai
+```
 
 
 #### 3A. Download example data automatically with snakemake [Optional] 
@@ -104,7 +128,7 @@ The `--config` argument will here overrides value of each of the keys present in
 ```
 snakemake -c1 --config mode=download_example_data input_bam_location=/path/to/INPUT
 ```
-**Warning:** Download example data currently requires 65GB of free space disk. 
+**Warning:** Download example data currently requires 35GB of free space disk. 
 
 
 #### 3B. Prepare input data 
@@ -155,20 +179,32 @@ It is important to follow these rules for single-cell data
 After defining your configuration, you can launch the pipeline the following way:
 
 
+
+
+
 ```bash
 snakemake \
     --use-conda  \
-    --cores 40  \
+    --cores 20  \
     --config \
         plot=True \
         mode=mosaiclassifier \ 
         output_location=/path/to/OUTPUT_FOLDER/ \
         input_bam_location=/path/to_/INPUT_FOLDER/  \
-    --printshellcmds \
+    -p \
     --conda-frontend mamba \
     --use-singularity \
-    --singularity-args "-B /:/"
+    --singularity-args "-B /:/" \
+    --dry-run
 ```
+
+---
+**⚠️ Warning**
+
+If you are experiencing any issues with conda-frontend snakemake option, please use `--conda-frontend conda` instead of `mamba` 
+
+---
+
 
 
 #### Snakemake & Singularity arguments
@@ -239,7 +275,7 @@ Optionally, you can also MosaiCatcher rules that produce plots
 ```bash
 snakemake \
     --use-conda  \
-    --cores 40  \
+    --cores 20  \
     --config \
         plot=True \
         mode=mosaiclassifier \ 
@@ -247,6 +283,16 @@ snakemake \
         input_bam_location=INPUT_FOLDER  \
     --report report.zip
 ```
+
+## 📆 Roadmap 
+
+- [ ] Zenodo automatic download of external files + indexes
+- [ ] Change of reference genome (currently only GRCh38)
+- [ ] Plotting options (enable/disable segmentation back colors)
+- [ ] Full singularity image with preinstalled conda envs
+- [ ] Automatic testing of BAM SM tag compared to sample folder name
+- [ ] On-error/success e-mail
+- [ ] Upstream QC pipeline and FastQ handle  
 
 ## 📕 References
 
