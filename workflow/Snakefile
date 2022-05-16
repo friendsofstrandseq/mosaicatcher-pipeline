@@ -48,7 +48,6 @@ report: "report/workflow.rst"
 
 
 
-# TODO: enable again when .gitignore will be solved
 if os.path.isfile(config["output_location"] + "config/config_df.tsv") is False:
 
     ######################################################################
@@ -297,3 +296,4 @@ elif mode_selected == "download_example_data":
     rule all:
         input:
             rules.dl_example_data.output,
+            rules.dl_external_data.output
