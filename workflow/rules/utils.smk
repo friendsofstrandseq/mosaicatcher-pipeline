@@ -3,7 +3,6 @@
 # UTILS                                                                        #
 ################################################################################
 
-# TODO : to move in utils category
 
 
 # rule sort_bam:
@@ -15,7 +14,6 @@
 #         config["samtools"] + " sort {input} -o {output}"
 
 
-# TODO : to move in utils category
 rule index_bam:
     """
     rule fct:
