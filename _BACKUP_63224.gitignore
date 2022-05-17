@@ -1,0 +1,69 @@
+# Hidden folders & files
+.DS_Store
+.vscode/
+.snakemake/
+.panoptes.db
+
+# Tmp files & execution outputs
+*.pyc
+*.zip
+*.gz
+*.db
+*.png
+*.pdf
+*.svg
+
+# Links
+*@
+
+# Mosaicatcher folders
+chroms/
+counts/
+log/
+plots/
+segmentation/
+segmentation2/
+snv_calls/
+strand_states/
+sv_probabilities/
+config/config_df.tsv
+config/exclude_file.txt
+
+# Docs
+docs/build/
+build/
+*.html
+workflow/static/
+
+# Python
+__pycache__
+workflow/scripts/__pycache__
+
+# Zenodo
+workflow/sandbox.zenodo.org/
+TEST_OUTPUT/
+workflow/test.txt
+
+# Exceptions
+!docs/mosaic_logo.png
+!workflow/config/config.yaml
+<<<<<<< HEAD
+!workflow/data/segdups/segDups_hg38_UCSCtrack.bed.gz
+
+# Dev
+discover_big_files_git.sh
+builds/
+
+# git
+=======
+>>>>>>> 726eb7567c393d423926ee719d112336c279d4a4
+
+## Others
+# afac/
+# workflow/.snakemake
+# bam/
+
+## Personal note: files/folders specific to dev branch
+# .gitlab-ci.yml // to use with LFS example data in dev branch
+# singularity/ folder
+# afac/ debugging & dev folder

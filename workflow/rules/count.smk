@@ -44,7 +44,13 @@ rule generate_exclude_file_for_mosaic_count:
 
 
 
+<<<<<<< HEAD
 # DOCME : mosaic count read orientation ?
+=======
+# TODO : Simplify expand command 
+# DOCME : mosaic count read orientation ?
+
+>>>>>>> 726eb7567c393d423926ee719d112336c279d4a4
 rule mosaic_count:
     """
     rule fct: Call mosaic count C++ function to count reads in each BAM file according defined window
@@ -52,8 +58,13 @@ rule mosaic_count:
     output: counts: read counts for the BAM file according defined window ; info file : summary statistics 
     """
     input:
+<<<<<<< HEAD
         bam = lambda wc: expand(config["input_bam_location"] + wc.sample +  "/selected/{bam}.bam", bam = bam_per_sample_local[str(wc.sample)] if wc.sample in bam_per_sample_local else "FOOBAR"),
         # bai = lambda wc: expand(config["input_bam_location"] + wc.sample +  "/selected/{bam}.bam.bai", bam = bam_per_sample_local[wc.sample]) if wc.sample in bam_per_sample_local else "FOOBAR",
+=======
+        bam = lambda wc: expand(config["input_bam_location"] + wc.sample +  "/all/{bam}.bam", bam = bam_per_sample_local[str(wc.sample)] if wc.sample in bam_per_sample_local else "FOOBAR"),
+        # bai = lambda wc: expand(config["input_bam_location"] + wc.sample +  "/{bam}.bam.bai", bam = bam_per_sample_local[wc.sample]) if wc.sample in bam_per_sample_local else "FOOBAR",
+>>>>>>> 726eb7567c393d423926ee719d112336c279d4a4
         excl = config["output_location"] + "config/exclude_file",
     output:
         counts = config["output_location"] + "counts/{sample}/{sample}.txt.fixme.gz",
@@ -94,6 +105,10 @@ rule order_mosaic_count_output:
 # Normalize counts                                                             #
 ################################################################################
 
+<<<<<<< HEAD
+=======
+# TODO : Reference blacklist BED file to retrieve easily on Git/Zenodo/remote system
+>>>>>>> 726eb7567c393d423926ee719d112336c279d4a4
 # TODO : check if inversion file is corresponded to previously published 
 rule merge_blacklist_bins:
     """
@@ -155,6 +170,10 @@ rule link_normalized_info_file:
 # Single-Cell Segmentation                                                                 #
 ################################################################################
 
+<<<<<<< HEAD
+=======
+# TODO : replace awk external file command with something else
+>>>>>>> 726eb7567c393d423926ee719d112336c279d4a4
 rule extract_single_cell_counts:
     """
     rule fct: extract from count the rows coming from the given cell
