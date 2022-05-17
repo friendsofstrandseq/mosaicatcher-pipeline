@@ -117,7 +117,7 @@ wget https://sandbox.zenodo.org/record/1062182/files/GCA_000001405.15_GRCh38_no_
 #### 3A. Download example data automatically with snakemake [Optional] 
 
 ```
-snakemake -c1 --config mode=download_example_data input_bam_location=/path/to/INPUT
+snakemake -c1 --config mode=download_data input_bam_location=/path/to/INPUT
 ```
 **Warning:** Download example data currently requires 35GB of free space disk. 
 
