@@ -38,7 +38,7 @@ Minimum system requirements vary based on the use case. We highly recommend runn
 
 MosaiCatcher leverages snakemake built-in features such as execution within container and conda predefined modular environments. That's why it is only necessary to create an environment that relies on [snakemake](https://github.com/snakemake/snakemake) (to execute the pipeline) and [pandas](https://github.com/pandas-dev/pandas) (to handle basic configuration). If you plan to generate HTML Web report including plots, it is also necessary to install [imagemagick](https://github.com/ImageMagick/ImageMagick).
 
-If possible, it is also highly recommanded to install and use mamba package manager instead of conda, which is much more efficient.
+If possible, it is also highly recommended to install and use mamba package manager instead of conda, which is much more efficient.
 
 ```
 conda install -c conda-forge mamba
@@ -107,10 +107,10 @@ The `--config` argument will here overrides value of each of the keys present in
 Following commands allow to retrieve 1000G VCF file (+ .tbi index) as well as Fasta reference genome file (+ .fai index).
 
 ```
-wget https://sandbox.zenodo.org/record/1060653/files/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz
-wget https://sandbox.zenodo.org/record/1060653/files/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz.tbi
-wget https://sandbox.zenodo.org/record/1060653/files/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna
-wget https://sandbox.zenodo.org/record/1060653/files/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna.fai
+wget https://sandbox.zenodo.org/record/1062182/files/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz
+wget https://sandbox.zenodo.org/record/1062182/files/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz.tbi
+wget https://sandbox.zenodo.org/record/1062182/files/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna
+wget https://sandbox.zenodo.org/record/1062182/files/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna.fai
 ```
 
 
