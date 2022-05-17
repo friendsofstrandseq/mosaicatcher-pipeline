@@ -1,0 +1,13 @@
+.DS_Store
+.snakemake/
+bam/
+chroms/
+counts/
+log/
+plots/
+segmentation/
+segmentation2/
+snv_calls/
+strand_states/
+sv_probabilities/
+Snakefile~
