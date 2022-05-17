@@ -48,6 +48,12 @@ workflow/test.txt
 !docs/mosaic_logo.png
 !workflow/config/config.yaml
 
+# Dev
+discover_big_files_git.sh
+builds/
+
+# git
+
 ## Others
 # afac/
 # workflow/.snakemake
