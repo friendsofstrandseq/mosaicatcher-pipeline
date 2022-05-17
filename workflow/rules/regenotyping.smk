@@ -24,10 +24,6 @@ rule mergeBams:
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     shell:
-<<<<<<< HEAD
-=======
-        # FIXME : Samtools 1.10 from Conda env not working ; 1.9 from Seneca working > change it into conda env yml file
->>>>>>> 726eb7567c393d423926ee719d112336c279d4a4
         # config["samtools"] + " merge -@ {threads} {output} {input} 2>&1 > {log}"
         "samtools" + " merge -@ {threads} {output} {input} 2>&1 > {log}"
 
@@ -51,11 +47,6 @@ rule regenotype_SNVs:
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     shell:
-<<<<<<< HEAD
-=======
-    # CHECKME : Samtools / BCFtools / freebayes path definition through conda env
-    # CHECKME : interest of using -r parameters for freebayes => split by chroms
->>>>>>> 726eb7567c393d423926ee719d112336c279d4a4
         """
         (freebayes \
             -f {params.fa} \
