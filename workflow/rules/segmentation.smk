@@ -11,10 +11,6 @@ cell_per_sample = config_df.loc[config_df["all/selected"] == "selected"].groupby
 
 # CHECKME : @Marco mention on Gitlab
 # CHECKME : parameters
-<<<<<<< HEAD
-=======
-# DOCME : check segmentation results to better understand
->>>>>>> 726eb7567c393d423926ee719d112336c279d4a4
 rule segmentation:
     """
     rule fct: Identify breakpoints of futur SV based on normalized read counts
@@ -53,10 +49,6 @@ rule segmentation:
         # """
         # {input} > {log} 2>&1
 
-<<<<<<< HEAD
-=======
-# FIXME: no difference observed before/after awk command
->>>>>>> 726eb7567c393d423926ee719d112336c279d4a4
 
 
 # FIXME: This is a workaround because latest versions of "mosaic segment" don't compute the "bps" column properly. Remove once fixed in the C++ code.
