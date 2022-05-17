@@ -18,7 +18,7 @@ dl_bam_example: False
 dl_external_files: False
 
 ## Input BAM location
-input_bam_location: "TEST_EXAMPLE_DATA/RPE-BM510/"
+input_bam_location: "TEST_EXAMPLE_DATA/"
 ## Output location
 output_location: "TEST_OUTPUT/"
 
