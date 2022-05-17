@@ -61,6 +61,10 @@ rule mosaiClassifier_make_call:
 #         pd.read_csv(input[0], sep='\t').to_pdf(output[0])
 
 
+<<<<<<< HEAD
+=======
+# CHECKME : check if still useful ?
+>>>>>>> 726eb7567c393d423926ee719d112336c279d4a4
 rule mosaiClassifier_make_call_biallelic:
     input:
         probs = config["output_location"] + "sv_probabilities/{sample}/probabilities.Rdata"
