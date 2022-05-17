@@ -52,6 +52,7 @@ conda activate mosaicatcher_env
 
 After cloning the repo, go into the `workflow` directory which correspond to the pipeline entry point. 
 
+<<<<<<< HEAD
 
 
 
@@ -70,6 +71,13 @@ cd mosaicatcher-update/workflow/
 ---
 
 
+=======
+```
+git clone https://git.embl.de/tweber/mosaicatcher-update.git
+cd mosaicatcher-update/workflow/
+```
+
+>>>>>>> 726eb7567c393d423926ee719d112336c279d4a4
 ### ⚙️ 3. MosaiCatcher config and execution
 
 MosaiCatcher takes different arguments to run. Default configuration (`worfklow/config/config.yaml`) looks like the following. 
@@ -104,6 +112,7 @@ snv_sites_to_genotype: "/path/to/SNV_sites"
 ## Reference genome : https://sandbox.zenodo.org/record/1060653/files/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna
 reference: "/path/to/ref"
 ```
+<<<<<<< HEAD
 
 You can either change it or override YAML file by using snakemake CLI arguments as the following : 
 
@@ -121,6 +130,14 @@ wget https://sandbox.zenodo.org/record/1060653/files/ALL.chr1-22plusX_GRCh38_sit
 wget https://sandbox.zenodo.org/record/1060653/files/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna
 wget https://sandbox.zenodo.org/record/1060653/files/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna.fai
 ```
+=======
+You can either change it or override YAML file by using snakemake CLI arguments as the following : 
+```
+--config mode=segmentation plot=False input_bam_location=/HELLO_WORLD output_location=/AU_REVOIR
+```
+The `--config` argument will here overrides value of each of the keys present in the YAML file.
+
+>>>>>>> 726eb7567c393d423926ee719d112336c279d4a4
 
 
 #### 3A. Download example data automatically with snakemake [Optional] 
@@ -128,7 +145,11 @@ wget https://sandbox.zenodo.org/record/1060653/files/GCA_000001405.15_GRCh38_no_
 ```
 snakemake -c1 --config mode=download_example_data input_bam_location=/path/to/INPUT
 ```
+<<<<<<< HEAD
 **Warning:** Download example data currently requires 35GB of free space disk. 
+=======
+**Warning:** Download example data currently requires 65GB of free space disk. 
+>>>>>>> 726eb7567c393d423926ee719d112336c279d4a4
 
 
 #### 3B. Prepare input data 
@@ -179,6 +200,7 @@ It is important to follow these rules for single-cell data
 After defining your configuration, you can launch the pipeline the following way:
 
 
+<<<<<<< HEAD
 
 
 
@@ -186,11 +208,18 @@ After defining your configuration, you can launch the pipeline the following way
 snakemake \
     --use-conda  \
     --cores 20  \
+=======
+```bash
+snakemake \
+    --use-conda  \
+    --cores 40  \
+>>>>>>> 726eb7567c393d423926ee719d112336c279d4a4
     --config \
         plot=True \
         mode=mosaiclassifier \ 
         output_location=/path/to/OUTPUT_FOLDER/ \
         input_bam_location=/path/to_/INPUT_FOLDER/  \
+<<<<<<< HEAD
     -p \
     --conda-frontend mamba \
     --use-singularity \
@@ -206,6 +235,14 @@ If you are experiencing any issues with conda-frontend snakemake option, please 
 ---
 
 
+=======
+    --printshellcmds \
+    --conda-frontend mamba \
+    --use-singularity \
+    --singularity-args "-B /:/"
+```
+
+>>>>>>> 726eb7567c393d423926ee719d112336c279d4a4
 
 #### Snakemake & Singularity arguments
 
@@ -275,7 +312,11 @@ Optionally, you can also MosaiCatcher rules that produce plots
 ```bash
 snakemake \
     --use-conda  \
+<<<<<<< HEAD
     --cores 20  \
+=======
+    --cores 40  \
+>>>>>>> 726eb7567c393d423926ee719d112336c279d4a4
     --config \
         plot=True \
         mode=mosaiclassifier \ 
@@ -284,6 +325,7 @@ snakemake \
     --report report.zip
 ```
 
+<<<<<<< HEAD
 ## 📆 Roadmap 
 
 - [ ] Zenodo automatic download of external files + indexes
@@ -294,6 +336,8 @@ snakemake \
 - [ ] On-error/success e-mail
 - [ ] Upstream QC pipeline and FastQ handle  
 
+=======
+>>>>>>> 726eb7567c393d423926ee719d112336c279d4a4
 ## 📕 References
 
 
