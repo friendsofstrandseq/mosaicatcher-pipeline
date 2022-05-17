@@ -13,11 +13,17 @@ from pprint import pprint
 configfile: "config/config.yaml"
 
 mode_selected = config["mode"].lower()
-correct_modes = ["setup", "count", "segmentation", "haplotagging", "strandphasing", "mosaiclassifier", "download_example_data"]
+correct_modes = ["count", "segmentation", "mosaiclassifier", "download_data"]
 assert mode_selected in correct_modes, "Wrong mode selected : {}\nFollowing list of modes are available : {}".format(config["mode"], ", ".join(correct_modes))
 
 plot_option_selected = config["plot"]
 assert type(plot_option_selected) is bool, "Wrong plot option selected : {}\nPlease enter a valid value (True / False)".format(config["plot"]) 
+
+dl_bam_example_option_selected = config["dl_bam_example"]
+assert type(dl_bam_example_option_selected) is bool, "Wrong plot option selected : {}\nPlease enter a valid value (True / False)".format(config["plot"]) 
+
+dl_external_files_option_selected = config["dl_external_files"]
+assert type(dl_external_files_option_selected) is bool, "Wrong plot option selected : {}\nPlease enter a valid value (True / False)".format(config["plot"]) 
 
 print(os.getcwd())
 
@@ -49,7 +55,7 @@ report: "report/workflow.rst"
 
 
 if os.path.isfile(config["output_location"] + "config/config_df.tsv") is False:
-
+    print("HELLO")
     ######################################################################
     # TODO : move to another file 
 
@@ -79,10 +85,9 @@ if os.path.isfile(config["output_location"] + "config/config_df.tsv") is False:
     # df["all/selected"] = df["Folder"].apply(lambda r: r.split("/")[-1])
     
 
-
+    print(config["input_bam_location"])
     # Parsing folder and retrieve only files with .bam extension
     data = [(r, file.replace(".bam", "")) for r, d, f in os.walk(config["input_bam_location"]) for file in f if ".bam" in file and ".bai" not in file]
-
     # Building pandas df based on folder structure
     df = pd.DataFrame(data, columns=["Folder", "File"])
 
@@ -196,14 +201,14 @@ if plot_option_selected == True:
 
 
 # SETUP ENV
-if mode_selected == "setup":
-    rule all:
-        input:
-            # rules.install_rlib_strandphaser.output,
-            rules.compile_mosaic.output,
+# if mode_selected == "setup":
+#     rule all:
+#         input:
+#             # rules.install_rlib_strandphaser.output,
+#             rules.compile_mosaic.output,
 
 # MODE MOSAIC COUNT
-elif mode_selected == "count":
+if mode_selected == "count":
     if plot_option_selected == True:
         rule all:
             input:
@@ -291,9 +296,20 @@ elif mode_selected == "mosaiclassifier":
 
 
 # # TEST MODE
-elif mode_selected == "download_example_data":
-
-    rule all:
-        input:
-            rules.dl_example_data.output,
-            rules.dl_external_data.output
+elif mode_selected == "download_data":
+    if dl_bam_example_option_selected is True and dl_external_files_option_selected is True:
+        rule all:
+            input:
+                rules.dl_example_data.output,
+                rules.dl_external_data.output
+    
+    if dl_bam_example_option_selected is True and dl_external_files_option_selected is False:
+        rule all:
+            input:
+                rules.dl_example_data.output,
+    
+    if dl_bam_example_option_selected is False and dl_external_files_option_selected is True:
+        rule all:
+            input:
+                rules.dl_external_data.output
+    
