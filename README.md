@@ -104,25 +104,23 @@ You can either change it or override YAML file by using snakemake CLI arguments 
 
 The `--config` argument will here overrides value of each of the keys present in the YAML file.
 
-Following commands allow to retrieve 1000G VCF file (+ .tbi index) as well as Fasta reference genome file (+ .fai index).
-
-```
-wget https://sandbox.zenodo.org/record/1062182/files/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz
-wget https://sandbox.zenodo.org/record/1062182/files/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz.tbi
-wget https://sandbox.zenodo.org/record/1062182/files/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna
-wget https://sandbox.zenodo.org/record/1062182/files/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna.fai
-```
-
 
 #### 3A. Download example data automatically with snakemake [Optional] 
 
 ```
-snakemake -c1 --config mode=download_data input_bam_location=/path/to/INPUT
+snakemake -c1 --config mode=download_data dl_bam_example=True input_bam_location=TEST_EXAMPLE_DATA/
 ```
 **Warning:** Download example data currently requires 35GB of free space disk. 
 
 
-#### 3B. Prepare input data 
+#### 3B. Download external data automatically with snakemake [Optional] 
+
+```
+snakemake -c1 --config mode=download_data dl_external_files=True
+```
+
+
+#### 3C. Prepare input data 
 
 In its current flavour, MosaiCatcher requires that input data must be formatted the following way :
 
