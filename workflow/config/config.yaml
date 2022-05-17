@@ -20,10 +20,17 @@ output_location: "TEST_OUTPUT/"
 
 # External files
 ## 1000G SNV sites to genotype : https://sandbox.zenodo.org/record/1060653/files/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz
+<<<<<<< HEAD
 snv_sites_to_genotype: "sandbox.zenodo.org/record/1060653/files/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz"
 
 # Reference genome : https://sandbox.zenodo.org/record/1060653/files/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna
 reference: "sandbox.zenodo.org/record/1060653/files/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna"
+=======
+snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz"
+
+# Reference genome : https://sandbox.zenodo.org/record/1060653/files/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna
+reference: "/g/korbel2/weber/MosaiCatcher_files/refgenomes_human_local/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna"
+>>>>>>> 726eb7567c393d423926ee719d112336c279d4a4
 
 # Chromosomes list to process
 chromosomes:
@@ -67,7 +74,10 @@ exclude_list: []
 # Strandphaser
 git_commit_strandphaser: "69c9fb4"
 git_repo_strandphaser: "https://github.com/daewoooo/StrandPhaseR"
+<<<<<<< HEAD
 paired_end: True
+=======
+>>>>>>> 726eb7567c393d423926ee719d112336c279d4a4
 
 # CHECKME : Parameters optimization ?
 # PARAMETERS
