@@ -47,6 +47,7 @@ workflow/test.txt
 # Exceptions
 !docs/mosaic_logo.png
 !workflow/config/config.yaml
+!workflow/data/segdups/segDups_hg38_UCSCtrack.bed.gz
 
 # Dev
 discover_big_files_git.sh
