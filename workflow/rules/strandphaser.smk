@@ -4,11 +4,6 @@
 ################################################################################
 
 
-<<<<<<< HEAD
-=======
-# TODO : replace R script by integrating directly pandas in the pipeline / potentialy use piped output to following rule ?
-
->>>>>>> 726eb7567c393d423926ee719d112336c279d4a4
 rule convert_strandphaser_input:
     """
     rule fct: extract only segmentation with WC orientation 
@@ -31,44 +26,6 @@ rule convert_strandphaser_input:
         "../scripts/strandphaser_scripts/helper.convert_strandphaser_input.R"
 
 
-<<<<<<< HEAD
-=======
-# TODO : make something similar to mosaic with C++ dep
-# CHECKME : check if possible to write something more snakemak"ic" & compliant with conda/singularity running env
-# WARNING : I/O path definition
-# WARNING : Try to find a solution to install stranphaser in a conda environment => contact david porubsky to move on the bioconductor ?
-
-# rule install_StrandPhaseR:
-#     output:
-#         "utils/R-packages/StrandPhaseR/R/StrandPhaseR"
-#     log:
-#         "log/install_StrandPhaseR.log"
-#     conda:
-#         "../envs/strandphaser.yaml"
-#     shell:
-#         """
-#         Rscript utils/install_strandphaser.R > {log} 2>&1
-#         """
-
-# ruleorder: install_rlib_strandphaser > run_strandphaser_per_chrom
-
-# rule install_rlib_strandphaser:
-#     output:
-#          check = touch(config['output_location'] + 'strandphaser/R_setup/strandphaser_version-{}.ok'.format(config['git_commit_strandphaser']))
-#     log:
-#         config["output_location"] + 'log/strandphaser/strandphaser_install.log'
-#     conda:
-#         "../envs/rtools.yaml"
-#     resources:
-#         mem_total_mb = 4096,
-#         mem_per_cpu_mb = 4096
-#     params:
-#         version = config['git_commit_strandphaser'],
-#         repo = config['git_repo_strandphaser']
-#     shell:
-#         'LC_MEASUREMENT=C LC_CTYPE=C TAR=$(which tar) Rscript scripts/strandphaser_scripts/install_strandphaser.R {params.version} {params.repo} &> {log}'
-
->>>>>>> 726eb7567c393d423926ee719d112336c279d4a4
 
 # TODO : replace by clean config file if possible or by temporary removed file 
 rule prepare_strandphaser_config_per_chrom:
