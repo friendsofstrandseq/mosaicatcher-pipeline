@@ -1,8 +1,0 @@
-image: 
-  name: ubuntu:20:04
-
-
-dev:
-  script:
-    - echo "Hello World"
-
