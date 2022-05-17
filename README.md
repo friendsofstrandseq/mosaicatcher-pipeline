@@ -275,7 +275,7 @@ snakemake \
 
 ## 📆 Roadmap 
 
-- [ ] Zenodo automatic download of external files + indexes
+- [x] Zenodo automatic download of external files + indexes
 - [ ] Change of reference genome (currently only GRCh38)
 - [ ] Plotting options (enable/disable segmentation back colors)
 - [ ] Full singularity image with preinstalled conda envs
