@@ -26,8 +26,9 @@ segmentation2/
 snv_calls/
 strand_states/
 sv_probabilities/
-config/config_df.tsv
-config/exclude_file.txt
+workflow/config/config_df.tsv
+workflow/config/exclude_file.txt
+workflow/config/exclude_file
 
 # Docs
 docs/build/
