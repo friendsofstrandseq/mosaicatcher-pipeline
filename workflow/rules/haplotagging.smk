@@ -1,7 +1,8 @@
 import pandas as pd
 config_df = pd.read_csv(config["output_location"] + "config/config_df.tsv", sep="\t")
 # print(config_df)
-bam_per_sample = config_df.loc[config_df["all/selected"] == "selected"].groupby("Sample")["File"].apply(list).to_dict()
+# bam_per_sample = config_df.loc[config_df["all/selected"] == "selected"].groupby("Sample")["File"].apply(list).to_dict()
+bam_per_sample = config_df.loc[config_df["Selected"] == True].groupby("Sample")["File"].apply(list).to_dict()
 
 
 ################################################################################
@@ -15,7 +16,7 @@ rule haplotag_bams:
         vcf = config["output_location"] + "strandphaser/phased-snvs/{sample}.vcf.gz",
         tbi = config["output_location"] + "strandphaser/phased-snvs/{sample}.vcf.gz.tbi",
         bam = config["input_bam_location"] + "{sample}/selected/{cell}.bam",
-        bai = config["input_bam_location"] + "{sample}/selected/{cell}.bam.bai"
+        # bai = config["input_bam_location"] + "{sample}/selected/{cell}.bam.bai"
     output:
         config["output_location"] + "haplotag/bam/{sample}/{cell}.bam",
     log:
