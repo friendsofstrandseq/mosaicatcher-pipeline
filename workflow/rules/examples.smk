@@ -12,11 +12,12 @@ rule dl_example_data:
     input:
         HTTP.remote("https://sandbox.zenodo.org/record/1062182/files/TEST_EXAMPLE_DATA.zip", keep_local=True)
     output:
-        directory(config["input_bam_location"])
+        # directory(config["input_bam_location"])
+        touch(config["output_location"] + "config/dl_example_data.ok")
     shell:
         "mkdir  {output};"
         "unzip {input} -d .;"
-        "mv TEST_EXAMPLE_DATA/* {output}"
+        "mv TEST_EXAMPLE_DATA/* {config[input_bam_location]}"
 
 # TODO: Adapt according reference
 rule dl_external_data:

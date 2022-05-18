@@ -1,6 +1,6 @@
 import pandas as pd
 config_df = pd.read_csv(config["output_location"] + "config/config_df.tsv", sep="\t")
-samples = sorted(df_config_files.Sample.unique().tolist())
+samples = sorted(config_df.Sample.unique().tolist())
 
 ################################################################################
 # Summary statistics on sv calls                                               #
