@@ -165,26 +165,38 @@ It is important to follow these rules for single-cell data
 
 ### ⚡️ 4. Run the pipeline
 
-After defining your configuration, you can launch the pipeline the following way :
-
-
+After defining your configuration, you can launch the pipeline the following way if you download BAM example data using 3A:
 
 
 ```bash
 snakemake \
     --use-conda  \
-    --cores 20  \
+    --cores 20 \
     --config \
         plot=True \
-        mode=mosaiclassifier \ 
-        output_location=/path/to/OUTPUT_FOLDER/ \
-        input_bam_location=/path/to_/INPUT_FOLDER/  \
+        mode=mosaiclassifier \
     -p \
     --conda-frontend mamba \
     --use-singularity \
     --singularity-args "-B /mounting_point:/mounting_point" \
 ```
 
+Otherwise, you must specify input and output folder like the following:
+
+```bash
+snakemake \
+    --use-conda  \
+    --cores 20 \
+    --config \
+        plot=True \
+        mode=mosaiclassifier \
+        output_location=OUTPUT_FOLDER \
+        input_bam_location=INPUT_FOLDER  \
+    -p \
+    --conda-frontend mamba \
+    --use-singularity \
+    --singularity-args "-B /mounting_point:/mounting_point" \
+```
 
 ---
 **ℹ️ Note**
@@ -220,7 +232,7 @@ Recommended to print out the shell commands that will be executed.
 If defined in the rule, run job in a conda environment. If this flag is not set, the conda directive is ignored and use the current environment (and path system) to execute the command.
 
 ```
---conda-frontend mamba|conda 
+--conda-frontend [mamba|conda] 
 ```
 Choose the conda frontend for installing environments. Mamba is much faster and highly recommended. Default: “mamba”
 
