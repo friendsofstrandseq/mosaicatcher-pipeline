@@ -8,7 +8,7 @@ import pandas as pd
 import os, sys
 from pprint import pprint
 # import pysam
-from tqdm import tqdm
+# from tqdm import tqdm
 
 # TODO : check config/config CLI ... 
 configfile: "config/config.yaml"
@@ -181,6 +181,7 @@ if config["mode"] != "download_data":
     include: "rules/mosaiclassifier.smk"
     include: "rules/postprocessing.smk"
     include: "rules/stats.smk"
+
 include: "rules/examples.smk"
 
 
@@ -203,14 +204,6 @@ if plot_option_selected == True:
 # MODES OF EXECUTION #
 ######################
 
-
-
-# SETUP ENV
-# if mode_selected == "setup":
-#     rule all:
-#         input:
-#             # rules.install_rlib_strandphaser.output,
-#             rules.compile_mosaic.output,
 
 # MODE MOSAIC COUNT
 if mode_selected == "count":
