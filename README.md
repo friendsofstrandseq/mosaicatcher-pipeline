@@ -165,8 +165,7 @@ It is important to follow these rules for single-cell data
 
 ### ⚡️ 4. Run the pipeline
 
-After defining your configuration, you can launch the pipeline the following way:
-
+After defining your configuration, you can launch the pipeline the following way :
 
 
 
@@ -183,9 +182,16 @@ snakemake \
     -p \
     --conda-frontend mamba \
     --use-singularity \
-    --singularity-args "-B /:/" \
-    --dry-run
+    --singularity-args "-B /mounting_point:/mounting_point" \
 ```
+
+
+---
+**ℹ️ Note**
+
+It is recommended to first run the command and check if there are any anomalies with the `--dry-run` option
+
+---
 
 ---
 **⚠️ Warning**
@@ -226,17 +232,16 @@ Choose the conda frontend for installing environments. Mamba is much faster and 
 If defined in the rule, run job within a singularity container. If this flag is not set, the singularity directive is ignored.
 
 ```
---singularity-args "-B /:/"
+--singularity-args "-B /mounting_point:/mounting_point"
 ```
 Pass additional args to singularity. `-B` stands for binding point between the host and the container.
 
 ---
 **ℹ️ Note**
 
-Currently, raise the following WARNING message : 
-```
-WARNING: Skipping mount /etc/localtime [binds]: /etc/localtime doesn't exist in container
-```
+Currently, the binding command needs to correspond to the mounting point of your system (i.e: "/tmp:/tmp").
+On seneca for example (EMBL), use "/g:/g"
+
 ---
 
 Obviously, all other snakemake CLI options can also be used. 
@@ -275,13 +280,19 @@ snakemake \
 
 ## 📆 Roadmap 
 
-- [x] Zenodo automatic download of external files + indexes
+- [x] Zenodo automatic download of external files + indexes (1.2.1)
 - [ ] Change of reference genome (currently only GRCh38)
 - [ ] Plotting options (enable/disable segmentation back colors)
 - [ ] Full singularity image with preinstalled conda envs
 - [ ] Automatic testing of BAM SM tag compared to sample folder name
 - [ ] On-error/success e-mail
-- [ ] Upstream QC pipeline and FastQ handle  
+- [ ] Upstream QC pipeline and FastQ handle
+- [ ] Full singularity image
+
+## 🛑 Troubleshooting & Current limitations
+
+- Do not change the structure of your input folder after running the pipeline, first execution will build a config dataframe file (`workflow/config/config.tsv`) that contains the list of cells and the associated paths
+- Do not change the list of chromosomes after a first execution (i.e: first execution using `count` mode on `chr21`, second execution using `segmentation` mode on all chromosomes)
 
 ## 📕 References
 
