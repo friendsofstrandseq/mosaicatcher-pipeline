@@ -65,7 +65,7 @@ if config["mode"] != "download_data":
 
         complete_df_list = list()
         input_dir = config["input_bam_location"]
-        for sample in tqdm(os.listdir(input_dir)):
+        for sample in os.listdir(input_dir):
             l_files_all = [f for f in os.listdir(input_dir + sample + "/all/") if f.endswith('.bam')]
             l_files_selected = [f for f in os.listdir(input_dir + sample + "/selected/") if f.endswith('.bam')]
             join = list(set(l_files_all).intersection(set(l_files_selected)))
