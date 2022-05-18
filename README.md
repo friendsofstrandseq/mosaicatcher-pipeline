@@ -252,7 +252,7 @@ Pass additional args to singularity. `-B` stands for binding point between the h
 **ℹ️ Note**
 
 Currently, the binding command needs to correspond to the mounting point of your system (i.e: "/tmp:/tmp").
-On seneca for example (EMBL), use "/g:/g"
+On seneca for example (EMBL), use `"/g:/g"` if you are working on `/g/korbel[2]` or `"/scratch:/scratch"` if you plan to work on `scratch`.
 
 ---
 
@@ -262,7 +262,6 @@ Obviously, all other snakemake CLI options can also be used.
 
 #### MosaiCatcher arguments
 
-!# TODO : simplified pipeline image  
 
 MosaiCatcher currently supports three different modes of execution : `count`, `segmentation` and `mosaiclassifier`.
 - `count` (selected by default) will only performs `Mosaic count` binning and count reads for each bin produced
@@ -274,7 +273,7 @@ To select your mode of execution, use the following argument `--config mode=[cou
 For each of these modes, you can *enable* or *disable* the plots generation by using `--config plot=[True|False]`
 
 
-###  📊 5. Generate report  Optional]
+###  📊 5. Generate report  [Optional]
 
 Optionally, you can also MosaiCatcher rules that produce plots 
 
@@ -292,7 +291,8 @@ snakemake \
 
 ## 📆 Roadmap 
 
-- [x] Zenodo automatic download of external files + indexes (1.2.1)
+- [x] Zenodo automatic download of external files + indexes ([1.2.1](https://git.embl.de/tweber/mosaicatcher-update/-/tags/1.2.1))
+- [x] Multiple samples in the parent folder ([1.2.2](https://git.embl.de/tweber/mosaicatcher-update/-/tags/1.2.2))
 - [ ] Change of reference genome (currently only GRCh38)
 - [ ] Plotting options (enable/disable segmentation back colors)
 - [ ] Full singularity image with preinstalled conda envs
@@ -305,6 +305,7 @@ snakemake \
 
 - Do not change the structure of your input folder after running the pipeline, first execution will build a config dataframe file (`workflow/config/config.tsv`) that contains the list of cells and the associated paths
 - Do not change the list of chromosomes after a first execution (i.e: first execution using `count` mode on `chr21`, second execution using `segmentation` mode on all chromosomes)
+- Pipeline is unstable on **male** samples (LCL sample for example) for the moment due to the impossibility to run strandphaser (only one haplotype for the X chrom)
 
 ## 📕 References
 
