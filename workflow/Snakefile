@@ -8,8 +8,9 @@ import pandas as pd
 import os, sys
 from pprint import pprint
 # import pysam
-# from tqdm import tqdm
+from tqdm import tqdm
 
+# TODO : check config/config CLI ... 
 configfile: "config/config.yaml"
 
 mode_selected = config["mode"].lower()
@@ -43,62 +44,63 @@ if config["input_bam_location"].endswith("/") is False:
     # print("/ was missing at end of input folder, continuing ...")
 
 
-# # this container defines the underlying OS for each job when using the workflow
-# # with --use-conda --use-singularity
+
 
 
 report: "report/workflow.rst"
 
 
-# TODO : check config/config CLI ... 
+# TODO: commit only in another branch to test
+# # this container defines the underlying OS for each job when using the workflow
+# # with --use-conda --use-singularity
+# container: "docker://condaforge/mambaforge:4.12.0-0"
 
 
 
 if os.path.isfile(config["output_location"] + "config/config_df.tsv") is False:
-    print("HELLO")
+    # print("HELLO")
     ######################################################################
     # TODO : move to another file 
 
-    # complete_df_list = list()
-    # input_dir = config["input_bam_location"]
-    # for sample in os.listdir(input_dir):
-    #     print(sample)
-    #     l_files_all = [f for f in os.listdir(input_dir + sample + "/all/") if f.endswith('.bam')]
-    #     l_files_selected = [f for f in os.listdir(input_dir + sample + "/selected/") if f.endswith('.bam')]
-    #     join = list(set(l_files_all).intersection(set(l_files_selected)))
-    #     df = pd.DataFrame([{"File" : f} for f in l_files_all])
-    #     df.loc[df["File"].isin(join), "Selected"] = True
-    #     df["File"] = df["File"].str.replace(".bam", "")
-    #     df["Selected"] = df["Selected"].fillna(False)
-    #     df["Folder"] = input_dir
-    #     df["Sample"] = sample
-    #     df["Cell"] = df["File"].apply(lambda r  : r.split(".")[0])
-    #     df["Full_path"] = df["Folder"] + sample + "/all/" + df["File"] + ".bam"
-    #     print(df)
-    #     complete_df_list.append(df)
-    # complete_df = pd.concat(complete_df_list)
-    # print(complete_df)
+    complete_df_list = list()
+    input_dir = config["input_bam_location"]
+    for sample in tqdm(os.listdir(input_dir)):
+        l_files_all = [f for f in os.listdir(input_dir + sample + "/all/") if f.endswith('.bam')]
+        l_files_selected = [f for f in os.listdir(input_dir + sample + "/selected/") if f.endswith('.bam')]
+        join = list(set(l_files_all).intersection(set(l_files_selected)))
+        df = pd.DataFrame([{"File" : f} for f in l_files_all])
+        df.loc[df["File"].isin(join), "Selected"] = True
+        df["File"] = df["File"].str.replace(".bam", "")
+        df["Selected"] = df["Selected"].fillna(False)
+        df["Folder"] = input_dir
+        df["Sample"] = sample
+        df["Cell"] = df["File"].apply(lambda r  : r.split(".")[0])
+        df["Full_path"] = df["Folder"] + sample + "/all/" + df["File"] + ".bam"
+        complete_df_list.append(df)
+    complete_df = pd.concat(complete_df_list)
     
-    # df_config_files = complete_df.copy()
+    df_config_files = complete_df.copy()
+    # print(df_config_files)
 
     # Defining cols
     # df["all/selected"] = df["Folder"].apply(lambda r: r.split("/")[-1])
     
 
-    print(config["input_bam_location"])
-    # Parsing folder and retrieve only files with .bam extension
-    data = [(r, file.replace(".bam", "")) for r, d, f in os.walk(config["input_bam_location"]) for file in f if ".bam" in file and ".bai" not in file]
-    # Building pandas df based on folder structure
-    df = pd.DataFrame(data, columns=["Folder", "File"])
+    # print(config["input_bam_location"])
+    # # Parsing folder and retrieve only files with .bam extension
+    # data = [(r, file.replace(".bam", "")) for r, d, f in os.walk(config["input_bam_location"]) for file in f if ".bam" in file and ".bai" not in file]
+    # print(data)
+    # # Building pandas df based on folder structure
+    # df = pd.DataFrame(data, columns=["Folder", "File"])
 
-    # Defining cols
-    df["all/selected"] = df["Folder"].apply(lambda r: r.split("/")[-1])
-    df["Sample"] = df["Folder"].apply(lambda r: r.split("/")[-2])
-    df["Cell"] = df["File"].apply(lambda r  : r.split(".")[0])
-    df["Full_path"] = df["Folder"] + "/" + df["File"] + ".bam"
+    # # Defining cols
+    # df["all/selected"] = df["Folder"].apply(lambda r: r.split("/")[-1])
+    # df["Sample"] = df["Folder"].apply(lambda r: r.split("/")[-2])
+    # df["Cell"] = df["File"].apply(lambda r  : r.split(".")[0])
+    # df["Full_path"] = df["Folder"] + "/" + df["File"] + ".bam"
 
-    # Filtering based on exclude list defined
-    df_config_files = df.loc[~df["Cell"].isin(config["exclude_list"])]
+    # # Filtering based on exclude list defined
+    # df_config_files = df.loc[~df["Cell"].isin(config["exclude_list"])]
 
     def check_bam_header(bam_file_path):
         """_summary_
@@ -132,22 +134,22 @@ if os.path.isfile(config["output_location"] + "config/config_df.tsv") is False:
 
 else:
     df_config_files = pd.read_csv(config["output_location"] + "config/config_df.tsv", sep="\t")
-    print(df_config_files)
+print(df_config_files)
 
 # Samples list
 samples = sorted(df_config_files.Sample.unique().tolist())
-print(samples)
+# print(samples)
 # samples = ["H2NCTAFX2_GM20509B_20s000579-1-1"]
 
 # Output dictionnaries
 all_dict = df_config_files.groupby("Sample")["Cell"].nunique().to_dict()
-selected_dict = df_config_files.loc[df_config_files["all/selected"] == "selected"].groupby("Sample")["Cell"].nunique().to_dict()
-# selected_dict = df_config_files.loc[df_config_files["Selected"] == True].groupby("Sample")["Cell"].nunique().to_dict()
-dict_cells_nb_per_sample = df_config_files.loc[df_config_files["all/selected"] == "selected"].groupby("Sample")["Cell"].nunique().to_dict()
-# dict_cells_nb_per_sample = df_config_files.loc[df_config_files["Selected"] == True].groupby("Sample")["Cell"].nunique().to_dict()
-print(all_dict)
-print(selected_dict)
-print(dict_cells_nb_per_sample)
+# selected_dict = df_config_files.loc[df_config_files["all/selected"] == "selected"].groupby("Sample")["Cell"].nunique().to_dict()
+selected_dict = df_config_files.loc[df_config_files["Selected"] == True].groupby("Sample")["Cell"].nunique().to_dict()
+# dict_cells_nb_per_sample = df_config_files.loc[df_config_files["all/selected"] == "selected"].groupby("Sample")["Cell"].nunique().to_dict()
+dict_cells_nb_per_sample = df_config_files.loc[df_config_files["Selected"] == True].groupby("Sample")["Cell"].nunique().to_dict()
+# print(all_dict)
+# print(selected_dict)
+# print(dict_cells_nb_per_sample)
 
 print("Detected {} samples:".format(df_config_files.Sample.nunique()))
 [print("  {}:\t{} cells\t {} selected cells".format(s, all_dict[s], selected_dict[s])) for s in samples]
@@ -187,8 +189,10 @@ include: "rules/examples.smk"
 
 # IF PLOT OPTION ENABLED, BUILD TMP DICT TO CALL OUTPUT 
 if plot_option_selected == True:
-    dict_cells_nb_per_sample = df_config_files.loc[df_config_files["all/selected"] == "selected"].groupby("Sample")["Cell"].nunique().to_dict()
-    tmp_dict = df_config_files.loc[df_config_files["all/selected"] == "selected", ["Sample", "Cell"]].groupby("Sample")["Cell"].apply(lambda r: sorted(list(r))).to_dict()
+    # dict_cells_nb_per_sample = df_config_files.loc[df_config_files["all/selected"] == "selected"].groupby("Sample")["Cell"].nunique().to_dict()
+    dict_cells_nb_per_sample = df_config_files.loc[df_config_files["Selected"] == True].groupby("Sample")["Cell"].nunique().to_dict()
+    # tmp_dict = df_config_files.loc[df_config_files["all/selected"] == "selected", ["Sample", "Cell"]].groupby("Sample")["Cell"].apply(lambda r: sorted(list(r))).to_dict()
+    tmp_dict = df_config_files.loc[df_config_files["Selected"] == True, ["Sample", "Cell"]].groupby("Sample")["Cell"].apply(lambda r: sorted(list(r))).to_dict()
     tmp_dict = {s:{i+1:c for i,c in enumerate(cell_list)} for s,cell_list in tmp_dict.items()}
     for s in tmp_dict.keys():
         tmp_dict[s][0] = "SummaryPage"
