@@ -9,8 +9,10 @@ rule check_bam_input:
     input:
         config["input_bam_location"]
     output:
-        "config/config_df.tsv"
+        config["output_location"] + "config/config_df.tsv"
     conda:
         "../envs/mc_base.yaml"
+    params:
+        check_sm_tag = config["check_sm_tag"]
     script:
-        "../scripts/handle_input.py"
+        "../scripts/utils/handle_input.py"
