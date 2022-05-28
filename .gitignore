@@ -53,6 +53,10 @@ workflow/test.txt
 # Dev
 discover_big_files_git.sh
 builds/
+workflow/report_TALL/
+*.bam
+*.bai
+workflow/TEST_EXAMPLE_DATA/
 
 # git
 
