@@ -1,4 +1,3 @@
-import math
 from collections import defaultdict
 import pandas as pd
 import os, sys
@@ -6,26 +5,18 @@ from pprint import pprint
 import pysam
 from tqdm import tqdm
 
-# TODO I/O : Function to define inputs ; simplify list/dict system // SOLVED
-# TODO Use remote file system to download example files // PART SOLVED
-
 
 class HandleInput:
-    def __init__(input_path, output_path, exclude_list=list):
-
-        # FIXME : tmp solution to remove bad cells => need to fix this with combination of ASHLEYS ?
-        # TODO : other solution by giving in config file, CLI input ? // PART SOLVED
-
-        df_config_files = self.handle_input_data(thisdir=input_path, exclude_list=exclude_list)
-
-        tqdm.pandas(desc="Checking if BAM SM tags correspond to folder names")
-        df_config_files["Full_path"].progress_apply(check_bam_header)
-
-        all_dict = df_config_files.loc[df_config_files["all/selected"] == "all"].groupby("Sample")["Cell"].nunique().to_dict()
-        selected_dict = df_config_files.loc[df_config_files["all/selected"] == "selected"].groupby("Sample")["Cell"].nunique().to_dict()
-        print("Detected {} samples:".format(df_config_files.Sample.nunique()))
-        [print("  {}:\t{} cells\t {} selected cells".format(s, all_dict[s], selected_dict[s])) for s in SAMPLES]
-
+    def __init__(self, input_path, output_path, check_sm_tag):
+        df_config_files = self.handle_input_data(thisdir=input_path)
+      
+        # if snakemake.config["check_sm_tag"] is True:
+        # print(config["check_sm_tag"])
+        # if config["check_sm_tag"] is True:
+        if check_sm_tag is True:
+            tqdm.pandas(desc="Checking if BAM SM tags correspond to folder names")
+            df_config_files["Full_path"].progress_apply(self.check_bam_header)
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
         df_config_files.to_csv(output_path, sep="\t", index=False)
         self.df_config_files = df_config_files
 
@@ -40,28 +31,28 @@ class HandleInput:
         Returns:
             _type_: _description_
         """
-        # Parsing folder and retrieve only files with .bam extension
-        data = [(r, file.replace(".bam", "")) for r, d, f in os.walk(thisdir) for file in f if ".bam" in file and ".bai" not in file]
 
-        # Building pandas df based on folder structure
-        df = pd.DataFrame(data, columns=["Folder", "File"])
-
-        # Defining cols
-        df["all/selected"] = df["Folder"].apply(lambda r: r.split("/")[-1])
-        df["Sample"] = df["Folder"].apply(lambda r: r.split("/")[-2])
-        df["Cell"] = df["File"].apply(lambda r: r.split(".")[0])
-        df["Full_path"] = df["Folder"] + "/" + df["File"] + ".bam"
-
-        # Filtering based on exclude list defined
-        df_config_files = df.loc[~df["Cell"].isin(exclude_list)]
-
-        # # Export dicts
-        # SAMPLES = sorted(df_config_files.Sample.unique().tolist())
-        # BAM_PER_SAMPLE = df_config_files.loc[df_config_files["all/selected"] == "selected"].groupby("Sample")["File"].apply(list).to_dict()
-        # CELL_PER_SAMPLE = df_config_files.loc[df_config_files["all/selected"] == "selected"].groupby("Sample")["Cell"].apply(list).to_dict()
-        # ALLBAMS_PER_SAMPLE = df_config_files.loc[df_config_files["all/selected"] == "all"].groupby("Sample")["File"].apply(list).to_dict()
-
-        return df_config_files
+        complete_df_list = list()
+        # input_dir = snakemake.config["input_bam_location"]
+        # input_dir = config["input_bam_location"]
+        # input_dir = input_path
+        for sample in os.listdir(thisdir):
+            l_files_all = [f for f in os.listdir(thisdir + sample + "/all/") if f.endswith('.bam')]
+            l_files_selected = [f for f in os.listdir(thisdir + sample + "/selected/") if f.endswith('.bam')]
+            join = list(set(l_files_all).intersection(set(l_files_selected)))
+            df = pd.DataFrame([{"File" : f} for f in l_files_all])
+            df.loc[df["File"].isin(join), "Selected"] = True
+            df["File"] = df["File"].str.replace(".bam", "", regex=True)
+            df["Selected"] = df["Selected"].fillna(False)
+            df["Folder"] = thisdir
+            df["Sample"] = sample
+            df["Cell"] = df["File"].apply(lambda r : r.split(".")[0])
+            df["Full_path"] = df["Folder"] + sample + "/all/" + df["File"] + ".bam"
+            complete_df_list.append(df)
+        complete_df = pd.concat(complete_df_list)
+        exclude_list = ["GM18534Bx02PE20381", "HG02011x02PE20557", "HG02011x02PE20552"]
+        complete_df = complete_df.loc[~complete_df["Cell"].isin(exclude_list)]
+        return complete_df
 
     @staticmethod
     def check_bam_header(bam_file_path):
@@ -72,6 +63,7 @@ class HandleInput:
         """
 
         # Get BAM file header with pysam
+        pysam.set_verbosity(0)
         h = pysam.view("-H", bam_file_path)
         h = [e.split("\t") for e in h.split("\n")]
         sm_tag_list = list(set([sub_e.replace("SM:", "") for e in h for sub_e in e if "SM:" in sub_e]))
@@ -85,6 +77,5 @@ class HandleInput:
             folder_name, bam_file_path
         )
 
-
-if __name__ == "__main__":
-    c = HandleInput(snakemake.input[0], snakemake.output[0], snakemake.config["exclude_list"])
+# if __name__ == "__main__":
+#     c = HandleInput(snakemake.input[0], snakemake.output[0])
