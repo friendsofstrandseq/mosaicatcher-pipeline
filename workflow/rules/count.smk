@@ -5,7 +5,6 @@ config_df = pd.read_csv(config["output_location"] + "config/config_df.tsv", sep=
 pd.options.display.max_colwidth = 40
 bam_per_sample_local = config_df.loc[config_df["Selected"] == True].groupby("Sample")["File"].apply(list).to_dict()
 # bam_per_sample_local = config_df.loc[config_df["all/selected"] == "selected"].groupby("Sample")["File"].apply(list).to_dict()
-print(bam_per_sample_local)
 ################################################################################
 # Read counting                                                                #
 ################################################################################
