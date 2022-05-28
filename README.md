@@ -38,7 +38,7 @@ Minimum system requirements vary based on the use case. We highly recommend runn
 
 MosaiCatcher leverages snakemake built-in features such as execution within container and conda predefined modular environments. That's why it is only necessary to create an environment that relies on [snakemake](https://github.com/snakemake/snakemake) (to execute the pipeline) and [pandas](https://github.com/pandas-dev/pandas) (to handle basic configuration). If you plan to generate HTML Web report including plots, it is also necessary to install [imagemagick](https://github.com/ImageMagick/ImageMagick). 
 
-# TODO : Pysam
+! # TODO : Pysam
 
 If possible, it is also highly recommended to install and use mamba package manager instead of conda, which is much more efficient.
 
@@ -163,6 +163,8 @@ It is important to follow these rules for single-cell data
   * If BAM files are not indexed, please use a writable folder in order that the pipeline generate itself the index `.bai` files
 * Timestamp of index files must be newer than of the BAM files
 * Each BAM file must contain a read group (`@RG`) with a common sample name (`SM`), which must match the folder name (`sampleName` above)
+
+! # DOCME: check_sm_tag option
 
 
 ### ⚡️ 4. Run the pipeline
@@ -295,10 +297,10 @@ snakemake \
 
 - [x] Zenodo automatic download of external files + indexes ([1.2.1](https://git.embl.de/tweber/mosaicatcher-update/-/tags/1.2.1))
 - [x] Multiple samples in the parent folder ([1.2.2](https://git.embl.de/tweber/mosaicatcher-update/-/tags/1.2.2))
+- [x] Automatic testing of BAM SM tag compared to sample folder name ([1.2.3](https://git.embl.de/tweber/mosaicatcher-update/-/tags/1.2.3))
 - [ ] Change of reference genome (currently only GRCh38)
 - [ ] Plotting options (enable/disable segmentation back colors)
 - [ ] Full singularity image with preinstalled conda envs
-- [ ] Automatic testing of BAM SM tag compared to sample folder name
 - [ ] On-error/success e-mail
 - [ ] Upstream QC pipeline and FastQ handle
 - [ ] Full singularity image
