@@ -89,7 +89,7 @@ if config["mode"] != "download_data":
 
     # IMPORT SMK RULES
 
-    # include: "rules/input_check.smk"
+    include: "rules/input_check.smk"
     include: "rules/setup.smk"
     include: "rules/count.smk"
     include: "rules/segmentation.smk"
@@ -122,9 +122,19 @@ if plot_option_selected == True:
         tmp_dict[s][0] = "SummaryPage"
 
 
+
+
+
+
+
+
+
 ######################
 # MODES OF EXECUTION #
 ######################
+
+
+
 
 
 # MODE MOSAIC COUNT
@@ -158,38 +168,6 @@ elif mode_selected == "segmentation":
             input:
                 [config["output_location"] + "segmentation/{}/Selection_initial_strand_state".format(sample) for sample in samples]
 
-# MODE STRANDPHASING
-elif mode_selected == "strandphasing":
-
-    if plot_option_selected == True:
-        rule all:
-            input:
-                rules.install_rlib_strandphaser.output,
-                [config["output_location"] + "plots/{}/counts/{}.{}.pdf".format(sample, tmp_dict[sample][i], i) for sample in samples for i in range(dict_cells_nb_per_sample[sample] + 1)],
-                [config["output_location"] + "strandphaser/{}/StrandPhaseR_final_output.txt".format(sample) for sample in samples]
-    
-    elif plot_option_selected == False:
-        rule all:
-            input:
-                rules.install_rlib_strandphaser.output,
-                [config["output_location"] + "strandphaser/{}/StrandPhaseR_final_output.txt".format(sample) for sample in samples]
-
-# MODE HAPLOTAGGING
-elif mode_selected == "haplotagging":
-
-    if plot_option_selected == True:
-        rule all:
-            input:
-                rules.install_rlib_strandphaser.output,
-                [config["output_location"] + "plots/{}/counts/{}.{}.pdf".format(sample, tmp_dict[sample][i], i) for sample in samples for i in range(dict_cells_nb_per_sample[sample] + 1)],
-                [config["output_location"] + "haplotag/table/{}/haplotag_counts_merged.tsv".format(sample) for sample in samples]
-    
-    elif plot_option_selected == False:
-        rule all:
-            input:
-                rules.install_rlib_strandphaser.output,
-                [config["output_location"] + "haplotag/table/{}/haplotag_counts_merged.tsv".format(sample) for sample in samples]
-
 # MODE MOSAIC CLASSIFIER
 elif mode_selected == "mosaiclassifier":
     if plot_option_selected == True:
@@ -200,7 +178,7 @@ elif mode_selected == "mosaiclassifier":
                 [config["output_location"] + "mosaiclassifier/sv_calls/{}/{}.tsv".format(sample, m) for sample in samples for m in methods],
                 expand(config["output_location"] + "plots/{sample}/sv_calls/{method}.{chrom}.pdf", sample = samples, chrom = config["chromosomes"], method = methods),
                 expand(config["output_location"] + "plots/{sample}/sv_consistency/{method}.consistency-barplot-{plottype}.pdf", sample = samples, method = methods, plottype = ["byaf","bypos"]),
-                expand(config["output_location"] + "plots/{sample}/sv_clustering/{method}-{plottype}.pdf", sample = samples, method = methods, plottype = ["position","chromosome"]),
+                expand(config["output_location"] + "plots/{sample}/sv_clustering/{method}-{plottype}.pdf", sample = samples, method = methods, plottype = ["position", "chromosome"]),
                 expand(config["output_location"] + "stats/{sample}/stats-merged.tsv", sample = samples),
 
     
@@ -220,7 +198,8 @@ elif mode_selected == "download_data":
         rule all:
             input:
                 rules.dl_example_data.output,
-                rules.dl_external_data.output
+                rules.dl_external_data.output,
+                rules.dl_external_data_index.output
     
     if dl_bam_example_option_selected is True and dl_external_files_option_selected is False:
         rule all:
@@ -230,5 +209,7 @@ elif mode_selected == "download_data":
     if dl_bam_example_option_selected is False and dl_external_files_option_selected is True:
         rule all:
             input:
-                rules.dl_external_data.output
+                rules.dl_external_data.output,
+                rules.dl_external_data_index.output
+
     
