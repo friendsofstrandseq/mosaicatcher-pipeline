@@ -3,7 +3,6 @@
 # StrandPhaseR things                                                          #
 ################################################################################
 
-
 rule convert_strandphaser_input:
     """
     rule fct: extract only segmentation with WC orientation 
@@ -12,9 +11,6 @@ rule convert_strandphaser_input:
     """
     input:
         states = config["output_location"] + "segmentation/{sample}/Selection_initial_strand_state",
-        # URGENT : hard coded 500000 file name ???
-        # info   = config["output_location"] + "counts/{sample}/500000.info"
-        # FIXME : quick workaround with {window} wc
         info   = config["output_location"] + "counts/{sample}/{sample}.info"
     output:
         config["output_location"] + "strandphaser/{sample}/strandphaser_input.txt"
@@ -24,6 +20,54 @@ rule convert_strandphaser_input:
         "../envs/rtools.yaml"
     script:
         "../scripts/strandphaser_scripts/helper.convert_strandphaser_input.R"
+
+checkpoint determine_sex_per_cell:
+    """
+    rule fct:
+    input:
+    output:
+    """
+    input:
+        config["input_bam_location"] + "{sample}/selected/"
+    output:
+        sex_analysis_cellwise = config["output_location"] + "config/{sample}/sex_analysis_cells.tsv",
+        sex_analysis_samplewise = config["output_location"] + "config/{sample}/sex_analysis_sample.txt"
+    conda:
+        "../envs/mc_base.yaml"
+    script:
+        "../scripts/utils/chrxy_analysis.py"
+
+
+def aggregate_phased_haps(wildcards):
+    with checkpoints.determine_sex_per_cell.get(sample=wildcards.sample).output.sex_analysis_samplewise.open() as f:
+        sex = f.read().strip().split('\t')[1]
+        if sex == "M":
+            config["chromosomes"] = [c for c in config["chromosomes"] if c not in ["chrX", "chrY"]]
+        elif sex == "F":
+            config["chromosomes"] = [c for c in config["chromosomes"] if c not in ["chrY"]]
+        return expand(config["output_location"] + "strandphaser/{{sample}}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt", chrom=config["chromosomes"])
+
+
+
+def aggregate_vcf_gz(wildcards):
+    with checkpoints.determine_sex_per_cell.get(sample=wildcards.sample).output.sex_analysis_samplewise.open() as f:
+        sex = f.read().strip().split('\t')[1]
+        if sex == "M":
+            config["chromosomes"] = [c for c in config["chromosomes"] if c not in ["chrX", "chrY"]]
+        elif sex == "F":
+            config["chromosomes"] = [c for c in config["chromosomes"] if c not in ["chrY"]]
+        return expand(config["output_location"] + "strandphaser/{{sample}}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz", chrom=config["chromosomes"])
+
+
+
+def aggregate_vcf_gz_tbi(wildcards):
+    with checkpoints.determine_sex_per_cell.get(sample=wildcards.sample).output.sex_analysis_samplewise.open() as f:
+        sex = f.read().strip().split('\t')[1]
+        if sex == "M":
+            config["chromosomes"] = [c for c in config["chromosomes"] if c not in ["chrX", "chrY"]]
+        elif sex == "F":
+            config["chromosomes"] = [c for c in config["chromosomes"] if c not in ["chrY"]]
+        return expand(config["output_location"] + "strandphaser/{{sample}}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz.tbi", chrom=config["chromosomes"])
 
 
 
@@ -97,7 +141,7 @@ rule run_strandphaser_per_chrom:
     shell:
         # {config[Rscript]}
         """
-        LC_CTYPE=C Rscript scripts/strandphaser_scripts/StrandPhaseR_pipeline.R \
+        Rscript scripts/strandphaser_scripts/StrandPhaseR_pipeline.R \
                 {input.bamfolder} \
                 {config[output_location]}strandphaser/{wildcards.sample}/StrandPhaseR_analysis.{wildcards.chrom} \
                 {input.configfile} \
@@ -108,8 +152,10 @@ rule run_strandphaser_per_chrom:
 
 rule merge_strandphaser_vcfs:
     input:
-        vcfs=expand(config["output_location"] + "strandphaser/{{sample}}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz", chrom=config["chromosomes"]),
-        tbis=expand(config["output_location"] + "strandphaser/{{sample}}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz.tbi", chrom=config["chromosomes"]),
+        # vcfs=expand(config["output_location"] + "strandphaser/{{sample}}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz", chrom=config["chromosomes"]),
+        # tbis=expand(config["output_location"] + "strandphaser/{{sample}}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz.tbi", chrom=config["chromosomes"]),
+        vcfs= aggregate_vcf_gz,
+        tbis= aggregate_vcf_gz_tbi
     output:
         vcfgz=config["output_location"] + "strandphaser/phased-snvs/{sample}.vcf.gz"
     log:
@@ -122,9 +168,11 @@ rule merge_strandphaser_vcfs:
         """
 
 
+
 rule combine_strandphaser_output:
     input:
-        expand(config["output_location"] + "strandphaser/{{sample}}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt", chrom = config["chromosomes"])
+        # expand(config["output_location"] + "strandphaser/{{sample}}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt", chrom = config["chromosomes"])
+        aggregate_phased_haps
     output:
         config["output_location"] +  "strandphaser/{sample}/strandphaser_phased_haps_merged.txt"
     log:
