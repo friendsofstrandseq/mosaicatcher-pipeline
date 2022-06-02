@@ -1,29 +1,3 @@
-rule compile_mosaic:
-    """
-    rule fct:
-    input:
-    output:
-    """
-    input: 
-        "scripts/Mosaic/src/CMakeLists.txt"
-    output:
-        "scripts/Mosaic/build/mosaic"
-    conda:
-        "../envs/cpp_copy.yaml"
-        # "mc-base"
-    container:
-        "docker://continuumio/miniconda3:4.11.0"
-    shell:
-        """
-        pwd
-        cd scripts/Mosaic/build
-        cmake ../src
-        export LD_LIBRARY_PATH=/g/korbel2/weber//lib
-        make
-        cd ../../..
-        pwd
-        """
-
 rule install_rlib_strandphaser:
     output:
          check = touch(config['output_location'] + 'strandphaser/R_setup/strandphaser_version-{}.ok'.format(config['git_commit_strandphaser']))
