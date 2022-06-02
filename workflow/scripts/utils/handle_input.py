@@ -50,7 +50,11 @@ class HandleInput:
             df["Full_path"] = df["Folder"] + sample + "/all/" + df["File"] + ".bam"
             complete_df_list.append(df)
         complete_df = pd.concat(complete_df_list)
+
+        # CHECKME : HGVSC errors
         exclude_list = ["GM18534Bx02PE20381", "HG02011x02PE20557", "HG02011x02PE20552"]
+        
+        
         complete_df = complete_df.loc[~complete_df["Cell"].isin(exclude_list)]
         return complete_df
 
