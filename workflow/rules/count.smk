@@ -5,6 +5,8 @@ config_df = pd.read_csv(config["output_location"] + "config/config_df.tsv", sep=
 pd.options.display.max_colwidth = 40
 bam_per_sample_local = config_df.loc[config_df["Selected"] == True].groupby("Sample")["File"].apply(list).to_dict()
 # bam_per_sample_local = config_df.loc[config_df["all/selected"] == "selected"].groupby("Sample")["File"].apply(list).to_dict()
+
+
 ################################################################################
 # Read counting                                                                #
 ################################################################################
@@ -19,26 +21,6 @@ bam_per_sample_local = config_df.loc[config_df["Selected"] == True].groupby("Sam
 #                 w.write(c + "\n")
         
 
-rule generate_exclude_file_for_mosaic_count:
-    """
-    rule fct: 
-    input:
-    output:
-    """
-    input:
-        config["output_location"] + "config/config_df.tsv",
-        # chroms_include = config['output_location'] + "config/chroms_include",
-        bam = config["input_bam_location"]
-    output:
-        config["output_location"] + "config/exclude_file"
-    params:
-        chroms = config["chromosomes"]
-    conda:
-        "../envs/mc_base.yaml"
-    # shell:
-    #     "python scripts/utils/generate_exclude_file.py {input} {output} {params.chroms}"
-    script:
-        "../scripts/utils/generate_exclude_file.py"
 
 
 

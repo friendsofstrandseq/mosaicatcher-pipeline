@@ -1,18 +1,24 @@
 # Pipeline input rules
 
-rule check_bam_input:
+
+rule generate_exclude_file_for_mosaic_count:
     """
-    rule fct:
+    rule fct: 
     input:
     output:
     """
     input:
-        config["input_bam_location"]
+        config["output_location"] + "config/config_df.tsv",
+        bam = config["input_bam_location"]
     output:
-        config["output_location"] + "config/config_df.tsv"
+        config["output_location"] + "config/exclude_file"
+    params:
+        chroms = config["chromosomes"]
     conda:
         "../envs/mc_base.yaml"
-    params:
-        check_sm_tag = config["check_sm_tag"]
+    # shell:
+    #     "python scripts/utils/generate_exclude_file.py {input} {output} {params.chroms}"
     script:
-        "../scripts/utils/handle_input.py"
+        "../scripts/utils/generate_exclude_file.py"
+
+

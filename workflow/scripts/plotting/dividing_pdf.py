@@ -2,8 +2,15 @@ import pandas as pd
 
 config_df = pd.read_csv(snakemake.params.config_df, sep="\t")
 
+# tmp_dict = (
+#     config_df.loc[config_df["all/selected"] == "selected", ["Sample", "Cell"]]
+#     .groupby("Sample")["Cell"]
+#     .apply(lambda r: sorted(list(r)))
+#     .to_dict()
+# )
+
 tmp_dict = (
-    config_df.loc[config_df["all/selected"] == "selected", ["Sample", "Cell"]]
+    config_df.loc[config_df["Selected"] == True, ["Sample", "Cell"]]
     .groupby("Sample")["Cell"]
     .apply(lambda r: sorted(list(r)))
     .to_dict()
