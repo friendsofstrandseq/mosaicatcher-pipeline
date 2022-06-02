@@ -76,7 +76,6 @@ final_df.to_csv(snakemake.output.sex_analysis_cellwise, sep="\t", index=False)
 mf_dict_from_df = final_df["M/F"].value_counts().to_dict()
 mf_dict_from_df.setdefault("M", 0)
 mf_dict_from_df.setdefault("F", 0)
-print(mf_dict_from_df)
 
 try:
     perc_m = (mf_dict_from_df["M"] - mf_dict_from_df["F"]) / mf_dict_from_df["M"]
