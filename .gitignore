@@ -12,6 +12,8 @@
 *.png
 *.pdf
 *.svg
+*.tsv
+*.csv
 
 # Links
 *@
