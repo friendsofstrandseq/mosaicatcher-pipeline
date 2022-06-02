@@ -143,6 +143,10 @@ if config["plot"] is True:
                 {wildcards.chrom} \
                 {output} > {log} 2>&1
             """
+
+    # TODO : rule merge_plot_SV_calls ?
+
+
     # TODO : from shell to script function
 
 
