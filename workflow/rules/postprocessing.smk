@@ -1,8 +1,7 @@
-
+from scripts.utils.utils import get_mem_mb 
 ################################################################################
 # PostProcessing                                                               #
 ################################################################################
-
 
 
 # CHECKME : segdup file only in hg38
@@ -13,6 +12,8 @@ rule postprocessing_filter:
         calls = config["output_location"] + "mosaiclassifier/postprocessing/filter/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.tsv"
     conda: 
         "../envs/mc_base.yaml"
+    resources:
+        mem_mb = get_mem_mb,
     shell:
         """
         export LC_CTYPE=en_US.UTF-8 
@@ -27,6 +28,8 @@ rule postprocessing_merge:
         calls = config["output_location"] + "mosaiclassifier/postprocessing/merge/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.tsv"
     conda: 
         "../envs/mc_base.yaml"
+    resources:
+        mem_mb = get_mem_mb,
     shell:
         """
         export LC_CTYPE=en_US.UTF-8 
@@ -42,6 +45,8 @@ rule postprocessing_sv_group_table:
         grouptrack = config["output_location"] + "mosaiclassifier/postprocessing/group-table/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.tsv"
     conda: 
         "../envs/mc_base.yaml"
+    resources:
+        mem_mb = get_mem_mb,
     shell:
         """
         PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)
@@ -61,6 +66,8 @@ rule filter_calls:
         calls = config["output_location"] + "mosaiclassifier/sv_calls/{sample}/{method}_filterTRUE.tsv"
     conda: 
         "../envs/mc_base.yaml"
+    resources:
+        mem_mb = get_mem_mb,
     shell:
         """
         PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)
