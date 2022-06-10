@@ -36,11 +36,10 @@ Minimum system requirements vary based on the use case. We highly recommend runn
 
 ### 🐍 1. Mosaicatcher basic conda environment install
 
-MosaiCatcher leverages snakemake built-in features such as execution within container and conda predefined modular environments. That's why it is only necessary to create an environment that relies on [snakemake](https://github.com/snakemake/snakemake) (to execute the pipeline) and [pandas](https://github.com/pandas-dev/pandas) (to handle basic configuration). If you plan to generate HTML Web report including plots, it is also necessary to install [imagemagick](https://github.com/ImageMagick/ImageMagick). 
+MosaiCatcher leverages snakemake built-in features such as execution within container and conda predefined modular environments. That's why it is only necessary to create an environment that relies on [snakemake](https://github.com/snakemake/snakemake) (to execute the pipeline) and [pandas](https://github.com/pandas-dev/pandas) (to handle basic configuration). If you plan to generate HTML Web report including plots, it is also necessary to install [imagemagick](https://github.com/ImageMagick/ImageMagick). Finally, [pysam](https://pysam.readthedocs.io/en/latest/api.html) is currently required to enable `check_sm_tag` feature that compare BAM SM tag to folder name. 
 
-! # TODO : Pysam
 
-If possible, it is also highly recommended to install and use mamba package manager instead of conda, which is much more efficient.
+If possible, it is also highly recommended to install and use `mamba` package manager instead of `conda`, which is much more efficient.
 
 ```
 conda install -c conda-forge mamba
@@ -75,27 +74,25 @@ mode: "count"
 ## Plot enabled [True] or disabled [False]
 plot: False
 ## Enable / Disable comparison for each BAM file between folder name & SM tag
-check_sm_tag: False
+check_sm_tag: True
+## Enable / Disable download of BAM examples (RPE-BM510)
+dl_bam_example: False
+## Enable / Disable download of external files (1000G SNV & Fasta ref genome)
+dl_external_files: False
+## Input BAM location
+input_bam_location: "TEST_EXAMPLE_DATA/"
+## Output location
+output_location: "TEST_OUTPUT/"
+
+# External files
+## 1000G SNV sites to genotype : https://sandbox.zenodo.org/record/1060653/files/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz
+snv_sites_to_genotype: "sandbox.zenodo.org/record/1062182/files/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz"
+# Reference genome : https://sandbox.zenodo.org/record/1060653/files/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna
+reference: "sandbox.zenodo.org/record/1062182/files/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna"
 
 # Chromosomes list to process
 chromosomes: [chr1, chr2, chr3, chr4, chr5, chr6, chr7, chr8, chr9, chr10, chr11, chr12, chr13, chr14, chr15, chr16, chr17, chr18, chr19, chr20, chr21, chr22, chrX]
 
-
-# I/O path
-
-## Input BAM location
-input_bam_location: "TEST_EXAMPLE_DATA/bam/"
-## Output location
-output_location: "TEST_OUTPUT"
-
-
-# External files 
-
-## 1000G SNV sites to genotype : https://sandbox.zenodo.org/record/1060653/files/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz
-snv_sites_to_genotype: "/path/to/SNV_sites"
-
-## Reference genome : https://sandbox.zenodo.org/record/1060653/files/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna
-reference: "/path/to/ref"
 ```
 
 You can either change it or override YAML file by using snakemake CLI arguments as the following : 
@@ -164,42 +161,33 @@ It is important to follow these rules for single-cell data
 * Timestamp of index files must be newer than of the BAM files
 * Each BAM file must contain a read group (`@RG`) with a common sample name (`SM`), which must match the folder name (`sampleName` above)
 
-! # DOCME: check_sm_tag option
 
 
 ### ⚡️ 4. Run the pipeline
 
-After defining your configuration, you can launch the pipeline the following way if you download BAM example data using 3A:
+#### Local execution (without batch scheduler)
+
+After defining your configuration, you can launch the pipeline the following way if you downloaded BAM example data using 3A:
 
 
 ```bash
 snakemake \
-    --use-conda  \
     --cores 20 \
     --config \
         plot=True \
-        mode=mosaiclassifier \
-    -p \
-    --conda-frontend mamba \
-    --use-singularity \
-    --singularity-args "-B /mounting_point:/mounting_point" \
+        mode=mosaiclassifier
 ```
 
-Otherwise, you must specify input and output folder like the following:
+Otherwise, you must specify your input and output folder like the following:
 
 ```bash
 snakemake \
-    --use-conda  \
     --cores 20 \
     --config \
         plot=True \
         mode=mosaiclassifier \
         output_location=OUTPUT_FOLDER \
-        input_bam_location=INPUT_FOLDER  \
-    -p \
-    --conda-frontend mamba \
-    --use-singularity \
-    --singularity-args "-B /mounting_point:/mounting_point" \
+        input_bam_location=INPUT_FOLDER
 ```
 
 ---
@@ -216,12 +204,62 @@ If you are experiencing any issues with conda-frontend snakemake option, please 
 
 ---
 
+#### HPC execution
+
+MosaiCatcher can be executed on HPC using [Slurm](https://slurm.schedmd.com/documentation.html) by leveraging snakemake profile feature. Current Slurm profile [`workflow/profiles/slurm/config.yaml`] was defined and tested on EMBL HPC cluster but can be modified, especially regarding **partition** setting. 
+
+##### Current strategy to solve HPC job OOM 
+
+Workflow HPC execution usually needs to deal with out of memory (OOM) errors, out of disk space, abnormal paths or missing parameters for the scheduler. To deal with OOM, we are currently using snakemake restart feature (thanks [@Pablo Moreno](https://github.com/pcm32)) in order to automatically double allocated memory to the job at each attempt (limited to 8 for the moment). Then, if a job fails to run with the default 1GB of memory allocated, it will be automatically restarted tith 2GB at the 2nd attempt, 4GB at the 3rd, etc. 
+
+To execute MosaiCatcher on HPC, use the following command. 
+
+##### Command 
+
+```bash
+snakemake \
+    --profile profiles/slurm/ \
+    --config \
+        plot=True \
+        mode=mosaiclassifier \
+        output_location=OUTPUT_FOLDER \
+        input_bam_location=INPUT_FOLDER
+```
+
+The `logs` and `errors` directory will be automatically created in the current directory, corresponding respectively to the `output` and `error` parameter of the `sbatch` command. 
 
 
-#### Snakemake & Singularity arguments
+###  📊 5. Generate report  [Optional]
+
+Optionally, you can also MosaiCatcher rules that produce plots 
+
+```bash
+snakemake \
+    --cores 20  \
+    --config \
+        plot=True \
+        mode=mosaiclassifier \ 
+        output_location=OUTPUT_FOLDER \
+        input_bam_location=INPUT_FOLDER  \
+    --report report.zip
+```
+
+++ Note can he heavy
+
+---
+**ℹ️ Note**
+
+The zip file produced can be heavy (~1GB for 24 HGSVC samples ; 2000 cells) if multiple samples are processed in parallel in the same output folder.
+
+---
+## Arguments
+
+### Snakemake arguments
+
+Here are presented some essential snakemake options that could help you. 
 
 ```
---cores 1
+--cores, -c
 ```
 Use at most N CPU cores/jobs in parallel. If N is omitted or ‘all’, the limit is set to the number of available CPU cores. In case of cluster/cloud execution, this argument sets the number of total cores used over all jobs (made available to rules via workflow.cores).
 
@@ -241,7 +279,6 @@ If defined in the rule, run job in a conda environment. If this flag is not set,
 Choose the conda frontend for installing environments. Mamba is much faster and highly recommended. Default: “mamba”
 
 
-
 ```
 --use-singularity 
 ```
@@ -252,6 +289,32 @@ If defined in the rule, run job within a singularity container. If this flag is 
 ```
 Pass additional args to singularity. `-B` stands for binding point between the host and the container.
 
+```
+--dryrun, -n 
+```
+Do not execute anything, and display what would be done. If you have a very large workflow, use –dry-run –quiet to just print a summary of the DAG of jobs.
+
+```
+--rerun-incomplete, --ri
+```
+Re-run all jobs the output of which is recognized as incomplete.
+
+
+```
+--keep-going, -k
+```
+Go on with independent jobs if a job fails.
+
+```
+-T, --retries, --restart-times
+```
+Number of times to restart failing jobs (defaults to 0).
+
+```
+--forceall, -F
+```
+Force the execution of the selected (or the first) rule and all rules it is dependent on regardless of already created output.
+
 ---
 **ℹ️ Note**
 
@@ -260,12 +323,18 @@ On seneca for example (EMBL), use `"/g:/g"` if you are working on `/g/korbel[2]`
 
 ---
 
-Obviously, all other snakemake CLI options can also be used. 
+Obviously, all other [snakemake CLI options](https://snakemake.readthedocs.io/en/stable/executing/cli.html) can also be used. 
 
 
 
-#### MosaiCatcher arguments
+### MosaiCatcher arguments
 
+
+
+
+```
+mode
+```
 
 MosaiCatcher currently supports three different modes of execution : `count`, `segmentation` and `mosaiclassifier`.
 - `count` (selected by default) will only performs `Mosaic count` binning and count reads for each bin produced
@@ -274,42 +343,49 @@ MosaiCatcher currently supports three different modes of execution : `count`, `s
 
 To select your mode of execution, use the following argument `--config mode=[count|segmentation|mosaiclassifier]`
 
+
+```
+plot
+```
+
 For each of these modes, you can *enable* or *disable* the plots generation by using `--config plot=[True|False]`
 
 
-###  📊 5. Generate report  [Optional]
-
-Optionally, you can also MosaiCatcher rules that produce plots 
-
-```bash
-snakemake \
-    --use-conda  \
-    --cores 20  \
-    --config \
-        plot=True \
-        mode=mosaiclassifier \ 
-        output_location=OUTPUT_FOLDER \
-        input_bam_location=INPUT_FOLDER  \
-    --report report.zip
 ```
+check_sm_tag
+```
+Based on pysam, will compare for each BAM file, if the header SM tag is identical to the folder name in order to prevent further issues.
+
+```
+dl_bam_example
+```
+Allow to retrieve automatically BAM example data to run the pipeline.
+
+```
+dl_external_files
+```
+Allow to retrieve automatically external files (GRCh38 reference genome + 1000G SNV VCF file) required to run the pipeline.
+
+
 
 ## 📆 Roadmap 
 
 - [x] Zenodo automatic download of external files + indexes ([1.2.1](https://git.embl.de/tweber/mosaicatcher-update/-/tags/1.2.1))
 - [x] Multiple samples in the parent folder ([1.2.2](https://git.embl.de/tweber/mosaicatcher-update/-/tags/1.2.2))
 - [x] Automatic testing of BAM SM tag compared to sample folder name ([1.2.3](https://git.embl.de/tweber/mosaicatcher-update/-/tags/1.2.3))
+- [x] On-error/success e-mail ([1.3](https://git.embl.de/tweber/mosaicatcher-update/-/tags/1.3))
+- [x] HPC execution (slurm profile for the moment) ([1.3](https://git.embl.de/tweber/mosaicatcher-update/-/tags/1.3))
 - [ ] Change of reference genome (currently only GRCh38)
 - [ ] Plotting options (enable/disable segmentation back colors)
 - [ ] Full singularity image with preinstalled conda envs
-- [ ] On-error/success e-mail
 - [ ] Upstream QC pipeline and FastQ handle
 - [ ] Full singularity image
 
 ## 🛑 Troubleshooting & Current limitations
 
-- Do not change the structure of your input folder after running the pipeline, first execution will build a config dataframe file (`workflow/config/config.tsv`) that contains the list of cells and the associated paths
+- Do not change the structure of your input folder after running the pipeline, first execution will build a config dataframe file (`OUTPUT_DIRECTORY/config/config.tsv`) that contains the list of cells and the associated paths
 - Do not change the list of chromosomes after a first execution (i.e: first execution using `count` mode on `chr21`, second execution using `segmentation` mode on all chromosomes)
-- Pipeline is unstable on **male** samples (LCL sample for example) for the moment due to the impossibility to run strandphaser (only one haplotype for the X chrom)
+- ~~Pipeline is unstable on **male** samples (LCL sample for example) for the moment due to the impossibility to run strandphaser (only one haplotype for the X chrom)~~ That was solved based on [Hufsah Ashraf](https://github.com/orgs/friendsofstrandseq/people/Hufsah-Ashraf) and [Wolfram Höps](https://github.com/orgs/friendsofstrandseq/people/WHops) work allowing to determine automatically sample sex and use [snakemake checkpoint](https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html#data-dependent-conditional-execution) that allow data-depdendent conditional execution. Thus, initial list of chromosomes was updated regarding the samples sex in order to bypass chrX & chrY for male sample, as both are present in a single haplotype.  
 
 ## 📕 References
 
