@@ -1,8 +1,8 @@
+from scripts.utils.utils import get_mem_mb 
+
 import math
 import pandas as pd
 config_df = pd.read_csv(config["output_location"] + "config/config_df.tsv", sep="\t")
-# print(config_df)
-# cell_per_sample = config_df.loc[config_df["all/selected"] == "selected"].groupby("Sample")["Cell"].apply(list).to_dict()
 cell_per_sample = config_df.loc[config_df["Selected"] == True].groupby("Sample")["Cell"].apply(list).to_dict()
 
 ################################################################################
@@ -25,10 +25,11 @@ rule segmentation:
     log:
         config["output_location"] + "log/segmentation/{sample}/{sample}.log"
     params:
-        # mc_command = config["mosaicatcher"],
         min_num_segs = lambda wc: math.ceil(200000 / float(config["window"]))  # bins to represent 200 kb
     container:
         "library://weber8thomas/remote-build/mosaic:0.3"
+    resources:
+        mem_mb = get_mem_mb,
     shell:
         """
         /mosaicatcher/build/mosaic segment \
@@ -38,19 +39,6 @@ rule segmentation:
         -o {output} \
         {input} > {log} 2>&1
         """
-    # conda:
-    #     "../envs/mc_base.yaml"
-        # """
-        # {params.mc_command} segment \
-        # --remove-none \
-        # --forbid-small-segments {params.min_num_segs} \
-        # -M 50000000 \
-        # -o {output} \
-        # {input} 
-        # """
-        # {input} > {log} 2>&1
-
-
 
 # FIXME: This is a workaround because latest versions of "mosaic segment" don't compute the "bps" column properly. Remove once fixed in the C++ code.
 rule fix_segmentation:
@@ -74,7 +62,6 @@ rule fix_segmentation:
 # Single-Cell Segmentation                                                                 #
 ################################################################################
 
-
 rule segment_one_cell:
     """
     rule fct: Same as `rule segmentation` : mosaic segment function but for individual cell
@@ -92,6 +79,8 @@ rule segment_one_cell:
     params:
         # mc_command = config["mosaicatcher"],
         min_num_segs = lambda wc: math.ceil(200000 / float(config["window"])) # bins to represent 200 kb
+    resources:
+        mem_mb = get_mem_mb,
     shell:
         """
         /mosaicatcher/build/mosaic segment \
@@ -101,7 +90,6 @@ rule segment_one_cell:
         -o {output} \
         {input} > {log} 2>&1
         """
-
 
 
 rule segmentation_selection:
@@ -125,6 +113,8 @@ rule segmentation_selection:
         cellnames = lambda wc: ",".join(cell for cell in cell_per_sample[wc.sample]),
     conda:
         "../envs/mc_base.yaml"
+    resources:
+        mem_mb = get_mem_mb,
     shell:
         """
         PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)

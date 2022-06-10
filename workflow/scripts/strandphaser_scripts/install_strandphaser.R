@@ -41,7 +41,8 @@ devtools::install_git(
     git.repo,
     ref = git.commit,
     dependencies = FALSE,
-    upgrade = FALSE
+    upgrade = FALSE,
+    INSTALL_opts = "--no-lock"
 )
 
 quit(save = "no")
