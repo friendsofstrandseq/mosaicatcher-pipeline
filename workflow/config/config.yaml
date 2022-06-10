@@ -2,6 +2,8 @@
 #   MOSAICATCHER CONFIGURATION FILE.  #
 #######################################
 
+mail: ""
+
 #######################################
 ## Command-line options
 #######################################
@@ -11,7 +13,7 @@ mode: "count"
 ### Plot enabled [True] or disabled [False]
 plot: False
 ### Enable / Disable comparison for each BAM file between folder name & SM tag
-check_sm_tag: False
+check_sm_tag: True
 ### Enable / Disable download of BAM examples (RPE-BM510)
 dl_bam_example: False
 ### Enable / Disable download of external files (1000G SNV & Fasta ref genome)
@@ -58,6 +60,17 @@ chromosomes:
 ##############################
 # Advanced configuration.  #
 ##############################
+
+# Enable conda & singularity usage
+use-conda: True
+use-singularity: True
+singularity-args: "-B /g:/g"
+
+# Default conda frontend
+conda-frontend: "mamba"
+
+# Print shell commands
+printshellcmds: True
 
 # External static data
 # R Ref

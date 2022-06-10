@@ -1,3 +1,4 @@
+from scripts.utils.utils import get_mem_mb 
 
 ################################################################################
 # StrandPhaseR things                                                          #
@@ -125,19 +126,21 @@ rule run_strandphaser_per_chrom:
     output:
         config["output_location"] + "strandphaser/{sample}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt",
         config["output_location"] + "strandphaser/{sample}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf",
-        config["output_location"] + "strandphaser/{sample}/StrandPhaseR_analysis.{chrom}/SingleCellHaps/{chrom}_singleCellHaps.pdf",
-
-        # report(
-        #     config["output_location"] + "strandphaser/{sample}/StrandPhaseR_analysis.{chrom}/SingleCellHaps/{chrom}_singleCellHaps.pdf",
-        #     category="StrandPhaseR",
-        #     subcategory = "{sample}",
-        #     caption="../report/strandphaser_haplotypes.rst",
-        #     labels={"Sample" : "{sample}", "Chrom" : "{chrom}"}
-        # )
+        # config["output_location"] + "strandphaser/{sample}/StrandPhaseR_analysis.{chrom}/SingleCellHaps/{chrom}_singleCellHaps.pdf",
+        report(
+            config["output_location"] + "strandphaser/{sample}/StrandPhaseR_analysis.{chrom}/SingleCellHaps/{chrom}_singleCellHaps.pdf",
+            category="StrandPhaseR",
+            subcategory = "{sample}",
+            caption="../report/strandphaser_haplotypes.rst",
+            labels={"Sample" : "{sample}", "Chrom" : "{chrom}"}
+        )
     log:
         config["output_location"] + "log/run_strandphaser_per_chrom/{sample}/{chrom}.log"
     conda:
         "../envs/rtools.yaml"
+    resources:
+        mem_mb = "5G",
+        time = "00:30:00",
     shell:
         # {config[Rscript]}
         """
@@ -152,16 +155,22 @@ rule run_strandphaser_per_chrom:
 
 rule merge_strandphaser_vcfs:
     input:
+        ## OLD calling
         # vcfs=expand(config["output_location"] + "strandphaser/{{sample}}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz", chrom=config["chromosomes"]),
         # tbis=expand(config["output_location"] + "strandphaser/{{sample}}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz.tbi", chrom=config["chromosomes"]),
-        vcfs= aggregate_vcf_gz,
-        tbis= aggregate_vcf_gz_tbi
+        ## NEW calling that takes into account sex sample (see checkpoint determine_sex_per_cell)
+        vcfs= ancient(aggregate_vcf_gz),
+        tbis= ancient(aggregate_vcf_gz_tbi)
     output:
         vcfgz=config["output_location"] + "strandphaser/phased-snvs/{sample}.vcf.gz"
     log:
         config["output_location"] + "log/merge_strandphaser_vcfs/{sample}.log"
     conda:
         "../envs/mc_bioinfo_tools.yaml"
+    resources:
+        mem_mb = "10G",
+        time = "00:30:00",
+    #     disk_mb = "100G"
     shell:
         """
         (bcftools concat -a {input.vcfs} | bcftools view -o {output.vcfgz} -O z --genotype het --types snps - ) > {log} 2>&1
@@ -171,25 +180,31 @@ rule merge_strandphaser_vcfs:
 
 rule combine_strandphaser_output:
     input:
-        # expand(config["output_location"] + "strandphaser/{{sample}}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt", chrom = config["chromosomes"])
         aggregate_phased_haps
     output:
         config["output_location"] +  "strandphaser/{sample}/strandphaser_phased_haps_merged.txt"
     log:
         config["output_location"] + "log/combine_strandphaser_output/{sample}.log"
-    shell:
-        """
-        set +o pipefail
-        cat {input} | head -n1 > {output};
-        tail -q -n+2 {input} >> {output};
-        """
+    resources:
+        mem_mb = "16G",
+        time = "00:30:00",
+    run:
+        ## Errors on slurm with previous version
+        # """
+        # set -o pipefail;
+        # cat {input} | head -n1 > {output};
+        # tail -q -n+2 {input} >> {output}; > {log} 2>&1
+        # """
+        ## New version using pandas
+        import pandas as pd
+        pd.concat([pd.read_csv(file, sep="\t") for j, file in enumerate(input)]).to_csv(output[0], sep="\t", index=False)
+        
 
 
 rule convert_strandphaser_output:
     input:
         phased_states  = config["output_location"] + "strandphaser/{sample}/strandphaser_phased_haps_merged.txt",
         initial_states = config["output_location"] + "segmentation/{sample}/Selection_initial_strand_state",
-        # info           = config["output_location"] + "counts/{sample}/500000_fixed.info"
         info           = config["output_location"] + "counts/{sample}/{sample}.info"
     output:
         config["output_location"] + "strandphaser/{sample}/StrandPhaseR_final_output.txt"
@@ -199,4 +214,3 @@ rule convert_strandphaser_output:
         "../envs/rtools.yaml"
     script:
         "../scripts/strandphaser_scripts/helper.convert_strandphaser_output.R"
-
