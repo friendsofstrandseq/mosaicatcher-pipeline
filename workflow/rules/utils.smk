@@ -1,18 +1,8 @@
+from scripts.utils.utils import get_mem_mb 
 
 ################################################################################
 # UTILS                                                                        #
 ################################################################################
-
-
-
-# rule sort_bam:
-#     input:
-#         config["output_location"] + "snv_calls/{sample}/merged.unsorted.bam"
-#     output:
-#         config["output_location"] + "snv_calls/{sample}/merged.bam"
-#     shell:
-#         config["samtools"] + " sort {input} -o {output}"
-
 
 rule index_bam:
     """
@@ -24,13 +14,14 @@ rule index_bam:
         "{file}.bam"
     output:
         "{file}.bam.bai"
-    # log:
-    #     "{file}.bam.log"
+    log:
+        "{file}.bam.log"
     conda:
         "../envs/mc_bioinfo_tools.yaml"
+    resources:
+        mem_mb = get_mem_mb,
     shell:
-        # config["samtools"] + " index {input} 2> {log}"
-        "samtools" + " index {input}"
+        "samtools index {input} > {log} 2>&1"
 
 
 rule compress_vcf:
@@ -43,13 +34,12 @@ rule compress_vcf:
         vcf="{file}.vcf",
     output:
         vcf="{file}.vcf.gz",
-    # log:
-    #     "log/compress_vcf/{file}.log"
+    log:
+        "{file}.vcf.gz.log"
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     shell:
-        # "(cat {input.vcf} | bgzip > {output.vcf}) > {log} 2>&1"
-        "bgzip {input.vcf}"
+        "bgzip {input.vcf} > {log} 2>&1"
 
 rule index_vcf:
     """
@@ -60,9 +50,12 @@ rule index_vcf:
     input:
         vcf="{file}.vcf.gz",
     output:
-        tbi="{file}.vcf.gz.tbi",
+        vcf="{file}.vcf.gz.tbi",
+    log:
+        "{file}.vcf.gz.tbi.log"
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     shell:
-        "tabix -p vcf {input.vcf}"
+        "tabix -p vcf {input.vcf} > {log} 2>&1"
+
 
