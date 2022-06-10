@@ -1,3 +1,5 @@
+from scripts.utils.utils import get_mem_mb 
+
 import os
 os.environ['OPENBLAS_NUM_THREADS'] = '1'
 
@@ -7,31 +9,7 @@ os.environ['OPENBLAS_NUM_THREADS'] = '1'
 # Plots                                                                        #
 ################################################################################
 
-
-# rule tmp_small_plots:
-#     input:
-#         counts = config["output_location"] + "counts/{sample}.txt.gz",
-#         info   = config["output_location"] + "counts/{sample}.info"
-#     output:
-#         counts = config["output_location"] + "counts/{sample}.lite.txt.gz",
-#         info   = config["output_location"] + "counts/{sample}.lite.info"
-#     run:
-#         df_counts = pd.read_csv(input[0], compression="gzip", sep="\t")
-#         sample_cells = df_counts["cell"].unique().tolist()[:2]
-#         df_counts_lite = df_counts.loc[df_counts["cell"].isin(sample_cells)]
-#         df_counts_lite.to_csv(output[0], sep="\t", compression="gzip", index=False)
-
-#         info_header = "".join([line for line in open(input[1], "r").readlines() if line[0] == "#"])
-#         with open(output[1], "w") as w:
-#             w.write(info_header)
-
-#         df_info = pd.read_csv(input[1], sep="\t", skiprows=13)
-#         df_info_lite = df_info.loc[df_info["cell"].isin(sample_cells)]
-#         df_info_lite.to_csv(output[1], sep="\t", mode="a", index=False)
-
-
-        
-
+# Load rules only if plot is enabled [True] in config file        
 if config["plot"] is True:
 
     rule plot_mosaic_counts:
@@ -45,14 +23,12 @@ if config["plot"] is True:
             info   = config["output_location"] + "counts/{sample}/{sample}.info"
         output:
             config["output_location"] + "plots/{sample}/counts/CountComplete.pdf"
-            # report(
-            #     config["output_location"] + "plots/{sample}/Count_complete.pdf",
-            #     category="Mosaic counts raw",
-            # )
         log:
             config["output_location"] + "log/plot_mosaic_counts/{sample}.log"
         conda:
             "../envs/rtools.yaml"
+        resources:
+            mem_mb = get_mem_mb,
         shell:
             """
             Rscript scripts/plotting/qc.R {input.counts} {input.info} {output} > {log} 2>&1
@@ -74,12 +50,10 @@ if config["plot"] is True:
             "../envs/mc_base.yaml"
         params:
             config_df = config["output_location"] + "config/config_df.tsv"
+        resources:
+            mem_mb = get_mem_mb,
         script:
             "../scripts/plotting/dividing_pdf.py"
-
-
-
-
 
 
     rule plot_SV_consistency_barplot:
@@ -92,10 +66,10 @@ if config["plot"] is True:
             config["output_location"] + "log/plot_SV_consistency/{sample}/{method}.log"
         conda:
             "../envs/rtools.yaml"
+        resources:
+            mem_mb = get_mem_mb,
         script:
             "../scripts/plotting/sv_consistency_barplot.snakemake.R"
-
-
 
 
     rule plot_clustering:
@@ -110,6 +84,8 @@ if config["plot"] is True:
             config["output_location"] + "log/plot_clustering/{sample}/{method}.log"
         conda:
             "../envs/rtools.yaml"
+        resources:
+            mem_mb = get_mem_mb,
         script:
             "../scripts/plotting/plot-clustering.snakemake.R"
     #        Rscript scripts/plotting/plot-clustering.snakemake.R {input.sv_calls} {input.binbed} {output.position} {output.chromosome}
@@ -130,6 +106,8 @@ if config["plot"] is True:
             config["output_location"] + "log/plot_SV_calls/{sample}/{method}_filter{filter}.{chrom}.log"
         conda:
             "../envs/rtools.yaml"
+        resources:
+            mem_mb = get_mem_mb,
         shell:
             """
             Rscript scripts/plotting/plot-sv-calls.R \

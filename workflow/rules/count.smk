@@ -1,28 +1,14 @@
+from scripts.utils.utils import get_mem_mb 
+
 import pandas as pd
 config_df = pd.read_csv(config["output_location"] + "config/config_df.tsv", sep="\t")
 
-
 pd.options.display.max_colwidth = 40
 bam_per_sample_local = config_df.loc[config_df["Selected"] == True].groupby("Sample")["File"].apply(list).to_dict()
-# bam_per_sample_local = config_df.loc[config_df["all/selected"] == "selected"].groupby("Sample")["File"].apply(list).to_dict()
-
 
 ################################################################################
 # Read counting                                                                #
 ################################################################################
-
-# rule generate_list_chroms:
-#     output:
-#         config["output_location"] + "config/chroms_include"
-#     run:
-#         with open(output[0], 'w') as w:
-#             for c in config["chromosomes"]:
-#                 print(c)
-#                 w.write(c + "\n")
-        
-
-
-
 
 
 # DOCME : mosaic count read orientation ?
@@ -35,7 +21,7 @@ rule mosaic_count:
     input:
         bam = lambda wc: expand(config["input_bam_location"] + wc.sample +  "/selected/{bam}.bam", bam = bam_per_sample_local[str(wc.sample)] if wc.sample in bam_per_sample_local else "FOOBAR"),
         # bai = lambda wc: expand(config["input_bam_location"] + wc.sample +  "/selected/{bam}.bam.bai", bam = bam_per_sample_local[wc.sample]) if wc.sample in bam_per_sample_local else "FOOBAR",
-        excl = config["output_location"] + "config/exclude_file",
+        excl = ancient(config["output_location"] + "config/exclude_file"),
     output:
         counts = config["output_location"] + "counts/{sample}/{sample}.txt.fixme.gz",
         info   = config["output_location"] + "counts/{sample}/{sample}.info"
@@ -45,6 +31,8 @@ rule mosaic_count:
         "library://weber8thomas/remote-build/mosaic:0.3"
     params:
         window = config["window"]
+    resources:
+        mem_mb = get_mem_mb,
     shell:
         """
         /mosaicatcher/build/mosaic count \
@@ -88,6 +76,7 @@ rule merge_blacklist_bins:
         merged = config["output_location"] + "normalizations/HGSVC.{window}.merged.tsv"
     log:
         config["output_location"] + "log/merge_blacklist_bins/{window}.log"
+
     shell:
         """
         PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)
@@ -151,3 +140,5 @@ rule extract_single_cell_counts:
         # Issue #1022 (https://bitbucket.org/snakemake/snakemake/issues/1022)
         zcat {input} | awk -v name={wildcards.cell} '(NR==1) || $5 == name' | gzip > {output}
         """
+
+
