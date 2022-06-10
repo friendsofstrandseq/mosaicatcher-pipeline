@@ -6,8 +6,6 @@ samples = sorted(config_df.Sample.unique().tolist())
 # Summary statistics on sv calls                                               #
 ################################################################################
 
-
-
 rule summary_statistics:
     input:
         segmentation = config["output_location"] + 'segmentation/{sample}/Selection_jointseg.txt',
@@ -19,8 +17,6 @@ rule summary_statistics:
         tsv = config["output_location"] + 'stats/{sample}/{method}_filter{filter}.tsv',
     log:
         config["output_location"] + 'log/summary_statistics/{sample}/{method}_filter{filter}.log'
-    # conda: 
-    #     "../envs/mc_base.yaml"
     run:
         p = []
         try:
