@@ -3,6 +3,7 @@
 .vscode/
 .snakemake/
 .panoptes.db
+._.DS_Store
 
 # Tmp files & execution outputs
 *.pyc
@@ -59,6 +60,8 @@ workflow/report_TALL/
 *.bam
 *.bai
 workflow/TEST_EXAMPLE_DATA/
+workflow/logs/
+workflow/errors/
 
 # git
 

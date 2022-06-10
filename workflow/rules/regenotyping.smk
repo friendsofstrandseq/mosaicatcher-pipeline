@@ -1,6 +1,7 @@
+from scripts.utils.utils import get_mem_mb 
+
 import pandas as pd
 config_df = pd.read_csv(config["output_location"] + "config/config_df.tsv", sep="\t")
-# allbams_per_sample = df_config_files.loc[df_config_files["all/selected"] == "all"].groupby("Sample")["File"].apply(list).to_dict()
 allbams_per_sample = config_df.groupby("Sample")["File"].apply(list).to_dict()
 
 
@@ -20,12 +21,14 @@ rule mergeBams:
         config["output_location"] + "merged_bam/{sample}/merged.bam"
     log:
         config["output_location"] + "log/mergeBams/{sample}.log"
+    resources:
+        mem_mb = get_mem_mb,
+        time = "01:00:00",
     threads:
-        4
+        10
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     shell:
-        # config["samtools"] + " merge -@ {threads} {output} {input} 2>&1 > {log}"
         "samtools" + " merge -@ {threads} {output} {input} 2>&1 > {log}"
 
 rule regenotype_SNVs:
@@ -44,7 +47,9 @@ rule regenotype_SNVs:
         config["output_location"] + "log/snv_genotyping/{sample}/{chrom}.log"
     params:
         fa = config["reference"],
-        # bcftools = config["bcftools"]
+    resources:
+        mem_mb = get_mem_mb,
+        time = "10:00:00",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     shell:
@@ -62,3 +67,5 @@ rule regenotype_SNVs:
             --include "QUAL>=10" \
         > {output.vcf}) 2> {log}
         """
+
+
