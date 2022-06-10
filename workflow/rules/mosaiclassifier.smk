@@ -1,3 +1,4 @@
+from scripts.utils.utils import get_mem_mb 
 
 ################################################################################
 # MosaiClassifier                                                              #
@@ -16,6 +17,8 @@ rule mosaiClassifier_calc_probs:
         config["output_location"] + "log/mosaiClassifier_calc_probs/{sample}.log"
     conda:
         "../envs/rtools.yaml"
+    resources:
+        mem_mb = get_mem_mb,
     script:
         "../scripts/mosaiclassifier_scripts/mosaiClassifier.snakemake.R"
 
@@ -29,6 +32,8 @@ rule create_haplotag_likelihoods:
         config["output_location"] + "log/create_haplotag_likelihoods/{sample}.log"
     conda:
         "../envs/rtools.yaml"
+    resources:
+        mem_mb = get_mem_mb,
     script:
         "../scripts/mosaiclassifier_scripts/haplotagProbs.snakemake.R"
     
@@ -45,20 +50,10 @@ rule mosaiClassifier_make_call:
     params:
         minFrac_used_bins = 0.8,
         window = config["window"]
+    resources:
+        mem_mb = get_mem_mb,
     script:
         "../scripts/mosaiclassifier_scripts/mosaiClassifier_call.snakemake.R"
-
-# rule convert_to_html:
-#     input:
-#         config["output_location"] + "mosaiclassifier/sv_calls/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}_filter{filter}.txt"
-#     output:
-#         config["output_location"] + "mosaiclassifier/sv_calls/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}_filter{filter}.pdf",
-#         # report(
-#         #     config["output_location"] + "mosaiclassifier/sv_calls/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}_filter{filter}.html",
-#         #     category="MosaiClassifier"
-#         # )
-#     run:
-#         pd.read_csv(input[0], sep='\t').to_pdf(output[0])
 
 
 rule mosaiClassifier_make_call_biallelic:
@@ -70,6 +65,8 @@ rule mosaiClassifier_make_call_biallelic:
         config["output_location"] + "log/mosaiClassifier_make_call_biallelic/{sample}/{llr}.log"
     conda:
         "../envs/rtools.yaml"
+    resources:
+        mem_mb = get_mem_mb,
     script:
         "../scripts/mosaiclassifier_scripts/mosaiClassifier_call_biallelic.snakemake.R"
 
@@ -83,6 +80,8 @@ rule call_complex_regions:
         config["output_location"] + "log/call_complex_regions/{sample}/{method}.log"
     conda:
         "../envs/mc_base.yaml"
+    resources:
+        mem_mb = get_mem_mb,
     shell:
         """
         PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)

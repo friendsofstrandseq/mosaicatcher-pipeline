@@ -7,8 +7,6 @@ from collections import defaultdict
 import pandas as pd
 import os, sys
 from pprint import pprint
-# import pysam
-# from tqdm import tqdm
 
 # TODO : check config/config CLI ... 
 configfile: "config/config.yaml"
@@ -72,7 +70,9 @@ if config["mode"] != "download_data":
         df_config_files = c.df_config_files
     else:
         df_config_files = pd.read_csv(config["output_location"] + "config/config_df.tsv", sep="\t")
-        print(df_config_files)
+    print(df_config_files)
+    # exit()
+
 
 
 
@@ -212,4 +212,13 @@ elif mode_selected == "download_data":
                 rules.dl_external_data.output,
                 rules.dl_external_data_index.output
 
+
+if config["mail"]:
     
+onsuccess:
+    print("Workflow finished, no error")
+    shell('mail -s "Workflow finished, no error"' + config["mail"] '< {log}')
+
+onerror:
+    print("An error occurred")
+    shell('mail -s "Workflow failed, an error occurred"' + config["mail"] '< {log}')
