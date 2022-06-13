@@ -104,7 +104,17 @@ You can either change it or override YAML file by using snakemake CLI arguments 
 The `--config` argument will here overrides value of each of the keys present in the YAML file.
 
 
-#### 3A. Download example data automatically with snakemake [Optional] 
+
+
+#### 3A. Download external data automatically with snakemake [Optional] 
+
+```
+snakemake -c1 --config mode=download_data dl_external_files=True
+```
+
+#### 3B. Strand-Seq BAM input data
+
+##### Download example data automatically with snakemake [Optional] 
 
 ```
 snakemake -c1 --config mode=download_data dl_bam_example=True input_bam_location=TEST_EXAMPLE_DATA/
@@ -112,14 +122,7 @@ snakemake -c1 --config mode=download_data dl_bam_example=True input_bam_location
 **Warning:** Download example data currently requires 35GB of free space disk. 
 
 
-#### 3B. Download external data automatically with snakemake [Optional] 
-
-```
-snakemake -c1 --config mode=download_data dl_external_files=True
-```
-
-
-#### 3C. Prepare input data 
+##### Use your own data
 
 In its current flavour, MosaiCatcher requires that input data must be formatted the following way :
 
@@ -243,6 +246,7 @@ snakemake \
         input_bam_location=INPUT_FOLDER  \
     --report report.zip
 ```
+
 
 
 ---
