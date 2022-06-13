@@ -244,7 +244,6 @@ snakemake \
     --report report.zip
 ```
 
-++ Note can he heavy
 
 ---
 **ℹ️ Note**
