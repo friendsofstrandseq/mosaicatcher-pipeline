@@ -122,7 +122,7 @@ snakemake -c1 --config mode=download_data dl_bam_example=True input_bam_location
 **Warning:** Download example data currently requires 35GB of free space disk. 
 
 
-##### Use your own data
+##### Use your own data ()
 
 In its current flavour, MosaiCatcher requires that input data must be formatted the following way :
 
