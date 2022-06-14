@@ -213,12 +213,12 @@ elif mode_selected == "download_data":
                 rules.dl_external_data_index.output
 
 
-if config["mail"]:
-    
-onsuccess:
-    print("Workflow finished, no error")
-    shell('mail -s "Workflow finished, no error"' + config["mail"] '< {log}')
+# if config["mail"]:
+        
+#     onsuccess:
+#         print("Workflow finished, no error")
+#         shell('mail -s "Workflow finished, no error"' + config["mail"] '< {log}')
 
-onerror:
-    print("An error occurred")
-    shell('mail -s "Workflow failed, an error occurred"' + config["mail"] '< {log}')
+#     onerror:
+#         print("An error occurred")
+#         shell('mail -s "Workflow failed, an error occurred"' + config["mail"] '< {log}')
