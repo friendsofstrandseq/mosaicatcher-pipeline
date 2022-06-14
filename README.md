@@ -1,7 +1,5 @@
 ![MosaiCatcher](docs/images/mosaic_logo.png)
 
-++ Badges
-
 
 Structural variant calling from single-cell Strand-seq data [Snakemake](https://github.com/snakemake/snakemake) pipeline.
 
@@ -22,25 +20,44 @@ the workflow goes through the following steps:
   6. Bayesian classification of segmentation to find SVs using MosaiClassifier
   7. Visualization of results using custom R plots
 
-++ Figure
 
 # Quick Start
 
-++ TODO
+1. Install [Singularity](https://www.sylabs.io/guides/3.0/user-guide/) 
+2. Create a dedicated conda environment 
+```
+conda create -n mosaicatcher_env -c conda-forge -c bioconda snakemake pandas pysam imagemagick && conda activate mosaicatcher_env
+```
+3. Clone the repository and go in the `workflow` directory
+``` 
+git clone https://git.embl.de/tweber/mosaicatcher-update.git && cd mosaicatcher-update/workflow/
+```
+4. Download test and reference data 
+```
+snakemake -c1 --config mode=download_data dl_external_files=True dl_bam_example=True input_bam_location=TEST_EXAMPLE_DATA/
+```
+5. Run on test data
+```
+snakemake --cores 12 input_bam_location=TEST_EXAMPLE_DATA/ output_location=TEST_OUTPUT/
+```
+
+6. Start running your own analysis
+```
+snakemake --cores 12 --config input_bam_location=<INPUT_DATA_FOLDER> output_location=<OUTPUT_DATA_FOLDER>
+
+```
+7. Generate report 
+```
+snakemake --cores 12 --config input_bam_location=<INPUT_DATA_FOLDER> output_location=<OUTPUT_DATA_FOLDER> --report <REPORT.zip>
+```
 
 
-
-# Pipeline Summary
-
-## Default steps
-
-## Additionnal steps
 
 # Documentation
 
 * [Usage](docs/Usage.md)
 * [Parameters & input](docs/Parameters.md)
-* [Output](docs/Output.md)
+* [Output](docs/Output.md) (#TODO)
 
 
 
@@ -63,11 +80,6 @@ the workflow goes through the following steps:
 - Do not change the list of chromosomes after a first execution (i.e: first execution using `count` mode on `chr21`, second execution using `segmentation` mode on all chromosomes)
 - ~~Pipeline is unstable on **male** samples (LCL sample for example) for the moment due to the impossibility to run strandphaser (only one haplotype for the X chrom)~~ That was solved based on [Hufsah Ashraf](https://github.com/orgs/friendsofstrandseq/people/Hufsah-Ashraf) and [Wolfram Höps](https://github.com/orgs/friendsofstrandseq/people/WHops) work allowing to determine automatically sample sex and use [snakemake checkpoint](https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html#data-dependent-conditional-execution) that allow data-depdendent conditional execution. Thus, initial list of chromosomes was updated regarding the samples sex in order to bypass chrX & chrY for male sample, as both are present in a single haplotype.  
 
-# Credits
-
-# Authors (alphabetical)
-
-# Additional contributors (alphabetical)
 
 # 📕 References
 
