@@ -49,7 +49,7 @@ TEST_OUTPUT/
 workflow/test.txt
 
 # Exceptions
-!docs/images/
+!docs/images/*.png
 !workflow/config/config.yaml
 !workflow/data/segdups/segDups_hg38_UCSCtrack.bed.gz
 
