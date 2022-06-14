@@ -66,8 +66,8 @@ After cloning the repo, go into the `workflow` directory which correspond to the
 
 
 ```
-git clone https://git.embl.de/tweber/mosaicatcher-update.git
-cd mosaicatcher-update/workflow/
+git clone https://github.com/friendsofstrandseq/mosaicatcher-pipeline.git
+cd mosaicatcher-pipeline/workflow/
 ```
 
 
