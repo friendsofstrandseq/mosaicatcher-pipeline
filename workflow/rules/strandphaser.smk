@@ -141,8 +141,7 @@ rule run_strandphaser_per_chrom:
     conda:
         "../envs/rtools.yaml"
     resources:
-        mem_mb = "5G",
-        time = "00:30:00",
+        mem_mb = get_mem_mb,
     shell:
         # {config[Rscript]}
         """
@@ -170,9 +169,7 @@ rule merge_strandphaser_vcfs:
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     resources:
-        mem_mb = "10G",
-        time = "00:30:00",
-    #     disk_mb = "100G"
+        mem_mb = get_mem_mb,
     shell:
         """
         (bcftools concat -a {input.vcfs} | bcftools view -o {output.vcfgz} -O z --genotype het --types snps - ) > {log} 2>&1
@@ -188,8 +185,7 @@ rule combine_strandphaser_output:
     log:
         config["output_location"] + "log/combine_strandphaser_output/{sample}.log"
     resources:
-        mem_mb = "16G",
-        time = "00:30:00",
+        mem_mb = get_mem_mb,
     run:
         ## Errors on slurm with previous version
         # """
@@ -214,5 +210,7 @@ rule convert_strandphaser_output:
         config["output_location"] + "log/convert_strandphaser_output/{sample}.log"
     conda:
         "../envs/rtools.yaml"
+    resources:
+        mem_mb = get_mem_mb,
     script:
         "../scripts/strandphaser_scripts/helper.convert_strandphaser_output.R"

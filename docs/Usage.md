@@ -18,12 +18,12 @@ snakemake -c1 --config mode=download_data dl_external_files=True dl_bam_example=
 ```
 5. Run on test data
 ```
-snakemake --cores 12 input_bam_location=TEST_EXAMPLE_DATA/ output_location=TEST_OUTPUT/
+snakemake --cores 12 input_bam_location=TEST_EXAMPLE_DATA/ output_location=TEST_OUTPUT/ --use-conda --use-singularity --singularity-args "-B /:/"
 ```
 
 6. Start running your own analysis
 ```
-snakemake --cores 12 --config input_bam_location=<INPUT_DATA_FOLDER> output_location=<OUTPUT_DATA_FOLDER>
+snakemake --cores 12 --config input_bam_location=<INPUT_DATA_FOLDER> output_location=<OUTPUT_DATA_FOLDER> --use-conda --use-singularity --singularity-args "-B /:/"
 
 ```
 7. Generate report 
@@ -127,7 +127,7 @@ snakemake -c1 --config mode=download_data dl_external_files=True
 ```
 snakemake -c1 --config mode=download_data dl_bam_example=True input_bam_location=TEST_EXAMPLE_DATA/
 ```
-**Warning:** Download example data currently requires 35GB of free space disk. 
+**Warning:** Download example data currently requires 3GB of free space disk. 
 
 
 ##### (ii) Use your own data
@@ -186,7 +186,8 @@ snakemake \
     --cores 20 \
     --config \
         plot=True \
-        mode=mosaiclassifier
+        mode=mosaiclassifier \
+        --use-conda --use-singularity --singularity-args "-B /:/"
 ```
 
 Otherwise, you must specify your input and output folder like the following:
@@ -198,7 +199,8 @@ snakemake \
         plot=True \
         mode=mosaiclassifier \
         output_location=OUTPUT_FOLDER \
-        input_bam_location=INPUT_FOLDER
+        input_bam_location=INPUT_FOLDER \
+        --use-conda --use-singularity --singularity-args "-B /:/"
 ```
 
 ---
@@ -234,7 +236,8 @@ snakemake \
         plot=True \
         mode=mosaiclassifier \
         output_location=OUTPUT_FOLDER \
-        input_bam_location=INPUT_FOLDER
+        input_bam_location=INPUT_FOLDER \
+        --use-conda --use-singularity --singularity-args "-B /:/"
 ```
 
 The `logs` and `errors` directory will be automatically created in the current directory, corresponding respectively to the `output` and `error` parameter of the `sbatch` command. 
