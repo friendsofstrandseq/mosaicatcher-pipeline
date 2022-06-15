@@ -2,7 +2,7 @@ suppressMessages(library(mc2d))
 suppressMessages(library(dplyr))
 suppressMessages(library(data.table))
 suppressMessages(library(assertthat))
-source("scripts/mosaiclassifier_scripts/mosaiClassifier/getDispParAndSegType.R")
+source("workflow/scripts/mosaiclassifier_scripts/mosaiClassifier/getDispParAndSegType.R")
 
 # defining multinomial parameters based on haplosegType and alpha
 getMultinomialParams <- function(haploSegType, alpha) {

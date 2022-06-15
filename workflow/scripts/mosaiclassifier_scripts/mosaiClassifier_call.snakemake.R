@@ -3,7 +3,7 @@ sink(file = log, type = "message")
 sink(file = log, type = "output")
 
 library(data.table)
-source("scripts/mosaiclassifier_scripts/mosaiClassifier/makeSVcalls.R")
+source("workflow/scripts/mosaiclassifier_scripts/mosaiClassifier/makeSVcalls.R")
 
 probs <- readRDS(snakemake@input[["probs"]])
 llr <- as.numeric(snakemake@wildcards[["llr"]])

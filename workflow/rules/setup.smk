@@ -11,4 +11,4 @@ rule install_rlib_strandphaser:
         version = config['git_commit_strandphaser'],
         repo = config['git_repo_strandphaser']
     shell:
-        'LC_CTYPE=C TAR=$(which tar) Rscript scripts/strandphaser_scripts/install_strandphaser.R {params.version} {params.repo}  > {log} 2>&1'
+        'LC_CTYPE=C TAR=$(which tar) Rscript workflow/scripts/strandphaser_scripts/install_strandphaser.R {params.version} {params.repo}  > {log} 2>&1'

@@ -145,7 +145,7 @@ rule run_strandphaser_per_chrom:
     shell:
         # {config[Rscript]}
         """
-        Rscript scripts/strandphaser_scripts/StrandPhaseR_pipeline.R \
+        Rscript workflow/scripts/strandphaser_scripts/StrandPhaseR_pipeline.R \
                 {input.bamfolder} \
                 {config[output_location]}strandphaser/{wildcards.sample}/StrandPhaseR_analysis.{wildcards.chrom} \
                 {input.configfile} \

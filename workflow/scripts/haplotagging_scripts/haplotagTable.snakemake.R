@@ -4,7 +4,7 @@ sink(file = log, type = "output")
 
 system("LC_MEASUREMENT=C")
 
-source("scripts/haplotagging_scripts/haplotagTable.R")
+source("workflow/scripts/haplotagging_scripts/haplotagTable.R")
 
 
 tab <- getHaplotagTable2(bedFile = snakemake@input[["bed"]], bam.file = snakemake@input[["bam"]], file.destination = snakemake@output[["tsv"]])
