@@ -51,9 +51,9 @@ workflow/test.txt
 
 # Exceptions
 !docs/images/*.png
-!workflow/config/config.yaml
 !workflow/data/segdups/segDups_hg38_UCSCtrack.bed.gz
 !config/config.yaml
+!config/*
 
 # Dev
 discover_big_files_git.sh
