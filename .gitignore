@@ -53,6 +53,7 @@ workflow/test.txt
 !docs/images/*.png
 !workflow/config/config.yaml
 !workflow/data/segdups/segDups_hg38_UCSCtrack.bed.gz
+!config/config.yaml
 
 # Dev
 discover_big_files_git.sh
