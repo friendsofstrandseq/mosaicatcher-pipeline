@@ -11,6 +11,7 @@ from pprint import pprint
 # TODO : check config/config CLI ... 
 configfile: "config/config.yaml"
 
+
 mode_selected = config["mode"].lower()
 correct_modes = ["count", "segmentation", "mosaiclassifier", "download_data"]
 assert mode_selected in correct_modes, "Wrong mode selected : {}\nFollowing list of modes are available : {}".format(config["mode"], ", ".join(correct_modes))
@@ -39,8 +40,6 @@ if config["output_location"].endswith("/") is False:
 if config["input_bam_location"].endswith("/") is False:
     config["input_bam_location"] +=  "/"
     # print("/ was missing at end of input folder, continuing ...")
-
-
 
 
 
@@ -213,12 +212,12 @@ elif mode_selected == "download_data":
                 rules.dl_external_data_index.output
 
 
-# if config["mail"]:
+if config["mail"]:
         
-#     onsuccess:
-#         print("Workflow finished, no error")
-#         shell('mail -s "Workflow finished, no error"' + config["mail"] '< {log}')
+    onsuccess:
+        print("Workflow finished, no error")
+        shell('mail -s "Workflow finished, no error"' + config["mail"] + '< {log}')
 
-#     onerror:
-#         print("An error occurred")
-#         shell('mail -s "Workflow failed, an error occurred"' + config["mail"] '< {log}')
+    onerror:
+        print("An error occurred")
+        shell('mail -s "Workflow failed, an error occurred"' + config["mail"] + '< {log}')

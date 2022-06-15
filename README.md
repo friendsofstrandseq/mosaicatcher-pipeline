@@ -26,7 +26,7 @@ the workflow goes through the following steps:
 1. Install [Singularity](https://www.sylabs.io/guides/3.0/user-guide/) 
 2. Create a dedicated conda environment 
 ```
-conda create -n mosaicatcher_env -c conda-forge -c bioconda snakemake pandas pysam imagemagick && conda activate mosaicatcher_env
+conda create -n mosaicatcher_env -c conda-forge -c bioconda snakemake pandas pysam imagemagick tqdm && conda activate mosaicatcher_env
 ```
 3. Clone the repository and go in the `workflow` directory
 ``` 
@@ -63,16 +63,28 @@ snakemake --cores 12 --config input_bam_location=<INPUT_DATA_FOLDER> output_loca
 
 # 📆 Roadmap 
 
+## Technical-related features
+
 - [x] Zenodo automatic download of external files + indexes ([1.2.1](https://github.com/friendsofstrandseq/mosaicatcher-pipeline/releases/tag/1.2.1))
 - [x] Multiple samples in the parent folder ([1.2.2](https://github.com/friendsofstrandseq/mosaicatcher-pipeline/releases/tag/1.2.2))
 - [x] Automatic testing of BAM SM tag compared to sample folder name ([1.2.3](https://github.com/friendsofstrandseq/mosaicatcher-pipeline/releases/tag/1.2.3))
 - [x] On-error/success e-mail ([1.3](https://github.com/friendsofstrandseq/mosaicatcher-pipeline/releases/tag/1.3))
 - [x] HPC execution (slurm profile for the moment) ([1.3](https://github.com/friendsofstrandseq/mosaicatcher-pipeline/releases/tag/1.3))
-- [ ] Change of reference genome (currently only GRCh38)
 - [ ] Plotting options (enable/disable segmentation back colors)
 - [ ] Full singularity image with preinstalled conda envs
+- [ ] Portable Encapsulated Project compliant
+- [ ] Single BAM folder with side config file
+## Bioinformatic-related features
+
+- [ ] Change of reference genome (currently only GRCh38)
 - [ ] Upstream QC pipeline and FastQ handle
-- [ ] Full singularity image
+- [ ] Pooling samples
+- [ ] Self-handling of low-coverage cells
+
+## Small issues to fix
+
+- [ ] Move pysam / SM tag comparison script to snakemake rule
+  
 
 # 🛑 Troubleshooting & Current limitations
 

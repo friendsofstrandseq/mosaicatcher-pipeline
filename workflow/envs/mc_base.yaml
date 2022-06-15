@@ -8,3 +8,4 @@ dependencies:
   - tqdm
   - perl
   - pypdf2
+  - parmap
