@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - smk_workflow_catalog
   pull_request:
     branches_ignore: []
 
