@@ -21,6 +21,8 @@ rule haplotag_bams:
         config["output_location"] + "log/haplotag_bams/{sample}/{cell}.log"
     params:
         ref = config["reference"]
+    resources:
+        mem_mb = get_mem_mb,
     conda: 
         "../envs/mc_bioinfo_tools.yaml"
     shell:

@@ -1,32 +1,32 @@
-name: Tests
+# name: Tests
 
-on:
-  push:
-    branches:
-      - master
-  pull_request:
-    branches_ignore: []
+# on:
+#   push:
+#     branches:
+#       - master
+#   pull_request:
+#     branches_ignore: []
 
-jobs:
-  formatting:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-      - name: Checkout submodules
-        uses: textbook/git-checkout-submodule-action@2.0.0
-      - name: Formatting
-        uses: github/super-linter@v4
-        env:
-          VALIDATE_ALL_CODEBASE: false
-          DEFAULT_BRANCH: master
-          VALIDATE_SNAKEMAKE_SNAKEFMT: true
-  linting:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-      - name: Linting
-        uses: snakemake/snakemake-github-action@v1.22.0
-        with:
-          directory: .test
-          snakefile: workflow/Snakefile
-          args: "--lint"
+# jobs:
+#   formatting:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v1
+#       - name: Checkout submodules
+#         uses: textbook/git-checkout-submodule-action@2.0.0
+#       - name: Formatting
+#         uses: github/super-linter@v4
+#         env:
+#           VALIDATE_ALL_CODEBASE: false
+#           DEFAULT_BRANCH: master
+#           VALIDATE_SNAKEMAKE_SNAKEFMT: true
+#   linting:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v1
+#       - name: Linting
+#         uses: snakemake/snakemake-github-action@v1.22.0
+#         with:
+#           directory: .test
+#           snakefile: workflow/Snakefile
+#           args: "--lint"

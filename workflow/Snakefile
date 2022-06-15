@@ -10,7 +10,7 @@ from pprint import pprint
 
 # TODO : check config/config CLI ... 
 configfile: "config/config.yaml"
-
+print(config)
 
 mode_selected = config["mode"].lower()
 correct_modes = ["count", "segmentation", "mosaiclassifier", "download_data"]
