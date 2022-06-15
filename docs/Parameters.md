@@ -1,5 +1,5 @@
 
-# Arguments
+# Parameters
 
 ## MosaiCatcher arguments
 

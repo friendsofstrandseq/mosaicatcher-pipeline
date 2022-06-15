@@ -33,6 +33,8 @@ checkpoint determine_sex_per_cell:
     output:
         sex_analysis_cellwise = config["output_location"] + "config/{sample}/sex_analysis_cells.tsv",
         sex_analysis_samplewise = config["output_location"] + "config/{sample}/sex_analysis_sample.txt"
+    log:
+        config["output_location"] + "log/strandphaser/determine_sex_per_cell/{sample}.log"
     conda:
         "../envs/mc_base.yaml"
     script:
