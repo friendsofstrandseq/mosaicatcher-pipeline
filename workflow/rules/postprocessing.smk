@@ -18,7 +18,7 @@ rule postprocessing_filter:
         """
         export LC_CTYPE=en_US.UTF-8 
         export LC_ALL=en_US.UTF-8 
-        scripts/postprocessing/filter_MosaiCatcher_calls.pl {input.calls} {config[segdups]} > {output.calls}
+        workflow/scripts/postprocessing/filter_MosaiCatcher_calls.pl {input.calls} {config[segdups]} > {output.calls}
         """
 
 rule postprocessing_merge:
@@ -34,7 +34,7 @@ rule postprocessing_merge:
         """
         export LC_CTYPE=en_US.UTF-8 
         export LC_ALL=en_US.UTF-8 
-        scripts/postprocessing/group_nearby_calls_of_same_AF_and_generate_output_table.pl {input.calls}  > {output.calls}
+        workflow/scripts/postprocessing/group_nearby_calls_of_same_AF_and_generate_output_table.pl {input.calls}  > {output.calls}
         """
 
 
@@ -50,7 +50,7 @@ rule postprocessing_sv_group_table:
     shell:
         """
         PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)
-        scripts/postprocessing/create-sv-group-track.py {input.calls}  > {output.grouptrack}
+        workflow/scripts/postprocessing/create-sv-group-track.py {input.calls}  > {output.grouptrack}
         """
 
 
@@ -71,6 +71,6 @@ rule filter_calls:
     shell:
         """
         PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)
-        scripts/postprocessing/apply_filter.py {input.inputcalls} {input.mergedcalls} > {output.calls}
+        workflow/scripts/postprocessing/apply_filter.py {input.inputcalls} {input.mergedcalls} > {output.calls}
         """
 

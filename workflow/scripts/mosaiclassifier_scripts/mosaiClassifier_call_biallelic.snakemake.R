@@ -1,5 +1,5 @@
 library(data.table)
-source("utils/mosaiClassifier/makeSVcalls.R")
+source("workflow/scripts/mosaiclassifier_scripts/mosaiClassifier/makeSVcalls.R")
 
 probs <- readRDS(snakemake@input[["probs"]])
 llr <- as.numeric(snakemake@wildcards[["llr"]])

@@ -1,7 +1,7 @@
 sink(snakemake@log[[1]])
 library(data.table)
 library(assertthat)
-source("scripts/mosaiclassifier_scripts/mosaiClassifier/mosaiClassifier.R")
+source("workflow/scripts/mosaiclassifier_scripts/mosaiClassifier/mosaiClassifier.R")
 system("LC_CTYPE=C")
 
 # Currently read files from the Snakemake pipeline

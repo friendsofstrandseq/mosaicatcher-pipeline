@@ -1,6 +1,6 @@
 suppressMessages(library(data.table))
 suppressMessages(library(assertthat))
-source("scripts/mosaiclassifier_scripts/mosaiClassifier/mosaiClassifier.R")
+source("workflow/scripts/mosaiclassifier_scripts/mosaiClassifier/mosaiClassifier.R")
 # source("utils/mosaiClassifier/mosaiClassifier.R")
 
 
