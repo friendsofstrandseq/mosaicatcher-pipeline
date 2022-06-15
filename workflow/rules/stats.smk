@@ -37,7 +37,7 @@ rule summary_statistics:
             p.append('--merged-file')
             p.append(input.merged)
         additional_params = ' '.join(p)
-        shell('scripts/stats/callset_summary_stats.py --segmentation {input.segmentation} --strandstates {input.strandstates} --complex-regions {input.complex} {additional_params} {input.sv_calls}  > {output.tsv} ')
+        shell('workflow/scripts/stats/callset_summary_stats.py --segmentation {input.segmentation} --strandstates {input.strandstates} --complex-regions {input.complex} {additional_params} {input.sv_calls}  > {output.tsv} ')
 
 rule aggregate_summary_statistics:
     input:

@@ -46,6 +46,7 @@ workflow/scripts/__pycache__
 # Zenodo
 workflow/sandbox.zenodo.org/
 TEST_OUTPUT/
+TEST_OUTPUT
 workflow/test.txt
 
 # Exceptions
@@ -60,6 +61,8 @@ workflow/report_TALL/
 *.bam
 *.bai
 workflow/TEST_EXAMPLE_DATA/
+TEST_EXAMPLE_DATA
+TEST_EXAMPLE_DATA/
 workflow/logs/
 workflow/errors/
 
