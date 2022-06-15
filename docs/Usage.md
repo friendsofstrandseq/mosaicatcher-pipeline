@@ -6,7 +6,7 @@
 1. Install [Singularity](https://www.sylabs.io/guides/3.0/user-guide/) 
 2. Create a dedicated conda environment 
 ```
-conda create -n mosaicatcher_env -c conda-forge -c bioconda snakemake pandas pysam imagemagick && conda activate mosaicatcher_env
+conda create -n mosaicatcher_env -c conda-forge -c bioconda snakemake pandas pysam imagemagick tqdm && conda activate mosaicatcher_env
 ```
 3. Clone the repository and go in the `workflow` directory
 ``` 
@@ -45,7 +45,7 @@ Minimum system requirements vary based on the use case. We highly recommend runn
 
 ### 🐍 1. Mosaicatcher basic conda environment install
 
-MosaiCatcher leverages snakemake built-in features such as execution within container and conda predefined modular environments. That's why it is only necessary to create an environment that relies on [snakemake](https://github.com/snakemake/snakemake) (to execute the pipeline) and [pandas](https://github.com/pandas-dev/pandas) (to handle basic configuration). If you plan to generate HTML Web report including plots, it is also necessary to install [imagemagick](https://github.com/ImageMagick/ImageMagick). Finally, [pysam](https://pysam.readthedocs.io/en/latest/api.html) is currently required to enable `check_sm_tag` feature that compare BAM SM tag to folder name. 
+MosaiCatcher leverages snakemake built-in features such as execution within container and conda predefined modular environments. That's why it is only necessary to create an environment that relies on [snakemake](https://github.com/snakemake/snakemake) (to execute the pipeline) and [pandas](https://github.com/pandas-dev/pandas) (to handle basic configuration). If you plan to generate HTML Web report including plots, it is also necessary to install [imagemagick](https://github.com/ImageMagick/ImageMagick). Finally, [pysam](https://pysam.readthedocs.io/en/latest/api.html) and [tqdm](https://github.com/tqdm/tqdm) are currently required to enable `check_sm_tag` feature that compare BAM SM tag to folder name. 
 
 
 If possible, it is also highly recommended to install and use `mamba` package manager instead of `conda`, which is much more efficient.
