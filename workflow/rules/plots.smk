@@ -110,7 +110,7 @@ if config["plot"] is True:
             mem_mb = get_mem_mb,
         shell:
             """
-            Rscript scripts/plotting/plot-sv-calls.R \
+            Rscript workflow/scripts/plotting/plot-sv-calls.R \
                 segments={input.segments} \
                 singlecellsegments={input.scsegments} \
                 strand={input.strand} \
