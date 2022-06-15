@@ -1,11 +1,11 @@
 suppressMessages(library(dplyr))
 suppressMessages(library(data.table))
 suppressMessages(library(assertthat))
-source("scripts/mosaiclassifier_scripts/mosaiClassifier/getStrandStates.R")
-source("scripts/mosaiclassifier_scripts/mosaiClassifier/getCountsPerSegment.R")
-source("scripts/mosaiclassifier_scripts/mosaiClassifier/generateHaploStates.R")
-source("scripts/mosaiclassifier_scripts/mosaiClassifier/getDispParAndSegType.R")
-source("scripts/mosaiclassifier_scripts/mosaiClassifier/haploAndGenoName.R")
+source("workflow/scripts/mosaiclassifier_scripts/mosaiClassifier/getStrandStates.R")
+source("workflow/scripts/mosaiclassifier_scripts/mosaiClassifier/getCountsPerSegment.R")
+source("workflow/scripts/mosaiclassifier_scripts/mosaiClassifier/generateHaploStates.R")
+source("workflow/scripts/mosaiclassifier_scripts/mosaiClassifier/getDispParAndSegType.R")
+source("workflow/scripts/mosaiclassifier_scripts/mosaiClassifier/haploAndGenoName.R")
 
 suppressMessages(library(GenomicRanges))
 # This is to test whether the given strand states
