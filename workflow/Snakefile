@@ -7,6 +7,11 @@ from collections import defaultdict
 import pandas as pd
 import os, sys
 from pprint import pprint
+from snakemake.utils import min_version
+
+##### set minimum snakemake version #####
+min_version("7.4.1")
+
 
 # TODO : check config/config CLI ... 
 configfile: "config/config.yaml"
