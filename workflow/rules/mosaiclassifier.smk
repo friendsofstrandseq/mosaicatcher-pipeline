@@ -85,7 +85,7 @@ rule call_complex_regions:
     shell:
         """
         PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)
-        scripts/mosaiclassifier_scripts/call-complex-regions.py \
+        workflow/scripts/mosaiclassifier_scripts/call-complex-regions.py \
         --merge_distance 5000000 \
         --ignore_haplotypes \
         --min_cell_count 2 {input.calls} > {output.complex_regions} 2>{log}
