@@ -32,5 +32,5 @@ jobs:
         with:
           directory: .test
           snakefile: workflow/Snakefile
-          stagein: "mamba install -y -c conda-forge -c bioconda snakemake pandas pysam tqdm imagemagick"
+          stagein: "mamba install -y -n snakemake -c conda-forge -c bioconda snakemake pandas pysam tqdm imagemagick"
           args: "--lint"
