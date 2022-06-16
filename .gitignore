@@ -48,6 +48,7 @@ workflow/sandbox.zenodo.org/
 TEST_OUTPUT/
 TEST_OUTPUT
 workflow/test.txt
+.snakemake
 
 # Exceptions
 !docs/images/*.png
