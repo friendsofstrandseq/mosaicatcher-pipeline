@@ -14,8 +14,8 @@ min_version("7.4.1")
 
 
 # TODO : check config/config CLI ... 
-# configfile: "config/config.yaml"
-# print(config)
+configfile: "../config/config.yaml"
+print(config)
 
 mode_selected = config["mode"].lower()
 correct_modes = ["count", "segmentation", "mosaiclassifier", "download_data"]
