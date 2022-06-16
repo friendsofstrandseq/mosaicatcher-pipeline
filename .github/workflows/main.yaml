@@ -32,5 +32,5 @@ jobs:
         with:
           directory: .test
           snakefile: workflow/Snakefile
-          stagein: "mamba list && mamba install -y -n snakemake -c conda-forge -c bioconda snakemake pandas pysam tqdm imagemagick"
+          stagein: "mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda snakemake pandas pysam tqdm imagemagick"
           args: "--lint"
