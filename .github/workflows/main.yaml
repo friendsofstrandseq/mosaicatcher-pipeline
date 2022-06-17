@@ -40,4 +40,4 @@ jobs:
           directory: .test
           snakefile: workflow/Snakefile
           stagein: 'mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda snakemake pandas pysam tqdm imagemagick "singularity<=3.8.6" && source activate snakemake'
-          args: '--cores 1 --config input_bam_location=TEST_EXAMPLE_DATA/ output_location=TEST_OUTPUT/ --use-conda --use-singularity --singularity-args "-B /:/"'
+          args: '--cores 1 --config plot=True input_bam_location=TEST_EXAMPLE_DATA/ output_location=TEST_OUTPUT/ --use-conda --use-singularity --singularity-args "-B /:/"'
