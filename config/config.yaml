@@ -11,7 +11,7 @@ mail: ""
 ### Modes ["count", "segmentation", "mosaiclassifier"]
 mode: "mosaiclassifier"
 ### Plot enabled [True] or disabled [False]
-plot: True
+plot: False
 ### Enable / Disable comparison for each BAM file between folder name & SM tag
 check_sm_tag: True
 ### Enable / Disable download of BAM examples (RPE-BM510)
