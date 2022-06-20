@@ -46,7 +46,7 @@ jobs:
           password: ${{ secrets.DOCKER_TOKEN }}
 
       - name: Use the image
-        run: echo "New image has been pushed to ${{ steps.push-to-quay.outputs.registry-paths }}"
+        run: echo "New images has been pushed to ${{ steps.push-to-quay.outputs.registry-paths }}"
 # jobs:
 #   linting:
 #     runs-on: ubuntu-latest
