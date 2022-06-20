@@ -8,7 +8,7 @@ on:
     #   - "github-actions-runner/Dockerfile"
 
 jobs:
-  build2:
+  build_container:
     name: Build and push image
     runs-on: ubuntu-20.04
     env:
@@ -47,37 +47,37 @@ jobs:
 
       - name: Use the image
         run: echo "New images has been pushed to ${{ steps.push-to-quay.outputs.registry-paths }}"
-# jobs:
-#   linting:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@v1
-# - name: Setup Snakemake environment
-#   run: |
-#     export PATH="/usr/share/miniconda/bin:$PATH"
-#     conda config --set channel_priority strict
-#     conda install -c conda-forge -q mamba
-#     # ensure that mamba is happy to write into the cache
-#     sudo chown -R runner:docker /usr/share/miniconda/pkgs/cache
-#     # additionally add singularity
-#     # TODO remove version constraint: needed because 3.8.7 fails with missing libz:
-#     # bin/unsquashfs: error while loading shared libraries: libz.so.1: cannot open shared object file: No such file or directory
-#     # mamba create -y -n mosaicatcher_env -c conda-forge -c bioconda snakemake pandas pysam tqdm imagemagick "singularity<=3.8.6"
-#     # source activate mosaicatcher_env
-#     # conda list
-#     # which python
-#     # python -c 'import pysam; print(pysam)'
-# - name: Downloading data
-#   uses: snakemake/snakemake-github-action@v1.22.0
-#   with:
-#     directory: .test
-#     snakefile: workflow/Snakefile
-#     stagein: "mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda unzip snakemake pandas pysam tqdm imagemagick && source activate snakemake"
-#     args: "--cores 1 --config mode=download_data dl_external_files=True dl_bam_example=True input_bam_location=TEST_EXAMPLE_DATA/"
-# - name: Test data
-#   uses: snakemake/snakemake-github-action@v1.22.0
-#   with:
-#     directory: .test
-#     snakefile: workflow/Snakefile
-#     stagein: 'mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda snakemake pandas pysam tqdm imagemagick "singularity<=3.8.6" && source activate snakemake'
-#     args: "--cores 1 --config plot=True input_bam_location=TEST_EXAMPLE_DATA/ output_location=TEST_OUTPUT/ --use-conda --use-singularity"
+  # jobs:
+  test_workflow:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      # - name: Setup Snakemake environment
+      #   run: |
+      #     export PATH="/usr/share/miniconda/bin:$PATH"
+      #     conda config --set channel_priority strict
+      #     conda install -c conda-forge -q mamba
+      #     # ensure that mamba is happy to write into the cache
+      #     sudo chown -R runner:docker /usr/share/miniconda/pkgs/cache
+      #     # additionally add singularity
+      #     # TODO remove version constraint: needed because 3.8.7 fails with missing libz:
+      #     # bin/unsquashfs: error while loading shared libraries: libz.so.1: cannot open shared object file: No such file or directory
+      #     # mamba create -y -n mosaicatcher_env -c conda-forge -c bioconda snakemake pandas pysam tqdm imagemagick "singularity<=3.8.6"
+      #     # source activate mosaicatcher_env
+      #     # conda list
+      #     # which python
+      #     # python -c 'import pysam; print(pysam)'
+      - name: Downloading data
+        uses: snakemake/snakemake-github-action@v1.22.0
+        with:
+          directory: .test
+          snakefile: workflow/Snakefile
+          stagein: "mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda unzip snakemake pandas pysam tqdm imagemagick && source activate snakemake"
+          args: "--cores 1 --config mode=download_data dl_external_files=True dl_bam_example=True input_bam_location=TEST_EXAMPLE_DATA/"
+      - name: Test data
+        uses: snakemake/snakemake-github-action@v1.22.0
+        with:
+          directory: .test
+          snakefile: workflow/Snakefile
+          stagein: 'mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda snakemake pandas pysam tqdm imagemagick "singularity<=3.8.6" && source activate snakemake'
+          args: "--cores 1 --config plot=True input_bam_location=TEST_EXAMPLE_DATA/ output_location=TEST_OUTPUT/ --use-conda --use-singularity"
