@@ -86,8 +86,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Checkout submodules
-        uses: textbook/git-checkout-submodule-action@2.0.0
       - name: Formatting
         uses: github/super-linter@v3.16.1
         env:
@@ -100,8 +98,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Checkout submodules
-        uses: textbook/git-checkout-submodule-action@2.0.0
       - name: Linting
         uses: snakemake/snakemake-github-action@v1.17.0
         with:
