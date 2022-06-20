@@ -26,14 +26,14 @@ jobs:
         id: getversion
         run: echo "::set-output name=version::$(grep 'ARG RUNNER_VERSION' github-actions-runner/Dockerfile | awk -F'=' '{print $2}')"
 
-      # - name: Build Image
-      #   id: build-image
-      #   uses: redhat-actions/buildah-build@v2
-      #   with:
-      #     image: ${{ env.IMAGE_NAME }}
-      #     tags: latest ${{ steps.gettag.outputs.tag }}${{ steps.getversion.outputs.version }}
-      #     dockerfiles: |
-      #       ./github-actions-runner/Dockerfile
+      - name: Build Image
+        id: build-image
+        uses: redhat-actions/buildah-build@v2
+        with:
+          image: ${{ env.IMAGE_NAME }}
+          tags: latest ${{ steps.gettag.outputs.tag }}${{ steps.getversion.outputs.version }}
+          dockerfiles: |
+            ./github-actions-runner/Dockerfile
 
       # - name: Push To DockerHub
       #   id: push-to-dockerhub
@@ -47,6 +47,7 @@ jobs:
 
       # - name: Use the image
       #   run: echo "New images has been pushed to ${{ steps.push-to-quay.outputs.registry-paths }}"
+
 # jobs:
 #   linting:
 #     runs-on: ubuntu-latest
