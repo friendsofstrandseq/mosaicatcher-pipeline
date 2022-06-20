@@ -8,7 +8,7 @@ on:
       - "github-actions-runner/Dockerfile"
 
 jobs:
-  build:
+  build2:
     name: Build and push image
     runs-on: ubuntu-20.04
     env:
