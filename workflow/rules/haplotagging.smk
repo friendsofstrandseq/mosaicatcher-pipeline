@@ -38,7 +38,7 @@ rule create_haplotag_segment_bed:
     shell:
         """
         # Issue #1022 (https://bitbucket.org/snakemake/snakemake/issues/1022)
-        awk -v s={config[window]} -f scripts/haplotagging_scripts/create_haplotag_segment_bed.awk {input.segments} > {output.bed}
+        awk -v s={config[window]} -f workflow/scripts/haplotagging_scripts/create_haplotag_segment_bed.awk {input.segments} > {output.bed}
         """
 
 rule create_haplotag_table:

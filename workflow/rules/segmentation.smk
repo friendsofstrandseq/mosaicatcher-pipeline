@@ -54,7 +54,7 @@ rule fix_segmentation:
     shell:
         """
         # Issue #1022 (https://bitbucket.org/snakemake/snakemake/issues/1022)
-        awk -v name={wildcards.sample} -v window={config[window]} -f scripts/segmentation_scripts/fix_segmentation.awk {input} > {output}
+        awk -v name={wildcards.sample} -v window={config[window]} -f worfklow/scripts/segmentation_scripts/fix_segmentation.awk {input} > {output}
         """
 
 
