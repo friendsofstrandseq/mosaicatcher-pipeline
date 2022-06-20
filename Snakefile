@@ -56,7 +56,7 @@ report: "report/workflow.rst"
 # # this container defines the underlying OS for each job when using the workflow
 # # with --use-conda --use-singularity
 # container: "docker://condaforge/mambaforge:4.12.0-0"
-containerized: "docker://weber8thomas/mosaicatcher-pipeline:latest"
+containerized: "docker://weber8thomas/mosaicatcher-pipeline:dev"
 
 # include: "rules/input_check.smk"
 
@@ -76,7 +76,7 @@ if config["mode"] != "download_data":
         df_config_files = c.df_config_files
     else:
         df_config_files = pd.read_csv(config["output_location"] + "config/config_df.tsv", sep="\t")
-    print(df_config_files)
+    # print(df_config_files)
     # exit()
 
 
