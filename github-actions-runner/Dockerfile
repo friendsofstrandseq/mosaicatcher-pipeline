@@ -93,6 +93,7 @@ FROM docker.io/weber8thomas/mosaicatcher-pipeline:latest
 # ----------------
 # CUSTOM PART
 # ----------------
+# ----------------
 
 RUN mamba install -c conda-forge -c bioconda samtools && \
     chmod -R 0777 /conda-envs/7bb3be0079f74fda9f2f7d6337d01c33/lib/R/library && \
