@@ -71,14 +71,14 @@ jobs:
         uses: snakemake/snakemake-github-action@v1.22.0
         with:
           directory: .test
-          snakefile: ./Snakefile
+          snakefile: Snakefile
           stagein: "mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda unzip snakemake pandas pysam tqdm imagemagick && source activate snakemake"
           args: "--cores 1 --config mode=download_data dl_external_files=True dl_bam_example=True input_bam_location=TEST_EXAMPLE_DATA/"
       - name: Test data
         uses: snakemake/snakemake-github-action@v1.22.0
         with:
           directory: .test
-          snakefile: ./Snakefile
+          snakefile: Snakefile
           stagein: 'mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda snakemake pandas pysam tqdm imagemagick "singularity<=3.8.6" && source activate snakemake'
           args: "--cores 1 --config plot=True input_bam_location=TEST_EXAMPLE_DATA/ output_location=TEST_OUTPUT/ --use-conda --use-singularity"
 
@@ -101,14 +101,14 @@ jobs:
         uses: snakemake/snakemake-github-action@v1.22.0
         with:
           directory: .test
-          snakefile: ./Snakefile
-          stagein: "mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda unzip snakemake pandas pysam tqdm imagemagick && source activate snakemake"
+          snakefile: Snakefile
+          stagein: "mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda unzip snakemake pandas pysam tqdm imagemagick && source activate snakemake && ls -l && pwd"
           args: "--cores 1 --config mode=download_data dl_external_files=True dl_bam_example=True input_bam_location=TEST_EXAMPLE_DATA/"
       - uses: actions/checkout@v1
       - name: Linting
         uses: snakemake/snakemake-github-action@v1.17.0
         with:
           directory: ".test"
-          snakefile: ./Snakefile
+          snakefile: Snakefile
           stagein: "mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda unzip snakemake pandas pysam tqdm imagemagick && source activate snakemake && ls -l && pwd"
           args: "--lint"
