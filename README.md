@@ -30,16 +30,18 @@ conda create -n mosaicatcher_env -c conda-forge -c bioconda snakemake pandas pys
 ```
 3. Clone the repository and go in the `workflow` directory
 ``` 
-git clone https://git.embl.de/tweber/mosaicatcher-update.git && cd mosaicatcher-update/workflow/
+git clone https://github.com/friendsofstrandseq/mosaicatcher-pipeline.git && cd mosaicatcher-pipeline
 ```
 4. Download test and reference data 
 ```
-snakemake -c1 --config mode=download_data dl_external_files=True dl_bam_example=True input_bam_location=TEST_EXAMPLE_DATA/
+snakemake -c1 --config mode=download_data dl_external_files=True dl_bam_example=True input_bam_location=TEST_EXAMPLE_DATA/ 
 ```
 5. Run on example data on only one small chromosome
 ```
-snakemake --cores 12 input_bam_location=TEST_EXAMPLE_DATA/ output_location=TEST_OUTPUT/ chromosomes=["chr21"] --use-conda --use-singularity --singularity-args "-B /:/" 
+snakemake --cores 12 --config input_bam_location=TEST_EXAMPLE_DATA/ output_location=TEST_OUTPUT/ chromosomes=["chr21"] --use-conda --use-singularity --singularity-args "-B /:/" 
 ```
+
+
 
 6. Start running your own analysis
 ```
@@ -50,6 +52,7 @@ snakemake --cores 12 --config input_bam_location=<INPUT_DATA_FOLDER> output_loca
 ```
 snakemake --cores 12 --config input_bam_location=<INPUT_DATA_FOLDER> output_location=<OUTPUT_DATA_FOLDER> --report <REPORT.zip>
 ```
+
 
 
 
