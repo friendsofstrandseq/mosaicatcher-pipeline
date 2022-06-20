@@ -38,7 +38,7 @@ snakemake -c1 --config mode=download_data dl_external_files=True dl_bam_example=
 ```
 5. Run on example data on only one small chromosome
 ```
-snakemake --cores 12 --config input_bam_location=TEST_EXAMPLE_DATA/ output_location=TEST_OUTPUT/ chromosomes=["chr21"] --use-conda --use-singularity --singularity-args "-B /:/" 
+snakemake --cores 12 --config mode=mosaiclassifier plot=True input_bam_location=TEST_EXAMPLE_DATA/ output_location=TEST_OUTPUT/ chromosomes="[chr21]" --use-conda --use-singularity --singularity-args "-B /g:/g" --latency-wait 60 
 ```
 
 
