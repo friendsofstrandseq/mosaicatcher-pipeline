@@ -19,10 +19,11 @@ library(devtools)
 
 # Peter Ebert version
 
-if (is.element("StrandPhaseR", installed.packages()[, 1])) {
-    print("Removing previously installed version of StrandPhaseR")
-    remove.packages("StrandPhaseR")
-}
+# if (is.element("StrandPhaseR", installed.packages()[, 1])) {
+#     print("Removing previously installed version of StrandPhaseR")
+#     remove.packages("StrandPhaseR")
+# }
+
 
 args <- commandArgs(trailingOnly = TRUE)
 

@@ -106,7 +106,6 @@ jobs:
           stagein: "mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda unzip snakemake pandas pysam tqdm imagemagick && source activate snakemake && ls -l && pwd"
           args: "--cores 1 --config mode=download_data dl_external_files=True dl_bam_example=True input_bam_location=TEST_EXAMPLE_DATA/ --touch"
       - name: Linting
-        uses: snakemake/snakemake-github-action@v1.22.0
         with:
           directory: ".test"
           snakefile: Snakefile
