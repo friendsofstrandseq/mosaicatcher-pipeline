@@ -14,7 +14,7 @@ min_version("7.4.1")
 
 
 # TODO : check config/config CLI ... 
-configfile: "../config/config.yaml"
+configfile: "config/config.yaml"
 print(config)
 
 mode_selected = config["mode"].lower()
