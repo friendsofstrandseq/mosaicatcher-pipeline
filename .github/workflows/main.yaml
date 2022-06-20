@@ -102,6 +102,6 @@ jobs:
         uses: snakemake/snakemake-github-action@v1.17.0
         with:
           directory: ".test"
-          snakefile: Snakefile
-          stagein: "mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda unzip snakemake pandas pysam tqdm imagemagick && source activate snakemake"
+          snakefile: mosaicatcher-pipeline/Snakefile
+          stagein: "mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda unzip snakemake pandas pysam tqdm imagemagick && source activate snakemake && ls -l && pwd"
           args: "--lint"
