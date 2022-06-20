@@ -31,7 +31,7 @@ jobs:
         uses: redhat-actions/buildah-build@v2
         with:
           image: ${{ env.IMAGE_NAME }}
-          tags: latest ${{ steps.gettag.outputs.tag }}${{ steps.getversion.outputs.version }}
+          tags: latest dev 1.3
           dockerfiles: |
             ./github-actions-runner/Dockerfile
 
