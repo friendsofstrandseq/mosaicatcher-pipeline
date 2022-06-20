@@ -1,4 +1,7 @@
-FROM condaforge/mambaforge:latest
+FROM docker.io/weber8thomas/mosaicatcher-pipeline:latest
+# FROM condaforge/mambaforge:latest
+
+
 LABEL io.github.snakemake.containerized="true"
 LABEL io.github.snakemake.conda_env_hash="a3ef2d63f463ab104533db0acccdb49051f093890112a1e15d67ceec1c2012a2"
 
@@ -92,6 +95,6 @@ RUN mamba env create --prefix /conda-envs/cd15c940fe1181e1751e02b25c7fcfb7 --fil
 # CUSTOM PART
 # ----------------
 
-RUN mamba install -c conda-forge -c bioconda samtools \
-    chmod -R 0777 /conda-envs/7bb3be0079f74fda9f2f7d6337d01c33/lib/R/library \
+RUN mamba install -c conda-forge -c bioconda samtools && \
+    chmod -R 0777 /conda-envs/7bb3be0079f74fda9f2f7d6337d01c33/lib/R/library && \
     pwd
