@@ -68,7 +68,7 @@ final_df = pd.concat(list(l_df))
 final_df.loc[final_df["chrX/chrY_ratio"] >= cutoff, "M/F"] = "F"
 final_df["M/F"] = final_df["M/F"].fillna("M")
 
-print(final_df)
+# print(final_df)
 
 # Snakemake output
 final_df.to_csv(snakemake.output.sex_analysis_cellwise, sep="\t", index=False)
