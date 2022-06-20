@@ -18,13 +18,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      # - name: Read upstream tag without version
-      #   id: gettag
-      #   run: echo "::set-output name=tag::$(head -n 1 github-actions-runner/Dockerfile | awk -F':' '{print $2}' | awk -F'-' 'BEGIN { OFS="-" } {$NF=""; print $0}')"
+      - name: Read upstream tag without version
+        id: gettag
+        run: echo "::set-output name=tag::$(head -n 1 github-actions-runner/Dockerfile | awk -F':' '{print $2}' | awk -F'-' 'BEGIN { OFS="-" } {$NF=""; print $0}')"
 
-      # - name: Read internal update version
-      #   id: getversion
-      #   run: echo "::set-output name=version::$(grep 'ARG RUNNER_VERSION' github-actions-runner/Dockerfile | awk -F'=' '{print $2}')"
+      - name: Read internal update version
+        id: getversion
+        run: echo "::set-output name=version::$(grep 'ARG RUNNER_VERSION' github-actions-runner/Dockerfile | awk -F'=' '{print $2}')"
 
       # - name: Build Image
       #   id: build-image
