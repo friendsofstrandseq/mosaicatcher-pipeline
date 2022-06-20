@@ -31,7 +31,7 @@ if config["plot"] is True:
             mem_mb = get_mem_mb,
         shell:
             """
-            Rscript scripts/plotting/qc.R {input.counts} {input.info} {output} > {log} 2>&1
+            Rscript workflow/scripts/plotting/qc.R {input.counts} {input.info} {output} > {log} 2>&1
             """
     # TODO : from shell to script function
 

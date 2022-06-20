@@ -54,7 +54,7 @@ rule fix_segmentation:
     shell:
         """
         # Issue #1022 (https://bitbucket.org/snakemake/snakemake/issues/1022)
-        awk -v name={wildcards.sample} -v window={config[window]} -f worfklow/scripts/segmentation_scripts/fix_segmentation.awk {input} > {output}
+        awk -v name={wildcards.sample} -v window={config[window]} -f workflow/scripts/segmentation_scripts/fix_segmentation.awk {input} > {output}
         """
 
 
@@ -118,7 +118,7 @@ rule segmentation_selection:
     shell:
         """
         PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)
-        python scripts/segmentation_scripts/detect_strand_states.py \
+        python workflow/scripts/segmentation_scripts/detect_strand_states.py \
             --sce_min_distance {config[sce_min_distance]} \
             --sce_add_cutoff {config[additional_sce_cutoff]} \
             --min_diff_jointseg {config[min_diff_jointseg]} \
