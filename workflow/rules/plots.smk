@@ -1,4 +1,4 @@
-from scripts.utils.utils import get_mem_mb 
+from workflow.scripts.utils.utils import get_mem_mb 
 
 import os
 os.environ['OPENBLAS_NUM_THREADS'] = '1'
@@ -75,8 +75,8 @@ if config["plot"] is True:
     rule plot_clustering:
         input:
             sv_calls  = config["output_location"] + "mosaiclassifier/sv_calls/{sample}/{method}.tsv",
-            binbed = "data/bin_200kb_all.bed",
             # binbed = "data/bin_200kb_all.bed",
+            binbed = "workflow/data/bin_200kb_all.bed",
         output:
             position = report(config["output_location"] + "plots/{sample}/sv_clustering/{method}-position.pdf", category="SV Clustering", subcategory="{sample}", labels={"method" : "{method}", }),
             chromosome = config["output_location"] + "plots/{sample}/sv_clustering/{method}-chromosome.pdf",

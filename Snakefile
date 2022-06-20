@@ -14,8 +14,8 @@ min_version("7.4.1")
 
 
 # TODO : check config/config CLI ... 
-configfile: "../config/config.yaml"
-# configfile: "config/config.yaml"
+# configfile: "../config/config.yaml"
+configfile: "config/config.yaml"
 # print(config)
 
 mode_selected = config["mode"].lower()
@@ -56,7 +56,7 @@ report: "report/workflow.rst"
 # # this container defines the underlying OS for each job when using the workflow
 # # with --use-conda --use-singularity
 # container: "docker://condaforge/mambaforge:4.12.0-0"
-containerized: "docker://weber8thomas/mosaicatcher-pipeline:latest"
+# containerized: "docker://weber8thomas/mosaicatcher-pipeline:latest"
 
 # include: "rules/input_check.smk"
 
@@ -95,21 +95,21 @@ if config["mode"] != "download_data":
 
     # IMPORT SMK RULES
 
-    include: "rules/input_check.smk"
-    include: "rules/setup.smk"
-    include: "rules/count.smk"
-    include: "rules/segmentation.smk"
-    include: "rules/plots.smk"
-    include: "rules/regenotyping.smk"
-    include: "rules/utils.smk"
-    include: "rules/strandphaser.smk"
-    include: "rules/haplotagging.smk"
-    include: "rules/mosaiclassifier.smk"
-    include: "rules/postprocessing.smk"
-    include: "rules/stats.smk"
+    include: "workflow/rules/input_check.smk"
+    include: "workflow/rules/setup.smk"
+    include: "workflow/rules/count.smk"
+    include: "workflow/rules/segmentation.smk"
+    include: "workflow/rules/plots.smk"
+    include: "workflow/rules/regenotyping.smk"
+    include: "workflow/rules/utils.smk"
+    include: "workflow/rules/strandphaser.smk"
+    include: "workflow/rules/haplotagging.smk"
+    include: "workflow/rules/mosaiclassifier.smk"
+    include: "workflow/rules/postprocessing.smk"
+    include: "workflow/rules/stats.smk"
 
 
-include: "rules/examples.smk"
+include: "workflow/rules/examples.smk"
 
 # Global wildcard constraints for consistent naming
 # wildcard_constraints:
