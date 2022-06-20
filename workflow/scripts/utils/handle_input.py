@@ -70,11 +70,11 @@ class HandleInput:
         pysam.set_verbosity(0)
         h = pysam.view("-H", bam_file_path)
         h = [e.split("\t") for e in h.split("\n")]
-        print(h)
+        # print(h)
         h = [e for e in h if e[0] == "@RG"]
-        print(h)
+        # print(h)
         sm_tag_list = list(set([sub_e.replace("SM:", "") for e in h for sub_e in e if "SM:" in sub_e]))
-        print(sm_tag_list)
+        # print(sm_tag_list)
 
         # Folder name based on path
         folder_name = bam_file_path.split("/")[-3]
