@@ -1,4 +1,4 @@
-from scripts.utils.utils import get_mem_mb 
+from workflow.scripts.utils.utils import get_mem_mb 
 
 import pandas as pd
 config_df = pd.read_csv(config["output_location"] + "config/config_df.tsv", sep="\t")

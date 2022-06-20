@@ -17,7 +17,7 @@ df_h = pd.DataFrame(h, columns=["TAG", "Contig", "LN"])
 output_h = pd.DataFrame(df_h["Contig"].str.replace("SN:", ""))
 output_h = output_h.loc[~output_h["Contig"].isin(snakemake.params["chroms"])]
 
-print(output_h)
+# print(output_h)
 
 # EXPORT
 output_h["Contig"].to_csv(snakemake.output[0], index=False, sep="\t", header=False)
