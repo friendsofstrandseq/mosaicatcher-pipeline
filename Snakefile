@@ -59,7 +59,6 @@ report: "report/workflow.rst"
 containerized: "docker://weber8thomas/mosaicatcher-pipeline:dev"
 
 # include: "rules/input_check.smk"
-
 # rule all:
 #     input: 
 #         rules.check_bam_input.output
@@ -113,15 +112,12 @@ include: "workflow/rules/examples.smk"
 
 # Global wildcard constraints for consistent naming
 # wildcard_constraints:
-#     chrom = 
 
 
 
 # IF PLOT OPTION ENABLED, BUILD TMP DICT TO CALL OUTPUT 
 if plot_option_selected == True:
-    # dict_cells_nb_per_sample = df_config_files.loc[df_config_files["all/selected"] == "selected"].groupby("Sample")["Cell"].nunique().to_dict()
     dict_cells_nb_per_sample = df_config_files.loc[df_config_files["Selected"] == True].groupby("Sample")["Cell"].nunique().to_dict()
-    # tmp_dict = df_config_files.loc[df_config_files["all/selected"] == "selected", ["Sample", "Cell"]].groupby("Sample")["Cell"].apply(lambda r: sorted(list(r))).to_dict()
     tmp_dict = df_config_files.loc[df_config_files["Selected"] == True, ["Sample", "Cell"]].groupby("Sample")["Cell"].apply(lambda r: sorted(list(r))).to_dict()
     tmp_dict = {s:{i+1:c for i,c in enumerate(cell_list)} for s,cell_list in tmp_dict.items()}
     for s in tmp_dict.keys():
@@ -154,18 +150,13 @@ if mode_selected == "count":
         rule all:
             input:
                 [config["output_location"] +  "counts/{}/{}.txt.fixme.gz".format(sample, sample) for sample in samples]
-                # rules.mosaic_count_dev.output,
-                # rules.mosaic_count_dev.output.info,
 
 # MODE MOSAIC SEGMENTATION
 elif mode_selected == "segmentation":
 
     if plot_option_selected == True:
-        # print([config["output_location"] + "counts/{}/counts-per-cell/{}.txt.gz".format(sample, tmp_dict[sample][i], i) for sample in samples for i in range(dict_cells_nb_per_sample[sample] + 1)])
         rule all:
             input:
-                # [config["output_location"] + "counts/{}/counts-per-cell/{}.txt.gz".format(sample, tmp_dict[sample][i], i) for sample in samples for i in range(dict_cells_nb_per_sample[sample] + 1) if i > 0],
-                # [config["output_location"] + "segmentation/{}/{}.txt.fixme".format(sample, sample) for sample in samples],
                 [config["output_location"] + "plots/{}/counts/{}.{}.pdf".format(sample, tmp_dict[sample][i], i) for sample in samples for i in range(dict_cells_nb_per_sample[sample] + 1)],
                 [config["output_location"] + "segmentation/{}/Selection_initial_strand_state".format(sample) for sample in samples]
     
