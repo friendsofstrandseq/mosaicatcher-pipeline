@@ -33,7 +33,7 @@ jobs:
           image: ${{ env.IMAGE_NAME }}
           tags: latest ${{ steps.gettag.outputs.tag }}${{ steps.getversion.outputs.version }}
           dockerfiles: |
-            ./Dockerfile
+            ./github-actions-runner/Dockerfile
 
       - name: Push To DockerHub
         id: push-to-dockerhub
