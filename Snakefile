@@ -14,8 +14,8 @@ min_version("7.4.1")
 
 
 # TODO : check config/config CLI ... 
-configfile: "../config/config.yaml"
-# configfile: "config/config.yaml"
+# configfile: "../config/config.yaml"
+configfile: "config/config.yaml"
 # print(config)
 
 mode_selected = config["mode"].lower()
@@ -67,7 +67,7 @@ containerized: "docker://weber8thomas/mosaicatcher-pipeline:latest"
 
 if config["mode"] != "download_data":  
     if os.path.isfile(config["output_location"] + "config/config_df.tsv") is False:
-        from scripts.utils import handle_input
+        from workflow.scripts.utils import handle_input
         c = handle_input.HandleInput(
             input_path=config["input_bam_location"], 
             output_path=config["output_location"] + "config/config_df.tsv", 
