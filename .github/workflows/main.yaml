@@ -5,7 +5,7 @@ on:
     branches:
       - smk_workflow_catalog
     paths:
-      - "Dockerfile"
+      - "github-actions-runner/Dockerfile"
 
 jobs:
   build:
