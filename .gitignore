@@ -1,0 +1,87 @@
+# Hidden folders & files
+.DS_Store
+.vscode/
+.snakemake/
+.panoptes.db
+._.DS_Store
+.pytest_cache/
+.condarc
+files.txt
+workflow/.conda/
+
+# Tmp files & execution outputs
+*.pyc
+*.zip
+*.gz
+*.db
+*.png
+*.pdf
+*.svg
+*.tsv
+*.csv
+
+# Links
+*@
+
+# Mosaicatcher folders
+chroms/
+counts/
+log/
+plots/
+segmentation/
+segmentation2/
+snv_calls/
+strand_states/
+sv_probabilities/
+workflow/config/config_df.tsv
+workflow/config/exclude_file.txt
+workflow/config/exclude_file
+
+# Docs
+docs/build/
+build/
+*.html
+workflow/static/
+
+# Python
+__pycache__
+workflow/scripts/__pycache__
+
+# Zenodo
+workflow/sandbox.zenodo.org/
+sandbox.zenodo.org/
+TEST_OUTPUT/
+TEST_OUTPUT
+workflow/test.txt
+.snakemake
+
+# Exceptions
+!docs/images/*.png
+!workflow/data/segdups/segDups_hg38_UCSCtrack.bed.gz
+!workflow/data/bin_200kb_all.bed
+!config/config.yaml
+!config/*
+
+# Dev
+discover_big_files_git.sh
+builds/
+workflow/report_TALL/
+*.bam
+*.bai
+workflow/TEST_EXAMPLE_DATA/
+TEST_EXAMPLE_DATA
+TEST_EXAMPLE_DATA/
+workflow/logs/
+workflow/errors/
+
+# git
+
+## Others
+# afac/
+# workflow/.snakemake
+# bam/
+
+## Personal note: files/folders specific to dev branch
+# .gitlab-ci.yml // to use with LFS example data in dev branch
+# singularity/ folder
+# afac/ debugging & dev folder
