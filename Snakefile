@@ -56,7 +56,9 @@ report: "workflow/report/workflow.rst"
 # # this container defines the underlying OS for each job when using the workflow
 # # with --use-conda --use-singularity
 # container: "docker://condaforge/mambaforge:4.12.0-0"
-containerized: "docker://weber8thomas/mosaicatcher-pipeline:dev"
+
+if config["containerized"] is True:
+    containerized: "docker://weber8thomas/mosaicatcher-pipeline:dev"
 
 # include: "rules/input_check.smk"
 # rule all:
