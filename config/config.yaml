@@ -26,14 +26,36 @@ output_location: "TEST_OUTPUT/"
 
 # External files
 ## 1000G SNV sites to genotype : https://sandbox.zenodo.org/record/1060653/files/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz
-snv_sites_to_genotype: "workflow/sandbox.zenodo.org/record/1074721/files/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz"
+snv_sites_to_genotype: "sandbox.zenodo.org/record/1074721/files/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz"
 
 # Reference genome : https://sandbox.zenodo.org/record/1060653/files/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna
-reference: "workflow/sandbox.zenodo.org/record/1074721/files/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna"
+reference: "sandbox.zenodo.org/record/1074721/files/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna"
 
 # Chromosomes list to process
 chromosomes:
+  - chr1
+  - chr2
+  - chr3
+  - chr4
+  - chr5
+  - chr6
+  - chr7
+  - chr8
+  - chr9
+  - chr10
+  - chr11
+  - chr12
+  - chr13
+  - chr14
+  - chr15
+  - chr16
+  - chr17
+  - chr18
+  - chr19
+  - chr20
   - chr21
+  - chr22
+  - chrX
 
 ##############################
 # Advanced configuration.  #
@@ -42,6 +64,7 @@ chromosomes:
 # Enable conda & singularity usage
 use-conda: True
 use-singularity: True
+containerized: False
 singularity-args: "-B /g:/g"
 latency-wait: 60
 
