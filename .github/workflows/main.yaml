@@ -29,7 +29,7 @@ jobs:
       - name: Downloading data
         uses: snakemake/snakemake-github-action@v1.22.0
         with:
-          directory: "."
+          directory: .
           snakefile: ./Snakefile
           stagein: "mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda unzip snakemake pandas pysam tqdm imagemagick && source activate snakemake && ls -l && pwd"
           args: "--cores 1 --config mode=download_data dl_external_files=True dl_bam_example=True input_bam_location=TEST_EXAMPLE_DATA/ --touch"
@@ -39,26 +39,26 @@ jobs:
         with:
           directory: .
           snakefile: ./Snakefile
-          # stagein: "mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda unzip snakemake pandas pysam tqdm imagemagick && source activate snakemake && ls -l && pwd"
+          stagein: "mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda unzip snakemake pandas pysam tqdm imagemagick && source activate snakemake && ls -l && pwd"
           args: "--lint"
 
-  # Testing:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v1
+  Testing:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
 
-  #     - name: Downloading data
-  #       uses: snakemake/snakemake-github-action@v1.22.0
-  #       with:
-  #         directory: "."
-  #         snakefile: ./Snakefile
-  #         stagein: "mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda unzip snakemake pandas pysam tqdm imagemagick && source activate snakemake"
-  #         args: "--cores 1 --config mode=download_data dl_external_files=True dl_bam_example=True input_bam_location=TEST_EXAMPLE_DATA/"
+      - name: Downloading data
+        uses: snakemake/snakemake-github-action@v1.22.0
+        with:
+          directory: .
+          snakefile: ./Snakefile
+          stagein: "mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda unzip snakemake pandas pysam tqdm imagemagick && source activate snakemake"
+          args: "--cores 1 --config mode=download_data dl_external_files=True dl_bam_example=True input_bam_location=TEST_EXAMPLE_DATA/"
 
-  #     - name: Test data
-  #       uses: snakemake/snakemake-github-action@v1.22.0
-  #       with:
-  #         directory: "."
-  #         snakefile: ./Snakefile
-  #         stagein: 'mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda snakemake pandas pysam tqdm imagemagick "singularity<=3.8.6" && source activate snakemake && ls -lh'
-  #         args: "--cores 1 --config plot=True input_bam_location=TEST_EXAMPLE_DATA/ output_location=TEST_OUTPUT/ --use-conda --use-singularity"
+      - name: Test data
+        uses: snakemake/snakemake-github-action@v1.22.0
+        with:
+          directory: .
+          snakefile: ./Snakefile
+          stagein: 'mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda snakemake pandas pysam tqdm imagemagick "singularity<=3.8.6" && source activate snakemake && ls -lh'
+          args: "--cores 1 --config plot=True input_bam_location=TEST_EXAMPLE_DATA/ output_location=TEST_OUTPUT/ --use-conda --use-singularity"
