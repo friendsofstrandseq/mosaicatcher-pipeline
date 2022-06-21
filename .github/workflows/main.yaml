@@ -14,7 +14,7 @@ jobs:
       - uses: actions/checkout@v1
 
       - name: Formatting
-        uses: github/super-linter@v3.6
+        uses: github/super-linter@v4
         env:
           VALIDATE_ALL_CODEBASE: false
           DEFAULT_BRANCH: master
@@ -55,7 +55,7 @@ jobs:
         with:
           directory: .
           snakefile: ./Snakefile
-          stagein: 'mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda snakemake pandas pysam tqdm imagemagick "singularity<=3.8.6" && source activate snakemake && ls -lh'
+          stagein: "mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda unzip snakemake pandas pysam tqdm imagemagick && source activate snakemake && ls -l && pwd"
           args: "--cores 1 --config mode=download_data dl_external_files=True dl_bam_example=True input_bam_location=TEST_EXAMPLE_DATA/"
 
       - name: Testing data
