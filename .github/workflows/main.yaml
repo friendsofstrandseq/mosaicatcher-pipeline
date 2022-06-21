@@ -44,6 +44,9 @@ jobs:
 
   Testing:
     runs-on: ubuntu-latest
+    needs:
+      - Linting
+      - Formatting
     steps:
       - uses: actions/checkout@v1
 
@@ -61,4 +64,4 @@ jobs:
           directory: .
           snakefile: ./Snakefile
           stagein: 'mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda snakemake pandas pysam tqdm imagemagick "singularity<=3.8.6" && source activate snakemake && ls -lh'
-          args: "--cores 1 --config plot=True input_bam_location=TEST_EXAMPLE_DATA/ output_location=TEST_OUTPUT/ --use-conda --use-singularity"
+          args: '--cores -12 --config chromosomes="[chr21]" mode=mosaiclassifier plot=True input_bam_location=TEST_EXAMPLE_DATA/ output_location=TEST_OUTPUT/ containerized=True --use-conda --use-singularity --latency-wait 60'
