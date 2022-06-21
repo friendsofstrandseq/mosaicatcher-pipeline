@@ -1,36 +1,45 @@
 
 # Usage 
 
-## Quick Start
+# Quick Start
 
 1. Install [Singularity](https://www.sylabs.io/guides/3.0/user-guide/) 
-2. Create a dedicated conda environment 
+2. To prevent conda channel errors
+```
+conda config --set channel_priority strict
+```
+3. Create a dedicated conda environment 
 ```
 conda create -n mosaicatcher_env -c conda-forge -c bioconda snakemake pandas pysam imagemagick tqdm && conda activate mosaicatcher_env
 ```
-3. Clone the repository and go in the `workflow` directory
+4. Clone the repository 
 ``` 
-git clone https://git.embl.de/tweber/mosaicatcher-update.git && cd mosaicatcher-update/workflow/
+git clone https://github.com/friendsofstrandseq/mosaicatcher-pipeline.git && cd mosaicatcher-pipeline
 ```
-4. Download test and reference data 
+5. Download test and reference data 
 ```
-snakemake -c1 --config mode=download_data dl_external_files=True dl_bam_example=True input_bam_location=TEST_EXAMPLE_DATA/
+snakemake -c1 --config mode=download_data dl_external_files=True dl_bam_example=True input_bam_location=TEST_EXAMPLE_DATA/ 
 ```
-5. Run on test data
+6. Run on example data on only one small chromosome (`<disk>` must be replaced by your disk letter/name, `/g` or `/scratch` at EMBL for example)
 ```
-snakemake --cores 12 input_bam_location=TEST_EXAMPLE_DATA/ output_location=TEST_OUTPUT/ --use-conda --use-singularity --singularity-args "-B /:/"
-```
-
-6. Start running your own analysis
-```
-snakemake --cores 12 --config input_bam_location=<INPUT_DATA_FOLDER> output_location=<OUTPUT_DATA_FOLDER> --use-conda --use-singularity --singularity-args "-B /:/"
-
-```
-7. Generate report 
-```
-snakemake --cores 12 --config input_bam_location=<INPUT_DATA_FOLDER> output_location=<OUTPUT_DATA_FOLDER> --report <REPORT.zip>
+snakemake --cores 12 --config mode=mosaiclassifier plot=True input_bam_location=TEST_EXAMPLE_DATA/ output_location=TEST_OUTPUT/ chromosomes="[chr21]" containerized=True --use-conda --use-singularity --singularity-args "-B /<disk>:/<disk>" --latency-wait 60 
 ```
 
+7. Generate report on example data
+```
+snakemake --cores 12 --config mode=mosaiclassifier plot=True input_bam_location=TEST_EXAMPLE_DATA/ output_location=TEST_OUTPUT/ chromosomes="[chr21]" containerized=True --use-conda --use-singularity --singularity-args "-B /<disk>:/<disk>" --latency-wait 60 --report <REPORT.zip>
+```
+
+
+8. Start running your own analysis
+```
+snakemake --cores 12 --config mode=mosaiclassifier plot=True input_bam_location=<INPUT_DATA_FOLDER> output_location=<OUTPUT_DATA_FOLDER> --use-conda --use-singularity --singularity-args "-B /<disk>:/<disk>" --latency-wait 60 
+
+```
+9. Generate report 
+```
+snakemake --cores 12 --config mode=mosaiclassifier plot=True input_bam_location=<INPUT_DATA_FOLDER> output_location=<OUTPUT_DATA_FOLDER> --use-conda --use-singularity --singularity-args "-B /<disk>:/<disk>" --latency-wait 60 --report <REPORT.zip>
+```
 ## System requirements
 
 This workflow is meant to be run in a Unix-based operating system (tested on Ubuntu 18.04 & CentOS 7). 
