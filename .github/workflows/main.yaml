@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - smk_workflow_catalog
-      - master
+      # - master
     # paths:
     #   - "github-actions-runner/Dockerfile"
 
