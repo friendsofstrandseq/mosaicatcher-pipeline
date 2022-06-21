@@ -50,6 +50,7 @@ workflow/scripts/__pycache__
 # Zenodo
 workflow/sandbox.zenodo.org/
 sandbox.zenodo.org/
+sandbox.zenodo.org
 TEST_OUTPUT/
 TEST_OUTPUT
 workflow/test.txt
