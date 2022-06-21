@@ -1,2 +1,0 @@
-
-/g/korbel2/weber/workspace/mosaicatcher-update/workflow/.snakemake/conda/491ec2a31932d72e514b8ce3f5c8551a
