@@ -36,9 +36,9 @@ conda create -n mosaicatcher_env -c conda-forge -c bioconda snakemake pandas pys
 ``` 
 git clone https://github.com/friendsofstrandseq/mosaicatcher-pipeline.git && cd mosaicatcher-pipeline
 ```
-5. Download test and reference data 
+1. Download reference data 
 ```
-snakemake -c1 --config mode=download_data dl_external_files=True dl_bam_example=True input_bam_location=TEST_EXAMPLE_DATA/ 
+snakemake -c1 --config mode=download_data dl_external_files=True 
 ```
 6. Run on example data on only one small chromosome (`<disk>` must be replaced by your disk letter/name, `/g` or `/scratch` at EMBL for example)
 ```
