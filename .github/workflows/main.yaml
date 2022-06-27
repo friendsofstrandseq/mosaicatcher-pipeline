@@ -55,5 +55,5 @@ jobs:
         with:
           directory: .
           snakefile: ./Snakefile
-          stagein: "conda create -f .test/conda/complete_env.yaml && source activate cpp_copy && cd workflow/scripts/Mosaic/ && mkdir build && cmake ../src/ && cmake --build . && ln -s mosaic /usr/local/sbin/mosaic && mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda snakemake pandas pysam tqdm imagemagick && source activate snakemake "
+          stagein: " mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda snakemake pandas pysam tqdm imagemagick && source activate snakemake  && conda create -f .test/conda/complete_env.yaml && source activate cpp_copy && cd workflow/scripts/Mosaic/ && mkdir build && cmake ../src/ && cmake --build . && ln -s mosaic /usr/local/sbin/mosaic"
           args: '--cores -12 --config chromosomes="[chr21]" mode=mosaiclassifier plot=True input_bam_location=.test/data/ output_location=.test/output/ --use-conda --latency-wait 60'
