@@ -25,21 +25,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-
-      - name: Downloading data
-        uses: snakemake/snakemake-github-action@v1.22.0
-        with:
-          directory: .
-          snakefile: ./Snakefile
-          stagein: "mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda unzip snakemake pandas pysam tqdm imagemagick && source activate snakemake && ls -l && pwd"
-          args: "--cores 1 --config mode=download_data dl_external_files=True dl_bam_example=False"
-
       - name: Linting
         uses: snakemake/snakemake-github-action@v1.22.0
         with:
           directory: .
           snakefile: ./Snakefile
-          stagein: "mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda unzip snakemake pandas pysam tqdm imagemagick && source activate snakemake && ls -l && pwd"
+          stagein: "touch $(grep snv_sites ./config/config.yaml| grep -P 'sandbox*') && touch $(grep -P '^reference' ./config/config.yaml | grep sandbox* ) && mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda unzip snakemake pandas pysam tqdm imagemagick && source activate snakemake && ls -l && pwd"
           args: "--lint"
 
   Testing:
@@ -56,7 +47,7 @@ jobs:
         with:
           directory: .
           snakefile: ./Snakefile
-          stagein: "sysctl -w kernel.unprivileged_userns_clone=1 && mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda unzip snakemake pandas pysam tqdm imagemagick && source activate snakemake && ls -l && pwd"
+          stagein: "mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda unzip snakemake pandas pysam tqdm imagemagick && source activate snakemake && ls -l && pwd"
           args: "--cores 1 --config mode=download_data dl_external_files=True"
 
       - name: Testing data
@@ -64,5 +55,5 @@ jobs:
         with:
           directory: .
           snakefile: ./Snakefile
-          stagein: 'mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda snakemake pandas pysam tqdm imagemagick "singularity<=3.8.6" && source activate snakemake && ls -lh && sysctl -w kernel.unprivileged_userns_clone=1'
+          stagein: 'mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda snakemake pandas pysam tqdm imagemagick "singularity<=3.8.6" && source activate snakemake && ls -lh && echo "kernel.unprivileged_userns_clone=1" > /etc/sysctl.d/userns.conf'
           args: '--cores -12 --config chromosomes="[chr21]" mode=mosaiclassifier plot=True input_bam_location=.test/data/ output_location=.test/output/ containerized=True --use-conda --use-singularity --latency-wait 60'
