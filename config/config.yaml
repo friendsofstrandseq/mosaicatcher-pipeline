@@ -20,9 +20,9 @@ dl_bam_example: False
 dl_external_files: False
 
 ## Input BAM location
-input_bam_location: "TEST_EXAMPLE_DATA/"
+input_bam_location: ".test/data/"
 ## Output location
-output_location: "TEST_OUTPUT/"
+output_location: ".test/output/"
 
 # External files
 ## 1000G SNV sites to genotype : https://sandbox.zenodo.org/record/1060653/files/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz
