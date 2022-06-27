@@ -20,7 +20,7 @@ rule mosaic_count:
     """
     input:
         bam = lambda wc: expand(config["input_bam_location"] + wc.sample +  "/selected/{bam}.bam", bam = bam_per_sample_local[str(wc.sample)] if wc.sample in bam_per_sample_local else "FOOBAR"),
-        # bai = lambda wc: expand(config["input_bam_location"] + wc.sample +  "/selected/{bam}.bam.bai", bam = bam_per_sample_local[wc.sample]) if wc.sample in bam_per_sample_local else "FOOBAR",
+        bai = lambda wc: expand(config["input_bam_location"] + wc.sample +  "/selected/{bam}.bam.bai", bam = bam_per_sample_local[str(wc.sample)]) if wc.sample in bam_per_sample_local else "FOOBAR",
         excl = ancient(config["output_location"] + "config/exclude_file"),
     output:
         counts = config["output_location"] + "counts/{sample}/{sample}.txt.fixme.gz",
