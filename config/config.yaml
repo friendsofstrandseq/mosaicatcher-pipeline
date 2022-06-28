@@ -69,7 +69,7 @@ singularity-args: "-B /g:/g"
 latency-wait: 60
 
 # Default conda frontend
-conda-frontend: "mamba"
+conda-frontend: "conda"
 
 # Print shell commands
 printshellcmds: True
