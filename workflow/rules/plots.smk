@@ -18,6 +18,7 @@ envvars:
 # Load rules only if plot is enabled [True] in config file
 # if config["plot"] is True:
 
+
 rule plot_mosaic_counts:
     """
     rule fct: Plot function of read counts for each bam file
@@ -39,6 +40,7 @@ rule plot_mosaic_counts:
         """
         LC_CTYPE=C Rscript workflow/scripts/plotting/qc.R {input.counts} {input.info} {output} > {log} 2>&1
         """
+
 
 rule divide_pdf:
     input:
@@ -62,6 +64,7 @@ rule divide_pdf:
     script:
         "../scripts/plotting/dividing_pdf.py"
 
+
 rule tmp_merge_divide:
     input:
         get_indiv_plots_count(),
@@ -73,6 +76,7 @@ rule tmp_merge_divide:
         "../envs/mc_base.yaml"
     shell:
         "echo {input} > {output}"
+
 
 rule plot_SV_consistency_barplot:
     input:
@@ -105,6 +109,7 @@ rule plot_SV_consistency_barplot:
     script:
         "../scripts/plotting/sv_consistency_barplot.snakemake.R"
 
+
 rule plot_clustering:
     input:
         sv_calls="{output}/mosaiclassifier/sv_calls/{sample}/{method}.tsv",
@@ -119,7 +124,6 @@ rule plot_clustering:
             },
         ),
         chromosome="{output}/plots/{sample}/sv_clustering/{method}-chromosome.pdf",
-        # chromosome = report("plots/{sample}/sv_clustering/{method}-chromosome.pdf", category="SV clustering"),
     log:
         "{output}/log/plot_clustering/{sample}/{method}.log",
     conda:
@@ -128,10 +132,7 @@ rule plot_clustering:
         mem_mb=get_mem_mb,
     script:
         "../scripts/plotting/plot-clustering.snakemake.R"
-        # binbed = "data/bin_200kb_all.bed",
 
-
-#        Rscript scripts/plotting/plot-clustering.snakemake.R {input.sv_calls} {input.binbed} {output.position} {output.chromosome}
 
 rule plot_SV_calls:
     input:
@@ -143,7 +144,6 @@ rule plot_SV_calls:
         scsegments="{output}/segmentation/{sample}/Selection_singleseg.txt",
         grouptrack="{output}/mosaiclassifier/postprocessing/group-table/{sample}/{method}.tsv",
     output:
-        # "plots/{sample}/sv_calls/{method}_filter{filter}.{chrom}.pdf"
         report(
             "{output}/plots/{sample}/sv_calls/{method}_filter{filter}.{chrom}.pdf",
             category="SV Calls",
@@ -173,18 +173,3 @@ rule plot_SV_calls:
             {wildcards.chrom} \
             {output} > {log} 2>&1
         """
-        
-
-
-# rule generate_halo_json:
-#     input:
-#         counts = "counts/{sample}/{windows}.txt.gz",
-#     output:
-#         json = "halo/{sample}/{windows}.json.gz",
-#     log:
-#         "log/generate_halo_json/{sample}/{windows}.{windows}.log"
-#     shell:
-#         """
-#         PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)
-#         (./utils/counts_to_json.py {input.counts} | gzip > {output.json})
-#         """
