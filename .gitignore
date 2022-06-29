@@ -64,13 +64,17 @@ workflow/test.txt
 !config/*
 
 # GitHub actions
-.tests/
+# .tests/
 .tests/output/
-.tests/unit/
+# .tests/unit/
+.tests/data/RPE-BM510/all/*.log
+.tests/data/RPE-BM510/selected/*.log
 .tests/data/RPE-BM510/all/*.bai
+.tests/data/RPE-BM510/selected/*.bai
 !.tests/data/RPE-BM510/all/*.bam
 !.tests/data/RPE-BM510/selected/*.bam
-!.tests/data/RPE-BM510/selected/*.bai
+!.tests/external_data/1000G_chr21.vcf.gz
+# !.tests/data/RPE-BM510/selected/*.bai
 
 # Dev
 discover_big_files_git.sh
