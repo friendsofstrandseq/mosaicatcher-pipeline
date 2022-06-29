@@ -15,12 +15,9 @@ rule dl_example_data:
             "https://sandbox.zenodo.org/record/1074721/files/TEST_EXAMPLE_DATA.zip",
             keep_local=True,
         ),
-        # HTTP.remote("https://sandbox.zenodo.org/record/1062186/files/report_TALL.zip", keep_local=True)
     output:
-        # directory(config["input_bam_location"])
         touch("config_output/dl_example_data.ok"),
     log:
-        # directory(config["input_bam_location"])
         touch("log/config_output/dl_example_data.ok"),
     conda:
         "../envs/mc_base.yaml"

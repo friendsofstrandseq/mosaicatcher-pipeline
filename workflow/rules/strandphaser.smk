@@ -77,12 +77,9 @@ rule run_strandphaser_per_chrom:
         wcregions="{output}/strandphaser/{sample}/strandphaser_input.txt",
         snppositions="{output}/snv_genotyping/{sample}/{chrom}.vcf",
         configfile="{output}/strandphaser/{sample}/StrandPhaseR.{chrom}.config",
-        # bamfolder    = config["input_bam_location"] + "{sample}/selected",
-        # TODO : tmp solution
     output:
         "{output}/strandphaser/{sample}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt",
         "{output}/strandphaser/{sample}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf",
-        # "strandphaser/{sample}/StrandPhaseR_analysis.{chrom}/SingleCellHaps/{chrom}_singleCellHaps.pdf",
         report(
             "{output}/strandphaser/{sample}/StrandPhaseR_analysis.{chrom}/SingleCellHaps/{chrom}_singleCellHaps.pdf",
             category="StrandPhaseR",
@@ -104,7 +101,6 @@ rule run_strandphaser_per_chrom:
             config["output_location"], wc.sample, wc.chrom
         ),
     shell:
-        # {config[Rscript]}
         """
         Rscript workflow/scripts/strandphaser_scripts/StrandPhaseR_pipeline.R \
                 {params.input_bam} \
@@ -114,14 +110,11 @@ rule run_strandphaser_per_chrom:
                 {input.snppositions} \
                 $(pwd)/utils/R-packages/ > {log} 2>&1
         """
+        # bamfolder    = config["input_bam_location"] + "{sample}/selected",
 
 
 rule merge_strandphaser_vcfs:
     input:
-        ## OLD calling
-        # vcfs=expand("strandphaser/{{sample}}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz", chrom=config["chromosomes"]),
-        # tbis=expand("strandphaser/{{sample}}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz.tbi", chrom=config["chromosomes"]),
-        ## NEW calling that takes into account sex sample (see checkpoint determine_sex_per_cell)
         vcfs=ancient(aggregate_vcf_gz),
         tbis=ancient(aggregate_vcf_gz_tbi),
     output:
@@ -148,13 +141,6 @@ rule combine_strandphaser_output:
     resources:
         mem_mb=get_mem_mb,
     run:
-        ## Errors on slurm with previous version
-        # """
-        # set -o pipefail;
-        # cat {input} | head -n1 > {output};
-        # tail -q -n+2 {input} >> {output}; > {log} 2>&1
-        # """
-        ## New version using pandas
         import pandas as pd
 
         pd.concat([pd.read_csv(file, sep="\t") for j, file in enumerate(input)]).to_csv(
