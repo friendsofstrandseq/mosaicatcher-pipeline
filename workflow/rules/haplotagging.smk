@@ -9,6 +9,10 @@
 # Haplotagging                                                                 #
 ################################################################################
 
+# DOCME : --skip-missing-contigs option to remove unused chroms
+# "whatshap haplotag -o {output} -r {params.ref} {input.vcf} {input.bam} > {log} 2>{log}  "
+# bai = config["input_bam_location"] + "{sample}/selected/{cell}.bam.bai"
+
 
 rule haplotag_bams:
     input:
@@ -23,7 +27,6 @@ rule haplotag_bams:
             if wc.sample in bam_per_sample_local
             else "FOOBAR",
         ),
-        # bai = config["input_bam_location"] + "{sample}/selected/{cell}.bam.bai"
     output:
         "{output}/haplotag/bam/{sample}/{cell}.bam",
     log:
@@ -35,8 +38,6 @@ rule haplotag_bams:
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     shell:
-        # DOCME : --skip-missing-contigs option to remove unused chroms
-        # "whatshap haplotag -o {output} -r {params.ref} {input.vcf} {input.bam} > {log} 2>{log}  " 
         "whatshap haplotag --skip-missing-contigs -o {output} -r {params.ref} {input.vcf} {input.bam} > {log} 2>{log}  "
 
 
