@@ -47,7 +47,16 @@ jobs:
         with:
           directory: .
           snakefile: ./Snakefile
-          args: "--use-conda --use-singularity --show-failed-logs --cores 2 --conda-cleanup-pkgs cache --config reference=.tests/external_data/chr21.fna snv_sites_to_genotype=.tests/external_data/1000G_chr21.vcf.gz"
+          args: >
+          --use-conda \
+          --use-singularity \
+          --show-failed-logs \
+          --cores 2 \
+          --conda-cleanup-pkgs cache \
+          --config containerized=True \
+            reference=.tests/external_data/chr21.fna \
+            snv_sites_to_genotype=.tests/external_data/1000G_chr21.vcf.gz
+
 
   #     - name: Set up Python 3.8
   #       uses: actions/setup-python@v2
