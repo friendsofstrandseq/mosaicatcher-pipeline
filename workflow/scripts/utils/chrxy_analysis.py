@@ -60,7 +60,7 @@ def loop(file, l_df):
     l_df.append(new_df)
 
 # Launch function in parallel on list of files
-parmap.starmap(loop, list(zip(l_files_selected)), l_df, pm_pbar=True, pm_processes=10)
+parmap.starmap(loop, list(zip(l_files_selected)), l_df, pm_pbar=False, pm_processes=10)
 
 # Concatenate & Identify Male & Female cells based on cutoff
 cutoff = 5

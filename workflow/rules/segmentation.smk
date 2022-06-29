@@ -1,9 +1,9 @@
-from workflow.scripts.utils.utils import get_mem_mb 
+# from workflow.scripts.utils.utils import get_mem_mb 
 
 import math
-import pandas as pd
-config_df = pd.read_csv(config["output_location"] + "config/config_df.tsv", sep="\t")
-cell_per_sample = config_df.loc[config_df["Selected"] == True].groupby("Sample")["Cell"].apply(list).to_dict()
+# import pandas as pd
+# config_df = pd.read_csv("config/config_df.tsv", sep="\t")
+# cell_per_sample = config_df.loc[config_df["Selected"] == True].groupby("Sample")["Cell"].apply(list).to_dict()
 
 ################################################################################
 # Joint Segmentation                                                                 #
@@ -19,11 +19,11 @@ rule segmentation:
     output: Segmentation tab file 
     """
     input:
-        config["output_location"] + "counts/{sample}/{sample}.txt.gz"
+        "{output}/counts/{sample}/{sample}.txt.gz"
     output:
-        config["output_location"] + "segmentation/{sample}/{sample}.txt.fixme"
+        "{output}/segmentation/{sample}/{sample}.txt.fixme"
     log:
-        config["output_location"] + "log/segmentation/{sample}/{sample}.log"
+        "{output}/log/segmentation/{sample}/{sample}.log"
     params:
         min_num_segs = lambda wc: math.ceil(200000 / float(config["window"]))  # bins to represent 200 kb
     container:
@@ -48,13 +48,20 @@ rule fix_segmentation:
     output:
     """
     input:
-        config["output_location"] + "segmentation/{sample}/{sample}.txt.fixme"
+        "{output}/segmentation/{sample}/{sample}.txt.fixme"
     output:
-        config["output_location"] + "segmentation/{sample}/{sample}.txt"
+        "{output}/segmentation/{sample}/{sample}.txt"
+    log:
+        "{output}/log/segmentation/{sample}/{sample}.log"
+    conda:
+        "../envs/mc_base.yaml"
+    params:
+        script = "workflow/scripts/segmentation_scripts/fix_segmentation.awk",
+        window = config["window"]
     shell:
         """
         # Issue #1022 (https://bitbucket.org/snakemake/snakemake/issues/1022)
-        awk -v name={wildcards.sample} -v window={config[window]} -f workflow/scripts/segmentation_scripts/fix_segmentation.awk {input} > {output}
+        awk -v name={wildcards.sample} -v window={params.window} -f {params.script} {input} > {output}
         """
 
 
@@ -69,11 +76,11 @@ rule segment_one_cell:
     output: Segmentation file for an individual cell
     """
     input:
-        config["output_location"] + "counts/{sample}/counts-per-cell/{cell}.txt.gz"
+        "{output}/counts/{sample}/counts-per-cell/{cell}.txt.gz"
     output:
-        config["output_location"] + "segmentation/{sample}/segmentation-per-cell/{cell}.txt"
+        "{output}/segmentation/{sample}/segmentation-per-cell/{cell}.txt"
     log:
-        config["output_location"] + "log/segmentation/{sample}/segmentation-per-cell/{cell}.log"
+        "{output}/log/segmentation/{sample}/segmentation-per-cell/{cell}.log"
     container:
         "library://weber8thomas/remote-build/mosaic:0.3"
     params:
@@ -99,18 +106,22 @@ rule segmentation_selection:
     output: initial_strand_state used for the following by strandphaser
     """
     input:
-        counts=config["output_location"] + "counts/{sample}/{sample}.txt.gz",
-        jointseg=config["output_location"] + "segmentation/{sample}/{sample}.txt",
-        singleseg=lambda wc: [config["output_location"] + "segmentation/{}/segmentation-per-cell/{}.txt".format(wc.sample, cell) for cell in cell_per_sample[wc.sample]],
-        info=config["output_location"] + "counts/{sample}/{sample}.info",
+        counts="{output}/counts/{sample}/{sample}.txt.gz",
+        jointseg="{output}/segmentation/{sample}/{sample}.txt",
+        singleseg=lambda wc: ["{}/segmentation/{}/segmentation-per-cell/{}.txt".format(config["output_location"], wc.sample, cell) for cell in cell_per_sample[wc.sample]],
+        info="{output}/counts/{sample}/{sample}.info",
     output:
-        jointseg=config["output_location"] + "segmentation/{sample}/Selection_jointseg.txt",
-        singleseg=config["output_location"] + "segmentation/{sample}/Selection_singleseg.txt",
-        strand_states=config["output_location"] + "segmentation/{sample}/Selection_initial_strand_state",
+        jointseg="{output}/segmentation/{sample}/Selection_jointseg.txt",
+        singleseg="{output}/segmentation/{sample}/Selection_singleseg.txt",
+        strand_states="{output}/segmentation/{sample}/Selection_initial_strand_state",
     log:
-        config["output_location"] + "log/segmentation/segmentation_selection/{sample}.log"
+        "{output}/log/segmentation/segmentation_selection/{sample}.log"
     params:
         cellnames = lambda wc: ",".join(cell for cell in cell_per_sample[wc.sample]),
+        sce_min_distance = config["sce_min_distance"],
+        additional_sce_cutoff = config["additional_sce_cutoff"],
+        min_diff_jointseg = config["min_diff_jointseg"],
+        min_diff_singleseg = config["min_diff_singleseg"],
     conda:
         "../envs/mc_base.yaml"
     resources:
@@ -119,10 +130,10 @@ rule segmentation_selection:
         """
         PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)
         python workflow/scripts/segmentation_scripts/detect_strand_states.py \
-            --sce_min_distance {config[sce_min_distance]} \
-            --sce_add_cutoff {config[additional_sce_cutoff]} \
-            --min_diff_jointseg {config[min_diff_jointseg]} \
-            --min_diff_singleseg {config[min_diff_singleseg]} \
+            --sce_min_distance {params.sce_min_distance} \
+            --sce_add_cutoff {params.additional_sce_cutoff} \
+            --min_diff_jointseg {params.min_diff_jointseg} \
+            --min_diff_singleseg {params.min_diff_singleseg} \
             --output_jointseg {output.jointseg} \
             --output_singleseg {output.singleseg} \
             --output_strand_states {output.strand_states} \

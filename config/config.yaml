@@ -20,9 +20,9 @@ dl_bam_example: False
 dl_external_files: False
 
 ## Input BAM location
-input_bam_location: ".test/data/"
+input_bam_location: ".tests/data/"
 ## Output location
-output_location: ".test/output/"
+output_location: ".tests/output/"
 
 # External files
 ## 1000G SNV sites to genotype : https://sandbox.zenodo.org/record/1060653/files/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz
@@ -60,6 +60,8 @@ chromosomes:
 ##############################
 # Advanced configuration.  #
 ##############################
+
+samples: "config/samples.tsv"
 
 # Enable conda & singularity usage
 use-conda: True
@@ -111,6 +113,14 @@ regfactor: 6
 filter:
   - TRUE
   - FALSE
+
+plottype_consistency:
+  - "byaf"
+  - "bypos"
+
+plottype_clustering:
+  - "position"
+  - "chromosome"
 
 ## BPDENS
 ### JOINT SEG
