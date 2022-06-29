@@ -1,4 +1,4 @@
-from workflow.scripts.utils.utils import get_mem_mb 
+# from workflow.scripts.utils.utils import get_mem_mb 
 
 ################################################################################
 # StrandPhaseR things                                                          #
@@ -11,12 +11,12 @@ rule convert_strandphaser_input:
     output: filtered TSV file with start/end coordinates of WC-orientated segment to be used by strandphaser
     """
     input:
-        states = config["output_location"] + "segmentation/{sample}/Selection_initial_strand_state",
-        info   = config["output_location"] + "counts/{sample}/{sample}.info"
+        states = "{output}/segmentation/{sample}/Selection_initial_strand_state",
+        info   = "{output}/counts/{sample}/{sample}.info"
     output:
-        config["output_location"] + "strandphaser/{sample}/strandphaser_input.txt"
+        "{output}/strandphaser/{sample}/strandphaser_input.txt"
     log:
-        config["output_location"] + "log/strandphaser/convert_strandphaser_input/{sample}.log"
+        "{output}/log/strandphaser/convert_strandphaser_input/{sample}.log"
     conda:
         "../envs/rtools.yaml"
     script:
@@ -29,48 +29,16 @@ checkpoint determine_sex_per_cell:
     output:
     """
     input:
-        config["input_bam_location"] + "{sample}/selected/"
+        expand("{input_folder}/{sample}/selected/", input_folder=config["input_bam_location"], sample=samples)
     output:
-        sex_analysis_cellwise = config["output_location"] + "config/{sample}/sex_analysis_cells.tsv",
-        sex_analysis_samplewise = config["output_location"] + "config/{sample}/sex_analysis_sample.txt"
+        sex_analysis_cellwise = "{output}/config/{sample}/sex_analysis_cells.tsv",
+        sex_analysis_samplewise = "{output}/config/{sample}/sex_analysis_sample.txt"
     log:
-        config["output_location"] + "log/strandphaser/determine_sex_per_cell/{sample}.log"
+        "{output}/log/strandphaser/determine_sex_per_cell/{sample}.log"
     conda:
         "../envs/mc_base.yaml"
     script:
         "../scripts/utils/chrxy_analysis.py"
-
-
-def aggregate_phased_haps(wildcards):
-    with checkpoints.determine_sex_per_cell.get(sample=wildcards.sample).output.sex_analysis_samplewise.open() as f:
-        sex = f.read().strip().split('\t')[1]
-        if sex == "M":
-            config["chromosomes"] = [c for c in config["chromosomes"] if c not in ["chrX", "chrY"]]
-        elif sex == "F":
-            config["chromosomes"] = [c for c in config["chromosomes"] if c not in ["chrY"]]
-        return expand(config["output_location"] + "strandphaser/{{sample}}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt", chrom=config["chromosomes"])
-
-
-
-def aggregate_vcf_gz(wildcards):
-    with checkpoints.determine_sex_per_cell.get(sample=wildcards.sample).output.sex_analysis_samplewise.open() as f:
-        sex = f.read().strip().split('\t')[1]
-        if sex == "M":
-            config["chromosomes"] = [c for c in config["chromosomes"] if c not in ["chrX", "chrY"]]
-        elif sex == "F":
-            config["chromosomes"] = [c for c in config["chromosomes"] if c not in ["chrY"]]
-        return expand(config["output_location"] + "strandphaser/{{sample}}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz", chrom=config["chromosomes"])
-
-
-
-def aggregate_vcf_gz_tbi(wildcards):
-    with checkpoints.determine_sex_per_cell.get(sample=wildcards.sample).output.sex_analysis_samplewise.open() as f:
-        sex = f.read().strip().split('\t')[1]
-        if sex == "M":
-            config["chromosomes"] = [c for c in config["chromosomes"] if c not in ["chrX", "chrY"]]
-        elif sex == "F":
-            config["chromosomes"] = [c for c in config["chromosomes"] if c not in ["chrY"]]
-        return expand(config["output_location"] + "strandphaser/{{sample}}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz.tbi", chrom=config["chromosomes"])
 
 
 
@@ -82,32 +50,15 @@ rule prepare_strandphaser_config_per_chrom:
     output: config file used by strandphaser
     """
     input:
-        config["output_location"] + "segmentation/{sample}/Selection_initial_strand_state"
+        "{output}/segmentation/{sample}/Selection_initial_strand_state"
     output:
-        config["output_location"] + "strandphaser/{sample}/StrandPhaseR.{chrom}.config"
-    run:
-        with open(output[0], "w") as f:
-            print("[General]",                    file = f)
-            print("numCPU           = 1",         file = f)
-            print("chromosomes      = '" + wildcards.chrom + "'", file = f)
-            if (config["paired_end"]):
-                print("pairedEndReads   = TRUE",  file = f)
-            else:
-                print("pairedEndReads   = FALSE", file = f)
-            print("min.mapq         = 10",        file = f)
-            print("",                             file = f)
-            print("[StrandPhaseR]",               file = f)
-            print("positions        = NULL",      file = f)
-            print("WCregions        = NULL",      file = f)
-            print("min.baseq        = 20",       file = f)
-            print("num.iterations   = 2",        file = f)
-            print("translateBases   = TRUE",     file = f)
-            print("fillMissAllele   = NULL",     file = f)
-            print("splitPhasedReads = TRUE",     file = f)
-            print("compareSingleCells = TRUE",     file = f)
-            print("callBreaks       = FALSE",    file = f)
-            print("exportVCF        = '", wildcards.sample, "'", sep = "", file = f)
-            print("bsGenome         = '", config["R_reference"], "'", sep = "", file = f)
+        "{output}/strandphaser/{sample}/StrandPhaseR.{chrom}.config"
+    log:
+        "{output}/log/strandphaser/{sample}/StrandPhaseR.{chrom}.log"
+    conda:
+        "../envs/mc_base.yaml"
+    script:
+        "../scripts/strandphaser_scripts/prepare_strandphaser.py"
 
 
 
@@ -119,35 +70,38 @@ rule run_strandphaser_per_chrom:
     output:
     """
     input:
-        wcregions    = config["output_location"] + "strandphaser/{sample}/strandphaser_input.txt",
-        snppositions = config["output_location"] + "snv_genotyping/{sample}/{chrom}.vcf",
-        configfile   = config["output_location"] + "strandphaser/{sample}/StrandPhaseR.{chrom}.config",
-        bamfolder    = config["input_bam_location"] + "{sample}/selected",
+        install_strandphaser = rules.install_rlib_strandphaser.output,
+        wcregions    = "{output}/strandphaser/{sample}/strandphaser_input.txt",
+        snppositions = "{output}/snv_genotyping/{sample}/{chrom}.vcf",
+        configfile   = "{output}/strandphaser/{sample}/StrandPhaseR.{chrom}.config",
+        # bamfolder    = config["input_bam_location"] + "{sample}/selected",
         # TODO : tmp solution
-        strandphaser_install = config['output_location'] + 'strandphaser/R_setup/strandphaser_version-{}.ok'.format(config['git_commit_strandphaser'])
     output:
-        config["output_location"] + "strandphaser/{sample}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt",
-        config["output_location"] + "strandphaser/{sample}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf",
-        # config["output_location"] + "strandphaser/{sample}/StrandPhaseR_analysis.{chrom}/SingleCellHaps/{chrom}_singleCellHaps.pdf",
+        "{output}/strandphaser/{sample}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt",
+        "{output}/strandphaser/{sample}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf",
+        # "strandphaser/{sample}/StrandPhaseR_analysis.{chrom}/SingleCellHaps/{chrom}_singleCellHaps.pdf",
         report(
-            config["output_location"] + "strandphaser/{sample}/StrandPhaseR_analysis.{chrom}/SingleCellHaps/{chrom}_singleCellHaps.pdf",
+            "{output}/strandphaser/{sample}/StrandPhaseR_analysis.{chrom}/SingleCellHaps/{chrom}_singleCellHaps.pdf",
             category="StrandPhaseR",
             subcategory = "{sample}",
             caption="../report/strandphaser_haplotypes.rst",
             labels={"Sample" : "{sample}", "Chrom" : "{chrom}"}
         )
     log:
-        config["output_location"] + "log/run_strandphaser_per_chrom/{sample}/{chrom}.log"
+        "{output}/log/run_strandphaser_per_chrom/{sample}/{chrom}.log"
     conda:
         "../envs/rtools.yaml"
     resources:
         mem_mb = get_mem_mb,
+    params:
+        input_bam = lambda wc: "{}/{}/selected".format(config["input_bam_location"], wc.sample),
+        output = lambda wc: "{}/strandphaser/{}/StrandPhaseR_analysis.{}".format(config["output_location"], wc.sample, wc.chrom)
     shell:
         # {config[Rscript]}
         """
         Rscript workflow/scripts/strandphaser_scripts/StrandPhaseR_pipeline.R \
-                {input.bamfolder} \
-                {config[output_location]}strandphaser/{wildcards.sample}/StrandPhaseR_analysis.{wildcards.chrom} \
+                {params.input_bam} \
+                {params.output} \
                 {input.configfile} \
                 {input.wcregions} \
                 {input.snppositions} \
@@ -157,15 +111,15 @@ rule run_strandphaser_per_chrom:
 rule merge_strandphaser_vcfs:
     input:
         ## OLD calling
-        # vcfs=expand(config["output_location"] + "strandphaser/{{sample}}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz", chrom=config["chromosomes"]),
-        # tbis=expand(config["output_location"] + "strandphaser/{{sample}}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz.tbi", chrom=config["chromosomes"]),
+        # vcfs=expand("strandphaser/{{sample}}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz", chrom=config["chromosomes"]),
+        # tbis=expand("strandphaser/{{sample}}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz.tbi", chrom=config["chromosomes"]),
         ## NEW calling that takes into account sex sample (see checkpoint determine_sex_per_cell)
         vcfs= ancient(aggregate_vcf_gz),
         tbis= ancient(aggregate_vcf_gz_tbi)
     output:
-        vcfgz=config["output_location"] + "strandphaser/phased-snvs/{sample}.vcf.gz"
+        vcfgz="{output}/strandphaser/phased-snvs/{sample}.vcf.gz"
     log:
-        config["output_location"] + "log/merge_strandphaser_vcfs/{sample}.log"
+        "{output}/log/merge_strandphaser_vcfs/{sample}.log"
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     resources:
@@ -181,9 +135,9 @@ rule combine_strandphaser_output:
     input:
         aggregate_phased_haps
     output:
-        config["output_location"] +  "strandphaser/{sample}/strandphaser_phased_haps_merged.txt"
+         "{output}/strandphaser/{sample}/strandphaser_phased_haps_merged.txt"
     log:
-        config["output_location"] + "log/combine_strandphaser_output/{sample}.log"
+        "{output}/log/combine_strandphaser_output/{sample}.log"
     resources:
         mem_mb = get_mem_mb,
     run:
@@ -201,13 +155,13 @@ rule combine_strandphaser_output:
 
 rule convert_strandphaser_output:
     input:
-        phased_states  = config["output_location"] + "strandphaser/{sample}/strandphaser_phased_haps_merged.txt",
-        initial_states = config["output_location"] + "segmentation/{sample}/Selection_initial_strand_state",
-        info           = config["output_location"] + "counts/{sample}/{sample}.info"
+        phased_states  = "{output}/strandphaser/{sample}/strandphaser_phased_haps_merged.txt",
+        initial_states = "{output}/segmentation/{sample}/Selection_initial_strand_state",
+        info           = "{output}/counts/{sample}/{sample}.info"
     output:
-        config["output_location"] + "strandphaser/{sample}/StrandPhaseR_final_output.txt"
+        "{output}/strandphaser/{sample}/StrandPhaseR_final_output.txt"
     log:
-        config["output_location"] + "log/convert_strandphaser_output/{sample}.log"
+        "{output}/log/convert_strandphaser_output/{sample}.log"
     conda:
         "../envs/rtools.yaml"
     resources:

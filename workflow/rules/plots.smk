@@ -1,7 +1,13 @@
-from workflow.scripts.utils.utils import get_mem_mb 
+# from workflow.scripts.utils.utils import get_mem_mb 
 
 import os
 os.environ['OPENBLAS_NUM_THREADS'] = '1'
+envvars:
+    "OPENBLAS_NUM_THREADS"
+# import pandas as pd
+
+# df = pd.read_csv(config["samples"], sep="\t")
+
 
 # TODO : option for segmentation : enable/disable back colors
 
@@ -19,51 +25,66 @@ if config["plot"] is True:
         output: Generate figure based on couting results
         """
         input:
-            counts = config["output_location"] + "counts/{sample}/{sample}.txt.gz",
-            info   = config["output_location"] + "counts/{sample}/{sample}.info"
+            counts = "{output}/counts/{sample}/{sample}.txt.gz",
+            info   = "{output}/counts/{sample}/{sample}.info"
         output:
-            config["output_location"] + "plots/{sample}/counts/CountComplete.pdf"
+            "{output}/plots/{sample}/counts/CountComplete.pdf"
         log:
-            config["output_location"] + "log/plot_mosaic_counts/{sample}.log"
+            "{output}/log/plot_mosaic_counts/{sample}.log"
         conda:
             "../envs/rtools.yaml"
         resources:
             mem_mb = get_mem_mb,
         shell:
             """
-            Rscript workflow/scripts/plotting/qc.R {input.counts} {input.info} {output} > {log} 2>&1
+            LC_CTYPE=C Rscript workflow/scripts/plotting/qc.R {input.counts} {input.info} {output} > {log} 2>&1
             """
     # TODO : from shell to script function
 
     rule divide_pdf:
         input:
-            config["output_location"] + "plots/{sample}/counts/CountComplete.pdf"
+            "{output}/plots/{sample}/counts/CountComplete.pdf"
         output:
             report(
-                config["output_location"] + "plots/{sample}/counts/{cell}.{i, \d+}.pdf",
+                "{output}/plots/{sample}/counts/{cell}.{i, \d+}.pdf",
                     caption="../report/mosaic_counts.rst",
                     category="Mosaic counts",
                     subcategory = "{sample}",
                     labels={"Cell" : "{cell}", "Nb" : "{i}"}
             )
+        log:
+            "{output}/log/plots/{sample}/counts/{cell}.{i, \d+}.log"
         conda:
             "../envs/mc_base.yaml"
         params:
-            config_df = config["output_location"] + "config/config_df.tsv"
+            config_df = config["samples"]
         resources:
             mem_mb = get_mem_mb,
         script:
             "../scripts/plotting/dividing_pdf.py"
 
 
+
+    rule tmp_merge_divide:
+        input:
+            get_indiv_plots_count()
+        output:
+            touch("{output}/plots/{sample}/final_results/{sample}.txt")
+        log:
+            "{output}/log/final_blank_results/{sample}.log"
+        conda:
+            "../envs/mc_base.yaml"
+        shell:
+            "echo {input} > {output}"
+
     rule plot_SV_consistency_barplot:
         input:
-            sv_calls  = config["output_location"] + "mosaiclassifier/sv_calls/{sample}/{method}.tsv",
+            sv_calls  = "{output}/mosaiclassifier/sv_calls/{sample}/{method}.tsv",
         output:
-            barplot_bypos = report(config["output_location"] + "plots/{sample}/sv_consistency/{method}.consistency-barplot-bypos.pdf", category="SV Consistency", subcategory="{sample}", labels={"Barplot type" : "By position", "method" : "{method}", }),
-            barplot_byaf = report(config["output_location"] + "plots/{sample}/sv_consistency/{method}.consistency-barplot-byaf.pdf", category="SV Consistency", subcategory="{sample}", labels={"Barplot type" : "By AF", "method" : "{method}", }),
+            barplot_bypos = report("{output}/plots/{sample}/sv_consistency/{method}.consistency-barplot-bypos.pdf", category="SV Consistency", subcategory="{sample}", labels={"Barplot type" : "By position", "method" : "{method}", }),
+            barplot_byaf = report("{output}/plots/{sample}/sv_consistency/{method}.consistency-barplot-byaf.pdf", category="SV Consistency", subcategory="{sample}", labels={"Barplot type" : "By AF", "method" : "{method}", }),
         log:
-            config["output_location"] + "log/plot_SV_consistency/{sample}/{method}.log"
+            "{output}/log/plot_SV_consistency/{sample}/{method}.log"
         conda:
             "../envs/rtools.yaml"
         resources:
@@ -74,15 +95,15 @@ if config["plot"] is True:
 
     rule plot_clustering:
         input:
-            sv_calls  = config["output_location"] + "mosaiclassifier/sv_calls/{sample}/{method}.tsv",
+            sv_calls  = "{output}/mosaiclassifier/sv_calls/{sample}/{method}.tsv",
             # binbed = "data/bin_200kb_all.bed",
             binbed = "workflow/data/bin_200kb_all.bed",
         output:
-            position = report(config["output_location"] + "plots/{sample}/sv_clustering/{method}-position.pdf", category="SV Clustering", subcategory="{sample}", labels={"method" : "{method}", }),
-            chromosome = config["output_location"] + "plots/{sample}/sv_clustering/{method}-chromosome.pdf",
-            # chromosome = report(config["output_location"] + "plots/{sample}/sv_clustering/{method}-chromosome.pdf", category="SV clustering"),
+            position = report("{output}/plots/{sample}/sv_clustering/{method}-position.pdf", category="SV Clustering", subcategory="{sample}", labels={"method" : "{method}", }),
+            chromosome = "{output}/plots/{sample}/sv_clustering/{method}-chromosome.pdf",
+            # chromosome = report("plots/{sample}/sv_clustering/{method}-chromosome.pdf", category="SV clustering"),
         log:
-            config["output_location"] + "log/plot_clustering/{sample}/{method}.log"
+            "{output}/log/plot_clustering/{sample}/{method}.log"
         conda:
             "../envs/rtools.yaml"
         resources:
@@ -93,18 +114,18 @@ if config["plot"] is True:
 
     rule plot_SV_calls:
         input:
-            counts = config["output_location"] + "counts/{sample}/{sample}.txt.gz",
-            calls  = config["output_location"] + "mosaiclassifier/sv_calls/{sample}/{method}_filter{filter}.tsv",
-            complex_calls = config["output_location"] + "mosaiclassifier/sv_calls/{sample}/{method}_filter{filter}.complex.tsv",
-            strand = config["output_location"] + "strandphaser/{sample}/StrandPhaseR_final_output.txt",
-            segments = config["output_location"] + "segmentation/{sample}/Selection_jointseg.txt",
-            scsegments = config["output_location"] + "segmentation/{sample}/Selection_singleseg.txt",
-            grouptrack = config["output_location"] + "mosaiclassifier/postprocessing/group-table/{sample}/{method}.tsv",
+            counts = "{output}/counts/{sample}/{sample}.txt.gz",
+            calls  = "{output}/mosaiclassifier/sv_calls/{sample}/{method}_filter{filter}.tsv",
+            complex_calls = "{output}/mosaiclassifier/sv_calls/{sample}/{method}_filter{filter}.complex.tsv",
+            strand = "{output}/strandphaser/{sample}/StrandPhaseR_final_output.txt",
+            segments = "{output}/segmentation/{sample}/Selection_jointseg.txt",
+            scsegments = "{output}/segmentation/{sample}/Selection_singleseg.txt",
+            grouptrack = "{output}/mosaiclassifier/postprocessing/group-table/{sample}/{method}.tsv",
         output:
-            # config["output_location"] + "plots/{sample}/sv_calls/{method}_filter{filter}.{chrom}.pdf"
-            report(config["output_location"] + "plots/{sample}/sv_calls/{method}_filter{filter}.{chrom}.pdf", category="SV Calls", subcategory="{sample}", labels={"method" : "{method}",  "filter" : "{filter}", "Chrom" : "{chrom}"})
+            # "plots/{sample}/sv_calls/{method}_filter{filter}.{chrom}.pdf"
+            report("{output}/plots/{sample}/sv_calls/{method}_filter{filter}.{chrom}.pdf", category="SV Calls", subcategory="{sample}", labels={"method" : "{method}",  "filter" : "{filter}", "Chrom" : "{chrom}"})
         log:
-            config["output_location"] + "log/plot_SV_calls/{sample}/{method}_filter{filter}.{chrom}.log"
+            "{output}/log/plot_SV_calls/{sample}/{method}_filter{filter}.{chrom}.log"
         conda:
             "../envs/rtools.yaml"
         resources:
@@ -132,11 +153,11 @@ if config["plot"] is True:
 
         # rule generate_halo_json:
         #     input:
-        #         counts = config["output_location"] + "counts/{sample}/{windows}.txt.gz",
+        #         counts = "counts/{sample}/{windows}.txt.gz",
         #     output:
-        #         json = config["output_location"] + "halo/{sample}/{windows}.json.gz",
+        #         json = "halo/{sample}/{windows}.json.gz",
         #     log:
-        #         config["output_location"] + "log/generate_halo_json/{sample}/{windows}.{windows}.log"
+        #         "log/generate_halo_json/{sample}/{windows}.{windows}.log"
         #     shell:
         #         """
         #         PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)

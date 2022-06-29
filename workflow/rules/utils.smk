@@ -1,4 +1,4 @@
-from workflow.scripts.utils.utils import get_mem_mb 
+# from workflow.scripts.utils.utils import get_mem_mb 
 
 ################################################################################
 # UTILS                                                                        #
