@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import subprocess
 p = []
 try:
     f = snakemake.config["ground_truth_clonal"][snakemake.wildcards.sample]
@@ -17,6 +18,14 @@ except KeyError:
     pass
 if snakemake.wildcards.filter == 'TRUE':
     p.append('--merged-file')
-    p.append(input.merged)
+    p.append(snakemake.input.merged)
 additional_params = ' '.join(p)
-shell('workflow/scripts/stats/callset_summary_stats.py --segmentation {snakemake.input.segmentation} --strandstates {snakemake.input.strandstates} --complex-regions {input.complex} {additional_params} {snakemake.input.sv_calls}  > {snakemake.output.tsv} ')
+subprocess.call('workflow/scripts/stats/callset_summary_stats.py --segmentation {} --strandstates {} --complex-regions {} {} {}  > {} '.format(
+    snakemake.input.segmentation,
+    snakemake.input.strandstates,
+    snakemake.input.complex,
+    additional_params,
+    snakemake.input.sv_calls,
+    snakemake.output.tsv
+    ), shell=True
+)

@@ -5,6 +5,7 @@ on:
     branches:
       - master
       - smk_workflow_catalog
+      - dev_format_smk
 
 jobs:
   # WORK
