@@ -31,7 +31,7 @@ jobs:
         with:
           directory: .
           snakefile: ./Snakefile
-          stagein: 'file=$(grep snv_sites ./config/config.yaml| grep -P -o "sandbox.*") && mkdir -p "${file%/*}" && touch "$file" && file=$(grep -P "^reference" mosaicatcher-update/config/config.yaml| grep -P -o "sandbox.*") && mkdir -p "${file%/*}" && touch "$file"'
+          # stagein: 'file=$(grep snv_sites ./config/config.yaml| grep -P -o "sandbox.*") && mkdir -p "${file%/*}" && touch "$file" && file=$(grep -P "^reference" mosaicatcher-update/config/config.yaml| grep -P -o "sandbox.*") && mkdir -p "${file%/*}" && touch "$file"'
           args: "--lint"
 
   # Testing:
