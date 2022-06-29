@@ -1,10 +1,10 @@
-from workflow.scripts.utils.utils import get_mem_mb 
+# from workflow.scripts.utils.utils import get_mem_mb 
 
-import pandas as pd
-config_df = pd.read_csv(config["output_location"] + "config/config_df.tsv", sep="\t")
+# import pandas as pd
+# config_df = pd.read_csv("config/config_df.tsv", sep="\t")
+# bam_per_sample_local = config_df.loc[config_df["Selected"] == True].groupby("Sample")["File"].apply(list).to_dict()
 
-pd.options.display.max_colwidth = 40
-bam_per_sample_local = config_df.loc[config_df["Selected"] == True].groupby("Sample")["File"].apply(list).to_dict()
+# bam_per_sample_local = df_config_files.loc[df_config_files["Selected"] == True].groupby("Sample")["File"].apply(list).to_dict()
 
 ################################################################################
 # Read counting                                                                #
@@ -19,14 +19,14 @@ rule mosaic_count:
     output: counts: read counts for the BAM file according defined window ; info file : summary statistics 
     """
     input:
-        bam = lambda wc: expand(config["input_bam_location"] + wc.sample +  "/selected/{bam}.bam", bam = bam_per_sample_local[str(wc.sample)] if wc.sample in bam_per_sample_local else "FOOBAR"),
-        bai = lambda wc: expand(config["input_bam_location"] + wc.sample +  "/selected/{bam}.bam.bai", bam = bam_per_sample_local[str(wc.sample)]) if wc.sample in bam_per_sample_local else "FOOBAR",
-        excl = ancient(config["output_location"] + "config/exclude_file"),
+        bam = lambda wc: expand("{input_folder}/{sample}/selected/{bam}.bam", input_folder=config['input_bam_location'], sample = samples, bam = bam_per_sample_local[str(wc.sample)] if wc.sample in bam_per_sample_local else "FOOBAR"),
+        bai = lambda wc: expand("{input_folder}/{sample}/selected/{bam}.bam.bai", input_folder=config['input_bam_location'], sample = samples, bam = bam_per_sample_local[str(wc.sample)]) if wc.sample in bam_per_sample_local else "FOOBAR",
+        excl = ancient("{output}/config_output/exclude_file"),
     output:
-        counts = config["output_location"] + "counts/{sample}/{sample}.txt.fixme.gz",
-        info   = config["output_location"] + "counts/{sample}/{sample}.info"
+        counts = "{output}/counts/{sample}/{sample}.txt.fixme.gz",
+        info   = "{output}/counts/{sample}/{sample}.info"
     log:
-        config["output_location"] + "log/counts/{sample}/mosaic_count.log"
+        "{output}/log/counts/{sample}/mosaic_count.log"
     container:
         "library://weber8thomas/remote-build/mosaic:0.3"
     params:
@@ -49,9 +49,11 @@ rule mosaic_count:
 
 rule order_mosaic_count_output:
     input:
-        config["output_location"] + "counts/{sample}/{sample}.txt.fixme.gz"
+        "{output}/counts/{sample}/{sample}.txt.fixme.gz"
     output:
-        config["output_location"] + "counts/{sample}/{sample}.txt.gz"
+        "{output}/counts/{sample}/{sample}.txt.gz"
+    log:
+        "{output}/log/counts/{sample}/{sample}.log"
     run:
         df = pd.read_csv(input[0], compression='gzip', sep='\t')
         df = df.sort_values(by=["sample", "cell", "chrom", "start"])
@@ -73,10 +75,11 @@ rule merge_blacklist_bins:
         norm = "utils/normalization/HGSVC.{window}.txt",
         whitelist = "utils/normalization/inversion-whitelist.tsv",
     output:
-        merged = config["output_location"] + "normalizations/HGSVC.{window}.merged.tsv"
+        merged = "{output}/normalizations/HGSVC.{window}.merged.tsv"
     log:
-        config["output_location"] + "log/merge_blacklist_bins/{window}.log"
-
+        "{output}/log/merge_blacklist_bins/{window}.log"
+    conda:
+        "../envs/mc_base.yaml"
     shell:
         """
         PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)
@@ -92,12 +95,14 @@ rule normalize_counts:
     output: normalized counts based predefined factors for each window
     """
     input:
-        counts = config["output_location"] + "counts/{sample}/{window}.txt.gz",
-        norm   = config["output_location"] + "normalizations/HGSVC.{window}.merged.tsv",
+        counts = "{output}/counts/{sample}/{window}.txt.gz",
+        norm   = "{output}/normalizations/HGSVC.{window}.merged.tsv",
     output:
-        config["output_location"] + "norm_counts/{sample}/{window}.txt.gz"
+        "{output}/norm_counts/{sample}/{window}.txt.gz"
     log:
-        config["output_location"] + "log/normalize_counts/{sample}/{window}.log"
+        "{output}/log/normalize_counts/{sample}/{window}.log"
+    conda:
+        "../envs/rtools.yaml"
     shell:
         """
         Rscript utils/normalize.R {input.counts} {input.norm} {output} 2>&1 > {log}
@@ -111,9 +116,11 @@ rule link_normalized_info_file:
     output: symlink in norm_counts output directory
     """
     input:
-        info = config["output_location"] + "counts/{sample}/{window}.info"
+        info = "{output}/counts/{sample}/{window}.info"
     output:
-        info = config["output_location"] + "norm_counts/{sample}/{window}.info"
+        info = "{output}/norm_counts/{sample}/{window}.info"
+    log:
+        "{output}/log/norm_counts/{sample}/{window}.log"
     run:
         d = os.path.dirname(output.info)
         file = os.path.basename(output.info)
@@ -132,9 +139,13 @@ rule extract_single_cell_counts:
     output: count per cell file for the sample according a given window
     """
     input:
-        config["output_location"] + "counts/{sample}/{sample}.txt.gz"
+        "{output}/counts/{sample}/{sample}.txt.gz"
     output:
-        config["output_location"] + "counts/{sample}/counts-per-cell/{cell}.txt.gz"
+        "{output}/counts/{sample}/counts-per-cell/{cell}.txt.gz"
+    log:
+        "{output}/log/counts/{sample}/counts-per-cell/{cell}.log"
+    conda:
+        "../envs/mc_base.yaml"
     shell:
         """
         # Issue #1022 (https://bitbucket.org/snakemake/snakemake/issues/1022)

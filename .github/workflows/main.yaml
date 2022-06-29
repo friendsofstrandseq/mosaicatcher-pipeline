@@ -30,48 +30,48 @@ jobs:
         with:
           directory: .
           snakefile: ./Snakefile
-          stagein: 'file=$(grep snv_sites ./config/config.yaml| grep -P -o "sandbox.*") && mkdir -p "${file%/*}" && touch "$file" && file=$(grep -P "^reference" mosaicatcher-update/config/config.yaml| grep -P -o "sandbox.*") && mkdir -p "${file%/*}" && touch "$file" && mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda unzip snakemake pandas pysam tqdm imagemagick && source activate snakemake && ls -l && pwd'
+          stagein: 'file=$(grep snv_sites ./config/config.yaml| grep -P -o "sandbox.*") && mkdir -p "${file%/*}" && touch "$file" && file=$(grep -P "^reference" mosaicatcher-update/config/config.yaml| grep -P -o "sandbox.*") && mkdir -p "${file%/*}" && touch "$file"'
           args: "--lint"
 
-  Testing:
-    runs-on: ubuntu-latest
-    # runs-on: self-hosted
-    # needs:
-    #   - Linting
-    #   - Formatting
-    steps:
-      - uses: actions/checkout@v2
+  # Testing:
+  #   runs-on: ubuntu-latest
+  #   # runs-on: self-hosted
+  #   # needs:
+  #   #   - Linting
+  #   #   - Formatting
+  #   steps:
+  #     - uses: actions/checkout@v2
 
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-      - name: Add conda to system path
-        run: |
-          # $CONDA is an environment variable pointing to the root of the miniconda directory
-          echo $CONDA/bin >> $GITHUB_PATH
-      - name: Install dependencies
-        run: |
-          conda install -c conda-forge mamba
-      - name: Setup snakemake
-        run: |
-          mamba create -n mosaicatcher_env -c conda-forge -c bioconda pandas tqdm pysam snakemake imagemagick singularity && source activate mosaicatcher_env
-      - name: Lint with snakemake and snakefmt
-        run: |
-          snakemake --cores 12 --config mode=mosaiclassifier plot=True chromosomes="[chr21]" --use-conda --use-singularity --latency-wait 60
+  #     - name: Set up Python 3.8
+  #       uses: actions/setup-python@v2
+  #       with:
+  #         python-version: 3.8
+  #     - name: Add conda to system path
+  #       run: |
+  #         # $CONDA is an environment variable pointing to the root of the miniconda directory
+  #         echo $CONDA/bin >> $GITHUB_PATH
+  #     - name: Install dependencies
+  #       run: |
+  #         conda install -c conda-forge mamba
+  #     - name: Setup snakemake
+  #       run: |
+  #         mamba create -n mosaicatcher_env -c conda-forge -c bioconda pandas tqdm pysam snakemake imagemagick singularity && source activate mosaicatcher_env
+  #     - name: Lint with snakemake and snakefmt
+  #       run: |
+  #         snakemake --cores 12 --config mode=mosaiclassifier plot=True chromosomes="[chr21]" --use-conda --use-singularity --latency-wait 60
 
-      # - name: Downloading data
-      #   uses: snakemake/snakemake-github-action@v1.22.0
-      #   with:
-      #     directory: .
-      #     snakefile: ./Snakefile
-      #     stagein: "mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda unzip snakemake pandas pysam tqdm imagemagick && source activate snakemake "
-      #     args: "--cores 1 --config mode=download_data dl_external_files=True"
+  # - name: Downloading data
+  #   uses: snakemake/snakemake-github-action@v1.22.0
+  #   with:
+  #     directory: .
+  #     snakefile: ./Snakefile
+  #     stagein: "mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda unzip snakemake pandas pysam tqdm imagemagick && source activate snakemake "
+  #     args: "--cores 1 --config mode=download_data dl_external_files=True"
 
-      # - name: Testing data
-      #   uses: snakemake/snakemake-github-action@v1.22.0
-      #   with:
-      #     directory: .
-      #     snakefile: ./Snakefile
-      #     stagein: " mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda snakemake pandas pysam tqdm imagemagick && source activate snakemake  && conda create -f .test/conda/complete_env.yaml && source activate cpp_copy && cd workflow/scripts/Mosaic/ && mkdir build && cmake ../src/ && cmake --build . && ln -s mosaic /usr/local/sbin/mosaic"
-      #     args: '--cores -12 --config chromosomes="[chr21]" mode=mosaiclassifier plot=True input_bam_location=.test/data/ output_location=.test/output/ --use-conda --latency-wait 60'
+  # - name: Testing data
+  #   uses: snakemake/snakemake-github-action@v1.22.0
+  #   with:
+  #     directory: .
+  #     snakefile: ./Snakefile
+  #     stagein: " mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda snakemake pandas pysam tqdm imagemagick && source activate snakemake  && conda create -f .test/conda/complete_env.yaml && source activate cpp_copy && cd workflow/scripts/Mosaic/ && mkdir build && cmake ../src/ && cmake --build . && ln -s mosaic /usr/local/sbin/mosaic"
+  #     args: '--cores -12 --config chromosomes="[chr21]" mode=mosaiclassifier plot=True input_bam_location=.test/data/ output_location=.test/output/ --use-conda --latency-wait 60'

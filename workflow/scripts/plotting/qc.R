@@ -4,7 +4,6 @@
 # file LICENSE.md or http://www.opensource.org/licenses/mit-license.php.
 
 
-
 suppressMessages(library(data.table))
 suppressMessages(library(assertthat))
 suppressMessages(library(ggplot2))
@@ -174,7 +173,7 @@ if (add_overview_plot == T) {
     xxx <- plot_grid(side, final, nrow = 1, rel_widths = c(0.05, 1))
 }
 
-cairo_pdf(pdf_out, width = 14, height = 10, onefile = T)
+cairo_pdf(pdf_out, width = 14, height = 10, onefile = T, family = "mono")
 if (add_overview_plot == T) {
     print(xxx)
 }

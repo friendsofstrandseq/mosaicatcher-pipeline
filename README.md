@@ -38,16 +38,16 @@ git clone https://github.com/friendsofstrandseq/mosaicatcher-pipeline.git && cd 
 ```
 5. Download reference data 
 ```
-snakemake -c1 --config mode=download_data dl_external_files=True 
+snakemake --cores 1 --config mode=download_data dl_external_files=True 
 ```
 6. Run on example data on only one small chromosome (`<disk>` must be replaced by your disk letter/name, `/g` or `/scratch` at EMBL for example)
 ```
-snakemake --cores 12 --config mode=mosaiclassifier plot=True input_bam_location=.test/data/ output_location=.test/output/ chromosomes="[chr21]" --use-conda --use-singularity --singularity-args "-B /<disk>:/<disk>" --latency-wait 60 
+snakemake --cores 12 --config mode=mosaiclassifier plot=True input_bam_location=.tests/data/ output_location=.tests/output/ chromosomes="[chr21]" containerized=True --use-conda --use-singularity --singularity-args "-B /<disk>:/<disk>" --latency-wait 60 
 ```
 
 7. Generate report on example data
 ```
-snakemake --cores 12 --config mode=mosaiclassifier plot=True input_bam_location=TEST_EXAMPLE_DATA/ output_location=TEST_OUTPUT/ chromosomes="[chr21]" --use-conda --use-singularity --singularity-args "-B /<disk>:/<disk>" --latency-wait 60 --report <REPORT.zip>
+snakemake --cores 12 --config mode=mosaiclassifier plot=True input_bam_location=.tests/data/ output_location=.tests/output/ chromosomes="[chr21]" containerized=True --use-conda --use-singularity --singularity-args "-B /<disk>:/<disk>" --latency-wait 60 --report <REPORT.zip>
 ```
 
 
@@ -66,9 +66,9 @@ snakemake --cores 12 --config mode=mosaiclassifier plot=True input_bam_location=
 
 # Documentation
 
-* [Usage](docs/Usage.md)
-* [Parameters & input](docs/Parameters.md)
-* [Output](docs/Output.md) (#TODO)
+* [Usage](docs/usage.md)
+* [Parameters & input](docs/parameters.md)
+* [Output](docs/output.md) (#TODO)
 
 
 

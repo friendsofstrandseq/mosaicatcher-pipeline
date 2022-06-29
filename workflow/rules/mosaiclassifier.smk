@@ -1,4 +1,4 @@
-from workflow.scripts.utils.utils import get_mem_mb 
+# from workflow.scripts.utils.utils import get_mem_mb 
 
 ################################################################################
 # MosaiClassifier                                                              #
@@ -6,15 +6,15 @@ from workflow.scripts.utils.utils import get_mem_mb
 
 rule mosaiClassifier_calc_probs:
     input:
-        counts = config["output_location"] + "counts/{sample}/{sample}.txt.gz",
-        info   = config["output_location"] + "counts/{sample}/{sample}.info",
+        counts = "{output}/counts/{sample}/{sample}.txt.gz",
+        info   = "{output}/counts/{sample}/{sample}.info",
         
-        states = config["output_location"] + "strandphaser/{sample}/StrandPhaseR_final_output.txt",
-        bp     = config["output_location"] + "segmentation/{sample}/Selection_jointseg.txt"
+        states = "{output}/strandphaser/{sample}/StrandPhaseR_final_output.txt",
+        bp     = "{output}/segmentation/{sample}/Selection_jointseg.txt"
     output:
-        output = config["output_location"] + "mosaiclassifier/sv_probabilities/{sample}/probabilities.Rdata"
+        output = "{output}/mosaiclassifier/sv_probabilities/{sample}/probabilities.Rdata"
     log:
-        config["output_location"] + "log/mosaiClassifier_calc_probs/{sample}.log"
+        "{output}/log/mosaiClassifier_calc_probs/{sample}.log"
     conda:
         "../envs/rtools.yaml"
     resources:
@@ -24,12 +24,12 @@ rule mosaiClassifier_calc_probs:
 
 rule create_haplotag_likelihoods:
     input:
-        haplotag_table = config["output_location"] + "haplotag/table/{sample}/haplotag_counts_merged.tsv",
-        sv_probs_table = config["output_location"] + "mosaiclassifier/sv_probabilities/{sample}/probabilities.Rdata",
+        haplotag_table = "{output}/haplotag/table/{sample}/haplotag_counts_merged.tsv",
+        sv_probs_table = "{output}/mosaiclassifier/sv_probabilities/{sample}/probabilities.Rdata",
     output: 
-        config["output_location"] + 'mosaiclassifier/haplotag_likelihoods/{sample}.Rdata'
+        '{output}/mosaiclassifier/haplotag_likelihoods/{sample}.Rdata'
     log:
-        config["output_location"] + "log/create_haplotag_likelihoods/{sample}.log"
+        "l{output}/og/create_haplotag_likelihoods/{sample}.log"
     conda:
         "../envs/rtools.yaml"
     resources:
@@ -40,11 +40,11 @@ rule create_haplotag_likelihoods:
 
 rule mosaiClassifier_make_call:
     input:
-        probs = config["output_location"] + 'mosaiclassifier/haplotag_likelihoods/{sample}.Rdata'
+        probs = '{output}/mosaiclassifier/haplotag_likelihoods/{sample}.Rdata'
     output:
-        config["output_location"] + "mosaiclassifier/sv_calls/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}_filterFALSE.tsv"
+        "{output}/mosaiclassifier/sv_calls/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}_filterFALSE.tsv"
     log:
-        config["output_location"] + "log/mosaiClassifier_make_call/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.log"
+        "{output}/log/mosaiClassifier_make_call/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.log"
     conda:
         "../envs/rtools.yaml"
     params:
@@ -58,11 +58,11 @@ rule mosaiClassifier_make_call:
 
 rule mosaiClassifier_make_call_biallelic:
     input:
-        probs = config["output_location"] + "sv_probabilities/{sample}/probabilities.Rdata"
+        probs = "{output}/sv_probabilities/{sample}/probabilities.Rdata"
     output:
-        config["output_location"] + "sv_calls/{sample}/biAllelic_llr{llr}.txt"
+        "{output}/sv_calls/{sample}/biAllelic_llr{llr}.txt"
     log:
-        config["output_location"] + "log/mosaiClassifier_make_call_biallelic/{sample}/{llr}.log"
+        "{output}/log/mosaiClassifier_make_call_biallelic/{sample}/{llr}.log"
     conda:
         "../envs/rtools.yaml"
     resources:
@@ -73,11 +73,11 @@ rule mosaiClassifier_make_call_biallelic:
 
 rule call_complex_regions:
     input:
-        calls  = config["output_location"] + "mosaiclassifier/sv_calls/{sample}/{method}.tsv",
+        calls  = "{output}/mosaiclassifier/sv_calls/{sample}/{method}.tsv",
     output:
-        complex_regions = config["output_location"] + "mosaiclassifier/sv_calls/{sample}/{method}.complex.tsv",
+        complex_regions = "{output}/mosaiclassifier/sv_calls/{sample}/{method}.complex.tsv",
     log:
-        config["output_location"] + "log/call_complex_regions/{sample}/{method}.log"
+        "{output}/log/call_complex_regions/{sample}/{method}.log"
     conda:
         "../envs/mc_base.yaml"
     resources:
