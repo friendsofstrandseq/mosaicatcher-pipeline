@@ -110,7 +110,6 @@ rule run_strandphaser_per_chrom:
                 {input.snppositions} \
                 $(pwd)/utils/R-packages/ > {log} 2>&1
         """
-        # bamfolder    = config["input_bam_location"] + "{sample}/selected",
 
 
 rule merge_strandphaser_vcfs:
