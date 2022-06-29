@@ -1,6 +1,7 @@
-# from workflow.scripts.utils.utils import get_mem_mb 
+# from workflow.scripts.utils.utils import get_mem_mb
 
 import math
+
 # import pandas as pd
 # config_df = pd.read_csv("config/config_df.tsv", sep="\t")
 # cell_per_sample = config_df.loc[config_df["Selected"] == True].groupby("Sample")["Cell"].apply(list).to_dict()
@@ -19,17 +20,17 @@ rule segmentation:
     output: Segmentation tab file 
     """
     input:
-        "{output}/counts/{sample}/{sample}.txt.gz"
+        "{output}/counts/{sample}/{sample}.txt.gz",
     output:
-        "{output}/segmentation/{sample}/{sample}.txt.fixme"
+        "{output}/segmentation/{sample}/{sample}.txt.fixme",
     log:
-        "{output}/log/segmentation/{sample}/{sample}.log"
+        "{output}/log/segmentation/{sample}/{sample}.log",
     params:
-        min_num_segs = lambda wc: math.ceil(200000 / float(config["window"]))  # bins to represent 200 kb
+        min_num_segs=lambda wc: math.ceil(200000 / float(config["window"])),  # bins to represent 200 kb
     container:
         "library://weber8thomas/remote-build/mosaic:0.3"
     resources:
-        mem_mb = get_mem_mb,
+        mem_mb=get_mem_mb,
     shell:
         """
         /mosaicatcher/build/mosaic segment \
@@ -40,6 +41,7 @@ rule segmentation:
         {input} > {log} 2>&1
         """
 
+
 # FIXME: This is a workaround because latest versions of "mosaic segment" don't compute the "bps" column properly. Remove once fixed in the C++ code.
 rule fix_segmentation:
     """
@@ -48,16 +50,16 @@ rule fix_segmentation:
     output:
     """
     input:
-        "{output}/segmentation/{sample}/{sample}.txt.fixme"
+        "{output}/segmentation/{sample}/{sample}.txt.fixme",
     output:
-        "{output}/segmentation/{sample}/{sample}.txt"
+        "{output}/segmentation/{sample}/{sample}.txt",
     log:
-        "{output}/log/segmentation/{sample}/{sample}.log"
+        "{output}/log/segmentation/{sample}/{sample}.log",
     conda:
         "../envs/mc_base.yaml"
     params:
-        script = "workflow/scripts/segmentation_scripts/fix_segmentation.awk",
-        window = config["window"]
+        script="workflow/scripts/segmentation_scripts/fix_segmentation.awk",
+        window=config["window"],
     shell:
         """
         # Issue #1022 (https://bitbucket.org/snakemake/snakemake/issues/1022)
@@ -69,6 +71,7 @@ rule fix_segmentation:
 # Single-Cell Segmentation                                                                 #
 ################################################################################
 
+
 rule segment_one_cell:
     """
     rule fct: Same as `rule segmentation` : mosaic segment function but for individual cell
@@ -76,18 +79,18 @@ rule segment_one_cell:
     output: Segmentation file for an individual cell
     """
     input:
-        "{output}/counts/{sample}/counts-per-cell/{cell}.txt.gz"
+        "{output}/counts/{sample}/counts-per-cell/{cell}.txt.gz",
     output:
-        "{output}/segmentation/{sample}/segmentation-per-cell/{cell}.txt"
+        "{output}/segmentation/{sample}/segmentation-per-cell/{cell}.txt",
     log:
-        "{output}/log/segmentation/{sample}/segmentation-per-cell/{cell}.log"
+        "{output}/log/segmentation/{sample}/segmentation-per-cell/{cell}.log",
     container:
         "library://weber8thomas/remote-build/mosaic:0.3"
     params:
         # mc_command = config["mosaicatcher"],
-        min_num_segs = lambda wc: math.ceil(200000 / float(config["window"])) # bins to represent 200 kb
+        min_num_segs=lambda wc: math.ceil(200000 / float(config["window"])),  # bins to represent 200 kb
     resources:
-        mem_mb = get_mem_mb,
+        mem_mb=get_mem_mb,
     shell:
         """
         /mosaicatcher/build/mosaic segment \
@@ -108,24 +111,29 @@ rule segmentation_selection:
     input:
         counts="{output}/counts/{sample}/{sample}.txt.gz",
         jointseg="{output}/segmentation/{sample}/{sample}.txt",
-        singleseg=lambda wc: ["{}/segmentation/{}/segmentation-per-cell/{}.txt".format(config["output_location"], wc.sample, cell) for cell in cell_per_sample[wc.sample]],
+        singleseg=lambda wc: [
+            "{}/segmentation/{}/segmentation-per-cell/{}.txt".format(
+                config["output_location"], wc.sample, cell
+            )
+            for cell in cell_per_sample[wc.sample]
+        ],
         info="{output}/counts/{sample}/{sample}.info",
     output:
         jointseg="{output}/segmentation/{sample}/Selection_jointseg.txt",
         singleseg="{output}/segmentation/{sample}/Selection_singleseg.txt",
         strand_states="{output}/segmentation/{sample}/Selection_initial_strand_state",
     log:
-        "{output}/log/segmentation/segmentation_selection/{sample}.log"
+        "{output}/log/segmentation/segmentation_selection/{sample}.log",
     params:
-        cellnames = lambda wc: ",".join(cell for cell in cell_per_sample[wc.sample]),
-        sce_min_distance = config["sce_min_distance"],
-        additional_sce_cutoff = config["additional_sce_cutoff"],
-        min_diff_jointseg = config["min_diff_jointseg"],
-        min_diff_singleseg = config["min_diff_singleseg"],
+        cellnames=lambda wc: ",".join(cell for cell in cell_per_sample[wc.sample]),
+        sce_min_distance=config["sce_min_distance"],
+        additional_sce_cutoff=config["additional_sce_cutoff"],
+        min_diff_jointseg=config["min_diff_jointseg"],
+        min_diff_singleseg=config["min_diff_singleseg"],
     conda:
         "../envs/mc_base.yaml"
     resources:
-        mem_mb = get_mem_mb,
+        mem_mb=get_mem_mb,
     shell:
         """
         PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)
@@ -144,4 +152,3 @@ rule segmentation_selection:
             {input.jointseg} \
             {input.singleseg} > {log} 2>&1
         """
-
