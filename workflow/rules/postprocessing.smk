@@ -1,4 +1,4 @@
-# from workflow.scripts.utils.utils import get_mem_mb 
+# from workflow.scripts.utils.utils import get_mem_mb
 ################################################################################
 # PostProcessing                                                               #
 ################################################################################
@@ -6,18 +6,18 @@
 
 # CHECKME : segdup file only in hg38
 rule postprocessing_filter:
-    input: 
-        calls = "{output}/mosaiclassifier/sv_calls/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}_filterFALSE.tsv"
-    output: 
-        calls = "{output}/mosaiclassifier/postprocessing/filter/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.tsv"
+    input:
+        calls="{output}/mosaiclassifier/sv_calls/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}_filterFALSE.tsv",
+    output:
+        calls="{output}/mosaiclassifier/postprocessing/filter/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.tsv",
     log:
-        "{output}/log/mosaiclassifier/postprocessing/filter/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.log"
-    conda: 
+        "{output}/log/mosaiclassifier/postprocessing/filter/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.log",
+    conda:
         "../envs/mc_base.yaml"
     params:
-        segdups = config["segdups"]
+        segdups=config["segdups"],
     resources:
-        mem_mb = get_mem_mb,
+        mem_mb=get_mem_mb,
     shell:
         """
         export LC_CTYPE=en_US.UTF-8 
@@ -25,17 +25,18 @@ rule postprocessing_filter:
         workflow/scripts/postprocessing/filter_MosaiCatcher_calls.pl {input.calls} {params.segdups} > {output.calls}
         """
 
+
 rule postprocessing_merge:
-    input: 
-        calls = "{output}/mosaiclassifier/postprocessing/filter/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.tsv"
-    output: 
-        calls = "{output}/mosaiclassifier/postprocessing/merge/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.tsv"
+    input:
+        calls="{output}/mosaiclassifier/postprocessing/filter/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.tsv",
+    output:
+        calls="{output}/mosaiclassifier/postprocessing/merge/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.tsv",
     log:
-        "{output}/log/mosaiclassifier/postprocessing/merge/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.log"
-    conda: 
+        "{output}/log/mosaiclassifier/postprocessing/merge/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.log",
+    conda:
         "../envs/mc_base.yaml"
     resources:
-        mem_mb = get_mem_mb,
+        mem_mb=get_mem_mb,
     shell:
         """
         export LC_CTYPE=en_US.UTF-8 
@@ -45,16 +46,16 @@ rule postprocessing_merge:
 
 
 rule postprocessing_sv_group_table:
-    input: 
-        calls = "{output}/mosaiclassifier/postprocessing/merge/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.tsv"
-    output: 
-        grouptrack = "{output}/mosaiclassifier/postprocessing/group-table/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.tsv"
+    input:
+        calls="{output}/mosaiclassifier/postprocessing/merge/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.tsv",
+    output:
+        grouptrack="{output}/mosaiclassifier/postprocessing/group-table/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.tsv",
     log:
-        "{output}/log/mosaiclassifier/postprocessing/group-table/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.log"
-    conda: 
+        "{output}/log/mosaiclassifier/postprocessing/group-table/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.log",
+    conda:
         "../envs/mc_base.yaml"
     resources:
-        mem_mb = get_mem_mb,
+        mem_mb=get_mem_mb,
     shell:
         """
         PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)
@@ -62,25 +63,23 @@ rule postprocessing_sv_group_table:
         """
 
 
-
 rule filter_calls:
-    input: 
+    input:
         # inputcalls = "mosaiclassifier/sv_calls/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}_filterFALSE.tsv",
-        inputcalls = "{output}/mosaiclassifier/sv_calls/{sample}/{method}_filterFALSE.tsv",
+        inputcalls="{output}/mosaiclassifier/sv_calls/{sample}/{method}_filterFALSE.tsv",
         # mergedcalls = "mosaiclassifier/postprocessing/merge/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.tsv",
-        mergedcalls = "{output}/mosaiclassifier/postprocessing/merge/{sample}/{method}.tsv",
-    output: 
+        mergedcalls="{output}/mosaiclassifier/postprocessing/merge/{sample}/{method}.tsv",
+    output:
         # calls = "mosaiclassifier/sv_calls/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}_filterTRUE.tsv"
-        calls = "{output}/mosaiclassifier/sv_calls/{sample}/{method}_filterTRUE.tsv"
+        calls="{output}/mosaiclassifier/sv_calls/{sample}/{method}_filterTRUE.tsv",
     log:
-        "{output}/log/mosaiclassifier/sv_calls/{sample}/{method}_filterTRUE.log"
-    conda: 
+        "{output}/log/mosaiclassifier/sv_calls/{sample}/{method}_filterTRUE.log",
+    conda:
         "../envs/mc_base.yaml"
     resources:
-        mem_mb = get_mem_mb,
+        mem_mb=get_mem_mb,
     shell:
         """
         PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)
         workflow/scripts/postprocessing/apply_filter.py {input.inputcalls} {input.mergedcalls} > {output.calls}
         """
-
