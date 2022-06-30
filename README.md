@@ -26,39 +26,41 @@ the workflow goes through the following steps:
 1. Install [Singularity](https://www.sylabs.io/guides/3.0/user-guide/) 
 2. To prevent conda channel errors
 ```
-conda config --set channel_priority 
+conda config --set channel_priority strict
 ```
 3. Create a dedicated conda environment 
 ```
-conda create -n mosaicatcher_env -c conda-forge -c bioconda snakemake pandas pysam imagemagick tqdm && conda activate mosaicatcher_env
+conda create -n mosaicatcher_env -c conda-forge -c bioconda snakemake && conda activate mosaicatcher_env
 ```
 4. Clone the repository 
 ``` 
 git clone https://github.com/friendsofstrandseq/mosaicatcher-pipeline.git && cd mosaicatcher-pipeline
 ```
-5. Download reference data 
+
+5. Run on example data on only one small chromosome (`<disk>` must be replaced by your disk letter/name, `/g` or `/scratch` at EMBL for example)
 ```
-snakemake --cores 1 --config mode=download_data dl_external_files=True 
-```
-6. Run on example data on only one small chromosome (`<disk>` must be replaced by your disk letter/name, `/g` or `/scratch` at EMBL for example)
-```
-snakemake --cores 12 --config mode=mosaiclassifier plot=True input_bam_location=.tests/data/ output_location=.tests/output/ chromosomes="[chr21]" containerized=True --use-conda --use-singularity --singularity-args "-B /<disk>:/<disk>" --latency-wait 60 
+snakemake --cores 6 --config input_bam_location=.tests/data output_location=.tests/output chromosomes="[chr21]" reference=.tests/external_data/chr21.fna snv_sites_to_genotype=.tests/external_data/1000G_chr21.vcf.gz --use-conda --use-singularity --singularity-args "-B /<disk>:/<disk>" --latency-wait 60 
 ```
 
-7. Generate report on example data
+6. Generate report on example data
 ```
-snakemake --cores 12 --config mode=mosaiclassifier plot=True input_bam_location=.tests/data/ output_location=.tests/output/ chromosomes="[chr21]" containerized=True --use-conda --use-singularity --singularity-args "-B /<disk>:/<disk>" --latency-wait 60 --report <REPORT.zip>
+snakemake --cores 6 --config input_bam_location=.tests/data output_location=.tests/output chromosomes="[chr21]" reference=.tests/external_data/chr21.fna snv_sites_to_genotype=.tests/external_data/1000G_chr21.vcf.gz --use-conda --use-singularity --singularity-args "-B /<disk>:/<disk>" --latency-wait 60 --report <REPORT.zip>
 ```
 
+7. Download reference data for running your own analysis
+
+```
+snakemake --cores 1 --config mode=download_data dl_external_files=True
+```
 
 8. Start running your own analysis
 ```
-snakemake --cores 12 --config mode=mosaiclassifier plot=True input_bam_location=<INPUT_DATA_FOLDER> output_location=<OUTPUT_DATA_FOLDER> --use-conda --use-singularity --singularity-args "-B /<disk>:/<disk>" --latency-wait 60 
+snakemake --cores 12 --config input_bam_location=<INPUT_DATA_FOLDER> output_location=<OUTPUT_DATA_FOLDER> --use-conda --use-singularity --singularity-args "-B /<disk>:/<disk>" --latency-wait 60 
 
 ```
-9. Generate report 
+8. Generate report 
 ```
-snakemake --cores 12 --config mode=mosaiclassifier plot=True input_bam_location=<INPUT_DATA_FOLDER> output_location=<OUTPUT_DATA_FOLDER> --use-conda --use-singularity --singularity-args "-B /<disk>:/<disk>" --latency-wait 60 --report <REPORT.zip>
+snakemake --cores 12 --config input_bam_location=<INPUT_DATA_FOLDER> output_location=<OUTPUT_DATA_FOLDER> --use-conda --use-singularity --singularity-args "-B /<disk>:/<disk>" --latency-wait 60 --report <REPORT.zip>
 ```
 
 
