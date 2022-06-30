@@ -102,3 +102,11 @@ FROM docker.io/weber8thomas/mosaicatcher-pipeline:1.3
 #     apt-get install git && \
 #     git clone -b smk_workflow_catalog https://github.com/friendsofstrandseq/mosaicatcher-pipeline.git /mosaicatcher-pipeline && \
 #     /conda-envs/7bb3be0079f74fda9f2f7d6337d01c33/bin/Rscript /mosaicatcher-pipeline/workflow/scripts/strandphaser_scripts/install_strandphaser.R 69c9fb4 https://github.com/daewoooo/StrandPhaseR
+
+
+# ----------------
+# TAG 1.5
+# ----------------
+RUN mamba install -c anaconda -c r fonts-anaconda r-cairo && \
+    source activate /conda-envs/7bb3be0079f74fda9f2f7d6337d01c33 && \
+    mamba install -c anaconda -c r fonts-anaconda r-cairo
