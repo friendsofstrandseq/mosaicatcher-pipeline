@@ -102,9 +102,9 @@ RUN mamba env create --prefix /conda-envs/cd15c940fe1181e1751e02b25c7fcfb7 --fil
 
 
 RUN mamba install -c conda-forge -c bioconda samtools && \
-    chmod -R 0777 /conda-envs/7bb3be0079f74fda9f2f7d6337d01c33/lib/R/library && \
+    chmod -R 0777 /conda-envs/fb2e0991658d68d49ab06d2bd2375acf/lib/R/library && \
     pwd && \
     apt-get install git && \
     git clone -b smk_workflow_catalog https://github.com/friendsofstrandseq/mosaicatcher-pipeline.git /mosaicatcher-pipeline && \
-    /conda-envs/7bb3be0079f74fda9f2f7d6337d01c33/bin/Rscript /mosaicatcher-pipeline/workflow/scripts/strandphaser_scripts/install_strandphaser.R 69c9fb4 https://github.com/daewoooo/StrandPhaseR  && \
+    /conda-envs/fb2e0991658d68d49ab06d2bd2375acf/bin/Rscript /mosaicatcher-pipeline/workflow/scripts/strandphaser_scripts/install_strandphaser.R 69c9fb4 https://github.com/daewoooo/StrandPhaseR  && \
     mamba clean --all -y
