@@ -173,7 +173,7 @@ if (add_overview_plot == T) {
     xxx <- plot_grid(side, final, nrow = 1, rel_widths = c(0.05, 1))
 }
 
-cairo_pdf(pdf_out, width = 14, height = 10, onefile = T, family = "mono")
+cairo_pdf(pdf_out, width = 14, height = 10, onefile = T)
 if (add_overview_plot == T) {
     print(xxx)
 }
