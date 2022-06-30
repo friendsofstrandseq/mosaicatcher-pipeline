@@ -12,7 +12,7 @@ report: "workflow/report/workflow.rst"
 
 if config["containerized"] is True:
 
-    containerized: "docker://weber8thomas/mosaicatcher-pipeline:dev"
+    containerized: "docker://weber8thomas/mosaicatcher-pipeline:latest"
 
 
 # if config["mode"] != "download_data":
