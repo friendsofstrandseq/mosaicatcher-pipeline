@@ -5,6 +5,13 @@ import pandas as pd
 #     pd.read_csv(config["samples"], sep="\t")
 # )
 
+if config["output_location"].endswith("/") is False:
+    config["output_location"] =  '{}/'.format(config["output_location"])
+
+if config["input_bam_location"].endswith("/") is False:
+    config["input_bam_location"] +=  '{}/'.format(config["input_bam_location"])
+
+
 
 mode_selected = config["mode"].lower()
 correct_modes = ["count", "segmentation", "mosaiclassifier", "download_data"]
