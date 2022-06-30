@@ -5,11 +5,13 @@ import pandas as pd
 #     pd.read_csv(config["samples"], sep="\t")
 # )
 
-if config["output_location"].endswith("/") is False:
-    config["output_location"] =  '{}/'.format(config["output_location"])
+if config["output_location"].endswith("/") is True:
+    # config["output_location"] =  '{}/'.format(config["output_location"])
+    config["output_location"] =  config["output_location"][:-1]
 
-if config["input_bam_location"].endswith("/") is False:
-    config["input_bam_location"] +=  '{}/'.format(config["input_bam_location"])
+if config["input_bam_location"].endswith("/") is True:
+    # config["input_bam_location"] +=  '{}/'.format(config["input_bam_location"])
+    config["input_bam_location"] +=  config["input_bam_location"][:-1]
 
 
 
