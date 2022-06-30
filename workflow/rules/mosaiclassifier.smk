@@ -30,7 +30,7 @@ rule create_haplotag_likelihoods:
     output:
         "{output}/mosaiclassifier/haplotag_likelihoods/{sample}.Rdata",
     log:
-        "l{output}/og/create_haplotag_likelihoods/{sample}.log",
+        "{output}/og/create_haplotag_likelihoods/{sample}.log",
     conda:
         "../envs/rtools.yaml"
     resources:

@@ -8,6 +8,7 @@
 .condarc
 files.txt
 workflow/.conda/
+.cache/
 
 # Tmp files & execution outputs
 *.pyc

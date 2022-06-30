@@ -81,12 +81,12 @@ rule all:
 #     if plot_option_selected == True:
 #         rule all:
 #             input:
-#                 [config["output_location"] + "/plots/{}/counts/{}.{}.pdf".format(sample, tmp_dict[sample][i], i) for sample in samples for i in range(dict_cells_nb_per_sample[sample] + 1)],
+#                 [config["output_location"] + "plots/{}/counts/{}.{}.pdf".format(sample, tmp_dict[sample][i], i) for sample in samples for i in range(dict_cells_nb_per_sample[sample] + 1)],
 
 #     elif plot_option_selected == False:
 #         rule all:
 #             input:
-#                 [config["output_location"] +  "/counts/{}/{}.txt.fixme.gz".format(sample, sample) for sample in samples]
+#                 [config["output_location"] +  "counts/{}/{}.txt.fixme.gz".format(sample, sample) for sample in samples]
 
 # # MODE MOSAIC SEGMENTATION
 # elif mode_selected == "segmentation":
