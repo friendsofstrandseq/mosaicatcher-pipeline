@@ -66,7 +66,7 @@ workflow/test.txt
 # GitHub actions
 # .tests/
 .tests/output/
-# .tests/unit/
+.tests/unit/
 .tests/data/RPE-BM510/all/*.log
 .tests/data/RPE-BM510/selected/*.log
 .tests/data/RPE-BM510/all/*.bai
