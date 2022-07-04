@@ -64,7 +64,7 @@ chromosomes:
 # Enable conda & singularity usage
 use-conda: True
 use-singularity: True
-containerized: True
+containerized: False
 singularity-args: "-B /g:/g"
 latency-wait: 60
 
