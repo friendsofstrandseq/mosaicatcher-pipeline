@@ -3,6 +3,7 @@ channels:
   - conda-forge
   - bioconda
   - r
+  - anaconda
 dependencies:
   - bioconductor-biocparallel=1.16.6
   - bioconductor-bsgenome
@@ -34,3 +35,4 @@ dependencies:
   - r-scales=1.1.0
   - r-rcolorbrewer=1.1_2
   - r-stringr=1.4.0
+  - fonts-anaconda
