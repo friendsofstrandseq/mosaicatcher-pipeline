@@ -58,7 +58,7 @@ report: "workflow/report/workflow.rst"
 # container: "docker://condaforge/mambaforge:4.12.0-0"
 
 if config["containerized"] is True:
-    containerized: "docker://weber8thomas/mosaicatcher-pipeline:dev"
+    containerized: "docker://weber8thomas/mosaicatcher-pipeline:1.3"
 
 # include: "rules/input_check.smk"
 # rule all:

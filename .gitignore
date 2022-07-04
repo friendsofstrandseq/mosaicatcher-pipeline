@@ -1,5 +1,6 @@
 # Hidden folders & files
 .DS_Store
+.tests/._.DS_Store
 .vscode/
 .snakemake/
 .panoptes.db
@@ -64,11 +65,15 @@ workflow/test.txt
 !config/*
 
 # GitHub actions
-.test/output/
-.test/data/RPE-BM510/all/*.bai
-!.test/data/RPE-BM510/all/*.bam
-!.test/data/RPE-BM510/selected/*.bam
-!.test/data/RPE-BM510/selected/*.bai
+.tests/unit/
+.tests/output/
+.tests/data/RPE-BM510/all/*.bai
+.tests/data/RPE-BM510/selected/*.bai
+.tests/data/RPE-BM510/selected/*.log
+!.tests/external_data/1000G_chr21.vcf.gz
+!.tests/data/RPE-BM510/all/*.bam
+!.tests/data/RPE-BM510/selected/*.bam
+# !.test/data/RPE-BM510/selected/*.bai
 
 # Dev
 discover_big_files_git.sh
