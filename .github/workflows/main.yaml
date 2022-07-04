@@ -7,7 +7,7 @@ on:
       - smk_workflow_catalog
 
 jobs:
- build_container:
+  build_container:
     name: Build and push image
     runs-on: ubuntu-20.04
     env:
