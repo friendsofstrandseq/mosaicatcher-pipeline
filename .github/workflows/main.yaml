@@ -7,45 +7,45 @@ on:
       - smk_workflow_catalog
 
 jobs:
-  build_container:
-    name: Build and push image
-    runs-on: ubuntu-20.04
-    env:
-      IMAGE_NAME: mosaicatcher-pipeline
+  # build_container:
+  #   name: Build and push image
+  #   runs-on: ubuntu-20.04
+  #   env:
+  #     IMAGE_NAME: mosaicatcher-pipeline
 
-    if: github.ref == 'refs/heads/master'
-    steps:
-      - uses: actions/checkout@v2
+  #   if: github.ref == 'refs/heads/master'
+  #   steps:
+  #     - uses: actions/checkout@v2
 
-      - name: Read upstream tag without version
-        id: gettag
-        run: echo "::set-output name=tag::$(head -n 1 github-actions-runner/Dockerfile | awk -F':' '{print $2}' | awk -F'-' 'BEGIN { OFS="-" } {$NF=""; print $0}')"
+  #     - name: Read upstream tag without version
+  #       id: gettag
+  #       run: echo "::set-output name=tag::$(head -n 1 github-actions-runner/Dockerfile | awk -F':' '{print $2}' | awk -F'-' 'BEGIN { OFS="-" } {$NF=""; print $0}')"
 
-      - name: Read internal update version
-        id: getversion
-        run: echo "::set-output name=version::$(grep 'ARG RUNNER_VERSION' github-actions-runner/Dockerfile | awk -F'=' '{print $2}')"
+  #     - name: Read internal update version
+  #       id: getversion
+  #       run: echo "::set-output name=version::$(grep 'ARG RUNNER_VERSION' github-actions-runner/Dockerfile | awk -F'=' '{print $2}')"
 
-      - name: Build Image
-        id: build-image
-        uses: redhat-actions/buildah-build@v2
-        with:
-          image: ${{ env.IMAGE_NAME }}
-          tags: "1.4.1"
-          dockerfiles: |
-            ./github-actions-runner/Dockerfile
+  #     - name: Build Image
+  #       id: build-image
+  #       uses: redhat-actions/buildah-build@v2
+  #       with:
+  #         image: ${{ env.IMAGE_NAME }}
+  #         tags: "1.4.1"
+  #         dockerfiles: |
+  #           ./github-actions-runner/Dockerfile
 
-      - name: Push To DockerHub
-        id: push-to-dockerhub
-        uses: redhat-actions/push-to-registry@v2
-        with:
-          image: ${{ steps.build-image.outputs.image }}
-          tags: ${{ steps.build-image.outputs.tags }}
-          registry: docker.io/weber8thomas
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_TOKEN }}
+  #     - name: Push To DockerHub
+  #       id: push-to-dockerhub
+  #       uses: redhat-actions/push-to-registry@v2
+  #       with:
+  #         image: ${{ steps.build-image.outputs.image }}
+  #         tags: ${{ steps.build-image.outputs.tags }}
+  #         registry: docker.io/weber8thomas
+  #         username: ${{ secrets.DOCKER_USERNAME }}
+  #         password: ${{ secrets.DOCKER_TOKEN }}
 
-      - name: Use the image
-        run: echo "New images has been pushed to ${{ steps.push-to-quay.outputs.registry-paths }}"
+  #     - name: Use the image
+  #       run: echo "New images has been pushed to ${{ steps.push-to-quay.outputs.registry-paths }}"
 
   # WORK
   Formatting:
