@@ -4,6 +4,9 @@ from workflow.scripts.utils.utils import get_mem_mb
 # UTILS                                                                        #
 ################################################################################
 
+
+
+
 rule index_bam:
     """
     rule fct:

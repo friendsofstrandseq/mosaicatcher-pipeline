@@ -1,5 +1,5 @@
-FROM docker.io/weber8thomas/mosaicatcher-pipeline:1.3
-# FROM condaforge/mambaforge:latest
+# FROM docker.io/weber8thomas/mosaicatcher-pipeline:1.3
+FROM condaforge/mambaforge:latest
 
 
 # LABEL io.github.snakemake.containerized="true"
