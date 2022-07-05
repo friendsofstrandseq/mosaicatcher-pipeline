@@ -63,8 +63,8 @@ rule regenotype_SNVs:
         | bcftools view \
             --exclude-uncalled \
             --types snps \
+            --genotype het \
             --include "QUAL>=10" \
         > {output.vcf}) 2> {log}
         """
 
-        # --genotype het \
