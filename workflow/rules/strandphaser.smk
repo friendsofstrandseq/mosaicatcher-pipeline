@@ -142,6 +142,7 @@ rule run_strandphaser_per_chrom:
         "../envs/rtools.yaml"
     resources:
         mem_mb = get_mem_mb,
+        time = "02:00:00",
     shell:
         # {config[Rscript]}
         """
