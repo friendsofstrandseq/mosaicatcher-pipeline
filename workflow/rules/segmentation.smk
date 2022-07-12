@@ -27,19 +27,22 @@ rule segmentation:
         "{output}/log/segmentation/{sample}/{sample}.log",
     params:
         min_num_segs=lambda wc: math.ceil(200000 / float(config["window"])),  # bins to represent 200 kb
-    container:
-        "library://weber8thomas/remote-build/mosaic:0.3"
+    # container:
+    #     "library://weber8thomas/remote-build/mosaic:0.3"
+    conda:
+        "../envs/mc_bioinfo_tools.yaml"
     resources:
-        mem_mb=get_mem_mb,
+        mem_mb = get_mem_mb,
     shell:
         """
-        /mosaicatcher/build/mosaic segment \
+        mosaicatcher segment \
         --remove-none \
         --forbid-small-segments {params.min_num_segs} \
         -M 50000000 \
         -o {output} \
         {input} > {log} 2>&1
         """
+
 
 
 # FIXME: This is a workaround because latest versions of "mosaic segment" don't compute the "bps" column properly. Remove once fixed in the C++ code.
@@ -84,16 +87,18 @@ rule segment_one_cell:
         "{output}/segmentation/{sample}/segmentation-per-cell/{cell}.txt",
     log:
         "{output}/log/segmentation/{sample}/segmentation-per-cell/{cell}.log",
-    container:
-        "library://weber8thomas/remote-build/mosaic:0.3"
+    # container:
+    #     "library://weber8thomas/remote-build/mosaic:0.3"
+    conda:
+        "../envs/mc_bioinfo_tools.yaml"
     params:
         # mc_command = config["mosaicatcher"],
-        min_num_segs=lambda wc: math.ceil(200000 / float(config["window"])),  # bins to represent 200 kb
+        min_num_segs = lambda wc: math.ceil(200000 / float(config["window"])) # bins to represent 200 kb
     resources:
-        mem_mb=get_mem_mb,
+        mem_mb = get_mem_mb,
     shell:
         """
-        /mosaicatcher/build/mosaic segment \
+        mosaicatcher segment \
         --remove-none \
         --forbid-small-segments {params.min_num_segs} \
         -M 50000000 \
@@ -101,6 +106,13 @@ rule segment_one_cell:
         {input} > {log} 2>&1
         """
 
+rule aggregate:
+    input:
+        aggregate_cells
+    output:
+        expand("{output}/segmentation/{sample}/segmentation-per-cell.ok", output=config["output_location"], sample=samples)
+    shell:
+        "echo TOTO > {output}"
 
 rule segmentation_selection:
     """

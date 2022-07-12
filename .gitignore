@@ -1,5 +1,6 @@
 # Hidden folders & files
 .DS_Store
+.tests/._.DS_Store
 .vscode/
 .snakemake/
 .panoptes.db
@@ -8,7 +9,6 @@
 .condarc
 files.txt
 workflow/.conda/
-.cache/
 
 # Tmp files & execution outputs
 *.pyc
@@ -65,17 +65,16 @@ workflow/test.txt
 !config/*
 
 # GitHub actions
-# .tests/
-.tests/output/
 .tests/unit/
-.tests/data/RPE-BM510/all/*.log
-.tests/data/RPE-BM510/selected/*.log
+.tests/output/
+.tests/output2/
 .tests/data/RPE-BM510/all/*.bai
 .tests/data/RPE-BM510/selected/*.bai
+.tests/data/RPE-BM510/selected/*.log
+!.tests/external_data/1000G_chr21.vcf.gz
 !.tests/data/RPE-BM510/all/*.bam
 !.tests/data/RPE-BM510/selected/*.bam
-!.tests/external_data/1000G_chr21.vcf.gz
-# !.tests/data/RPE-BM510/selected/*.bai
+# !.test/data/RPE-BM510/selected/*.bai
 
 # Dev
 discover_big_files_git.sh
@@ -87,7 +86,14 @@ workflow/TEST_EXAMPLE_DATA/
 TEST_EXAMPLE_DATA
 TEST_EXAMPLE_DATA/
 workflow/logs/
+logs/
 workflow/errors/
+errors/
+TEST.info
+TEST*
+TEST*/
+.cache/fontconfig/
+.oracle_jre_usage/
 
 # git
 
