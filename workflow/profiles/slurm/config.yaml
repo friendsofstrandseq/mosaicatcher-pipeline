@@ -17,15 +17,14 @@ default-resources:
   - mem_mb=1000
   - time=30
 
-max-jobs-per-second: 10
-max-status-checks-per-second: 1
+max-jobs-per-second: 500
+max-status-checks-per-second: 500
 local-cores: 1
 latency-wait: 60
 jobs: 500
 
-# 8 attempts to restart to correspond to the progressive memory increase solving OOM
-restart-times: 8
+# 7 attempts to restart to correspond to the progressive memory increase solving OOM
+restart-times: 7
 keep-going: True
 rerun-incomplete: True
-
-scheduler: greedy
+# scheduler: greedy
