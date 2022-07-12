@@ -78,15 +78,20 @@ def get_final_output():
 
     final_list = list()
     # final_list.extend([config["output_location"] + "plots/{}/counts/{}.{}.pdf".format(sample, tmp_dict[sample][i], i) for sample in samples for i in range(dict_cells_nb_per_sample[sample] + 1)]),
-    final_list.extend(
-        expand(
-            "{output}/plots/{sample}/final_results/{sample}.txt",
-            output=config["output_location"],
-            sample=samples,
-        )
-    )
-    # from pprint import pprint
-    # pprint(final_list)
+   
+    # final_list = [config["output_location"] +  "/counts/{}/{}.txt.fixme.gz".format(sample, sample) for sample in samples]
+    # final_list = [config["output_location"] + "/segmentation/{}/Selection_initial_strand_state".format(sample) for sample in samples]
+    final_list= ["{}/counts/{}/counts-per-cell.ok".format(config['output_location'], sample) for sample in samples]
+    print(final_list)
+
+    # final_list.extend(
+    #     expand(
+    #         "{output}/plots/{sample}/final_results/{sample}.txt",
+    #         output=config["output_location"],
+    #         sample=samples,
+    #     )
+    # )
+
     return final_list
 
 
