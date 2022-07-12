@@ -48,7 +48,8 @@ rule regenotype_SNVs:
     params:
         fa = config["reference"],
     resources:
-        mem_mb = get_mem_mb,
+        # mem_mb = get_mem_mb,
+        mem_mb = "8G",
         time = "10:00:00",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
