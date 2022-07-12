@@ -36,6 +36,7 @@ if config["containerized"] is True:
 
 
 include: "workflow/rules/common.smk"
+include: "workflow/rules/aggregate_fct.smk"
 include: "workflow/rules/setup.smk"
 include: "workflow/rules/input_check.smk"
 include: "workflow/rules/count.smk"
@@ -43,7 +44,6 @@ include: "workflow/rules/segmentation.smk"
 include: "workflow/rules/plots.smk"
 include: "workflow/rules/regenotyping.smk"
 include: "workflow/rules/utils.smk"
-include: "workflow/rules/strandphaser_fct.smk"
 include: "workflow/rules/strandphaser.smk"
 include: "workflow/rules/haplotagging.smk"
 include: "workflow/rules/mosaiclassifier.smk"
@@ -59,7 +59,8 @@ include: "workflow/rules/examples.smk"
 rule all:
     input:
         # rules.install_rlib_strandphaser.output,
-        get_final_output(),
+        # get_final_output(),
+        rules.aggregate.output
 
 
 # IF PLOT OPTION ENABLED, BUILD TMP DICT TO CALL OUTPUT

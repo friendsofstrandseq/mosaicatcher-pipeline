@@ -38,18 +38,21 @@ rule mosaic_count:
         excl=ancient("{output}/config_output/exclude_file"),
     output:
         counts="{output}/counts/{sample}/{sample}.txt.fixme.gz",
-        info="{output}/counts/{sample}/{sample}.info",
+        info="{output}/counts/{sample}/{sample}.info_raw",
     log:
         "{output}/log/counts/{sample}/mosaic_count.log",
-    container:
-        "library://weber8thomas/remote-build/mosaic:0.3"
+    # container:
+    #     "library://weber8thomas/remote-build/mosaic:0.3"
+    conda:
+        "../envs/mc_bioinfo_tools.yaml"
     params:
-        window=config["window"],
+        window = config["window"]
     resources:
-        mem_mb=get_mem_mb,
+        mem_mb = get_mem_mb,
     shell:
+        # /mosaicatcher/build/mosaic count \
         """
-        /mosaicatcher/build/mosaic count \
+        mosaicatcher count \
             --verbose \
             --do-not-blacklist-hmm \
             -o {output.counts} \
@@ -72,6 +75,32 @@ rule order_mosaic_count_output:
         df = pd.read_csv(input[0], compression="gzip", sep="\t")
         df = df.sort_values(by=["sample", "cell", "chrom", "start"])
         df.to_csv(output[0], index=False, compression="gzip", sep="\t")
+
+checkpoint filter_bad_cells_from_mosaic_count:
+    input:
+        info_raw = "{output}/counts/{sample}/{sample}.info_raw"
+    output:
+        info = "{output}/counts/{sample}/{sample}.info",
+        info_removed = "{output}/counts/{sample}/{sample}.info_rm"
+    run:
+        shell("grep '^#' {input.info_raw} > {output.info}")
+        shell("grep '^#' {input.info_raw} > {output.info_removed}")
+        import pandas as pd
+        df = pd.read_csv(input.info_raw, skiprows=13, sep="\t")
+        df["pass1"] = df["pass1"].astype(int)
+        df_kept = df.loc[df["pass1"] == 1]
+        print(df)
+        df_removed = df.loc[df["pass1"] == 0]
+        print(df_removed)
+        df_kept.to_csv(output.info, index=False, sep='\t', mode='a')
+        df_removed.to_csv(output.info_removed, index=False, sep='\t', mode='a')
+
+        # config_df = pd.read_csv(config["output_location"] + "config/config_df.tsv", sep="\t")
+        # config_df_new = config_df.loc[config_df['cell'].isin(df_kept.cell.tolist())].to_csv(config["output_location"] + "config/config_df.tsv", sep="\t", index=False)
+
+
+
+
 
 
 # CHECKME : to keep or to improve ? @jeong @mc @kg
@@ -168,3 +197,4 @@ rule extract_single_cell_counts:
         # Issue #1022 (https://bitbucket.org/snakemake/snakemake/issues/1022)
         zcat {input} | awk -v name={wildcards.cell} '(NR==1) || $5 == name' | gzip > {output}
         """
+
