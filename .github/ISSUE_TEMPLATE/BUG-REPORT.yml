@@ -39,8 +39,7 @@ body:
         - "1.2"
         - "1.1"
         - "1.0"
-    validations:
-      required: true
+
   - type: dropdown
     id: mode_of_execution
     attributes:
@@ -48,8 +47,7 @@ body:
       options:
         - Conda only
         - Conda + Singularity
-      validations:
-        required: true
+
   - type: textarea
     id: logs
     attributes:
