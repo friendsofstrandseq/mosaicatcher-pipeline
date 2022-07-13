@@ -32,13 +32,13 @@ body:
       label: Mosaicatcher-pipeline Version
       description: What version of mosaicatcher-pipeline are you running?
       options:
-        - 1.5.1 (Default)
-        - 1.4.1
-        - 1.4
-        - 1.3
-        - 1.2
-        - 1.1
-        - 1.0
+        - "1.5.1 (Default)"
+        - "1.4.1"
+        - "1.4"
+        - "1.3"
+        - "1.2"
+        - "1.1"
+        - "1.0"
     validations:
       required: true
   - type: dropdown
