@@ -16,7 +16,7 @@ body:
       description: How can we get in touch with you if we need more info?
       placeholder: ex. email@example.com
     validations:
-      required: false
+      required: true
   - type: textarea
     id: what-happened
     attributes:
@@ -36,6 +36,8 @@ body:
         2. With this config...
         3. Run '...'
         4. See error...
+    validations:
+      required: true
   - type: dropdown
     id: version
     attributes:
@@ -49,6 +51,8 @@ body:
         - "1.2"
         - "1.1"
         - "1.0"
+    validations:
+      required: true
   - type: textarea
     id: cmd
     attributes:
@@ -62,6 +66,8 @@ body:
       options:
         - Conda only
         - Conda + Singularity
+    validations:
+      required: true
   - type: textarea
     id: execution_type
     attributes:
@@ -69,19 +75,23 @@ body:
       description: |
         Please give us some details
     validations:
-      required: false
+      required: true
   - type: textarea
     id: config
     attributes:
       label: Pipeline configuration file
       description: Please copy and paste the configuration file used.
       render: YAML
+    validations:
+      required: true
   - type: textarea
     id: logs
     attributes:
       label: Relevant log output
       description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
       render: shell
+    validations:
+      required: true
   - type: textarea
     attributes:
       label: Anything else?
