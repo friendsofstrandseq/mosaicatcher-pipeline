@@ -202,7 +202,7 @@ rule combine_strandphaser_output:
 
 rule convert_strandphaser_output:
     input:
-        phased_states  = config["output_location"] + "strandphaser/{sample}/strandphaser_phased_haps_merged.txt",
+        phased_states  = ancient(config["output_location"] + "strandphaser/{sample}/strandphaser_phased_haps_merged.txt"),
         initial_states = config["output_location"] + "segmentation/{sample}/Selection_initial_strand_state",
         info           = config["output_location"] + "counts/{sample}/{sample}.info"
     output:
