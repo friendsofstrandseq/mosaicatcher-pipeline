@@ -14,7 +14,7 @@ rule index_bam:
     output:
     """
     input:
-        "{file}.bam"
+        ancient("{file}.bam")
     output:
         "{file}.bam.bai"
     log:
@@ -34,7 +34,7 @@ rule compress_vcf:
     output:
     """
     input:
-        vcf="{file}.vcf",
+        vcf=ancient("{file}.vcf"),
     output:
         vcf="{file}.vcf.gz",
     log:
@@ -51,7 +51,7 @@ rule index_vcf:
     output:
     """
     input:
-        vcf="{file}.vcf.gz",
+        vcf=ancient("{file}.vcf.gz"),
     output:
         vcf="{file}.vcf.gz.tbi",
     log:
