@@ -59,6 +59,8 @@ body:
       label: Command used
       description: Please copy and paste the command used to launch the pipeline.
       render: shell
+    validations:
+      required: true
   - type: dropdown
     id: mode_of_execution
     attributes:

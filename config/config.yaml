@@ -80,9 +80,6 @@ R_reference: "BSgenome.Hsapiens.UCSC.hg38"
 # SegDups file
 segdups: "workflow/data/segdups/segDups_hg38_UCSCtrack.bed.gz"
 
-# Exclude cells
-exclude_list: []
-
 # Strandphaser
 git_commit_strandphaser: "69c9fb4"
 git_repo_strandphaser: "https://github.com/daewoooo/StrandPhaseR"
