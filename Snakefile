@@ -138,9 +138,6 @@ if plot_option_selected == True:
 ######################
 
 
-
-
-
 # MODE MOSAIC COUNT
 if mode_selected == "count":
     if plot_option_selected == True:
@@ -172,6 +169,7 @@ elif mode_selected == "mosaiclassifier":
     if plot_option_selected == True:
         rule all:
             input:
+                rules.cp_yaml_config.output,
                 rules.install_rlib_strandphaser.output,
                 [config["output_location"] + "plots/{}/counts/{}.{}.pdf".format(sample, tmp_dict[sample][i], i) for sample in samples for i in range(dict_cells_nb_per_sample[sample] + 1)],
                 [config["output_location"] + "mosaiclassifier/sv_calls/{}/{}.tsv".format(sample, m) for sample in samples for m in methods],

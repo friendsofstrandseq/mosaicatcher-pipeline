@@ -68,7 +68,7 @@ snakemake --cores 12 --config mode=mosaiclassifier plot=True input_bam_location=
 
 * [Usage](docs/usage.md)
 * [Parameters & input](docs/parameters.md)
-* [Output](docs/output.md) (#TODO)
+* [Output](docs/output.md)
 
 
 

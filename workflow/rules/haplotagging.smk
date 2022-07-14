@@ -11,8 +11,8 @@ bam_per_sample = config_df.loc[config_df["Selected"] == True].groupby("Sample")[
 
 rule haplotag_bams:
     input:
-        vcf = config["output_location"] + "strandphaser/phased-snvs/{sample}.vcf.gz",
-        tbi = config["output_location"] + "strandphaser/phased-snvs/{sample}.vcf.gz.tbi",
+        vcf = ancient(config["output_location"] + "strandphaser/phased-snvs/{sample}.vcf.gz"),
+        tbi = ancient(config["output_location"] + "strandphaser/phased-snvs/{sample}.vcf.gz.tbi"),
         bam = config["input_bam_location"] + "{sample}/selected/{cell}.bam",
         # bai = config["input_bam_location"] + "{sample}/selected/{cell}.bam.bai"
     output:

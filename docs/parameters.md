@@ -2,43 +2,64 @@
 # Parameters
 
 ## MosaiCatcher arguments
+________
 
+**ℹ️ Note**
+  
+All these arguments can be specified in two ways:
+1. In the config/config.yaml file, by replacing existing values
+2. Using the `--config` snakemake argument (`--config` must be called only one time with all the arguments behind it, e.g: `--config input_bam_location=<INPUT> output_location=<OUTPUT> email=<EMAIL> mode=count plot=True`)
 
+________
 
+### Input/output options
 
-```
-mode
-```
+| Parameter            | Comment                                               | Parameter type | Default        |
+| -------------------- | ----------------------------------------------------- | -------------- | -------------- |
+| `input_bam_location` | Path to parent folder containing samples              | String         | .tests/data/   |
+| `output_location`    | Path to output folder where the results will be saved | String         | .tests/output/ |
+| `email`              | Email address for completion summary                  | String         | None           |
+
+### Modes of execution
 
 MosaiCatcher currently supports three different modes of execution : `count`, `segmentation` and `mosaiclassifier`.
-- `count` (selected by default) will only performs `Mosaic count` binning and count reads for each bin produced
-- `segmentation` will run the pipeline until the `Mosaic segmentation` and selection of the correct segments
-- `mosaiclassifier` will run the complete pipeline until the detection of SV in each selected cell of the samples
 
-To select your mode of execution, use the following argument `--config mode=[count|segmentation|mosaiclassifier]`
+| Mode                   | Comment                                                                          | Default |
+| ---------------------- | -------------------------------------------------------------------------------- | ------- |
+| `mode=count`           | `Mosaic count` binning and count reads for each bin produced                     |         |
+| `mode=segmentation`    | `Mosaic segmentation` and selection of the correct segments                      |         |
+| `mode=mosaiclassifier` | Complete pipeline until the detection of SV in each selected cell of the samples | X       |
+
+### Boolean parameters
+
+| Parameter           | Comment                                                                                                                                  | Default |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| `containerized`     | Use or not the docker worfklow with pre-installed and compiled all required dependencies generation                                      | False   |
+| `plot`              | *Enable* or *disable* the plots generation                                                                                               | False   |
+| `check_sm_tag`      | Based on pysam, will compare for each BAM file, if the header SM tag is identical to the folder name in order to prevent further issues. | True    |
+| `dl_bam_example`    | Allow to retrieve automatically BAM fullsize example data.                                                                               | False   |
+| `dl_external_files` | Allow to retrieve automatically external files (GRCh38 reference genome + 1000G SNV VCF file) required to run the pipeline.              | False   |
 
 
-```
-plot
-```
+### External files
 
-For each of these modes, you can *enable* or *disable* the plots generation by using `--config plot=[True|False]`
+| Parameter               | Comment                                                                       | Default                                                                                          |
+| ----------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `snv_sites_to_genotype` | 1000G SNV sites to genotype file location to allow phasing after regenotyping | sandbox.zenodo.org/record/1074721/files/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz |
+| `reference`             | Reference genome                                                              | sandbox.zenodo.org/record/1074721/files/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna          |
+| `R_reference`           | Reference genome used by R scripts                                            | BSgenome.Hsapiens.UCSC.hg38                                                                      |
+| `segdups`               | Segmental duplication file defined for hg38 reference genome                  | workflow/data/segdups/segDups_hg38_UCSCtrack.bed.gz                                              |
 
+### Processing options
 
-```
-check_sm_tag
-```
-Based on pysam, will compare for each BAM file, if the header SM tag is identical to the folder name in order to prevent further issues.
-
-```
-dl_bam_example
-```
-Allow to retrieve automatically BAM example data to run the pipeline.
-
-```
-dl_external_files
-```
-Allow to retrieve automatically external files (GRCh38 reference genome + 1000G SNV VCF file) required to run the pipeline.
+| Parameter               | Comment                                                                                                    | Related-section | Default  |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------- | --------------- | -------- |
+| `window`                | Window size used for binning by mosaic count (Can be of high importance regarding library coverage)        | Count           | 100000   |
+| `min_diff_jointseg`     | Minimum difference in error term to include another breakpoint in the joint segmentation (default=0.5)     | Segmentation    | 0.1      |
+| `min_diff_singleseg`    | Minimum difference in error term to include another breakpoint in the single-cell segmentation (default=1) | Segmentation    | 0.5      |
+| `additional_sce_cutoff` | Minimum gain in mismatch distance needed to add an additional SCE                                          | Segmentation    | 20000000 |
+| `sce_min_distance`      | Minimum distance of an SCE to a break in the joint segmentation                                            | Segmentation    | 500000   |
+| `llr`                   | Likelihood ratio used to  detect SV calls                                                                  | Mosaiclassifier | 4        |
 
 
 
@@ -64,7 +85,7 @@ If defined in the rule, run job in a conda environment. If this flag is not set,
 ```
 --conda-frontend [mamba|conda] 
 ```
-Choose the conda frontend for installing environments. Mamba is much faster and highly recommended. Default: “mamba”
+Choose the conda frontend for installing environments. Mamba is much faster and highly recommended but could not be installed by default on your system. Default: “conda”
 
 
 ```
