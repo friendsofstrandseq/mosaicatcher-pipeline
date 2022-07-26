@@ -67,14 +67,32 @@ workflow/test.txt
 # GitHub actions
 .tests/unit/
 .tests/output/
+.tests/output_CHR21/
 .tests/output2/
 .tests/data/RPE-BM510/all/*.bai
+.tests/data/RPE-BM510/all/*.bam
+.tests/data/RPE-BM510/all/*.log
+.tests/data_CHR21/RPE-BM510/all/*.bai
+.tests/data_CHR21/RPE-BM510/all/*.bam
+.tests/data_CHR21/RPE-BM510/all/*.log
+.tests/data/RPE-BM510/all_bak/
+.tests/data/RPE-BM510/fastq/
+.tests/data/RPE-BM510/predictions/
+.tests/data_CHR21/RPE-BM510/predictions/
+.tests/data/RPE-BM510/cell_selection/
+.tests/data_CHR21/RPE-BM510/cell_selection/
+.tests/data/RPE-BM510/all_BM/
+.tests/data/RPE-BM510/all_PE/
+.tests/data/RPE-BM510/selected_BM/
+.tests/data/RPE-BM510/selected_PE/
 .tests/data/RPE-BM510/selected/*.bai
 .tests/data/RPE-BM510/selected/*.log
-!.tests/external_data/1000G_chr21.vcf.gz
-!.tests/data/RPE-BM510/all/*.bam
-!.tests/data/RPE-BM510/selected/*.bam
+.tests/data/RPE-BM510/all/PE*.bam
+.tests/data/RPE-BM510/selected/PE*.bam
 # !.test/data/RPE-BM510/selected/*.bai
+!.tests/data_CHR21/RPE-BM510/fastq/*.fastq.gz
+!.tests/data_CHR21/RPE-BM510/all/BM*.sort.mdup.bam
+!.tests/external_data/1000G_chr21.vcf.gz
 
 # Dev
 discover_big_files_git.sh

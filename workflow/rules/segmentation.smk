@@ -20,11 +20,13 @@ rule segmentation:
     output: Segmentation tab file 
     """
     input:
-        "{output}/counts/{sample}/{sample}.txt.gz",
+        counts="{output_folder}/counts/{sample}/{sample}.txt.gz",
+        seg_filter="{output_folder}/log/segmentation/{sample}/segmentation-per-cell.ok",
+
     output:
-        "{output}/segmentation/{sample}/{sample}.txt.fixme",
+        "{output_folder}/segmentation/{sample}/{sample}.txt.fixme",
     log:
-        "{output}/log/segmentation/{sample}/{sample}.log",
+        "{output_folder}/log/segmentation/{sample}/{sample}.log",
     params:
         min_num_segs=lambda wc: math.ceil(200000 / float(config["window"])),  # bins to represent 200 kb
     # container:
@@ -32,7 +34,7 @@ rule segmentation:
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     resources:
-        mem_mb = get_mem_mb,
+        mem_mb=get_mem_mb,
     shell:
         """
         mosaicatcher segment \
@@ -40,9 +42,8 @@ rule segmentation:
         --forbid-small-segments {params.min_num_segs} \
         -M 50000000 \
         -o {output} \
-        {input} > {log} 2>&1
+        {input.counts} > {log} 2>&1
         """
-
 
 
 # FIXME: This is a workaround because latest versions of "mosaic segment" don't compute the "bps" column properly. Remove once fixed in the C++ code.
@@ -53,11 +54,11 @@ rule fix_segmentation:
     output:
     """
     input:
-        "{output}/segmentation/{sample}/{sample}.txt.fixme",
+        ancient("{output_folder}/segmentation/{sample}/{sample}.txt.fixme"),
     output:
-        "{output}/segmentation/{sample}/{sample}.txt",
+        "{output_folder}/segmentation/{sample}/{sample}.txt",
     log:
-        "{output}/log/segmentation/{sample}/{sample}.log",
+        "{output_folder}/log/segmentation/{sample}/{sample}.log",
     conda:
         "../envs/mc_base.yaml"
     params:
@@ -75,6 +76,8 @@ rule fix_segmentation:
 ################################################################################
 
 
+
+
 rule segment_one_cell:
     """
     rule fct: Same as `rule segmentation` : mosaic segment function but for individual cell
@@ -82,20 +85,18 @@ rule segment_one_cell:
     output: Segmentation file for an individual cell
     """
     input:
-        "{output}/counts/{sample}/counts-per-cell/{cell}.txt.gz",
+        "{output_folder}/counts/{sample}/counts-per-cell/{cell}.txt.gz",
     output:
-        "{output}/segmentation/{sample}/segmentation-per-cell/{cell}.txt",
+        "{output_folder}/segmentation/{sample}/segmentation-per-cell/{cell}.txt",
     log:
-        "{output}/log/segmentation/{sample}/segmentation-per-cell/{cell}.log",
-    # container:
-    #     "library://weber8thomas/remote-build/mosaic:0.3"
+        "{output_folder}/log/segmentation/{sample}/segmentation-per-cell/{cell}.log",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     params:
         # mc_command = config["mosaicatcher"],
-        min_num_segs = lambda wc: math.ceil(200000 / float(config["window"])) # bins to represent 200 kb
+        min_num_segs=lambda wc: math.ceil(200000 / float(config["window"])),  # bins to represent 200 kb
     resources:
-        mem_mb = get_mem_mb,
+        mem_mb=get_mem_mb,
     shell:
         """
         mosaicatcher segment \
@@ -106,13 +107,14 @@ rule segment_one_cell:
         {input} > {log} 2>&1
         """
 
-rule aggregate:
-    input:
-        aggregate_cells
-    output:
-        expand("{output}/segmentation/{sample}/segmentation-per-cell.ok", output=config["output_location"], sample=samples)
-    shell:
-        "echo TOTO > {output}"
+# rule aggregate_cells_merge:
+#     input:
+#         aggregate_cells_segmentation,
+#     output:
+#         "{output_folder}/log/segmentation/{sample}/segmentation-per-cell.ok"
+#     shell:
+#         "touch {output}"
+
 
 rule segmentation_selection:
     """
@@ -121,23 +123,19 @@ rule segmentation_selection:
     output: initial_strand_state used for the following by strandphaser
     """
     input:
-        counts="{output}/counts/{sample}/{sample}.txt.gz",
-        jointseg="{output}/segmentation/{sample}/{sample}.txt",
-        singleseg=lambda wc: [
-            "{}/segmentation/{}/segmentation-per-cell/{}.txt".format(
-                config["output_location"], wc.sample, cell
-            )
-            for cell in cell_per_sample[wc.sample]
-        ],
-        info="{output}/counts/{sample}/{sample}.info",
+        counts="{output_folder}/counts/{sample}/{sample}.txt.gz",
+        jointseg="{output_folder}/segmentation/{sample}/{sample}.txt",
+        singleseg=aggregate_cells_segmentation,
+        info="{output_folder}/counts/{sample}/{sample}.info",
+        seg_filter="{output_folder}/log/segmentation/{sample}/segmentation-per-cell.ok",
     output:
-        jointseg="{output}/segmentation/{sample}/Selection_jointseg.txt",
-        singleseg="{output}/segmentation/{sample}/Selection_singleseg.txt",
-        strand_states="{output}/segmentation/{sample}/Selection_initial_strand_state",
+        jointseg="{output_folder}/segmentation/{sample}/Selection_jointseg.txt",
+        singleseg="{output_folder}/segmentation/{sample}/Selection_singleseg.txt",
+        strand_states="{output_folder}/segmentation/{sample}/Selection_initial_strand_state",
     log:
-        "{output}/log/segmentation/segmentation_selection/{sample}.log",
+        "{output_folder}/log/segmentation/segmentation_selection/{sample}.log",
     params:
-        cellnames=lambda wc: ",".join(cell for cell in cell_per_sample[wc.sample]),
+        cellnames=lambda wc: ",".join([cell for cell in cell_per_sample[wc.sample] if cell in [e.split(snakemake.config["abs_path"])[-1].split(".")[0] for e in aggregate_cells_segmentation(wc)]]),
         sce_min_distance=config["sce_min_distance"],
         additional_sce_cutoff=config["additional_sce_cutoff"],
         min_diff_jointseg=config["min_diff_jointseg"],

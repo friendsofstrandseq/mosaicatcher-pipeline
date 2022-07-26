@@ -20,35 +20,35 @@ rule mosaic_count:
     """
     input:
         bam=lambda wc: expand(
-            "{input_folder}/{sample}/selected/{bam}.bam",
+            "{input_folder}/{sample}/all/{cell}.sort.mdup.bam",
             input_folder=config["input_bam_location"],
             sample=samples,
-            bam=bam_per_sample_local[str(wc.sample)]
+            cell=bam_per_sample_local[str(wc.sample)]
             if wc.sample in bam_per_sample_local
             else "FOOBAR",
         ),
         bai=lambda wc: expand(
-            "{input_folder}/{sample}/selected/{bam}.bam.bai",
+            "{input_folder}/{sample}/all/{cell}.sort.mdup.bam.bai",
             input_folder=config["input_bam_location"],
             sample=samples,
-            bam=bam_per_sample_local[str(wc.sample)],
+            cell=bam_per_sample_local[str(wc.sample)],
         )
         if wc.sample in bam_per_sample_local
         else "FOOBAR",
-        excl=ancient("{output}/config_output/exclude_file"),
+        excl="{output_folder}/config_output/{sample}/exclude_file",
     output:
-        counts="{output}/counts/{sample}/{sample}.txt.fixme.gz",
-        info="{output}/counts/{sample}/{sample}.info_raw",
+        counts="{output_folder}/counts/{sample}/{sample}.txt.raw.gz",
+        info="{output_folder}/counts/{sample}/{sample}.info_raw",
     log:
-        "{output}/log/counts/{sample}/mosaic_count.log",
+        "{output_folder}/log/counts/{sample}/mosaic_count.log",
     # container:
     #     "library://weber8thomas/remote-build/mosaic:0.3"
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     params:
-        window = config["window"]
+        window=config["window"],
     resources:
-        mem_mb = get_mem_mb,
+        mem_mb=get_mem_mb,
     shell:
         # /mosaicatcher/build/mosaic count \
         """
@@ -63,44 +63,49 @@ rule mosaic_count:
         > {log} 2>&1
         """
 
+if config["ashleys_pipeline"] is False:
+    rule blank_labels:
+        output:
+            touch("{input_folder}/{sample}/cell_selection/labels.tsv")
+        log:
+            "{input_folder}/log/{sample}/blank_labels/labels.log"
 
 rule order_mosaic_count_output:
     input:
-        "{output}/counts/{sample}/{sample}.txt.fixme.gz",
+        raw_count="{output_folder}/counts/{sample}/{sample}.txt.raw.gz",
+        labels=expand(
+            "{input_folder}/{sample}/cell_selection/labels.tsv",
+            input_folder=config["input_bam_location"],
+            sample=samples,
+        ),
     output:
-        "{output}/counts/{sample}/{sample}.txt.gz",
+        "{output_folder}/counts/{sample}/{sample}.txt.sort.gz",
     log:
-        "{output}/log/counts/{sample}/{sample}.log",
+        "{output_folder}/log/counts/{sample}/{sample}.log",
     run:
-        df = pd.read_csv(input[0], compression="gzip", sep="\t")
+        df = pd.read_csv(input.raw_count, compression="gzip", sep="\t")
         df = df.sort_values(by=["sample", "cell", "chrom", "start"])
         df.to_csv(output[0], index=False, compression="gzip", sep="\t")
 
+
+
 checkpoint filter_bad_cells_from_mosaic_count:
     input:
-        info_raw = "{output}/counts/{sample}/{sample}.info_raw"
+        info_raw="{output_folder}/counts/{sample}/{sample}.info_raw",
+        counts_sort="{output_folder}/counts/{sample}/{sample}.txt.sort.gz",
+        labels=expand(
+            "{input_folder}/{sample}/cell_selection/labels.tsv",
+            input_folder=config["input_bam_location"],
+            sample=samples,
+        ),    
     output:
-        info = "{output}/counts/{sample}/{sample}.info",
-        info_removed = "{output}/counts/{sample}/{sample}.info_rm"
-    run:
-        shell("grep '^#' {input.info_raw} > {output.info}")
-        shell("grep '^#' {input.info_raw} > {output.info_removed}")
-        import pandas as pd
-        df = pd.read_csv(input.info_raw, skiprows=13, sep="\t")
-        df["pass1"] = df["pass1"].astype(int)
-        df_kept = df.loc[df["pass1"] == 1]
-        print(df)
-        df_removed = df.loc[df["pass1"] == 0]
-        print(df_removed)
-        df_kept.to_csv(output.info, index=False, sep='\t', mode='a')
-        df_removed.to_csv(output.info_removed, index=False, sep='\t', mode='a')
-
-        # config_df = pd.read_csv(config["output_location"] + "config/config_df.tsv", sep="\t")
-        # config_df_new = config_df.loc[config_df['cell'].isin(df_kept.cell.tolist())].to_csv(config["output_location"] + "config/config_df.tsv", sep="\t", index=False)
-
-
-
-
+        info="{output_folder}/counts/{sample}/{sample}.info",
+        info_removed="{output_folder}/counts/{sample}/{sample}.info_rm",
+        counts="{output_folder}/counts/{sample}/{sample}.txt.gz",
+    log:
+        "{output_folder}/log/filter_bad_cells_from_mosaic_count/{sample}/{sample}.log",
+    script:
+        "../scripts/utils/filter_bad_cells.py"
 
 
 # CHECKME : to keep or to improve ? @jeong @mc @kg
@@ -119,9 +124,9 @@ rule merge_blacklist_bins:
         norm="utils/normalization/HGSVC.{window}.txt",
         whitelist="utils/normalization/inversion-whitelist.tsv",
     output:
-        merged="{output}/normalizations/HGSVC.{window}.merged.tsv",
+        merged="{output_folder}/normalizations/HGSVC.{window}.merged.tsv",
     log:
-        "{output}/log/merge_blacklist_bins/{window}.log",
+        "{output_folder}/log/merge_blacklist_bins/{window}.log",
     conda:
         "../envs/mc_base.yaml"
     shell:
@@ -140,12 +145,12 @@ rule normalize_counts:
     output: normalized counts based predefined factors for each window
     """
     input:
-        counts="{output}/counts/{sample}/{window}.txt.gz",
-        norm="{output}/normalizations/HGSVC.{window}.merged.tsv",
+        counts="{output_folder}/counts/{sample}/{window}.txt.gz",
+        norm="{output_folder}/normalizations/HGSVC.{window}.merged.tsv",
     output:
-        "{output}/norm_counts/{sample}/{window}.txt.gz",
+        "{output_folder}/norm_counts/{sample}/{window}.txt.gz",
     log:
-        "{output}/log/normalize_counts/{sample}/{window}.log",
+        "{output_folder}/log/normalize_counts/{sample}/{window}.log",
     conda:
         "../envs/rtools.yaml"
     shell:
@@ -162,11 +167,11 @@ rule link_normalized_info_file:
     output: symlink in norm_counts output directory
     """
     input:
-        info="{output}/counts/{sample}/{window}.info",
+        info="{output_folder}/counts/{sample}/{window}.info",
     output:
-        info="{output}/norm_counts/{sample}/{window}.info",
+        info="{output_folder}/norm_counts/{sample}/{window}.info",
     log:
-        "{output}/log/norm_counts/{sample}/{window}.log",
+        "{output_folder}/log/norm_counts/{sample}/{window}.log",
     run:
         d = os.path.dirname(output.info)
         file = os.path.basename(output.info)
@@ -185,16 +190,17 @@ rule extract_single_cell_counts:
     output: count per cell file for the sample according a given window
     """
     input:
-        "{output}/counts/{sample}/{sample}.txt.gz",
+        info="{output_folder}/counts/{sample}/{sample}.info",
+        counts="{output_folder}/counts/{sample}/{sample}.txt.gz",
+        # agg=aggregate_cells
     output:
-        "{output}/counts/{sample}/counts-per-cell/{cell}.txt.gz",
+        "{output_folder}/counts/{sample}/counts-per-cell/{cell}.txt.gz",
     log:
-        "{output}/log/counts/{sample}/counts-per-cell/{cell}.log",
+        "{output_folder}/log/counts/{sample}/counts-per-cell/{cell}.log",
     conda:
         "../envs/mc_base.yaml"
     shell:
         """
         # Issue #1022 (https://bitbucket.org/snakemake/snakemake/issues/1022)
-        zcat {input} | awk -v name={wildcards.cell} '(NR==1) || $5 == name' | gzip > {output}
+        zcat {input.counts} | awk -v name={wildcards.cell} '(NR==1) || $5 == name' | gzip > {output}
         """
-

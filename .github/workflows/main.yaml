@@ -4,15 +4,14 @@ on:
   push:
     branches:
       - master
-      - smk_workflow_catalog
-      - dev_format_smk
+      - smk_wf_catalog
 
 jobs:
   # WORK
   Formatting:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
 
       - name: Formatting
         uses: github/super-linter@v4
@@ -25,66 +24,32 @@ jobs:
   Linting:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-      - name: Linting
-        uses: snakemake/snakemake-github-action@v1.22.0
-        with:
-          directory: .
-          snakefile: ./Snakefile
-          # stagein: 'file=$(grep snv_sites ./config/config.yaml| grep -P -o "sandbox.*") && mkdir -p "${file%/*}" && touch "$file" && file=$(grep -P "^reference" mosaicatcher-update/config/config.yaml| grep -P -o "sandbox.*") && mkdir -p "${file%/*}" && touch "$file"'
-          args: "--lint"
-
-  Testing:
-    runs-on: ubuntu-latest
-    # runs-on: self-hosted
-    # needs:
-    #   - Linting
-    #   - Formatting
-    steps:
       - uses: actions/checkout@v2
-      - uses: eWaterCycle/setup-singularity@v7
-        with:
-          singularity-version: 3.8.3
-      # - name: Run a singularity container
-      #   run: singularity run docker://alpine cat /etc/os-release
-      - name: Test workflow
-        uses: snakemake/snakemake-github-action@v1.22.0
+      - name: Linting
+        uses: snakemake/snakemake-github-action@v1.23.0
         with:
           directory: .
           snakefile: ./Snakefile
-          stagein: "chmod 755 /proc/sys/kernel/unprivileged_userns_clone && echo 1 > /proc/sys/kernel/unprivileged_userns_clone"
-          args: --use-conda --use-singularity --show-failed-logs --cores 2 --conda-cleanup-pkgs cache --config containerized=True reference=.tests/external_data/chr21.fna snv_sites_to_genotype=.tests/external_data/1000G_chr21.vcf.gz
-
-  #     - name: Set up Python 3.8
-  #       uses: actions/setup-python@v2
+          # stagein: "mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda unzip snakemake pandas pysam tqdm imagemagick && source activate snakemake && ls -l && pwd"
+          args: "--lint"
+  # Testing:
+  #   runs-on: ubuntu-latest
+  #   # needs:
+  #   #   - Linting
+  #   #   - Formatting
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Testing data
+  #       uses: snakemake/snakemake-github-action@v1.23.0
   #       with:
-  #         python-version: 3.8
-  #     - name: Add conda to system path
-  #       run: |
-  #         # $CONDA is an environment variable pointing to the root of the miniconda directory
-  #         echo $CONDA/bin >> $GITHUB_PATH
-  #     - name: Install dependencies
-  #       run: |
-  #         conda install -c conda-forge mamba
-  #     - name: Setup snakemake
-  #       run: |
-  #         mamba create -n mosaicatcher_env -c conda-forge -c bioconda pandas tqdm pysam snakemake imagemagick singularity && source activate mosaicatcher_env
-  #     - name: Lint with snakemake and snakefmt
-  #       run: |
-  #         snakemake --cores 12 --config mode=mosaiclassifier plot=True chromosomes="[chr21]" --use-conda --use-singularity --latency-wait 60
-
-  # - name: Downloading data
-  #   uses: snakemake/snakemake-github-action@v1.22.0
-  #   with:
-  #     directory: .
-  #     snakefile: ./Snakefile
-  #     stagein: "mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda unzip snakemake pandas pysam tqdm imagemagick && source activate snakemake "
-  #     args: "--cores 1 --config mode=download_data dl_external_files=True"
-
-  # - name: Testing data
-  #   uses: snakemake/snakemake-github-action@v1.22.0
-  #   with:
-  #     directory: .
-  #     snakefile: ./Snakefile
-  #     stagein: " mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda snakemake pandas pysam tqdm imagemagick && source activate snakemake  && conda create -f .test/conda/complete_env.yaml && source activate cpp_copy && cd workflow/scripts/Mosaic/ && mkdir build && cmake ../src/ && cmake --build . && ln -s mosaic /usr/local/sbin/mosaic"
-  #     args: '--cores -12 --config chromosomes="[chr21]" mode=mosaiclassifier plot=True input_bam_location=.test/data/ output_location=.test/output/ --use-conda --latency-wait 60'
+  #         directory: .
+  #         snakefile: ./Snakefile
+  #         stagein: "mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda snakemake pandas pysam tqdm imagemagick && source activate snakemake"
+  #         args: "--cores 2 --configfile .tests/config/test_config.yaml  --use-conda"
+  #     - name: Testing report
+  #       uses: snakemake/snakemake-github-action@v1.23.0
+  #       with:
+  #         directory: .
+  #         snakefile: ./Snakefile
+  #         stagein: "mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda snakemake pandas pysam tqdm imagemagick && source activate snakemake"
+  #         args: "--cores 2 --configfile .tests/config/test_config.yaml --use-conda --report .tests/output/report.zip"

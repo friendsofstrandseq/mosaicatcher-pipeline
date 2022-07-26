@@ -8,6 +8,12 @@ mail: ""
 ## Command-line options
 #######################################
 
+# ashleys-qc pipeline arguments
+mosaicatcher_pipeline: True
+ashleys_pipeline: True
+hand_selection: False
+use_light_data: False
+
 ### Modes ["count", "segmentation", "mosaiclassifier"]
 mode: "mosaiclassifier"
 ### Plot enabled [True] or disabled [False]
@@ -131,3 +137,5 @@ min_diff_singleseg: 0.5
 additional_sce_cutoff: 20000000
 ### SCE MIN DISTANCE
 sce_min_distance: 500000
+
+abs_path: "/"

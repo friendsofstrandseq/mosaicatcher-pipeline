@@ -10,3 +10,5 @@ dependencies:
   - bcftools
   - whatshap
   - mosaicatcher
+  - bwa
+  - sambamba
