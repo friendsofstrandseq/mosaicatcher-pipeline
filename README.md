@@ -28,9 +28,9 @@ the workflow goes through the following steps:
 ```
 conda config --set channel_priority strict
 ```
-3. Create a dedicated conda environment 
+3. Install snakemake through conda
 ```
-conda create -n mosaicatcher_env -c conda-forge -c bioconda snakemake && conda activate mosaicatcher_env
+conda create -n snakemake -c conda-forge -c bioconda "snakemake>=7.4.1" && conda activate snakemake
 ```
 4. Clone the repository 
 ``` 
@@ -58,7 +58,7 @@ snakemake --cores 1 --config mode=download_data dl_external_files=True
 snakemake --cores 12 --config input_bam_location=<INPUT_DATA_FOLDER> output_location=<OUTPUT_DATA_FOLDER> --use-conda --use-singularity --singularity-args "-B /<disk>:/<disk>" --latency-wait 60 
 
 ```
-8. Generate report 
+9. Generate report 
 ```
 snakemake --cores 12 --config input_bam_location=<INPUT_DATA_FOLDER> output_location=<OUTPUT_DATA_FOLDER> --use-conda --use-singularity --singularity-args "-B /<disk>:/<disk>" --latency-wait 60 --report <REPORT.zip>
 ```

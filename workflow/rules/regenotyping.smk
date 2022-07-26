@@ -11,7 +11,7 @@ rule mergeBams:
     """
     input:
         lambda wc: expand(
-            "{input_folder}/{sample}/all/{bam}.bam",
+            "{input_folder}/{sample}/all/{bam}.sort.mdup.bam",
             input_folder=config["input_bam_location"],
             sample=samples,
             bam=allbams_per_sample[wc.sample],
@@ -19,9 +19,9 @@ rule mergeBams:
         if wc.sample in allbams_per_sample
         else "FOOBAR",
     output:
-        "{output}/merged_bam/{sample}/merged.bam",
+        "{output_folder}/merged_bam/{sample}/merged.bam",
     log:
-        "{output}/log/mergeBams/{sample}.log",
+        "{output_folder}/log/mergeBams/{sample}.log",
     resources:
         mem_mb=get_mem_mb,
         time="01:00:00",
@@ -39,13 +39,13 @@ rule regenotype_SNVs:
     output:
     """
     input:
-        bam="{output}/merged_bam/{sample}/merged.bam",
-        bai="{output}/merged_bam/{sample}/merged.bam.bai",
+        bam="{output_folder}/merged_bam/{sample}/merged.bam",
+        bai="{output_folder}/merged_bam/{sample}/merged.bam.bai",
         sites=config["snv_sites_to_genotype"],
     output:
-        vcf="{output}/snv_genotyping/{sample}/{chrom,chr[0-9A-Z]+}.vcf",
+        vcf="{output_folder}/snv_genotyping/{sample}/{chrom,chr[0-9A-Z]+}.vcf",
     log:
-        "{output}/log/snv_genotyping/{sample}/{chrom}.log",
+        "{output_folder}/log/snv_genotyping/{sample}/{chrom}.log",
     params:
         fa=config["reference"],
     resources:

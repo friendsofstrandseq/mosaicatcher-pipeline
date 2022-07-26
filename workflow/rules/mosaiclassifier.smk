@@ -7,14 +7,14 @@
 
 rule mosaiClassifier_calc_probs:
     input:
-        counts="{output}/counts/{sample}/{sample}.txt.gz",
-        info="{output}/counts/{sample}/{sample}.info",
-        states="{output}/strandphaser/{sample}/StrandPhaseR_final_output.txt",
-        bp="{output}/segmentation/{sample}/Selection_jointseg.txt",
+        counts="{output_folder}/counts/{sample}/{sample}.txt.gz",
+        info="{output_folder}/counts/{sample}/{sample}.info",
+        states="{output_folder}/strandphaser/{sample}/StrandPhaseR_final_output.txt",
+        bp="{output_folder}/segmentation/{sample}/Selection_jointseg.txt",
     output:
-        output="{output}/mosaiclassifier/sv_probabilities/{sample}/probabilities.Rdata",
+        output="{output_folder}/mosaiclassifier/sv_probabilities/{sample}/probabilities.Rdata",
     log:
-        "{output}/log/mosaiClassifier_calc_probs/{sample}.log",
+        "{output_folder}/log/mosaiClassifier_calc_probs/{sample}.log",
     conda:
         "../envs/rtools.yaml"
     resources:
@@ -25,12 +25,12 @@ rule mosaiClassifier_calc_probs:
 
 rule create_haplotag_likelihoods:
     input:
-        haplotag_table="{output}/haplotag/table/{sample}/haplotag_counts_merged.tsv",
-        sv_probs_table="{output}/mosaiclassifier/sv_probabilities/{sample}/probabilities.Rdata",
+        haplotag_table="{output_folder}/haplotag/table/{sample}/haplotag_counts_merged.tsv",
+        sv_probs_table="{output_folder}/mosaiclassifier/sv_probabilities/{sample}/probabilities.Rdata",
     output:
-        "{output}/mosaiclassifier/haplotag_likelihoods/{sample}.Rdata",
+        "{output_folder}/mosaiclassifier/haplotag_likelihoods/{sample}.Rdata",
     log:
-        "{output}/og/create_haplotag_likelihoods/{sample}.log",
+        "{output_folder}/og/create_haplotag_likelihoods/{sample}.log",
     conda:
         "../envs/rtools.yaml"
     resources:
@@ -41,11 +41,11 @@ rule create_haplotag_likelihoods:
 
 rule mosaiClassifier_make_call:
     input:
-        probs="{output}/mosaiclassifier/haplotag_likelihoods/{sample}.Rdata",
+        probs="{output_folder}/mosaiclassifier/haplotag_likelihoods/{sample}.Rdata",
     output:
-        "{output}/mosaiclassifier/sv_calls/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}_filterFALSE.tsv",
+        "{output_folder}/mosaiclassifier/sv_calls/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}_filterFALSE.tsv",
     log:
-        "{output}/log/mosaiClassifier_make_call/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.log",
+        "{output_folder}/log/mosaiClassifier_make_call/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.log",
     conda:
         "../envs/rtools.yaml"
     params:
@@ -59,11 +59,11 @@ rule mosaiClassifier_make_call:
 
 rule mosaiClassifier_make_call_biallelic:
     input:
-        probs="{output}/sv_probabilities/{sample}/probabilities.Rdata",
+        probs="{output_folder}/sv_probabilities/{sample}/probabilities.Rdata",
     output:
-        "{output}/sv_calls/{sample}/biAllelic_llr{llr}.txt",
+        "{output_folder}/sv_calls/{sample}/biAllelic_llr{llr}.txt",
     log:
-        "{output}/log/mosaiClassifier_make_call_biallelic/{sample}/{llr}.log",
+        "{output_folder}/log/mosaiClassifier_make_call_biallelic/{sample}/{llr}.log",
     conda:
         "../envs/rtools.yaml"
     resources:
@@ -74,11 +74,11 @@ rule mosaiClassifier_make_call_biallelic:
 
 rule call_complex_regions:
     input:
-        calls="{output}/mosaiclassifier/sv_calls/{sample}/{method}.tsv",
+        calls="{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}.tsv",
     output:
-        complex_regions="{output}/mosaiclassifier/sv_calls/{sample}/{method}.complex.tsv",
+        complex_regions="{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}.complex.tsv",
     log:
-        "{output}/log/call_complex_regions/{sample}/{method}.log",
+        "{output_folder}/log/call_complex_regions/{sample}/{method}.log",
     conda:
         "../envs/mc_base.yaml"
     resources:

@@ -6,7 +6,7 @@
 1. Install [Singularity](https://www.sylabs.io/guides/3.0/user-guide/) 
 2. To prevent conda channel errors
 ```
-conda config --set channel_priority strict
+conda config --set channel_priority 
 ```
 3. Create a dedicated conda environment 
 ```
@@ -16,30 +16,31 @@ conda create -n mosaicatcher_env -c conda-forge -c bioconda snakemake pandas pys
 ``` 
 git clone https://github.com/friendsofstrandseq/mosaicatcher-pipeline.git && cd mosaicatcher-pipeline
 ```
-5. Download test and reference data 
+5. Download reference data 
 ```
-snakemake --cores 1 --config mode=download_data dl_external_files=True dl_bam_example=True input_bam_location=TEST_EXAMPLE_DATA/ 
+snakemake -c1 --config mode=download_data dl_external_files=True 
 ```
 6. Run on example data on only one small chromosome (`<disk>` must be replaced by your disk letter/name, `/g` or `/scratch` at EMBL for example)
 ```
-snakemake --cores 12 --config mode=mosaiclassifier plot=True input_bam_location=.tests/data/ output_location=.tests/output/ chromosomes="[chr21]" containerized=True --use-conda --use-singularity --singularity-args "-B /<disk>:/<disk>" --latency-wait 60 
+snakemake --cores 12 --config mode=mosaiclassifier plot=True input_bam_location=.tests/data/ output_location=.tests/output/ chromosomes="[chr21]" snv_sites_to_genotype=.tests/external_data/1000G_chr21.vcf.gz reference=.tests/external_data/chr21.fna containerized=True --use-conda --use-singularity --singularity-args "-B /<disk>:/<disk>" --latency-wait 60 
 ```
 
 7. Generate report on example data
 ```
-snakemake --cores 12 --config mode=mosaiclassifier plot=True input_bam_location=.tests/data/ output_location=.tests/output/ chromosomes="[chr21]" containerized=True --use-conda --use-singularity --singularity-args "-B /<disk>:/<disk>" --latency-wait 60 --report <REPORT.zip>
+snakemake --cores 12 --config mode=mosaiclassifier plot=True input_bam_location=.tests/data/ output_location=.tests/output/ chromosomes="[chr21]" snv_sites_to_genotype=.tests/external_data/1000G_chr21.vcf.gz reference=.tests/external_data/chr21.fna containerized=True --use-conda --use-singularity --singularity-args "-B /<disk>:/<disk>" --latency-wait 60 --report <REPORT.zip>
 ```
 
 
 8. Start running your own analysis
 ```
-snakemake --cores 12 --config mode=mosaiclassifier plot=True input_bam_location=<INPUT_DATA_FOLDER> output_location=<OUTPUT_DATA_FOLDER> --use-conda --use-singularity --singularity-args "-B /<disk>:/<disk>" --latency-wait 60 
+snakemake --cores 12 --config mode=mosaiclassifier plot=True input_bam_location=<INPUT_DATA_FOLDER> output_location=<OUTPUT_DATA_FOLDER> containerized=True --use-conda --use-singularity --singularity-args "-B /<disk>:/<disk>" --latency-wait 60 
 
 ```
 9. Generate report 
 ```
-snakemake --cores 12 --config mode=mosaiclassifier plot=True input_bam_location=<INPUT_DATA_FOLDER> output_location=<OUTPUT_DATA_FOLDER> --use-conda --use-singularity --singularity-args "-B /<disk>:/<disk>" --latency-wait 60 --report <REPORT.zip>
+snakemake --cores 12 --config mode=mosaiclassifier plot=True input_bam_location=<INPUT_DATA_FOLDER> output_location=<OUTPUT_DATA_FOLDER> containerized=True --use-conda --use-singularity --singularity-args "-B /<disk>:/<disk>" --latency-wait 60 --report <REPORT.zip>
 ```
+
 ## System requirements
 
 This workflow is meant to be run in a Unix-based operating system (tested on Ubuntu 18.04 & CentOS 7). 
@@ -98,9 +99,9 @@ dl_bam_example: False
 ## Enable / Disable download of external files (1000G SNV & Fasta ref genome)
 dl_external_files: False
 ## Input BAM location
-input_bam_location: "TEST_EXAMPLE_DATA/"
+input_bam_location: ".tests/data/"
 ## Output location
-output_location: "TEST_OUTPUT/"
+output_location: ".tests/output/"
 
 # External files
 ## 1000G SNV sites to genotype : https://sandbox.zenodo.org/record/1060653/files/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz
@@ -131,7 +132,7 @@ snakemake -c1 --config mode=download_data dl_external_files=True
 
 #### 3B. Strand-Seq BAM input data
 
-##### (i) Download example data automatically with snakemake [Optional] 
+##### (i) Download large example data automatically with snakemake [Optional] 
 
 ```
 snakemake -c1 --config mode=download_data dl_bam_example=True input_bam_location=TEST_EXAMPLE_DATA/
@@ -196,6 +197,7 @@ snakemake \
     --config \
         plot=True \
         mode=mosaiclassifier \
+        containerized=True \
         --use-conda --use-singularity --singularity-args "-B /:/"
 ```
 
@@ -207,9 +209,10 @@ snakemake \
     --config \
         plot=True \
         mode=mosaiclassifier \
-        output_location=OUTPUT_FOLDER \
-        input_bam_location=INPUT_FOLDER \
-        --use-conda --use-singularity --singularity-args "-B /:/"
+        output_location=<OUTPUT_FOLDER> \
+        input_bam_location=<INPUT_FOLDER> \
+        containerized=True \
+        --use-conda --use-singularity --singularity-args "-B /<mounting_point>:/<mounting_point>"
 ```
 
 ---
@@ -244,9 +247,10 @@ snakemake \
     --config \
         plot=True \
         mode=mosaiclassifier \
-        output_location=OUTPUT_FOLDER \
-        input_bam_location=INPUT_FOLDER \
-        --use-conda --use-singularity --singularity-args "-B /:/"
+        output_location=<OUTPUT_FOLDER> \
+        input_bam_location=<INPUT_FOLDER> \
+        containerized=True \
+        --use-conda --use-singularity --singularity-args "-B /<mounting_point>:/<mounting_point>"
 ```
 
 The `logs` and `errors` directory will be automatically created in the current directory, corresponding respectively to the `output` and `error` parameter of the `sbatch` command. 
@@ -261,10 +265,11 @@ snakemake \
     --cores 20  \
     --config \
         plot=True \
-        mode=mosaiclassifier \ 
-        output_location=OUTPUT_FOLDER \
-        input_bam_location=INPUT_FOLDER  \
-    --report report.zip
+        output_location=<OUTPUT_FOLDER> \
+        input_bam_location=<INPUT_FOLDER> \
+        containerized=True \
+        --use-conda --use-singularity --singularity-args "-B /<mounting_point>:/<mounting_point>"
+    --report <report>.zip
 ```
 
 
