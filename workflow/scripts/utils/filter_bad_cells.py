@@ -12,7 +12,7 @@ if snakemake.config["ashleys_pipeline"] is False:
     df_kept = df.loc[df["pass1"] == 1]
     df_removed = df.loc[df["pass1"] == 0]
     # print(df_removed["Cell"].unique().tolist())
-    cells_to_keep = df_removed["Cell"].unique().tolist()
+    cells_to_keep = df_removed["cell"].unique().tolist()
 elif snakemake.config["ashleys_pipeline"] is True:
     # if os.path.isfile(labels_path) is True:
     print("Ashleys pipeline RUNNED, filtering cells that cannot be used for segmentation based on ashleys-qc predictions:")
