@@ -15,6 +15,7 @@ df_h = pd.DataFrame(h, columns=["TAG", "Contig", "LN"])
 
 # PROCESS CONTIGS
 output_h = pd.DataFrame(df_h["Contig"].str.replace("SN:", ""))
+print(snakemake.params["chroms"], type(snakemake.params["chroms"]))
 output_h = output_h.loc[~output_h["Contig"].isin(snakemake.params["chroms"])]
 
 # print(output_h)

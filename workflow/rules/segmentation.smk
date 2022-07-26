@@ -21,7 +21,7 @@ rule segmentation:
     """
     input:
         counts="{output_folder}/counts/{sample}/{sample}.txt.gz",
-        seg_filter="{output_folder}/log/segmentation/{sample}/segmentation-per-cell.ok",
+        # seg_filter="{output_folder}/log/segmentation/{sample}/segmentation-per-cell.ok",
 
     output:
         "{output_folder}/segmentation/{sample}/{sample}.txt.fixme",
@@ -127,7 +127,7 @@ rule segmentation_selection:
         jointseg="{output_folder}/segmentation/{sample}/{sample}.txt",
         singleseg=aggregate_cells_segmentation,
         info="{output_folder}/counts/{sample}/{sample}.info",
-        seg_filter="{output_folder}/log/segmentation/{sample}/segmentation-per-cell.ok",
+        # seg_filter="{output_folder}/log/segmentation/{sample}/segmentation-per-cell.ok",
     output:
         jointseg="{output_folder}/segmentation/{sample}/Selection_jointseg.txt",
         singleseg="{output_folder}/segmentation/{sample}/Selection_singleseg.txt",
@@ -135,7 +135,7 @@ rule segmentation_selection:
     log:
         "{output_folder}/log/segmentation/segmentation_selection/{sample}.log",
     params:
-        cellnames=lambda wc: ",".join([cell for cell in cell_per_sample[wc.sample] if cell in [e.split(snakemake.config["abs_path"])[-1].split(".")[0] for e in aggregate_cells_segmentation(wc)]]),
+        cellnames=lambda wc: ",".join([cell for cell in cell_per_sample[wc.sample] if cell in [e.split(config["abs_path"])[-1].split(".")[0] for e in aggregate_cells_segmentation(wc)]]),
         sce_min_distance=config["sce_min_distance"],
         additional_sce_cutoff=config["additional_sce_cutoff"],
         min_diff_jointseg=config["min_diff_jointseg"],
