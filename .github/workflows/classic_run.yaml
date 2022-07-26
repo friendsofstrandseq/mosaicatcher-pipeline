@@ -44,10 +44,10 @@ jobs:
         with:
           directory: .
           snakefile: ./Snakefile
-          args: '--cores 2 --use-conda --config chromosomes="[chr21]"'
+          args: '--cores 2 --use-conda --config chromosomes="[chr21]" reference=.tests/external_data/chr21.fna snv_sites_to_genotype=.tests/external_data/chr21.vcf.gz --conda-frontend mamba'
       - name: Testing report
         uses: snakemake/snakemake-github-action@v1.23.0
         with:
           directory: .
           snakefile: ./Snakefile
-          args: '--cores 2 --use-conda --config chromosomes="[chr21]" --report report.zip'
+          args: '--cores 2 --use-conda --config chromosomes="[chr21]" reference=.tests/external_data/chr21.fna snv_sites_to_genotype=.tests/external_data/chr21.vcf.gz --conda-frontend mamba --report report.zip'
