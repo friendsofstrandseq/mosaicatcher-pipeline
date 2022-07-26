@@ -46,9 +46,19 @@ containerized: "docker://weber8thomas/mosaicatcher-pipeline:1.5.1"
 if config["ashleys_pipeline"] is True:
 
     module ashleys_qc:
-        snakefile: "../ashleys-qc-pipeline/workflow/Snakefile"
+        snakefile: 
+            github(
+                "friendsofstrandseq/ashleys-qc-pipeline", 
+                path="workflow/Snakefile",
+                branch="smk_wf_catalog"
+            )
         config: config
     use rule * from ashleys_qc as ashleys_*
+
+    # module ashleys_qc:
+    #     snakefile: "../ashleys-qc-pipeline/workflow/Snakefile"
+    #     config: config
+    # use rule * from ashleys_qc as ashleys_*
 
 
 include: "workflow/rules/utils.smk"
