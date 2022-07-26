@@ -10,7 +10,7 @@ mail: ""
 
 # ashleys-qc pipeline arguments
 mosaicatcher_pipeline: True
-ashleys_pipeline: True
+ashleys_pipeline: False
 hand_selection: False
 use_light_data: False
 
