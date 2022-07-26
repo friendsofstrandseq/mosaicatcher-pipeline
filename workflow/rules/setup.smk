@@ -1,3 +1,16 @@
+# rule install_ashleys:
+#     output:
+#         touch("{output_folder}/ashleys/ashleys_install_success.txt"),
+#     log:
+#         "{output_folder}/log/ashleys/install_ashleys.log",
+#     conda:
+#         "../envs/ashleys.yaml"
+#     shell:
+#         "( git clone https://github.com/friendsofstrandseq/ashleys-qc.git &&"
+#         "cd ashleys-qc &&"
+#         "python setup.py install ) &> {log}"
+
+
 rule install_rlib_strandphaser:
     output:
         check=touch(

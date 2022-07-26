@@ -11,15 +11,15 @@
 
 rule summary_statistics:
     input:
-        segmentation="{output}/segmentation/{sample}/Selection_jointseg.txt",
-        strandstates="{output}/segmentation/{sample}/Selection_initial_strand_state",
-        sv_calls="{output}/mosaiclassifier/sv_calls/{sample}/{method}_filter{filter}.tsv",
-        complex="{output}/mosaiclassifier/sv_calls/{sample}/{method}_filter{filter}.complex.tsv",
-        merged="{output}/mosaiclassifier/postprocessing/merge/{sample}/{method}.tsv",
+        segmentation="{output_folder}/segmentation/{sample}/Selection_jointseg.txt",
+        strandstates="{output_folder}/segmentation/{sample}/Selection_initial_strand_state",
+        sv_calls="{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}_filter{filter}.tsv",
+        complex="{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}_filter{filter}.complex.tsv",
+        merged="{output_folder}/mosaiclassifier/postprocessing/merge/{sample}/{method}.tsv",
     output:
-        tsv="{output}/stats/{sample}/{method}_filter{filter}.tsv",
+        tsv="{output_folder}/stats/{sample}/{method}_filter{filter}.tsv",
     log:
-        "{output}/log/summary_statistics/{sample}/{method}_filter{filter}.log",
+        "{output_folder}/log/summary_statistics/{sample}/{method}_filter{filter}.log",
     conda:
         "../envs/mc_base.yaml"
     script:
@@ -29,16 +29,16 @@ rule summary_statistics:
 rule aggregate_summary_statistics:
     input:
         tsv=expand(
-            "{output}/stats/{sample}/{method}.tsv",
-            output=config["output_location"],
+            "{output_folder}/stats/{sample}/{method}.tsv",
+            output_folder=config["output_location"],
             method=config["methods"],
             sample=samples,
         ),
     output:
         # tsv=report("stats/{sample}/stats-merged.tsv", category="Stats", labels={"Type" : "Complete stats"})
-        tsv="{output}/stats/{sample}/stats-merged.tsv",
+        tsv="{output_folder}/stats/{sample}/stats-merged.tsv",
     log:
-        tsv="{output}/log/stats/{sample}/stats-merged.tsv",
+        tsv="{output_folder}/log/stats/{sample}/stats-merged.tsv",
     conda:
         "../envs/mc_base.yaml"
     shell:

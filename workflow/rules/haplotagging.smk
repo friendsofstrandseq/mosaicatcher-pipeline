@@ -10,16 +10,16 @@
 ################################################################################
 
 # DOCME : --skip-missing-contigs option to remove unused chroms
-# "whatshap haplotag -o {output} -r {params.ref} {input.vcf} {input.bam} > {log} 2>{log}  "
+# "whatshap haplotag -o {output_folder} -r {params.ref} {input.vcf} {input.bam} > {log} 2>{log}  "
 # bai = config["input_bam_location"] + "{sample}/selected/{cell}.bam.bai"
 
 
 rule haplotag_bams:
     input:
-        vcf="{output}/strandphaser/phased-snvs/{sample}.vcf.gz",
-        tbi="{output}/strandphaser/phased-snvs/{sample}.vcf.gz.tbi",
+        vcf="{output_folder}/strandphaser/phased-snvs/{sample}.vcf.gz",
+        tbi="{output_folder}/strandphaser/phased-snvs/{sample}.vcf.gz.tbi",
         bam=lambda wc: expand(
-            "{input_folder}/{sample}/selected/{cell}.bam",
+            "{input_folder}/{sample}/all/{cell}.sort.mdup.bam",
             zip,
             input_folder=config["input_bam_location"],
             sample=samples,
@@ -28,9 +28,9 @@ rule haplotag_bams:
             else "FOOBAR",
         ),
     output:
-        "{output}/haplotag/bam/{sample}/{cell}.bam",
+        "{output_folder}/haplotag/bam/{sample}/{cell}.bam",
     log:
-        "{output}/log/haplotag_bams/{sample}/{cell}.log",
+        "{output_folder}/log/haplotag_bams/{sample}/{cell}.log",
     params:
         ref=config["reference"],
     resources:
@@ -43,11 +43,11 @@ rule haplotag_bams:
 
 rule create_haplotag_segment_bed:
     input:
-        segments="{output}/segmentation/{sample}/Selection_jointseg.txt",
+        segments="{output_folder}/segmentation/{sample}/Selection_jointseg.txt",
     output:
-        bed="{output}/haplotag/bed/{sample}.bed",
+        bed="{output_folder}/haplotag/bed/{sample}.bed",
     log:
-        "{output}/log/haplotag/bed/{sample}.log",
+        "{output_folder}/log/haplotag/bed/{sample}.log",
     params:
         window=config["window"],
     conda:
@@ -61,13 +61,13 @@ rule create_haplotag_segment_bed:
 
 rule create_haplotag_table:
     input:
-        bam="{output}/haplotag/bam/{sample}/{cell}.bam",
-        bai="{output}/haplotag/bam/{sample}/{cell}.bam.bai",
-        bed="{output}/haplotag/bed/{sample}.bed",
+        bam="{output_folder}/haplotag/bam/{sample}/{cell}.bam",
+        bai="{output_folder}/haplotag/bam/{sample}/{cell}.bam.bai",
+        bed="{output_folder}/haplotag/bed/{sample}.bed",
     output:
-        tsv="{output}/haplotag/table/{sample}/by-cell/{cell}.tsv",
+        tsv="{output_folder}/haplotag/table/{sample}/by-cell/{cell}.tsv",
     log:
-        "{output}/log/create_haplotag_table/{sample}.{cell}.log",
+        "{output_folder}/log/create_haplotag_table/{sample}.{cell}.log",
     conda:
         "../envs/rtools.yaml"
     resources:
@@ -85,9 +85,9 @@ rule merge_haplotag_tables:
             for cell in bam_per_sample[wc.sample]
         ],
     output:
-        tsv="{output}/haplotag/table/{sample}/haplotag_counts_merged.tsv",
+        tsv="{output_folder}/haplotag/table/{sample}/haplotag_counts_merged.tsv",
     log:
-        "{output}/log/haplotag/table/{sample}/haplotag_counts_merged.log",
+        "{output_folder}/log/haplotag/table/{sample}/haplotag_counts_merged.log",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     shell:
