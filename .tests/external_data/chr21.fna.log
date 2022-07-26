@@ -1,0 +1,14 @@
+[bwa_index] Pack FASTA... 0.36 sec
+[bwa_index] Construct BWT for the packed sequence...
+[BWTIncCreate] textLength=93419966, availableWord=18573208
+[BWTIncConstructFromPacked] 10 iterations done. 30636734 characters processed.
+[BWTIncConstructFromPacked] 20 iterations done. 56597342 characters processed.
+[BWTIncConstructFromPacked] 30 iterations done. 79667134 characters processed.
+[bwt_gen] Finished constructing BWT in 37 iterations.
+[bwa_index] 30.60 seconds elapse.
+[bwa_index] Update BWT... 0.21 sec
+[bwa_index] Pack forward-only FASTA... 0.24 sec
+[bwa_index] Construct SA from BWT and Occ... 11.84 sec
+[main] Version: 0.7.17-r1188
+[main] CMD: bwa index -p .tests/external_data/chr21.fna -a bwtsw .tests/external_data/chr21.fna
+[main] Real time: 43.671 sec; CPU: 43.260 sec
