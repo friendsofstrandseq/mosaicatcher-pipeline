@@ -12,3 +12,4 @@ dependencies:
   - mosaicatcher
   - bwa
   - sambamba
+  - pandas
