@@ -51,7 +51,7 @@ checkpoint determine_sex_per_cell:
     log:
         "{output_folder}/log/strandphaser/determine_sex_per_cell/{sample}.log",
     conda:
-        "../envs/mc_bioinfo_tools.yaml"
+        "../envs/mc_base.yaml"
     script:
         "../scripts/utils/chrxy_analysis.py"
 
