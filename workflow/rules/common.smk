@@ -1,14 +1,16 @@
 import pandas as pd
-from workflow.scripts.utils import handle_input
+from scripts.utils import handle_input
 
 
 # Create configuration file with samples
 c = handle_input.HandleInput(
     input_path=config["input_bam_location"],
-    output_path="{input_bam_location}/config/config_df.tsv".format(input_bam_location=config["input_bam_location"]),
+    output_path="{input_bam_location}/config/config_df.tsv".format(
+        input_bam_location=config["input_bam_location"]
+    ),
     check_sm_tag=False,
-    bam=False
-    )
+    bam=False,
+)
 
 # Read config file previously produced
 # df_config_files = pd.read_csv("{input_bam_location}/config/config_df.tsv".format(input_bam_location=config["input_bam_location"]), sep="\t")
@@ -49,7 +51,6 @@ assert (
 )
 
 
-
 dict_cells_nb_per_sample = (
     df_config_files.loc[df_config_files["Selected"] == True]
     .groupby("Sample")["Cell"]
@@ -62,19 +63,22 @@ dict_cells_nb_per_sample = (
 allbams_per_sample = df_config_files.groupby("Sample")["Cell"].apply(list).to_dict()
 cell_per_sample = (
     df_config_files.loc[df_config_files["Selected"] == True]
-    .groupby("Sample")["Cell"].unique()
+    .groupby("Sample")["Cell"]
+    .unique()
     .apply(list)
     .to_dict()
 )
 bam_per_sample_local = (
     df_config_files.loc[df_config_files["Selected"] == True]
-    .groupby("Sample")["Cell"].unique()
+    .groupby("Sample")["Cell"]
+    .unique()
     .apply(list)
     .to_dict()
 )
 bam_per_sample = (
     df_config_files.loc[df_config_files["Selected"] == True]
-    .groupby("Sample")["Cell"].unique()
+    .groupby("Sample")["Cell"]
+    .unique()
     .apply(list)
     .to_dict()
 )
@@ -109,8 +113,8 @@ def get_final_output():
     # ])
     # print(cell_per_sample)
     # if config["ashleys_pipeline"] is True:
-        # final_list.extend(([sub_e for e in [expand("{path}/{sample}/fastqc/{cell}_{pair}_fastqc.html", path=config["input_bam_location"], sample=samples, cell=cell_per_sample[sample], pair=[1,2]) for sample in samples] for sub_e in e]))
-        # final_list.extend(expand("{path}/config/{sample}_selected_cells.ok", path=config["input_bam_location"], sample=samples,))
+    # final_list.extend(([sub_e for e in [expand("{path}/{sample}/fastqc/{cell}_{pair}_fastqc.html", path=config["input_bam_location"], sample=samples, cell=cell_per_sample[sample], pair=[1,2]) for sample in samples] for sub_e in e]))
+    # final_list.extend(expand("{path}/config/{sample}_selected_cells.ok", path=config["input_bam_location"], sample=samples,))
 
     # final_list.extend(
     #     expand(
@@ -123,12 +127,12 @@ def get_final_output():
 
     # final_list.extend(
     #     (
-    #             [sub_e for e in 
+    #             [sub_e for e in
     #                 [
     #                     expand(
-    #                         "{output_folder}/log/segmentation/{sample}/segmentation-per-cell.ok", 
+    #                         "{output_folder}/log/segmentation/{sample}/segmentation-per-cell.ok",
     #                         output_folder=config["output_location"], sample=samples
-    #                 ) 
+    #                 )
     #             for sample in samples
     #             ]
     #             for sub_e in e
@@ -137,21 +141,18 @@ def get_final_output():
     # )
     # final_list.extend(
     #     (
-    #             [sub_e for e in 
+    #             [sub_e for e in
     #                 [
     #                     expand(
-    #                         "{output_folder}/segmentation/{sample}/Selection_initial_strand_state", 
+    #                         "{output_folder}/segmentation/{sample}/Selection_initial_strand_state",
     #                         output_folder=config["output_location"], sample=samples
-    #                 ) 
+    #                 )
     #             for sample in samples
     #             ]
     #             for sub_e in e
     #             ]
     #     )
     # )
-                
-
-
 
     final_list.extend(
         expand(
@@ -186,6 +187,7 @@ def get_mem_mb(wildcards, attempt):
 
 def get_all_plots(wildcards):
     import pandas as pd
+
     df = pd.read_csv(
         checkpoints.filter_bad_cells_from_mosaic_count.get(
             sample=wildcards.sample, output_folder=config["output_location"]
@@ -194,30 +196,34 @@ def get_all_plots(wildcards):
         sep="\t",
     )
 
-    dict_cells_nb_per_sample = (
-        df
-        .groupby("sample")["cell"]
-        .nunique()
-        .to_dict()
-    )
+    dict_cells_nb_per_sample = df.groupby("sample")["cell"].nunique().to_dict()
     samples = list(dict_cells_nb_per_sample.keys())
 
     cell_list = df.cell.tolist()
-    tmp_dict = df[["sample", "cell"]].groupby("sample")["cell"].apply(lambda r: sorted(list(r))).to_dict()
-    tmp_dict = {s: {i + 1: c for i, c in enumerate(cell_list)} for s, cell_list in tmp_dict.items()}
+    tmp_dict = (
+        df[["sample", "cell"]]
+        .groupby("sample")["cell"]
+        .apply(lambda r: sorted(list(r)))
+        .to_dict()
+    )
+    tmp_dict = {
+        s: {i + 1: c for i, c in enumerate(cell_list)}
+        for s, cell_list in tmp_dict.items()
+    }
     for s in tmp_dict.keys():
         tmp_dict[s][0] = "SummaryPage"
 
     list_indiv_plots = list()
 
-    list_indiv_plots.extend([
-        "{}/plots/{}/counts/{}.{}.pdf".format(
-            config["output_location"], sample, tmp_dict[sample][i], i
-        )
-        for sample in samples
-        for i in range(dict_cells_nb_per_sample[sample] + 1)
-    ])
-
+    list_indiv_plots.extend(
+        [
+            "{}/plots/{}/counts/{}.{}.pdf".format(
+                config["output_location"], sample, tmp_dict[sample][i], i
+            )
+            for sample in samples
+            for i in range(dict_cells_nb_per_sample[sample] + 1)
+        ]
+    )
 
     # list_indiv_plots.extend(
     #     expand(

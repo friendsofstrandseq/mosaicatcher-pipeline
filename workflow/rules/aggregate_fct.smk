@@ -57,6 +57,7 @@ def aggregate_vcf_gz_tbi(wildcards):
 
 def aggregate_cells_segmentation(wildcards):
     import pandas as pd
+
     df = pd.read_csv(
         checkpoints.filter_bad_cells_from_mosaic_count.get(
             sample=wildcards.sample, output_folder=config["output_location"]
@@ -66,20 +67,24 @@ def aggregate_cells_segmentation(wildcards):
     )
     cell_list = df.cell.tolist()
 
-
     return [
-        sub_e for e in [
-                        expand(
-                            "{output_folder}/segmentation/{sample}/segmentation-per-cell/{cell}.txt", 
-                            output_folder=config["output_location"], sample=samples, cell=cell_list
-                    ) 
-                for sample in samples
-            ]
-            for sub_e in e
+        sub_e
+        for e in [
+            expand(
+                "{output_folder}/segmentation/{sample}/segmentation-per-cell/{cell}.txt",
+                output_folder=config["output_location"],
+                sample=samples,
+                cell=cell_list,
+            )
+            for sample in samples
         ]
+        for sub_e in e
+    ]
+
 
 def aggregate_cells_count_plot(wildcards):
     import pandas as pd
+
     df = pd.read_csv(
         checkpoints.filter_bad_cells_from_mosaic_count.get(
             sample=wildcards.sample, output_folder=config["output_location"]
@@ -89,18 +94,30 @@ def aggregate_cells_count_plot(wildcards):
     )
 
     cell_list = df.cell.tolist()
-    tmp_dict = df[["sample", "cell"]].groupby("sample")["cell"].apply(lambda r: sorted(list(r))).to_dict()
-    tmp_dict = {s: {i + 1: c for i, c in enumerate(cell_list)} for s, cell_list in tmp_dict.items()}
+    tmp_dict = (
+        df[["sample", "cell"]]
+        .groupby("sample")["cell"]
+        .apply(lambda r: sorted(list(r)))
+        .to_dict()
+    )
+    tmp_dict = {
+        s: {i + 1: c for i, c in enumerate(cell_list)}
+        for s, cell_list in tmp_dict.items()
+    }
     for s in tmp_dict.keys():
         tmp_dict[s][0] = "SummaryPage"
 
     return [
-        sub_e for e in [
-                        expand(
-                            "{output_folder}/plots/{sample}/counts/{cell}.{i}.pdf", 
-                            output_folder=config["output_location"], sample=samples, cell=cell_list, i=tmp_dict[i]
-                    ) 
-                for sample in samples
-            ]
-            for sub_e in e
+        sub_e
+        for e in [
+            expand(
+                "{output_folder}/plots/{sample}/counts/{cell}.{i}.pdf",
+                output_folder=config["output_location"],
+                sample=samples,
+                cell=cell_list,
+                i=tmp_dict[i],
+            )
+            for sample in samples
         ]
+        for sub_e in e
+    ]

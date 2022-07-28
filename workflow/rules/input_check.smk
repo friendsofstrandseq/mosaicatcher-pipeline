@@ -1,7 +1,6 @@
 # Pipeline input rules
 
 
-
 rule generate_exclude_file_for_mosaic_count:
     """
     rule fct: 
