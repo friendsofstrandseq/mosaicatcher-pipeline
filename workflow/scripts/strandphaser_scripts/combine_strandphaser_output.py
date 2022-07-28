@@ -1,7 +1,9 @@
 import pandas as pd
 
 l_df = list()
-for j, file in enumerate(snakemake.input[0]):
+print(snakemake.input.files)
+for j, file in enumerate(snakemake.input.files):
+    print(j, file)
     tmp_df = pd.read_csv(file, sep="\t")
     print(tmp_df)
     l_df.append(tmp_df)
