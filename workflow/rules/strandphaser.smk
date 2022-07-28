@@ -101,17 +101,12 @@ rule run_strandphaser_per_chrom:
     conda:
         "../envs/rtools.yaml"
     resources:
-<<<<<<< HEAD
         mem_mb=get_mem_mb,
     params:
         input_bam=lambda wc: "{}/{}/all".format(config["input_bam_location"], wc.sample),
         output=lambda wc: "{}/strandphaser/{}/StrandPhaseR_analysis.{}".format(
             config["output_location"], wc.sample, wc.chrom
         ),
-=======
-        mem_mb = get_mem_mb,
-        time = "02:00:00",
->>>>>>> master
     shell:
         """
         Rscript workflow/scripts/strandphaser_scripts/StrandPhaseR_pipeline.R \
@@ -157,15 +152,9 @@ rule combine_strandphaser_output:
 
 rule convert_strandphaser_output:
     input:
-<<<<<<< HEAD
         phased_states="{output_folder}/strandphaser/{sample}/strandphaser_phased_haps_merged.txt",
         initial_states="{output_folder}/segmentation/{sample}/Selection_initial_strand_state",
         info="{output_folder}/counts/{sample}/{sample}.info",
-=======
-        phased_states  = ancient(config["output_location"] + "strandphaser/{sample}/strandphaser_phased_haps_merged.txt"),
-        initial_states = config["output_location"] + "segmentation/{sample}/Selection_initial_strand_state",
-        info           = config["output_location"] + "counts/{sample}/{sample}.info"
->>>>>>> master
     output:
         "{output_folder}/strandphaser/{sample}/StrandPhaseR_final_output.txt",
     log:
