@@ -1,0 +1,111 @@
+from snakemake.utils import min_version
+
+min_version("7.4.1")
+
+
+onstart:
+    arg = "ENABLED" if config["ashleys_pipeline"] is True else "DISABLED"
+    print("###################################")
+    print("# MOSAICATCHER SNAKEMAKE PIPELINE #")
+    print("###################################")
+    print("Ashleys preprocessing pipeline {}!".format(arg))
+    print("Input folder selected : {}".format(config["input_bam_location"]))
+    print("Output folder selected : {}".format(config["output_location"]))
+
+
+configfile: "config/config.yaml"
+
+
+report: "report/workflow.rst"
+
+
+containerized: "docker://weber8thomas/mosaicatcher-pipeline:1.5.1"
+
+
+
+if config["ashleys_pipeline"] is True:
+
+    module ashleys_qc:
+        snakefile:
+            github(
+                "friendsofstrandseq/ashleys-qc-pipeline",
+                path="workflow/Snakefile",
+                branch="smk_wf_catalog",
+            )
+        config:
+            config
+
+    use rule * from ashleys_qc as ashleys_*
+
+
+
+include: "rules/utils.smk"
+include: "rules/common.smk"
+include: "rules/aggregate_fct.smk"
+include: "rules/setup.smk"
+include: "rules/input_check.smk"
+include: "rules/count.smk"
+include: "rules/segmentation.smk"
+include: "rules/plots.smk"
+include: "rules/regenotyping.smk"
+include: "rules/strandphaser.smk"
+include: "rules/haplotagging.smk"
+include: "rules/mosaiclassifier.smk"
+include: "rules/postprocessing.smk"
+include: "rules/stats.smk"
+include: "rules/examples.smk"
+
+
+if config["ashleys_pipeline"] is True:
+
+    rule all:
+        input:
+            rules.ashleys_all.input,
+            get_final_output(),
+        default_target: True
+
+
+else:
+    if config["mode"] != "download_data":
+
+        rule all:
+            input:
+                get_final_output(),
+
+
+    else:
+        if config["dl_bam_example"] is True and config["dl_external_files"] is True:
+
+            rule all:
+                input:
+                    rules.dl_example_data.output,
+                    rules.dl_external_data.output,
+                    rules.dl_external_data_index.output,
+
+
+        if config["dl_bam_example"] is True and config["dl_external_files"] is False:
+
+            rule all:
+                input:
+                    rules.dl_example_data.output,
+
+
+        if config["dl_bam_example"] is False and config["dl_external_files"] is True:
+
+            rule all:
+                input:
+                    rules.dl_external_data.output,
+                    rules.dl_external_data_index.output,
+
+
+if config["mail"]:
+
+    onsuccess:
+        print("Workflow finished, no error")
+        shell('mail -s "Workflow finished, no error"' + config["mail"] + "< {log}")
+
+    onerror:
+        print("An error occurred")
+        shell(
+            'mail -s "Workflow failed, an error occurred"' + config["mail"] + "< {log}"
+        )

@@ -77,6 +77,7 @@ rule tmp_merge_divide:
     shell:
         "touch {output}"
 
+
 rule final_results:
     input:
         get_all_plots,

@@ -24,6 +24,7 @@ rule index_input_bam:
     shell:
         "samtools index {input} > {log} 2>&1"
 
+
 rule index_haplotag_bam:
     """
     rule fct:
@@ -42,6 +43,7 @@ rule index_haplotag_bam:
     #     mem_mb=get_mem_mb,
     shell:
         "samtools index {input} > {log} 2>&1"
+
 
 rule index_merged_bam:
     """
@@ -98,6 +100,7 @@ rule index_indiv_freebayes_vcf:
     shell:
         "tabix -p vcf {input.vcf} > {log} 2>&1"
 
+
 rule compress_indiv_strandphaser_vcf:
     """
     rule fct:
@@ -145,7 +148,7 @@ rule index_merged_strandphaser_vcf:
     output:
         vcf="{output_folder}/strandphaser/phased-snvs/{sample}.vcf.gz.tbi",
     log:
-       "{output_folder}/log/index_merged_strandphaser_vcf/phased-snvs/{sample}.log",
+        "{output_folder}/log/index_merged_strandphaser_vcf/phased-snvs/{sample}.log",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     shell:
