@@ -220,10 +220,12 @@ def get_all_plots(wildcards):
 
 
     list_indiv_plots.extend(
+        expand(
             "{output_folder}/plots/{sample}/counts/CountComplete.pdf",
             output_folder=config["output_location"],
             sample=samples
             )
+    )
 
     list_indiv_plots.extend(
         expand(
