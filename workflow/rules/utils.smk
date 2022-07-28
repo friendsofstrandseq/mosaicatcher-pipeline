@@ -5,6 +5,7 @@
 ################################################################################
 
 
+<<<<<<< HEAD
 rule index_input_bam:
     """
     rule fct:
@@ -26,13 +27,22 @@ rule index_input_bam:
 
 
 rule index_haplotag_bam:
+=======
+
+
+rule index_bam:
+>>>>>>> master
     """
     rule fct:
     input:
     output:
     """
     input:
+<<<<<<< HEAD
         "{output_folder}/haplotag/bam/{sample}/{cell}.bam",
+=======
+        ancient("{file}.bam")
+>>>>>>> master
     output:
         "{output_folder}/haplotag/bam/{sample}/{cell}.bam.bai",
     log:
@@ -90,7 +100,11 @@ rule index_indiv_freebayes_vcf:
     output:
     """
     input:
+<<<<<<< HEAD
         vcf="{output_folder}/snv_genotyping/{sample}/{chrom}.vcf.gz",
+=======
+        vcf=ancient("{file}.vcf"),
+>>>>>>> master
     output:
         vcf="{output_folder}/snv_genotyping/{sample}/{chrom}.vcf.gz.tbi",
     log:
@@ -126,7 +140,11 @@ rule index_indiv_strandphaser_vcf:
     output:
     """
     input:
+<<<<<<< HEAD
         vcf="{output_folder}/strandphaser/{sample}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz",
+=======
+        vcf=ancient("{file}.vcf.gz"),
+>>>>>>> master
     output:
         vcf="{output_folder}/strandphaser/{sample}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz.tbi",
     log:

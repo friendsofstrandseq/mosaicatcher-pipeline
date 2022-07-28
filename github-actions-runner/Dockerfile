@@ -1,9 +1,16 @@
+<<<<<<< HEAD
 # FROM docker.io/weber8thomas/mosaicatcher-pipeline:1.3
 
 FROM condaforge/mambaforge:latest
 LABEL io.github.snakemake.containerized="true"
 LABEL io.github.snakemake.conda_env_hash="0af62581a7cda5440790b15832ff9f095e6a97fc65567097862b68ddf8d6c608"
 
+=======
+FROM condaforge/mambaforge:latest
+LABEL io.github.snakemake.containerized="true"
+LABEL io.github.snakemake.conda_env_hash="daf01a5306b6104115b7568d75e257ab367dfe9d967c2eace08ae80ba73c601c"
+
+>>>>>>> master
 # Step 1: Retrieve conda environments
 
 # Conda environment:
@@ -42,7 +49,11 @@ COPY workflow/envs/mc_bioinfo_tools.yaml /conda-envs/491a340c3c20c63397962b44091
 
 # Conda environment:
 #   source: workflow/envs/rtools.yaml
+<<<<<<< HEAD
 #   prefix: /conda-envs/fb2e0991658d68d49ab06d2bd2375acf
+=======
+#   prefix: /conda-envs/c1d3853dcbbee9cb7d9268e5a19af03d
+>>>>>>> master
 #   name: rtools
 #   channels:
 #     - conda-forge
@@ -80,18 +91,30 @@ COPY workflow/envs/mc_bioinfo_tools.yaml /conda-envs/491a340c3c20c63397962b44091
 #     - r-scales=1.1.0
 #     - r-rcolorbrewer=1.1_2
 #     - r-stringr=1.4.0
+<<<<<<< HEAD
 #     - r-cairo
 #     - fonts-anaconda
 RUN mkdir -p /conda-envs/fb2e0991658d68d49ab06d2bd2375acf
 COPY workflow/envs/rtools.yaml /conda-envs/fb2e0991658d68d49ab06d2bd2375acf/environment.yaml
+=======
+#     - fonts-anaconda
+RUN mkdir -p /conda-envs/c1d3853dcbbee9cb7d9268e5a19af03d
+COPY workflow/envs/rtools.yaml /conda-envs/c1d3853dcbbee9cb7d9268e5a19af03d/environment.yaml
+>>>>>>> master
 
 # Step 2: Generate conda environments
 
 RUN mamba env create --prefix /conda-envs/cd15c940fe1181e1751e02b25c7fcfb7 --file /conda-envs/cd15c940fe1181e1751e02b25c7fcfb7/environment.yaml && \
     mamba env create --prefix /conda-envs/491a340c3c20c63397962b44091da5b0 --file /conda-envs/491a340c3c20c63397962b44091da5b0/environment.yaml && \
+<<<<<<< HEAD
     mamba env create --prefix /conda-envs/fb2e0991658d68d49ab06d2bd2375acf --file /conda-envs/fb2e0991658d68d49ab06d2bd2375acf/environment.yaml
 
 #
+=======
+    mamba env create --prefix /conda-envs/c1d3853dcbbee9cb7d9268e5a19af03d --file /conda-envs/c1d3853dcbbee9cb7d9268e5a19af03d/environment.yaml && \
+    mamba clean --all -y
+
+>>>>>>> master
 # ----------------
 # CUSTOM PART 
 # ----------------
@@ -100,6 +123,7 @@ RUN mamba env create --prefix /conda-envs/cd15c940fe1181e1751e02b25c7fcfb7 --fil
 # TAG 1.3
 # ----------------
 
+<<<<<<< HEAD
 
 RUN mamba install -c conda-forge -c bioconda samtools && \
     chmod -R 0777 /conda-envs/fb2e0991658d68d49ab06d2bd2375acf/lib/R/library && \
@@ -108,3 +132,12 @@ RUN mamba install -c conda-forge -c bioconda samtools && \
     git clone -b smk_workflow_catalog https://github.com/friendsofstrandseq/mosaicatcher-pipeline.git /mosaicatcher-pipeline && \
     /conda-envs/fb2e0991658d68d49ab06d2bd2375acf/bin/Rscript /mosaicatcher-pipeline/workflow/scripts/strandphaser_scripts/install_strandphaser.R 69c9fb4 https://github.com/daewoooo/StrandPhaseR  && \
     mamba clean --all -y
+=======
+RUN mamba install -c conda-forge -c bioconda samtools && \
+    chmod -R 0777 /conda-envs/c1d3853dcbbee9cb7d9268e5a19af03d/lib/R/library && \
+    pwd && \
+    apt-get install git && \
+    git clone -b smk_workflow_catalog https://github.com/friendsofstrandseq/mosaicatcher-pipeline.git /mosaicatcher-pipeline && \
+    /conda-envs/c1d3853dcbbee9cb7d9268e5a19af03d/bin/Rscript /mosaicatcher-pipeline/workflow/scripts/strandphaser_scripts/install_strandphaser.R 69c9fb4 https://github.com/daewoooo/StrandPhaseR
+
+>>>>>>> master

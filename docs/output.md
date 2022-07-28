@@ -79,4 +79,8 @@ Report category: `Stats`
 ---
 File path: `<OUTPUT_FOLDER>/mosaiclassifier/sv_calls/<SAMPLE>/<CELL>.pdf`
 
+<<<<<<< HEAD
 ---
+=======
+---
+>>>>>>> master

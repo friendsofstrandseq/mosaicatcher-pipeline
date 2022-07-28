@@ -4,6 +4,6 @@ def get_mem_mb(wildcards, attempt):
     attemps = reiterations + 1
     Max number attemps = 8
     """
-    mem_avail = [1, 2, 4, 8, 16, 64, 128, 256 ]
+    mem_avail = [2, 4, 8, 16, 64, 128, 256]
     # print(mem_avail[attempt-1] * 1000, attempt, mem_avail)
-    return mem_avail[attempt-1] * 1000
+    return mem_avail[attempt - 1] * 1000
