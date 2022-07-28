@@ -44,10 +44,10 @@ jobs:
         with:
           directory: .
           snakefile: ./Snakefile
-          args: "--cores 2 --use-conda --configfile .tests/config/simple_config.yaml --conda-frontend mamba"
+          args: "--cores 1 --use-conda --configfile .tests/config/simple_config.yaml --conda-frontend mamba"
       - name: Testing report
         uses: snakemake/snakemake-github-action@v1.23.0
         with:
           directory: .
           snakefile: ./Snakefile
-          args: "--cores 2 --use-conda --configfile .tests/config/simple_config.yaml --conda-frontend mamba --report report.zip"
+          args: "--cores 1 --use-conda --configfile .tests/config/simple_config.yaml --conda-frontend mamba --report report.zip"
