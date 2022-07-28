@@ -16,7 +16,6 @@
 
 rule haplotag_bams:
     input:
-<<<<<<< HEAD
         vcf="{output_folder}/strandphaser/phased-snvs/{sample}.vcf.gz",
         tbi="{output_folder}/strandphaser/phased-snvs/{sample}.vcf.gz.tbi",
         bam=lambda wc: expand(
@@ -28,12 +27,6 @@ rule haplotag_bams:
             if wc.sample in bam_per_sample_local
             else "FOOBAR",
         ),
-=======
-        vcf = ancient(config["output_location"] + "strandphaser/phased-snvs/{sample}.vcf.gz"),
-        tbi = ancient(config["output_location"] + "strandphaser/phased-snvs/{sample}.vcf.gz.tbi"),
-        bam = config["input_bam_location"] + "{sample}/selected/{cell}.bam",
-        # bai = config["input_bam_location"] + "{sample}/selected/{cell}.bam.bai"
->>>>>>> master
     output:
         "{output_folder}/haplotag/bam/{sample}/{cell}.bam",
     log:

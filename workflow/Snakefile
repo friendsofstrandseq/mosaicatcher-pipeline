@@ -22,7 +22,6 @@ report: "report/workflow.rst"
 containerized: "docker://weber8thomas/mosaicatcher-pipeline:1.5.1"
 
 
-
 if config["ashleys_pipeline"] is True:
 
     module ashleys_qc:
@@ -38,21 +37,48 @@ if config["ashleys_pipeline"] is True:
     use rule * from ashleys_qc as ashleys_*
 
 
-
 include: "rules/utils.smk"
+
+
 include: "rules/common.smk"
+
+
 include: "rules/aggregate_fct.smk"
+
+
 include: "rules/setup.smk"
+
+
 include: "rules/input_check.smk"
+
+
 include: "rules/count.smk"
+
+
 include: "rules/segmentation.smk"
+
+
 include: "rules/plots.smk"
+
+
 include: "rules/regenotyping.smk"
+
+
 include: "rules/strandphaser.smk"
+
+
 include: "rules/haplotagging.smk"
+
+
 include: "rules/mosaiclassifier.smk"
+
+
 include: "rules/postprocessing.smk"
+
+
 include: "rules/stats.smk"
+
+
 include: "rules/examples.smk"
 
 

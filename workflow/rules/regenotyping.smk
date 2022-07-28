@@ -49,14 +49,8 @@ rule regenotype_SNVs:
     params:
         fa=config["reference"],
     resources:
-<<<<<<< HEAD
         mem_mb=get_mem_mb,
         time="10:00:00",
-=======
-        # mem_mb = get_mem_mb,
-        mem_mb = "8G",
-        time = "10:00:00",
->>>>>>> master
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     shell:
@@ -74,7 +68,3 @@ rule regenotype_SNVs:
             --include "QUAL>=10" \
         > {output.vcf}) 2> {log}
         """
-<<<<<<< HEAD
-=======
-
->>>>>>> master
