@@ -45,23 +45,39 @@ snakemake --cores 6 --config input_bam_location=.tests/data output_location=.tes
 
 6. Generate report on example data
 ```
+<<<<<<< HEAD
 snakemake --cores 6 --config input_bam_location=.tests/data output_location=.tests/output chromosomes="[chr21]" reference=.tests/external_data/chr21.fna snv_sites_to_genotype=.tests/external_data/1000G_chr21.vcf.gz --use-conda --use-singularity --singularity-args "-B /<disk>:/<disk>" --latency-wait 60 --report <REPORT.zip>
+=======
+snakemake --cores 12 --config mode=mosaiclassifier plot=True input_bam_location=.tests/data/ output_location=.tests/output/ chromosomes="[chr21]" snv_sites_to_genotype=.tests/external_data/1000G_chr21.vcf.gz reference=.tests/external_data/chr21.fna containerized=True --use-conda --use-singularity --singularity-args "-B /<disk>:/<disk>" --latency-wait 60 
+>>>>>>> master
 ```
 
 7. Download reference data for running your own analysis
 
 ```
+<<<<<<< HEAD
 snakemake --cores 1 --config mode=download_data dl_external_files=True
+=======
+snakemake --cores 12 --config mode=mosaiclassifier plot=True input_bam_location=.tests/data/ output_location=.tests/output/ chromosomes="[chr21]" snv_sites_to_genotype=.tests/external_data/1000G_chr21.vcf.gz reference=.tests/external_data/chr21.fna containerized=True --use-conda --use-singularity --singularity-args "-B /<disk>:/<disk>" --latency-wait 60 --report <REPORT.zip>
+>>>>>>> master
 ```
 
 8. Start running your own analysis
 ```
+<<<<<<< HEAD
 snakemake --cores 12 --config input_bam_location=<INPUT_DATA_FOLDER> output_location=<OUTPUT_DATA_FOLDER> --use-conda --use-singularity --singularity-args "-B /<disk>:/<disk>" --latency-wait 60 
+=======
+snakemake --cores 12 --config mode=mosaiclassifier plot=True input_bam_location=<INPUT_DATA_FOLDER> output_location=<OUTPUT_DATA_FOLDER> containerized=True --use-conda --use-singularity --singularity-args "-B /<disk>:/<disk>" --latency-wait 60 
+>>>>>>> master
 
 ```
 9. Generate report 
 ```
+<<<<<<< HEAD
 snakemake --cores 12 --config input_bam_location=<INPUT_DATA_FOLDER> output_location=<OUTPUT_DATA_FOLDER> --use-conda --use-singularity --singularity-args "-B /<disk>:/<disk>" --latency-wait 60 --report <REPORT.zip>
+=======
+snakemake --cores 12 --config mode=mosaiclassifier plot=True input_bam_location=<INPUT_DATA_FOLDER> output_location=<OUTPUT_DATA_FOLDER> containerized=True --use-conda --use-singularity --singularity-args "-B /<disk>:/<disk>" --latency-wait 60 --report <REPORT.zip>
+>>>>>>> master
 ```
 
 
@@ -71,7 +87,11 @@ snakemake --cores 12 --config input_bam_location=<INPUT_DATA_FOLDER> output_loca
 
 * [Usage](docs/usage.md)
 * [Parameters & input](docs/parameters.md)
+<<<<<<< HEAD
 * [Output](docs/output.md) (#TODO)
+=======
+* [Output](docs/output.md)
+>>>>>>> master
 
 
 

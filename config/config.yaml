@@ -26,9 +26,15 @@ dl_bam_example: False
 dl_external_files: False
 
 ## Input BAM location
+<<<<<<< HEAD
 input_bam_location: ".tests/data_CHR21"
 ## Output location
 output_location: ".tests/output_CHR21"
+=======
+input_bam_location: ".tests/data/"
+## Output location
+output_location: ".tests/output/"
+>>>>>>> master
 
 # External files
 ## 1000G SNV sites to genotype : https://sandbox.zenodo.org/record/1060653/files/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz
@@ -87,9 +93,6 @@ printshellcmds: True
 R_reference: "BSgenome.Hsapiens.UCSC.hg38"
 # SegDups file
 segdups: "workflow/data/segdups/segDups_hg38_UCSCtrack.bed.gz"
-
-# Exclude cells
-exclude_list: []
 
 # Strandphaser
 git_commit_strandphaser: "69c9fb4"

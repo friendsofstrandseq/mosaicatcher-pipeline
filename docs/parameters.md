@@ -134,3 +134,7 @@ On seneca for example (EMBL), use `"/g:/g"` if you are working on `/g/korbel[2]`
 
 Obviously, all other [snakemake CLI options](https://snakemake.readthedocs.io/en/stable/executing/cli.html) can also be used. 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
