@@ -2,6 +2,7 @@
 # Copyright (C) 2017 Sascha Meiers
 # Distributed under the MIT software license, see the accompanying
 # file LICENSE.md or http://www.opensource.org/licenses/mit-license.php.
+# options(error = function() traceback(3))
 
 suppressMessages(library(dplyr))
 suppressMessages(library(data.table))
@@ -155,9 +156,9 @@ if (grepl("\\.gz$", f_counts)) {
 }
 
 # FIXME : tmp
-print(counts)
+# print(counts)
 counts <- counts[counts$chrom %in% chroms, ]
-print(counts)
+# print(counts)
 
 assert_that(
   "chrom" %in% colnames(counts),
@@ -211,9 +212,8 @@ if (!is.null(f_segments)) {
 
 
   # FIXME : tmp
-  print(seg)
   seg <- seg[seg$chrom %in% chroms, ]
-  print(seg)
+  # print(seg)
 
   assert_that(
     "chrom" %in% colnames(seg),
@@ -223,13 +223,42 @@ if (!is.null(f_segments)) {
     seg[, assert_that(length(unique(k)) == 1), by = .(chrom)] %>% invisible()
   }
 
+  # print(seg)
+
+  # print(bins)
+  # print(bins[, .N, by = chrom])
+  # # print(bins %>% count(chrom))
+  # print(bins[, .N, by = chrom][, .(chrom, N = c(0, cumsum(N)))])
+  # print(bins[, .N, by = chrom][, .(chrom, N = c(0, cumsum(N))[1:(.N - 1)])])
+
+
+
   seg <- merge(seg, bins[, .N, by = chrom][, .(chrom, N = c(0, cumsum(N))[1:(.N - 1)])], by = "chrom")
+
+  # print(c(1, bps[1:(.N - 1)] + 1))
+  # print(bps)
+  # print(seg)
+
+  # stop()
+
+
   seg[, `:=`(from = c(1, bps[1:(.N - 1)] + 1), to = bps), by = chrom]
+
+  # print(seg)
+
+
   seg[, `:=`(
     start = bins[from + N]$start,
     end = bins[to + N]$end
   )]
+
+  # print("TEST")
+
+
   seg[, SV_class := rep(c("bg1", "bg2"), .N)[1:.N], by = chrom]
+
+
+
   seg <- seg[chrom == CHROM]
 }
 
