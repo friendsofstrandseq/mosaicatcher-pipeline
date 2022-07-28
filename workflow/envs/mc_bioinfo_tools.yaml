@@ -3,9 +3,9 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - samtools
   - bcftools
-  - tabix
   - freebayes
-  - whatshap
   - mosaicatcher
+  - samtools
+  - tabix
+  - whatshap
