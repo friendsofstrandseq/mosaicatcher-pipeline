@@ -13,7 +13,6 @@
 
 rule install_rlib_strandphaser:
     output:
-<<<<<<< HEAD
         check=touch(
             expand(
                 "{}/strandphaser/R_setup/strandphaser_version-{}.ok".format(
@@ -21,9 +20,6 @@ rule install_rlib_strandphaser:
                 )
             )
         ),
-=======
-        check = touch(config['output_location'] + 'strandphaser/R_setup/strandphaser_version-{}.ok'.format(config['git_commit_strandphaser']))
->>>>>>> master
     log:
         expand(
             "{}/log/strandphaser/R_setup/strandphaser_version-{}.ok".format(
@@ -38,16 +34,4 @@ rule install_rlib_strandphaser:
         version=config["git_commit_strandphaser"],
         repo=config["git_repo_strandphaser"],
     shell:
-<<<<<<< HEAD
         "LC_CTYPE=C TAR=$(which tar) Rscript workflow/scripts/strandphaser_scripts/install_strandphaser.R {params.version} {params.repo}  > {output} 2>&1"
-=======
-        'LC_CTYPE=C TAR=$(which tar) Rscript workflow/scripts/strandphaser_scripts/install_strandphaser.R {params.version} {params.repo}  > {log} 2>&1'
-
-rule cp_yaml_config:
-    input:
-        "config/config.yaml"
-    output:
-        config["output_location"] + "config/config.yaml"
-    shell:
-        "cp {input} {output}"
->>>>>>> master
