@@ -7,8 +7,5 @@ dependencies:
   - bcftools
   - tabix
   - freebayes
-  - bcftools
   - whatshap
   - mosaicatcher
-  - bwa
-  - sambamba
