@@ -44,7 +44,7 @@ jobs:
         with:
           directory: .
           snakefile: ./Snakefile
-          args: "--cores 1 --use-conda --configfile .tests/config/simple_config.yaml --conda-frontend mamba"
+          args: "--cores 1 --use-conda --configfile .tests/config/simple_config.yaml --conda-frontend mamba -p --verbose --debug"
       - name: Testing report
         uses: snakemake/snakemake-github-action@v1.23.0
         with:
