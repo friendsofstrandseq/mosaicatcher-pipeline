@@ -141,7 +141,7 @@ rule merge_strandphaser_vcfs:
 
 rule combine_strandphaser_output:
     input:
-        aggregate_phased_haps,
+        files = aggregate_phased_haps,
     output:
         "{output_folder}/strandphaser/{sample}/strandphaser_phased_haps_merged.txt",
     log:
