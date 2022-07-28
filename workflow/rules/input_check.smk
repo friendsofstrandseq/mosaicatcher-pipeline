@@ -1,5 +1,6 @@
 # Pipeline input rules
 
+
 rule generate_exclude_file_for_mosaic_count:
     """
     rule fct: 
@@ -7,15 +8,22 @@ rule generate_exclude_file_for_mosaic_count:
     output:
     """
     input:
-        ancient(config["output_location"] + "config/config_df.tsv"),
-        bam = config["input_bam_location"]
+        # ancient("config/samples.tsv"),
+        bam=lambda wc: expand(
+            "{input_folder}/{sample}/all/{cell}.sort.mdup.bam",
+            input_folder=config["input_bam_location"],
+            sample=samples,
+            cell=bam_per_sample_local[str(wc.sample)]
+            if wc.sample in bam_per_sample_local
+            else "FOOBAR",
+        ),
     output:
-        config["output_location"] + "config/exclude_file"
+        "{output_folder}/config_output/{sample}/exclude_file",
+    log:
+        "{output_folder}/log/config_output/{sample}/exclude_file.log",
     params:
-        chroms = config["chromosomes"]
+        chroms=config["chromosomes"],
     conda:
         "../envs/mc_base.yaml"
     script:
         "../scripts/utils/generate_exclude_file.py"
-
-

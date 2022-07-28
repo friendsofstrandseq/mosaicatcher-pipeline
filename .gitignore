@@ -65,16 +65,47 @@ workflow/test.txt
 !config/*
 
 # GitHub actions
+## UNIT TEST
 .tests/unit/
+
+## OUTPUT TEST
 .tests/output/
+.tests/output_CHR21/
+.tests/output_CHR21_LITE_FNA/
 .tests/output2/
+
+## DATA
+.tests/data_CHR21_LITE_FNA/
 .tests/data/RPE-BM510/all/*.bai
+.tests/data/RPE-BM510/all/*.bam
+.tests/data/RPE-BM510/all/*.log
+.tests/data/RPE-BM510/all/PE*.bam
+
 .tests/data/RPE-BM510/selected/*.bai
 .tests/data/RPE-BM510/selected/*.log
+.tests/data/RPE-BM510/selected/PE*.bam
+
+.tests/data/RPE-BM510/all_bak/
+.tests/data/RPE-BM510/fastq/
+.tests/data/RPE-BM510/predictions/
+.tests/data/RPE-BM510/cell_selection/
+.tests/data/RPE-BM510/all_BM/
+.tests/data/RPE-BM510/all_PE/
+.tests/data/RPE-BM510/selected_BM/
+.tests/data/RPE-BM510/selected_PE/
+
+## DATA CHR21
+.tests/data_CHR21/RPE-BM510/all/*.bai
+.tests/data_CHR21/RPE-BM510/all/*.bam
+.tests/data_CHR21/RPE-BM510/all/*.log
+
+.tests/data_CHR21/RPE-BM510/predictions/
+.tests/data_CHR21/RPE-BM510/cell_selection/
+
+## DATA EXCEPTIONS
+!.tests/data_CHR21/RPE-BM510/fastq/*.fastq.gz
+!.tests/data_CHR21/RPE-BM510/all/BM*.sort.mdup.bam
 !.tests/external_data/1000G_chr21.vcf.gz
-!.tests/data/RPE-BM510/all/*.bam
-!.tests/data/RPE-BM510/selected/*.bam
-# !.test/data/RPE-BM510/selected/*.bai
 
 # Dev
 discover_big_files_git.sh

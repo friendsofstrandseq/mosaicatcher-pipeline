@@ -4,7 +4,6 @@
 # file LICENSE.md or http://www.opensource.org/licenses/mit-license.php.
 
 
-
 suppressMessages(library(data.table))
 suppressMessages(library(assertthat))
 suppressMessages(library(ggplot2))

@@ -35,4 +35,6 @@ dependencies:
   - r-scales=1.1.0
   - r-rcolorbrewer=1.1_2
   - r-stringr=1.4.0
+  - r-cairo
   - fonts-anaconda
+##
