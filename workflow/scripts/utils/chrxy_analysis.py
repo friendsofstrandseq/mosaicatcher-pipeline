@@ -1,5 +1,5 @@
 import pandas as pd
-import pysam 
+import pysam
 import os, sys
 import subprocess
 from io import StringIO
@@ -7,66 +7,77 @@ from tqdm import tqdm
 import parmap
 import multiprocessing as mp
 
-# Snakemake input 
-directory_input = snakemake.input[0]
-directory_input += "/" if directory_input.endswith("/") is False else directory_input
+# Snakemake input
+# print(snakemake.input[0])
+# directory_input = snakemake.input[0]
+# directory_input += "/" if directory_input.endswith("/") is False else directory_input
 
 # List bam files
-l_files_selected = [f for f in os.listdir(directory_input) if f.endswith('.bam')]
+# l_files_selected = [f for f in os.listdir(directory_input) if f.endswith(".sort.mdup.bam")]
+
+
+l_files_selected = snakemake.input.bam
 
 # Retrieve sample name
-sample = directory_input.split("/")[-3]
+sample = l_files_selected[0].split("/")[-3]
 
-# Initiate MP
-m = mp.Manager()
-l_df = m.list()
+if snakemake.config["use_light_data"] is False:
 
+    # Initiate MP
+    m = mp.Manager()
+    l_df = m.list()
 
-def loop(file, l_df):
-    """MP function to compute chrX/chrY coverage ratio 
+    def loop(file, l_df):
+        """MP function to compute chrX/chrY coverage ratio
 
-    Args:
-        file (str): bam file path
-        l_df (list): MP shared list 
-    """
-    # Samtools shell command script
-    p = subprocess.Popen('samtools idxstats ' + directory_input + file, shell=True, stdout=subprocess.PIPE)
+        Args:
+            file (str): bam file path
+            l_df (list): MP shared list
+        """
+        # Samtools shell command script
+        p = subprocess.Popen("samtools idxstats {file}".format(file=file), shell=True, stdout=subprocess.PIPE)
 
-    # Retrieve text from stdout & process it in python
-    text = [e.split('\t') for e in p.communicate()[0].decode('utf-8').strip().split('\n')]
+        # Retrieve text from stdout & process it in python
+        text = [e.split("\t") for e in p.communicate()[0].decode("utf-8").strip().split("\n")]
+        # print(text)
+        # Convert list of list to pandas dataframe
+        df = pd.DataFrame.from_records(text, columns=["chr", "chr_length", "read-segments_mapped", "read-segments_unmapped"])
 
-    # Convert list of list to pandas dataframe
-    df = pd.DataFrame.from_records(text, columns=["chr", "chr_length", "read-segments_mapped", "read-segments_unmapped"])
+        # Filter to keep chrX & Y
+        df = df.loc[df["chr"].isin(["chrX", "chrY"])]
+        # print(df)
 
-    # Filter to keep chrX & Y
-    df = df.loc[df["chr"].isin(["chrX", "chrY"])]
+        # Convert as int type
+        df[["chr_length", "read-segments_mapped", "read-segments_unmapped"]] = df[
+            ["chr_length", "read-segments_mapped", "read-segments_unmapped"]
+        ].astype(int)
 
-    # Convert as int type
-    df[["chr_length", "read-segments_mapped", "read-segments_unmapped"]] = df[["chr_length", "read-segments_mapped", "read-segments_unmapped"]].astype(int)
+        # Compute ratio
+        df["Ratio"] = df["read-segments_mapped"] / df["chr_length"]
+        xy_ratio = df.loc[df["chr"] == "chrX", "Ratio"].values[0] / df.loc[df["chr"] == "chrY", "Ratio"].values[0]
 
-    # Compute ratio
-    df["Ratio"] = df["read-segments_mapped"] / df["chr_length"]
-    xy_ratio = df.loc[df["chr"] == "chrX", "Ratio"].values[0] / df.loc[df["chr"] == "chrY", "Ratio"].values[0]
+        # Create new df
+        new_df = pd.DataFrame([{"chrX/chrY_ratio": xy_ratio, "Cell": file.replace(".sort.mdup.bam", ""), "Sample": sample}])
+        # Add to shared MP list
+        l_df.append(new_df)
 
-    # Create new df
-    new_df = pd.DataFrame([
-            {
-                "chrX/chrY_ratio" : xy_ratio, 
-                "Cell" : file.replace(".sort.mdup.bam", ""),
-                "Sample" : sample
-            }]
-        )
-    # Add to shared MP list
-    l_df.append(new_df)
+    # Launch function in parallel on list of files
+    parmap.starmap(loop, list(zip(l_files_selected)), l_df, pm_pbar=False, pm_processes=10)
+    # l_df = list()
+    # for file in tqdm(l_files_selected):
+    #     loop(file, l_df)
 
-# Launch function in parallel on list of files
-parmap.starmap(loop, list(zip(l_files_selected)), l_df, pm_pbar=True, pm_processes=10)
+    # Concatenate & Identify Male & Female cells based on cutoff
+    cutoff = 5
+    final_df = pd.concat(list(l_df))
+    final_df.loc[final_df["chrX/chrY_ratio"] >= cutoff, "M/F"] = "F"
+    final_df["M/F"] = final_df["M/F"].fillna("M")
 
-# Concatenate & Identify Male & Female cells based on cutoff
-cutoff = 5
-final_df = pd.concat(list(l_df))
-final_df.loc[final_df["chrX/chrY_ratio"] >= cutoff, "M/F"] = "F"
-final_df["M/F"] = final_df["M/F"].fillna("M")
+else:
+    l_df = list()
+    for file in l_files_selected:
+        l_df.append(pd.DataFrame([{"Cell": file.replace(".sort.mdup.bam", ""), "Sample": sample, "M/F": "F", "chrX/chrY_ratio": 10}]))
+    final_df = pd.concat(l_df)
 
 # print(final_df)
 

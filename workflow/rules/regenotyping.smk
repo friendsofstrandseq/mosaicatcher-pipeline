@@ -1,13 +1,7 @@
-from workflow.scripts.utils.utils import get_mem_mb 
-
-import pandas as pd
-config_df = pd.read_csv(config["output_location"] + "config/config_df.tsv", sep="\t")
-allbams_per_sample = config_df.groupby("Sample")["File"].apply(list).to_dict()
-
-
 ################################################################################
 # REGENOTYPE SNV                                                               #
 ################################################################################
+
 
 rule mergeBams:
     """
@@ -16,20 +10,27 @@ rule mergeBams:
     output:
     """
     input:
-        lambda wc: expand(config["input_bam_location"] + wc.sample + "/all/{bam}.bam", bam = allbams_per_sample[wc.sample]) if wc.sample in allbams_per_sample else "FOOBAR",
+        lambda wc: expand(
+            "{input_folder}/{sample}/all/{bam}.sort.mdup.bam",
+            input_folder=config["input_bam_location"],
+            sample=samples,
+            bam=allbams_per_sample[wc.sample],
+        )
+        if wc.sample in allbams_per_sample
+        else "FOOBAR",
     output:
-        config["output_location"] + "merged_bam/{sample}/merged.bam"
+        "{output_folder}/merged_bam/{sample}/merged.bam",
     log:
-        config["output_location"] + "log/mergeBams/{sample}.log"
+        "{output_folder}/log/mergeBams/{sample}.log",
     resources:
-        mem_mb = get_mem_mb,
-        time = "01:00:00",
-    threads:
-        10
+        mem_mb=get_mem_mb,
+        time="01:00:00",
+    threads: 10
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     shell:
-        "samtools" + " merge -@ {threads} {output} {input} 2>&1 > {log}"
+        "samtools merge -@ {threads} {output} {input} 2>&1 > {log}"
+
 
 rule regenotype_SNVs:
     """
@@ -38,19 +39,18 @@ rule regenotype_SNVs:
     output:
     """
     input:
-        bam   = config["output_location"] + "merged_bam/{sample}/merged.bam",
-        bai   = config["output_location"] + "merged_bam/{sample}/merged.bam.bai",
-        sites = config["snv_sites_to_genotype"],
+        bam="{output_folder}/merged_bam/{sample}/merged.bam",
+        bai="{output_folder}/merged_bam/{sample}/merged.bam.bai",
+        sites=config["snv_sites_to_genotype"],
     output:
-        vcf = config["output_location"] + "snv_genotyping/{sample}/{chrom,chr[0-9A-Z]+}.vcf"
+        vcf="{output_folder}/snv_genotyping/{sample}/{chrom,chr[0-9A-Z]+}.vcf",
     log:
-        config["output_location"] + "log/snv_genotyping/{sample}/{chrom}.log"
+        "{output_folder}/log/snv_genotyping/{sample}/{chrom}.log",
     params:
-        fa = config["reference"],
+        fa=config["reference"],
     resources:
-        # mem_mb = get_mem_mb,
-        mem_mb = "8G",
-        time = "10:00:00",
+        mem_mb=get_mem_mb,
+        time="10:00:00",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     shell:
@@ -68,4 +68,3 @@ rule regenotype_SNVs:
             --include "QUAL>=10" \
         > {output.vcf}) 2> {log}
         """
-
