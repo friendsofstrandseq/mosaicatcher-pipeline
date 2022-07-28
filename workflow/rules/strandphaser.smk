@@ -150,8 +150,7 @@ rule combine_strandphaser_output:
         mem_mb=get_mem_mb,
     run:
         import pandas as pd
-
-        pd.concat([pd.read_csv(file, sep="\t") for j, file in enumerate(input)]).to_csv(
+        pd.concat([pd.read_csv(file, sep="\t") for j, file in enumerate(input[0])]).to_csv(
             output[0], sep="\t", index=False
         )
 
