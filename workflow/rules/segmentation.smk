@@ -21,16 +21,12 @@ rule segmentation:
     """
     input:
         counts="{output_folder}/counts/{sample}/{sample}.txt.gz",
-        # seg_filter="{output_folder}/log/segmentation/{sample}/segmentation-per-cell.ok",
-
     output:
         "{output_folder}/segmentation/{sample}/{sample}.txt.fixme",
     log:
         "{output_folder}/log/segmentation/{sample}/{sample}.log",
     params:
         min_num_segs=lambda wc: math.ceil(200000 / float(config["window"])),  # bins to represent 200 kb
-    # container:
-    #     "library://weber8thomas/remote-build/mosaic:0.3"
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     resources:
@@ -76,8 +72,6 @@ rule fix_segmentation:
 ################################################################################
 
 
-
-
 rule segment_one_cell:
     """
     rule fct: Same as `rule segmentation` : mosaic segment function but for individual cell
@@ -93,7 +87,6 @@ rule segment_one_cell:
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     params:
-        # mc_command = config["mosaicatcher"],
         min_num_segs=lambda wc: math.ceil(200000 / float(config["window"])),  # bins to represent 200 kb
     resources:
         mem_mb=get_mem_mb,
@@ -107,14 +100,6 @@ rule segment_one_cell:
         {input} > {log} 2>&1
         """
 
-# rule aggregate_cells_merge:
-#     input:
-#         aggregate_cells_segmentation,
-#     output:
-#         "{output_folder}/log/segmentation/{sample}/segmentation-per-cell.ok"
-#     shell:
-#         "touch {output}"
-
 
 rule segmentation_selection:
     """
@@ -127,7 +112,6 @@ rule segmentation_selection:
         jointseg="{output_folder}/segmentation/{sample}/{sample}.txt",
         singleseg=aggregate_cells_segmentation,
         info="{output_folder}/counts/{sample}/{sample}.info",
-        # seg_filter="{output_folder}/log/segmentation/{sample}/segmentation-per-cell.ok",
     output:
         jointseg="{output_folder}/segmentation/{sample}/Selection_jointseg.txt",
         singleseg="{output_folder}/segmentation/{sample}/Selection_singleseg.txt",
@@ -135,7 +119,17 @@ rule segmentation_selection:
     log:
         "{output_folder}/log/segmentation/segmentation_selection/{sample}.log",
     params:
-        cellnames=lambda wc: ",".join([cell for cell in cell_per_sample[wc.sample] if cell in [e.split(config["abs_path"])[-1].split(".")[0] for e in aggregate_cells_segmentation(wc)]]),
+        cellnames=lambda wc: ",".join(
+            [
+                cell
+                for cell in cell_per_sample[wc.sample]
+                if cell
+                in [
+                    e.split(config["abs_path"])[-1].split(".")[0]
+                    for e in aggregate_cells_segmentation(wc)
+                ]
+            ]
+        ),
         sce_min_distance=config["sce_min_distance"],
         additional_sce_cutoff=config["additional_sce_cutoff"],
         min_diff_jointseg=config["min_diff_jointseg"],

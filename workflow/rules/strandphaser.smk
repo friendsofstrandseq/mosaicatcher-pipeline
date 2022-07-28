@@ -44,7 +44,7 @@ checkpoint determine_sex_per_cell:
             input_folder=config["input_bam_location"],
             sample=samples,
             cell=bam_per_sample_local[str(wc.sample)],
-        )
+        ),
     output:
         sex_analysis_cellwise="{output_folder}/config/{sample}/sex_analysis_cells.tsv",
         sex_analysis_samplewise="{output_folder}/config/{sample}/sex_analysis_sample.txt",
@@ -103,9 +103,7 @@ rule run_strandphaser_per_chrom:
     resources:
         mem_mb=get_mem_mb,
     params:
-        input_bam=lambda wc: "{}/{}/all".format(
-            config["input_bam_location"], wc.sample
-        ),
+        input_bam=lambda wc: "{}/{}/all".format(config["input_bam_location"], wc.sample),
         output=lambda wc: "{}/strandphaser/{}/StrandPhaseR_analysis.{}".format(
             config["output_location"], wc.sample, wc.chrom
         ),
@@ -141,7 +139,7 @@ rule merge_strandphaser_vcfs:
 
 rule combine_strandphaser_output:
     input:
-        files = aggregate_phased_haps
+        files=aggregate_phased_haps,
     output:
         "{output_folder}/strandphaser/{sample}/strandphaser_phased_haps_merged.txt",
     log:
@@ -150,7 +148,6 @@ rule combine_strandphaser_output:
         mem_mb=get_mem_mb,
     script:
         "../scripts/strandphaser_scripts/combine_strandphaser_output.py"
-
 
 
 rule convert_strandphaser_output:

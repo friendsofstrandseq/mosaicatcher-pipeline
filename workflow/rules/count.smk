@@ -41,8 +41,6 @@ rule mosaic_count:
         info="{output_folder}/counts/{sample}/{sample}.info_raw",
     log:
         "{output_folder}/log/counts/{sample}/mosaic_count.log",
-    # container:
-    #     "library://weber8thomas/remote-build/mosaic:0.3"
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     params:
@@ -50,7 +48,6 @@ rule mosaic_count:
     resources:
         mem_mb=get_mem_mb,
     shell:
-        # /mosaicatcher/build/mosaic count \
         """
         mosaicatcher count \
             --verbose \
@@ -63,12 +60,15 @@ rule mosaic_count:
         > {log} 2>&1
         """
 
+
 if config["ashleys_pipeline"] is False:
+
     rule blank_labels:
         output:
-            touch("{input_folder}/{sample}/cell_selection/labels.tsv")
+            touch("{input_folder}/{sample}/cell_selection/labels.tsv"),
         log:
-            "{input_folder}/log/{sample}/blank_labels/labels.log"
+            "{input_folder}/log/{sample}/blank_labels/labels.log",
+
 
 rule order_mosaic_count_output:
     input:
@@ -88,7 +88,6 @@ rule order_mosaic_count_output:
         df.to_csv(output[0], index=False, compression="gzip", sep="\t")
 
 
-
 checkpoint filter_bad_cells_from_mosaic_count:
     input:
         info_raw="{output_folder}/counts/{sample}/{sample}.info_raw",
@@ -97,7 +96,7 @@ checkpoint filter_bad_cells_from_mosaic_count:
             "{input_folder}/{sample}/cell_selection/labels.tsv",
             input_folder=config["input_bam_location"],
             sample=samples,
-        ),    
+        ),
     output:
         info="{output_folder}/counts/{sample}/{sample}.info",
         info_removed="{output_folder}/counts/{sample}/{sample}.info_rm",
@@ -192,7 +191,6 @@ rule extract_single_cell_counts:
     input:
         info="{output_folder}/counts/{sample}/{sample}.info",
         counts="{output_folder}/counts/{sample}/{sample}.txt.gz",
-        # agg=aggregate_cells
     output:
         "{output_folder}/counts/{sample}/counts-per-cell/{cell}.txt.gz",
     log:
