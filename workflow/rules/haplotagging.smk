@@ -1,68 +1,94 @@
-from workflow.scripts.utils.utils import get_mem_mb 
+# from workflow.scripts.utils.utils import get_mem_mb
 
-import pandas as pd
-config_df = pd.read_csv(config["output_location"] + "config/config_df.tsv", sep="\t")
-bam_per_sample = config_df.loc[config_df["Selected"] == True].groupby("Sample")["File"].apply(list).to_dict()
+# import pandas as pd
+# config_df = pd.read_csv("config/config_df.tsv", sep="\t")
+# bam_per_sample = config_df.loc[config_df["Selected"] == True].groupby("Sample")["File"].apply(list).to_dict()
+# bam_per_sample = df_config_files.loc[df_config_files["Selected"] == True].groupby("Sample")["File"].apply(list).to_dict()
 
 ################################################################################
 # Haplotagging                                                                 #
 ################################################################################
 
+# DOCME : --skip-missing-contigs option to remove unused chroms
+# "whatshap haplotag -o {output_folder} -r {params.ref} {input.vcf} {input.bam} > {log} 2>{log}  "
+# bai = config["input_bam_location"] + "{sample}/selected/{cell}.bam.bai"
+
 
 rule haplotag_bams:
     input:
-        vcf = ancient(config["output_location"] + "strandphaser/phased-snvs/{sample}.vcf.gz"),
-        tbi = ancient(config["output_location"] + "strandphaser/phased-snvs/{sample}.vcf.gz.tbi"),
-        bam = config["input_bam_location"] + "{sample}/selected/{cell}.bam",
-        # bai = config["input_bam_location"] + "{sample}/selected/{cell}.bam.bai"
+        vcf="{output_folder}/strandphaser/phased-snvs/{sample}.vcf.gz",
+        tbi="{output_folder}/strandphaser/phased-snvs/{sample}.vcf.gz.tbi",
+        bam=lambda wc: expand(
+            "{input_folder}/{sample}/all/{cell}.sort.mdup.bam",
+            zip,
+            input_folder=config["input_bam_location"],
+            sample=samples,
+            cell=bam_per_sample_local[str(wc.sample)]
+            if wc.sample in bam_per_sample_local
+            else "FOOBAR",
+        ),
     output:
-        config["output_location"] + "haplotag/bam/{sample}/{cell}.bam",
+        "{output_folder}/haplotag/bam/{sample}/{cell}.bam",
     log:
-        config["output_location"] + "log/haplotag_bams/{sample}/{cell}.log"
+        "{output_folder}/log/haplotag_bams/{sample}/{cell}.log",
     params:
-        ref = config["reference"]
+        ref=config["reference"],
     resources:
-        mem_mb = get_mem_mb,
-    conda: 
+        mem_mb=get_mem_mb,
+    conda:
         "../envs/mc_bioinfo_tools.yaml"
     shell:
-    # DOCME : --skip-missing-contigs option to remove unused chroms
-        # "whatshap haplotag -o {output} -r {params.ref} {input.vcf} {input.bam} > {log} 2>{log}  " 
-        "whatshap haplotag --skip-missing-contigs -o {output} -r {params.ref} {input.vcf} {input.bam} > {log} 2>{log}  " 
+        "whatshap haplotag --skip-missing-contigs -o {output} -r {params.ref} {input.vcf} {input.bam} > {log} 2>{log}  "
+
 
 rule create_haplotag_segment_bed:
     input:
-        segments = config["output_location"] + "segmentation/{sample}/Selection_jointseg.txt",
+        segments="{output_folder}/segmentation/{sample}/Selection_jointseg.txt",
     output:
-        bed = config["output_location"] + "haplotag/bed/{sample}.bed",
+        bed="{output_folder}/haplotag/bed/{sample}.bed",
+    log:
+        "{output_folder}/log/haplotag/bed/{sample}.log",
+    params:
+        window=config["window"],
+    conda:
+        "../envs/mc_base.yaml"
     shell:
         """
         # Issue #1022 (https://bitbucket.org/snakemake/snakemake/issues/1022)
-        awk -v s={config[window]} -f workflow/scripts/haplotagging_scripts/create_haplotag_segment_bed.awk {input.segments} > {output.bed}
+        awk -v s={params.window} -f workflow/scripts/haplotagging_scripts/create_haplotag_segment_bed.awk {input.segments} > {output.bed}
         """
+
 
 rule create_haplotag_table:
     input:
-        bam = config["output_location"] + "haplotag/bam/{sample}/{cell}.bam",
-        bai = config["output_location"] + "haplotag/bam/{sample}/{cell}.bam.bai",
-        bed = config["output_location"] + "haplotag/bed/{sample}.bed"
+        bam="{output_folder}/haplotag/bam/{sample}/{cell}.bam",
+        bai="{output_folder}/haplotag/bam/{sample}/{cell}.bam.bai",
+        bed="{output_folder}/haplotag/bed/{sample}.bed",
     output:
-        tsv = config["output_location"] + "haplotag/table/{sample}/by-cell/{cell}.tsv"
+        tsv="{output_folder}/haplotag/table/{sample}/by-cell/{cell}.tsv",
     log:
-        config["output_location"] + "log/create_haplotag_table/{sample}.{cell}.log"
+        "{output_folder}/log/create_haplotag_table/{sample}.{cell}.log",
     conda:
         "../envs/rtools.yaml"
     resources:
-        mem_mb = get_mem_mb,
+        mem_mb=get_mem_mb,
     script:
         "../scripts/haplotagging_scripts/haplotagTable.snakemake.R"
 
+
 rule merge_haplotag_tables:
     input:
-        tsvs = lambda wc: [config["output_location"] + "haplotag/table/{}/by-cell/{}.tsv".format(wc.sample, cell) for cell in bam_per_sample[wc.sample]],
+        tsvs=lambda wc: [
+            "{}/haplotag/table/{}/by-cell/{}.tsv".format(
+                config["output_location"], wc.sample, cell
+            )
+            for cell in bam_per_sample[wc.sample]
+        ],
     output:
-        tsv = config["output_location"] + "haplotag/table/{sample}/haplotag_counts_merged.tsv"
+        tsv="{output_folder}/haplotag/table/{sample}/haplotag_counts_merged.tsv",
+    log:
+        "{output_folder}/log/haplotag/table/{sample}/haplotag_counts_merged.log",
+    conda:
+        "../envs/mc_bioinfo_tools.yaml"
     shell:
         "(head -n1 {input.tsvs[0]} && tail -q -n +2 {input.tsvs}) > {output.tsv}"
-
-

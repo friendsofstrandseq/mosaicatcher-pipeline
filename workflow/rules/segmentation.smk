@@ -1,9 +1,10 @@
-from workflow.scripts.utils.utils import get_mem_mb 
+# from workflow.scripts.utils.utils import get_mem_mb
 
 import math
-import pandas as pd
-config_df = pd.read_csv(config["output_location"] + "config/config_df.tsv", sep="\t")
-cell_per_sample = config_df.loc[config_df["Selected"] == True].groupby("Sample")["Cell"].apply(list).to_dict()
+
+# import pandas as pd
+# config_df = pd.read_csv("config/config_df.tsv", sep="\t")
+# cell_per_sample = config_df.loc[config_df["Selected"] == True].groupby("Sample")["Cell"].apply(list).to_dict()
 
 ################################################################################
 # Joint Segmentation                                                                 #
@@ -19,26 +20,27 @@ rule segmentation:
     output: Segmentation tab file 
     """
     input:
-        config["output_location"] + "counts/{sample}/{sample}.txt.gz"
+        counts="{output_folder}/counts/{sample}/{sample}.txt.gz",
     output:
-        config["output_location"] + "segmentation/{sample}/{sample}.txt.fixme"
+        "{output_folder}/segmentation/{sample}/{sample}.txt.fixme",
     log:
-        config["output_location"] + "log/segmentation/{sample}/{sample}.log"
+        "{output_folder}/log/segmentation/{sample}/{sample}.log",
     params:
-        min_num_segs = lambda wc: math.ceil(200000 / float(config["window"]))  # bins to represent 200 kb
-    container:
-        "library://weber8thomas/remote-build/mosaic:0.3"
+        min_num_segs=lambda wc: math.ceil(200000 / float(config["window"])),  # bins to represent 200 kb
+    conda:
+        "../envs/mc_bioinfo_tools.yaml"
     resources:
-        mem_mb = get_mem_mb,
+        mem_mb=get_mem_mb,
     shell:
         """
-        /mosaicatcher/build/mosaic segment \
+        mosaicatcher segment \
         --remove-none \
         --forbid-small-segments {params.min_num_segs} \
         -M 50000000 \
         -o {output} \
-        {input} > {log} 2>&1
+        {input.counts} > {log} 2>&1
         """
+
 
 # FIXME: This is a workaround because latest versions of "mosaic segment" don't compute the "bps" column properly. Remove once fixed in the C++ code.
 rule fix_segmentation:
@@ -48,19 +50,27 @@ rule fix_segmentation:
     output:
     """
     input:
-        config["output_location"] + "segmentation/{sample}/{sample}.txt.fixme"
+        ancient("{output_folder}/segmentation/{sample}/{sample}.txt.fixme"),
     output:
-        config["output_location"] + "segmentation/{sample}/{sample}.txt"
+        "{output_folder}/segmentation/{sample}/{sample}.txt",
+    log:
+        "{output_folder}/log/segmentation/{sample}/{sample}.log",
+    conda:
+        "../envs/mc_base.yaml"
+    params:
+        script="workflow/scripts/segmentation_scripts/fix_segmentation.awk",
+        window=config["window"],
     shell:
         """
         # Issue #1022 (https://bitbucket.org/snakemake/snakemake/issues/1022)
-        awk -v name={wildcards.sample} -v window={config[window]} -f workflow/scripts/segmentation_scripts/fix_segmentation.awk {input} > {output}
+        awk -v name={wildcards.sample} -v window={params.window} -f {params.script} {input} > {output}
         """
 
 
 ################################################################################
 # Single-Cell Segmentation                                                                 #
 ################################################################################
+
 
 rule segment_one_cell:
     """
@@ -69,21 +79,20 @@ rule segment_one_cell:
     output: Segmentation file for an individual cell
     """
     input:
-        config["output_location"] + "counts/{sample}/counts-per-cell/{cell}.txt.gz"
+        "{output_folder}/counts/{sample}/counts-per-cell/{cell}.txt.gz",
     output:
-        config["output_location"] + "segmentation/{sample}/segmentation-per-cell/{cell}.txt"
+        "{output_folder}/segmentation/{sample}/segmentation-per-cell/{cell}.txt",
     log:
-        config["output_location"] + "log/segmentation/{sample}/segmentation-per-cell/{cell}.log"
-    container:
-        "library://weber8thomas/remote-build/mosaic:0.3"
+        "{output_folder}/log/segmentation/{sample}/segmentation-per-cell/{cell}.log",
+    conda:
+        "../envs/mc_bioinfo_tools.yaml"
     params:
-        # mc_command = config["mosaicatcher"],
-        min_num_segs = lambda wc: math.ceil(200000 / float(config["window"])) # bins to represent 200 kb
+        min_num_segs=lambda wc: math.ceil(200000 / float(config["window"])),  # bins to represent 200 kb
     resources:
-        mem_mb = get_mem_mb,
+        mem_mb=get_mem_mb,
     shell:
         """
-        /mosaicatcher/build/mosaic segment \
+        mosaicatcher segment \
         --remove-none \
         --forbid-small-segments {params.min_num_segs} \
         -M 50000000 \
@@ -99,30 +108,44 @@ rule segmentation_selection:
     output: initial_strand_state used for the following by strandphaser
     """
     input:
-        counts=config["output_location"] + "counts/{sample}/{sample}.txt.gz",
-        jointseg=config["output_location"] + "segmentation/{sample}/{sample}.txt",
-        singleseg=lambda wc: [config["output_location"] + "segmentation/{}/segmentation-per-cell/{}.txt".format(wc.sample, cell) for cell in cell_per_sample[wc.sample]],
-        info=config["output_location"] + "counts/{sample}/{sample}.info",
+        counts="{output_folder}/counts/{sample}/{sample}.txt.gz",
+        jointseg="{output_folder}/segmentation/{sample}/{sample}.txt",
+        singleseg=aggregate_cells_segmentation,
+        info="{output_folder}/counts/{sample}/{sample}.info",
     output:
-        jointseg=config["output_location"] + "segmentation/{sample}/Selection_jointseg.txt",
-        singleseg=config["output_location"] + "segmentation/{sample}/Selection_singleseg.txt",
-        strand_states=config["output_location"] + "segmentation/{sample}/Selection_initial_strand_state",
+        jointseg="{output_folder}/segmentation/{sample}/Selection_jointseg.txt",
+        singleseg="{output_folder}/segmentation/{sample}/Selection_singleseg.txt",
+        strand_states="{output_folder}/segmentation/{sample}/Selection_initial_strand_state",
     log:
-        config["output_location"] + "log/segmentation/segmentation_selection/{sample}.log"
+        "{output_folder}/log/segmentation/segmentation_selection/{sample}.log",
     params:
-        cellnames = lambda wc: ",".join(cell for cell in cell_per_sample[wc.sample]),
+        cellnames=lambda wc: ",".join(
+            [
+                cell
+                for cell in cell_per_sample[wc.sample]
+                if cell
+                in [
+                    e.split(config["abs_path"])[-1].split(".")[0]
+                    for e in aggregate_cells_segmentation(wc)
+                ]
+            ]
+        ),
+        sce_min_distance=config["sce_min_distance"],
+        additional_sce_cutoff=config["additional_sce_cutoff"],
+        min_diff_jointseg=config["min_diff_jointseg"],
+        min_diff_singleseg=config["min_diff_singleseg"],
     conda:
         "../envs/mc_base.yaml"
     resources:
-        mem_mb = get_mem_mb,
+        mem_mb=get_mem_mb,
     shell:
         """
         PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)
         python workflow/scripts/segmentation_scripts/detect_strand_states.py \
-            --sce_min_distance {config[sce_min_distance]} \
-            --sce_add_cutoff {config[additional_sce_cutoff]} \
-            --min_diff_jointseg {config[min_diff_jointseg]} \
-            --min_diff_singleseg {config[min_diff_singleseg]} \
+            --sce_min_distance {params.sce_min_distance} \
+            --sce_add_cutoff {params.additional_sce_cutoff} \
+            --min_diff_jointseg {params.min_diff_jointseg} \
+            --min_diff_singleseg {params.min_diff_singleseg} \
             --output_jointseg {output.jointseg} \
             --output_singleseg {output.singleseg} \
             --output_strand_states {output.strand_states} \
@@ -133,4 +156,3 @@ rule segmentation_selection:
             {input.jointseg} \
             {input.singleseg} > {log} 2>&1
         """
-

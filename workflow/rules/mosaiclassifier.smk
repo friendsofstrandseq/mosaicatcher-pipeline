@@ -1,87 +1,88 @@
-from workflow.scripts.utils.utils import get_mem_mb 
+# from workflow.scripts.utils.utils import get_mem_mb
 
 ################################################################################
 # MosaiClassifier                                                              #
 ################################################################################
 
+
 rule mosaiClassifier_calc_probs:
     input:
-        counts = config["output_location"] + "counts/{sample}/{sample}.txt.gz",
-        info   = config["output_location"] + "counts/{sample}/{sample}.info",
-        
-        states = config["output_location"] + "strandphaser/{sample}/StrandPhaseR_final_output.txt",
-        bp     = config["output_location"] + "segmentation/{sample}/Selection_jointseg.txt"
+        counts="{output_folder}/counts/{sample}/{sample}.txt.gz",
+        info="{output_folder}/counts/{sample}/{sample}.info",
+        states="{output_folder}/strandphaser/{sample}/StrandPhaseR_final_output.txt",
+        bp="{output_folder}/segmentation/{sample}/Selection_jointseg.txt",
     output:
-        output = config["output_location"] + "mosaiclassifier/sv_probabilities/{sample}/probabilities.Rdata"
+        output="{output_folder}/mosaiclassifier/sv_probabilities/{sample}/probabilities.Rdata",
     log:
-        config["output_location"] + "log/mosaiClassifier_calc_probs/{sample}.log"
+        "{output_folder}/log/mosaiClassifier_calc_probs/{sample}.log",
     conda:
         "../envs/rtools.yaml"
     resources:
-        mem_mb = get_mem_mb,
+        mem_mb=get_mem_mb,
     script:
         "../scripts/mosaiclassifier_scripts/mosaiClassifier.snakemake.R"
 
+
 rule create_haplotag_likelihoods:
     input:
-        haplotag_table = config["output_location"] + "haplotag/table/{sample}/haplotag_counts_merged.tsv",
-        sv_probs_table = config["output_location"] + "mosaiclassifier/sv_probabilities/{sample}/probabilities.Rdata",
-    output: 
-        config["output_location"] + 'mosaiclassifier/haplotag_likelihoods/{sample}.Rdata'
+        haplotag_table="{output_folder}/haplotag/table/{sample}/haplotag_counts_merged.tsv",
+        sv_probs_table="{output_folder}/mosaiclassifier/sv_probabilities/{sample}/probabilities.Rdata",
+    output:
+        "{output_folder}/mosaiclassifier/haplotag_likelihoods/{sample}.Rdata",
     log:
-        config["output_location"] + "log/create_haplotag_likelihoods/{sample}.log"
+        "{output_folder}/og/create_haplotag_likelihoods/{sample}.log",
     conda:
         "../envs/rtools.yaml"
     resources:
-        mem_mb = get_mem_mb,
+        mem_mb=get_mem_mb,
     script:
         "../scripts/mosaiclassifier_scripts/haplotagProbs.snakemake.R"
-    
+
 
 rule mosaiClassifier_make_call:
     input:
-        probs = config["output_location"] + 'mosaiclassifier/haplotag_likelihoods/{sample}.Rdata'
+        probs="{output_folder}/mosaiclassifier/haplotag_likelihoods/{sample}.Rdata",
     output:
-        config["output_location"] + "mosaiclassifier/sv_calls/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}_filterFALSE.tsv"
+        "{output_folder}/mosaiclassifier/sv_calls/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}_filterFALSE.tsv",
     log:
-        config["output_location"] + "log/mosaiClassifier_make_call/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.log"
+        "{output_folder}/log/mosaiClassifier_make_call/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.log",
     conda:
         "../envs/rtools.yaml"
     params:
-        minFrac_used_bins = 0.8,
-        window = config["window"]
+        minFrac_used_bins=0.8,
+        window=config["window"],
     resources:
-        mem_mb = get_mem_mb,
+        mem_mb=get_mem_mb,
     script:
         "../scripts/mosaiclassifier_scripts/mosaiClassifier_call.snakemake.R"
 
 
 rule mosaiClassifier_make_call_biallelic:
     input:
-        probs = config["output_location"] + "sv_probabilities/{sample}/probabilities.Rdata"
+        probs="{output_folder}/sv_probabilities/{sample}/probabilities.Rdata",
     output:
-        config["output_location"] + "sv_calls/{sample}/biAllelic_llr{llr}.txt"
+        "{output_folder}/sv_calls/{sample}/biAllelic_llr{llr}.txt",
     log:
-        config["output_location"] + "log/mosaiClassifier_make_call_biallelic/{sample}/{llr}.log"
+        "{output_folder}/log/mosaiClassifier_make_call_biallelic/{sample}/{llr}.log",
     conda:
         "../envs/rtools.yaml"
     resources:
-        mem_mb = get_mem_mb,
+        mem_mb=get_mem_mb,
     script:
         "../scripts/mosaiclassifier_scripts/mosaiClassifier_call_biallelic.snakemake.R"
 
 
 rule call_complex_regions:
     input:
-        calls  = config["output_location"] + "mosaiclassifier/sv_calls/{sample}/{method}.tsv",
+        calls="{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}.tsv",
     output:
-        complex_regions = config["output_location"] + "mosaiclassifier/sv_calls/{sample}/{method}.complex.tsv",
+        complex_regions="{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}.complex.tsv",
     log:
-        config["output_location"] + "log/call_complex_regions/{sample}/{method}.log"
+        "{output_folder}/log/call_complex_regions/{sample}/{method}.log",
     conda:
         "../envs/mc_base.yaml"
     resources:
-        mem_mb = get_mem_mb,
+        mem_mb=get_mem_mb,
     shell:
         """
         PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)
