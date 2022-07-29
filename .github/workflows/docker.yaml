@@ -4,9 +4,6 @@ on:
   push:
     tags:
       - "*"
-      # - master
-    # paths:
-    #   - "github-actions-runner/Dockerfile"
 
 jobs:
   build_mc_container:
@@ -14,18 +11,8 @@ jobs:
     runs-on: ubuntu-20.04
     env:
       IMAGE_NAME: mosaicatcher-pipeline
-
-    # if: github.ref == 'refs/heads/master'
     steps:
       - uses: actions/checkout@v2
-
-      # - name: Read upstream tag without version
-      #   id: gettag
-      #   run: echo "::set-output name=tag::$(head -n 1 github-actions-runner/Dockerfile | awk -F':' '{print $2}' | awk -F'-' 'BEGIN { OFS="-" } {$NF=""; print $0}')"
-
-      # - name: Read internal update version
-      #   id: getversion
-      #   run: echo "::set-output name=version::$(grep 'ARG RUNNER_VERSION' github-actions-runner/Dockerfile | awk -F'=' '{print $2}')"
       - name: Set output
         id: vars
         run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
@@ -37,7 +24,6 @@ jobs:
           tags: ${{ steps.vars.outputs.tag }}
           dockerfiles: |
             ./github-actions-runner/Dockerfile
-
       - name: Push To DockerHub
         id: push-to-dockerhub
         uses: redhat-actions/push-to-registry@v2
@@ -55,18 +41,8 @@ jobs:
     runs-on: ubuntu-20.04
     env:
       IMAGE_NAME: ashleys-mosaicatcher-pipeline
-
-    # if: github.ref == 'refs/heads/master'
     steps:
       - uses: actions/checkout@v2
-
-      # - name: Read upstream tag without version
-      #   id: gettag
-      #   run: echo "::set-output name=tag::$(head -n 1 github-actions-runner/Dockerfile | awk -F':' '{print $2}' | awk -F'-' 'BEGIN { OFS="-" } {$NF=""; print $0}')"
-
-      # - name: Read internal update version
-      #   id: getversion
-      #   run: echo "::set-output name=version::$(grep 'ARG RUNNER_VERSION' github-actions-runner/Dockerfile | awk -F'=' '{print $2}')"
       - name: Set output
         id: vars
         run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
@@ -78,7 +54,6 @@ jobs:
           tags: ${{ steps.vars.outputs.tag }}
           dockerfiles: |
             ./github-actions-runner/Dockerfile_complete.dockerfile
-
       - name: Push To DockerHub
         id: push-to-dockerhub
         uses: redhat-actions/push-to-registry@v2
@@ -88,6 +63,5 @@ jobs:
           registry: docker.io/weber8thomas
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
-
       - name: Use the image
         run: echo "New images has been pushed to ${{ steps.push-to-quay.outputs.registry-paths }}"
