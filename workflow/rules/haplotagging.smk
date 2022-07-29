@@ -27,6 +27,8 @@ rule haplotag_bams:
             if wc.sample in bam_per_sample_local
             else "FOOBAR",
         ),
+        fasta="workflow/data/ref_genomes/{ref}.fa.gz".format(ref=config["reference"]),
+        fasta_index="workflow/data/ref_genomes/{ref}.fa.gz.fai".format(ref=config["reference"]),
     output:
         "{output_folder}/haplotag/bam/{sample}/{cell}.bam",
     log:
@@ -38,7 +40,7 @@ rule haplotag_bams:
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     shell:
-        "whatshap haplotag --skip-missing-contigs -o {output} -r {params.ref} {input.vcf} {input.bam} > {log} 2>{log}  "
+        "whatshap haplotag --skip-missing-contigs -o {output} -r {input.fasta} {input.vcf} {input.bam} > {log} 2>{log}  "
 
 
 rule create_haplotag_segment_bed:
