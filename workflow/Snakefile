@@ -116,12 +116,19 @@ else:
                     rules.dl_example_data.output,
 
 
-        if config["dl_bam_example"] is False and config["dl_external_files"] is True:
-
-            rule all:
-                input:
-                    rules.dl_external_data.output,
-                    rules.dl_external_data_index.output,
+        if config["dl_bam_example"] is False and config["dl_external_files"] is True and config["reference"] in ["hg19", "hg38", "T2T"]:
+            if config["reference"] == "hg19":
+                rule all:
+                    input:
+                        rules.download_hg19_reference.output,
+            elif config["reference"] == "hg38":
+                rule all:
+                    input:
+                        rules.download_hg38_reference.output,
+            elif config["reference"] == "T2T":
+                rule all:
+                    input:
+                        rules.download_T2T_reference.output,
 
 
 if config["mail"]:
