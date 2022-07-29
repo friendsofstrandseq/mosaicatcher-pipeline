@@ -48,6 +48,14 @@ workflow/static/
 __pycache__
 workflow/scripts/__pycache__
 
+# HTTP
+s3-us-west-2.amazonaws.com/
+hgdownload.soe.ucsc.edu/
+.ipynb_checkpoints/
+
+# REF GENOMES
+workflow/data/ref_genomes/
+
 # Zenodo
 workflow/sandbox.zenodo.org/
 sandbox.zenodo.org/
