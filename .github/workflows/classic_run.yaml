@@ -30,7 +30,6 @@ jobs:
         with:
           directory: .
           snakefile: ./workflow/Snakefile
-          # stagein: "mamba env remove -n snakemake && mamba create -y -n snakemake -c conda-forge -c bioconda unzip snakemake pandas pysam tqdm imagemagick && source activate snakemake && ls -l && pwd"
           args: "--lint"
   Testing:
     runs-on: ubuntu-latest
