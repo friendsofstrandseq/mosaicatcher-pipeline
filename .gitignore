@@ -57,6 +57,7 @@ TEST_OUTPUT
 workflow/test.txt
 .snakemake
 
+
 # Exceptions
 !docs/images/*.png
 !workflow/data/segdups/segDups_hg38_UCSCtrack.bed.gz

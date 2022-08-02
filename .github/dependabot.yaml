@@ -1,4 +1,9 @@
 version: 2
+name: dependabot
+on:
+  push:
+    branches:
+      - master
 updates:
   - package-ecosystem: "github-actions"
     directory: "/"
