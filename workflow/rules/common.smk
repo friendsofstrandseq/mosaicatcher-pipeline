@@ -1,6 +1,7 @@
 import pandas as pd
 from scripts.utils import handle_input
 
+bam = True if config["ashleys_pipeline"] is False else True
 
 # Create configuration file with samples
 c = handle_input.HandleInput(
@@ -9,7 +10,7 @@ c = handle_input.HandleInput(
         input_bam_location=config["input_bam_location"]
     ),
     check_sm_tag=False,
-    bam=False,
+    bam=bam,
 )
 
 # Read config file previously produced
