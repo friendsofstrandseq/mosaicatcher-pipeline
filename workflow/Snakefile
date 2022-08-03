@@ -34,7 +34,7 @@ if config["ashleys_pipeline"] is True:
             github(
                 "friendsofstrandseq/ashleys-qc-pipeline",
                 path="workflow/Snakefile",
-                branch="main",
+                branch="dev",
             )
         config:
             config
