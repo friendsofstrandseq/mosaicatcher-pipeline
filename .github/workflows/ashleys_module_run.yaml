@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - dev
       - smk_wf_catalog
 
 jobs:
