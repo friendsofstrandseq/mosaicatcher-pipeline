@@ -3,6 +3,9 @@ from snakemake.utils import min_version
 min_version("7.4.1")
 
 
+configfile: "config/config.yaml"
+
+
 onstart:
     arg = "ENABLED" if config["ashleys_pipeline"] is True else "DISABLED"
     print("###################################")
@@ -13,13 +16,15 @@ onstart:
     print("Output folder selected : {}".format(config["output_location"]))
 
 
-configfile: "config/config.yaml"
-
-
 report: "report/workflow.rst"
 
 
-containerized: "docker://weber8thomas/mosaicatcher-pipeline:1.5.1"
+docker_container = "docker://weber8thomas/mosaicatcher-pipeline:{version}".format(
+    version=str(config["version"])
+)
+
+
+containerized: docker_container
 
 
 if config["ashleys_pipeline"] is True:
@@ -29,7 +34,7 @@ if config["ashleys_pipeline"] is True:
             github(
                 "friendsofstrandseq/ashleys-qc-pipeline",
                 path="workflow/Snakefile",
-                branch="smk_wf_catalog",
+                branch="dev",
             )
         config:
             config
