@@ -41,7 +41,8 @@ rule regenotype_SNVs:
     input:
         bam="{output_folder}/merged_bam/{sample}/merged.bam",
         bai="{output_folder}/merged_bam/{sample}/merged.bam.bai",
-        sites=config["snv_sites_to_genotype"],
+        # sites=config["snv_sites_to_genotype"],
+        sites=config["references_data"][config["reference"]]["snv_sites_to_genotype"],
         fasta="workflow/data/ref_genomes/{ref}.fa.gz".format(ref=config["reference"]),
         fasta_index="workflow/data/ref_genomes/{ref}.fa.gz.fai".format(ref=config["reference"]),
     output:

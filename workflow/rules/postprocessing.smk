@@ -15,7 +15,8 @@ rule postprocessing_filter:
     conda:
         "../envs/mc_base.yaml"
     params:
-        segdups=config["segdups"],
+        # segdups=config["segdups"],
+        segdups=config["references_data"][config["reference"]]["segdups"],
     resources:
         mem_mb=get_mem_mb,
     shell:
