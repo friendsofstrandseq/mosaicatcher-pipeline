@@ -3,42 +3,48 @@
 
 # Quick Start
 
-1. Install [Singularity](https://www.sylabs.io/guides/3.0/user-guide/) 
-2. To prevent conda channel errors
+0. [Optional] Install [Singularity](https://www.sylabs.io/guides/3.0/user-guide/) 
+
+1. Create a dedicated conda environment 
+```bash
+conda create -n snakemake -c bioconda snakemake && conda activate snakemake
 ```
-conda config --set channel_priority 
-```
-3. Create a dedicated conda environment 
-```
-conda create -n mosaicatcher_env -c conda-forge -c bioconda snakemake pandas pysam imagemagick tqdm && conda activate mosaicatcher_env
-```
-4. Clone the repository 
-``` 
+
+2. Clone the repository 
+```bash
 git clone https://github.com/friendsofstrandseq/mosaicatcher-pipeline.git && cd mosaicatcher-pipeline
 ```
-5. Download reference data 
-```
-snakemake -c1 --config mode=download_data dl_external_files=True 
-```
-6. Run on example data on only one small chromosome (`<disk>` must be replaced by your disk letter/name, `/g` or `/scratch` at EMBL for example)
-```
-snakemake --cores 12 --config mode=mosaiclassifier plot=True input_bam_location=.tests/data/ output_location=.tests/output/ chromosomes="[chr21]" snv_sites_to_genotype=.tests/external_data/1000G_chr21.vcf.gz reference=.tests/external_data/chr21.fna containerized=True --use-conda --use-singularity --singularity-args "-B /<disk>:/<disk>" --latency-wait 60 
+
+3. Download reference data 
+```bash
+snakemake -c1 --config dl_external_files=True 
 ```
 
-7. Generate report on example data
-```
-snakemake --cores 12 --config mode=mosaiclassifier plot=True input_bam_location=.tests/data/ output_location=.tests/output/ chromosomes="[chr21]" snv_sites_to_genotype=.tests/external_data/1000G_chr21.vcf.gz reference=.tests/external_data/chr21.fna containerized=True --use-conda --use-singularity --singularity-args "-B /<disk>:/<disk>" --latency-wait 60 --report <REPORT.zip>
+4. Run on example data on only one small chromosome (`<disk>` must be replaced by your disk letter/name, `/g` or `/scratch` at EMBL for example)
+```bash
+# Snakemake Profile: if singularity installed: workflow/profiles/local/conda_singularity/
+# Snakemake Profile: if singularity NOT installed: workflow/profiles/local/conda/
+snakemake --cores 6 --configfile .tests/config/simple_config.yaml --profile workflow/profiles/local/conda_singularity/ 
 ```
 
+5. Generate report on example data
+```bash
+snakemake --cores 6 --configfile .tests/config/simple_config.yaml --profile workflow/profiles/local/conda_singularity/ --report report.zip
+```
 
-8. Start running your own analysis
-```
-snakemake --cores 12 --config mode=mosaiclassifier plot=True input_bam_location=<INPUT_DATA_FOLDER> output_location=<OUTPUT_DATA_FOLDER> containerized=True --use-conda --use-singularity --singularity-args "-B /<disk>:/<disk>" --latency-wait 60 
+6. Start running your own analysis
+```bash
+snakemake \
+    --cores <N> --config input_bam_location=<INPUT_DATA_FOLDER> output_location=<OUTPUT_DATA_FOLDER> \
+    --profile workflow/profiles/local/conda_singularity/ 
 
 ```
-9. Generate report 
-```
-snakemake --cores 12 --config mode=mosaiclassifier plot=True input_bam_location=<INPUT_DATA_FOLDER> output_location=<OUTPUT_DATA_FOLDER> containerized=True --use-conda --use-singularity --singularity-args "-B /<disk>:/<disk>" --latency-wait 60 --report <REPORT.zip>
+7. Generate report 
+```bash
+snakemake \
+    --cores <N> --config input_bam_location=<INPUT_DATA_FOLDER> output_location=<OUTPUT_DATA_FOLDER> \
+    --profile workflow/profiles/local/conda_singularity/ \
+    --report <REPORT.zip>
 ```
 
 ## System requirements
@@ -62,7 +68,7 @@ If possible, it is also highly recommended to install and use `mamba` package ma
 
 ```
 conda install -c conda-forge mamba
-mamba create -n mosaicatcher_env -c conda-forge -c bioconda snakemake pandas pysam imagemagick
+mamba create -n snakemake -c bioconda snakemake
 conda activate mosaicatcher_env
 ```
 
@@ -81,53 +87,13 @@ cd mosaicatcher-pipeline/workflow/
 ```
 
 
-### ⚙️ 3. MosaiCatcher config and execution
-
-MosaiCatcher takes different arguments to run. Default configuration (`worfklow/config/config.yaml`) looks like the following. 
-
-```yaml
-# Required arguments
-
-## Modes ["count", "segmentation", "mosaiclassifier"]
-mode: "count"
-## Plot enabled [True] or disabled [False]
-plot: False
-## Enable / Disable comparison for each BAM file between folder name & SM tag
-check_sm_tag: True
-## Enable / Disable download of BAM examples (RPE-BM510)
-dl_bam_example: False
-## Enable / Disable download of external files (1000G SNV & Fasta ref genome)
-dl_external_files: False
-## Input BAM location
-input_bam_location: ".tests/data/"
-## Output location
-output_location: ".tests/output/"
-
-# External files
-## 1000G SNV sites to genotype : https://sandbox.zenodo.org/record/1060653/files/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz
-snv_sites_to_genotype: "sandbox.zenodo.org/record/1062182/files/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz"
-# Reference genome : https://sandbox.zenodo.org/record/1060653/files/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna
-reference: "sandbox.zenodo.org/record/1062182/files/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna"
-
-# Chromosomes list to process
-chromosomes: [chr1, chr2, chr3, chr4, chr5, chr6, chr7, chr8, chr9, chr10, chr11, chr12, chr13, chr14, chr15, chr16, chr17, chr18, chr19, chr20, chr21, chr22, chrX]
-```
-
-You can either change it or override YAML file by using snakemake CLI arguments as the following : 
-
-```
---config mode=segmentation plot=False input_bam_location=/HELLO_WORLD output_location=/AU_REVOIR
-```
-
-The `--config` argument will here overrides value of each of the keys present in the YAML file.
-
-
+### ⚙️ 3. MosaiCatcher execution
 
 
 #### 3A. Download external data automatically with snakemake [Optional] 
 
 ```
-snakemake -c1 --config mode=download_data dl_external_files=True
+snakemake -c1 --config dl_external_files=True
 ```
 
 #### 3B. Strand-Seq BAM input data
@@ -135,7 +101,7 @@ snakemake -c1 --config mode=download_data dl_external_files=True
 ##### (i) Download large example data automatically with snakemake [Optional] 
 
 ```
-snakemake -c1 --config mode=download_data dl_bam_example=True input_bam_location=TEST_EXAMPLE_DATA/
+snakemake -c1 --config dl_bam_example=True input_bam_location=TEST_EXAMPLE_DATA/
 ```
 **Warning:** Download example data currently requires 3GB of free space disk. 
 
@@ -148,37 +114,30 @@ In its current flavour, MosaiCatcher requires that input data must be formatted 
 ```bash
 Parent_folder
 |-- Sample_1
-|   |-- all
-|   |   |-- Cell_01.sort.mdup.bam
-|   |   |-- Cell_02.sort.mdup.bam
-|   |   |-- Cell_03.sort.mdup.bam
-|   |   `-- Cell_04.sort.mdup.bam
-|   `-- selected
+|   `-- all
 |       |-- Cell_01.sort.mdup.bam
 |       |-- Cell_02.sort.mdup.bam
+|       |-- Cell_03.sort.mdup.bam
 |       `-- Cell_04.sort.mdup.bam
+| 
 `-- Sample_2
-    |-- all
-    |   |-- Cell_21.sort.mdup.bam
-    |   |-- Cell_22.sort.mdup.bam
-    |   |-- Cell_23.sort.mdup.bam
-    |   `-- Cell_24.sort.mdup.bam
-    `-- selected
+    `-- all
+        |-- Cell_21.sort.mdup.bam
         |-- Cell_22.sort.mdup.bam
         |-- Cell_23.sort.mdup.bam
         `-- Cell_24.sort.mdup.bam
 ```
 
-In a `Parent_Folder`, create a subdirectory `Parent_Folder/sampleName/` for each `sample`. Your Strand-seq BAM files of this sample go into two folders:
+In a `Parent_Folder`, create a subdirectory `Parent_Folder/sampleName/` for each `sample`. Your Strand-seq BAM files of this sample go into the following folder:
 
-* `all/` for the total set of BAM files
-* `selected/` for the subset of successful Strand-seq libraries (possibly hard-linked to `all/`)
+* `all` for the total set of BAM files
 
 It is important to follow these rules for single-cell data
 
 * One BAM file per cell
 * Sorted and indexed
   * If BAM files are not indexed, please use a writable folder in order that the pipeline generate itself the index `.bai` files
+* BAM file name ending by suffix: `.sort.mdup.bam`
 * Timestamp of index files must be newer than of the BAM files
 * Each BAM file must contain a read group (`@RG`) with a common sample name (`SM`), which must match the folder name (`sampleName` above)
 
@@ -193,26 +152,20 @@ After defining your configuration, you can launch the pipeline the following way
 
 ```bash
 snakemake \
-    --cores 20 \
-    --config \
-        plot=True \
-        mode=mosaiclassifier \
-        containerized=True \
-        --use-conda --use-singularity --singularity-args "-B /:/"
+    --cores <N> \
+    --profile workflow/profiles/local/conda_singularity/
+ 
 ```
 
 Otherwise, you must specify your input and output folder like the following:
 
 ```bash
 snakemake \
-    --cores 20 \
+    --cores <N> \
     --config \
-        plot=True \
-        mode=mosaiclassifier \
-        output_location=<OUTPUT_FOLDER> \
         input_bam_location=<INPUT_FOLDER> \
-        containerized=True \
-        --use-conda --use-singularity --singularity-args "-B /<mounting_point>:/<mounting_point>"
+        output_location=<OUTPUT_FOLDER> \
+    --profile workflow/profiles/local/conda_singularity/ --singularity-args "-B /<mounting_point>:/<mounting_point>"
 ```
 
 ---
@@ -243,14 +196,11 @@ To execute MosaiCatcher on HPC, use the following command.
 
 ```bash
 snakemake \
-    --profile profiles/slurm/ \
     --config \
-        plot=True \
-        mode=mosaiclassifier \
-        output_location=<OUTPUT_FOLDER> \
         input_bam_location=<INPUT_FOLDER> \
-        containerized=True \
-        --use-conda --use-singularity --singularity-args "-B /<mounting_point>:/<mounting_point>"
+        output_location=<OUTPUT_FOLDER> \
+    --singularity-args "-B /<mounting_point>:/<mounting_point>" \
+    --profile workflow/profiles/slurm/
 ```
 
 The `logs` and `errors` directory will be automatically created in the current directory, corresponding respectively to the `output` and `error` parameter of the `sbatch` command. 
@@ -262,13 +212,11 @@ Optionally, you can also MosaiCatcher rules that produce plots
 
 ```bash
 snakemake \
-    --cores 20  \
     --config \
-        plot=True \
-        output_location=<OUTPUT_FOLDER> \
         input_bam_location=<INPUT_FOLDER> \
-        containerized=True \
-        --use-conda --use-singularity --singularity-args "-B /<mounting_point>:/<mounting_point>"
+        output_location=<OUTPUT_FOLDER> \
+    --singularity-args "-B /<mounting_point>:/<mounting_point>" \
+    --profile workflow/profiles/slurm/ \
     --report <report>.zip
 ```
 

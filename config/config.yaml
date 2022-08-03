@@ -1,3 +1,4 @@
+version: 1.6.0
 #######################################
 #   MOSAICATCHER CONFIGURATION FILE.  #
 #######################################
@@ -17,7 +18,7 @@ use_light_data: False
 ### Modes ["count", "segmentation", "mosaiclassifier"]
 mode: "mosaiclassifier"
 ### Plot enabled [True] or disabled [False]
-plot: False
+plot: True
 ### Enable / Disable comparison for each BAM file between folder name & SM tag
 check_sm_tag: True
 ### Enable / Disable download of BAM examples (RPE-BM510)
@@ -66,21 +67,6 @@ chromosomes:
 ##############################
 # Advanced configuration.  #
 ##############################
-
-samples: "config/samples.tsv"
-
-# Enable conda & singularity usage
-use-conda: True
-use-singularity: True
-containerized: True
-singularity-args: "-B /g:/g"
-latency-wait: 60
-
-# Default conda frontend
-conda-frontend: "conda"
-
-# Print shell commands
-printshellcmds: True
 
 # External static data
 # R Ref
