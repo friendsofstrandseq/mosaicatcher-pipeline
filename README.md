@@ -84,21 +84,20 @@ snakemake --cores 12 --config input_bam_location=<INPUT_DATA_FOLDER> output_loca
 - [x] Automatic testing of BAM SM tag compared to sample folder name ([1.2.3](https://github.com/friendsofstrandseq/mosaicatcher-pipeline/releases/tag/1.2.3))
 - [x] On-error/success e-mail ([1.3](https://github.com/friendsofstrandseq/mosaicatcher-pipeline/releases/tag/1.3))
 - [x] HPC execution (slurm profile for the moment) ([1.3](https://github.com/friendsofstrandseq/mosaicatcher-pipeline/releases/tag/1.3))
+- [x] Full singularity image with preinstalled conda envs ([1.5.1](https://github.com/friendsofstrandseq/mosaicatcher-pipeline/releases/tag/1.5.1))
+- [x] Single BAM folder with side config file ([1.6.1](https://github.com/friendsofstrandseq/mosaicatcher-pipeline/releases/tag/1.6.1))
 - [ ] Plotting options (enable/disable segmentation back colors)
-- [ ] Full singularity image with preinstalled conda envs
-- [ ] Portable Encapsulated Project compliant
-- [ ] Single BAM folder with side config file
 ## Bioinformatic-related features
 
+- [x] Self-handling of low-coverage cells ([1.6.1](https://github.com/friendsofstrandseq/mosaicatcher-pipeline/releases/tag/1.6.1))
+- [x] Upstream [ashleys-qc-pipeline](https://github.com/friendsofstrandseq/ashleys-qc-pipeline.git) and FASTQ handle ([1.6.1](https://github.com/friendsofstrandseq/mosaicatcher-pipeline/releases/tag/1.6.1))
 - [ ] Change of reference genome (currently only GRCh38)
-- [ ] Upstream QC pipeline and FastQ handle
 - [ ] Pooling samples
-- [ ] Self-handling of low-coverage cells
 
 ## Small issues to fix
 
 - [ ] Move pysam / SM tag comparison script to snakemake rule
-  
+- [ ] replace `input_bam_location` by `input_folder` (harmonization with [ashleys-qc-pipeline](https://github.com/friendsofstrandseq/ashleys-qc-pipeline.git))
 
 # 🛑 Troubleshooting & Current limitations
 
@@ -106,6 +105,26 @@ snakemake --cores 12 --config input_bam_location=<INPUT_DATA_FOLDER> output_loca
 - Do not change the list of chromosomes after a first execution (i.e: first execution using `count` mode on `chr21`, second execution using `segmentation` mode on all chromosomes)
 - ~~Pipeline is unstable on **male** samples (LCL sample for example) for the moment due to the impossibility to run strandphaser (only one haplotype for the X chrom)~~ That was solved based on [Hufsah Ashraf](https://github.com/orgs/friendsofstrandseq/people/Hufsah-Ashraf) and [Wolfram Höps](https://github.com/orgs/friendsofstrandseq/people/WHops) work allowing to determine automatically sample sex and use [snakemake checkpoint](https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html#data-dependent-conditional-execution) that allow data-depdendent conditional execution. Thus, initial list of chromosomes was updated regarding the samples sex in order to bypass chrX & chrY for male sample, as both are present in a single haplotype.  
 
+# Authors (alphabetical order)
+
+## Contributors
+
+- Ashraf Hufash
+- Ebert Peter
+- Ghareghani Maryam
+- Grimes Karen
+- Gros Christina
+- Höps Wolfram
+- Jeong Hyobin
+- Kinanen Venla
+- Korbel Jan
+- Marschall Tobias
+- Meiers Sasha
+- Porubsky David
+- Rausch Tobias
+- Sanders Ashley
+- Van Vliet Alex
+- Weber Thomas (maintainer and current developer)
 
 # 📕 References
 
