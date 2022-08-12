@@ -77,13 +77,15 @@ workflow/test.txt
 .tests/unit/
 
 ## OUTPUT TEST
-.tests/output/
+.tests/output*/
 .tests/output_CHR21/
 .tests/output_CHR21_LITE_FNA/
 .tests/output2/
 
 ## DATA
 .tests/data_CHR21_LITE_FNA/
+.tests/data_HG19/
+.tests/data_T2T/
 .tests/data/RPE-BM510/all/*.bai
 .tests/data/RPE-BM510/all/*.bam
 .tests/data/RPE-BM510/all/*.log

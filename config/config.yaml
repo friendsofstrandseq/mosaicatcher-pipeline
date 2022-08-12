@@ -35,24 +35,7 @@ output_location: ".tests/output_CHR21"
 
 # Reference genome : https://sandbox.zenodo.org/record/1060653/files/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna
 # reference: sandbox.zenodo.org/record/1074721/files/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna
-reference: "hg19"
-references_data:
-  "hg38":
-    reference_fasta: "/g/korbel2/weber/workspace/mosaicatcher-update/workflow/data/ref_genomes/hg38.fa.gz"
-    R_reference: "BSgenome.Hsapiens.UCSC.hg38"
-    segdups: "workflow/data/segdups/segDups_hg38_UCSCtrack.bed.gz"
-    snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/ALL.chr1-22plusXY_GRCh38_sites.20170504.renamedCHR.vcf.gz"
-  "hg19":
-    reference_fasta: "/g/korbel2/weber/workspace/mosaicatcher-update/workflow/data/ref_genomes/hg19.fa.gz"
-    R_reference: "BSgenome.Hsapiens.UCSC.hg19"
-    segdups: "workflow/data/segdups/segDups_hg19_UCSCtrack.bed.gz"
-    snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/ALL.chr1-22plusXY_hg19_sites.20170504.renamedCHR.vcf.gz"
-  # - "T2T":
-  #     # External static data
-  #     # R Ref
-  #     - R_reference: "BSgenome.Hsapiens.NCBI.T2T.CHM13v2.0"
-  #     # SegDups file
-  #     - segdups: "workflow/data/segdups/segDups_hg38_UCSCtrack.bed.gz"
+reference: "T2T"
 
 # Chromosomes list to process
 chromosomes:
@@ -112,8 +95,23 @@ window: 100000
 
 ## METHODS
 methods:
-  - "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0_regfactor6_filterFALSE"
-  - "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.05_regfactor6_filterTRUE"
+  lenient:
+    method_name: "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0_regfactor6_filterFALSE"
+    llr: 4
+    poppriors: TRUE
+    haplotags: TRUE
+    gtcutoff: 0
+    regfactor: 6
+    filter: FALSE
+
+  stringent:
+    method_name: "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.05_regfactor6_filterTRUE"
+    llr: 4
+    poppriors: TRUE
+    haplotags: TRUE
+    gtcutoff: 0.05
+    regfactor: 6
+    filter: TRUE
 
 llr: 4
 poppriors: TRUE
@@ -147,3 +145,22 @@ additional_sce_cutoff: 20000000
 sce_min_distance: 500000
 
 abs_path: "/"
+
+## REFERENCE GENOMES
+
+references_data:
+  "hg38":
+    reference_fasta: "workflow/data/ref_genomes/hg38.fa"
+    R_reference: "BSgenome.Hsapiens.UCSC.hg38"
+    segdups: "workflow/data/segdups/segDups_hg38_UCSCtrack.bed.gz"
+    snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/ALL.chr1-22plusXY_GRCh38_sites.20170504.renamedCHR.vcf.gz"
+  "hg19":
+    reference_fasta: "workflow/data/ref_genomes/hg19.fa"
+    R_reference: "BSgenome.Hsapiens.UCSC.hg19"
+    segdups: "workflow/data/segdups/segDups_hg19_UCSCtrack.bed.gz"
+    snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/ALL.chr1-22plusXY_hg19_sites.20170504.renamedCHR.vcf.gz"
+  "T2T":
+    reference_fasta: "workflow/data/ref_genomes/T2T.fa"
+    R_reference: "BSgenome.T2T.CHM13.V2"
+    segdups: "workflow/data/segdups/segDups_T2T_UCSCtrack.bed.gz"
+    snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/ALL.chr1-22plusXY_T2T_sites.20170504.renamedCHR.vcf.gz"

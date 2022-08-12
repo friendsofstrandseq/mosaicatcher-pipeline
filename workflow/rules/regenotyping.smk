@@ -43,8 +43,8 @@ rule regenotype_SNVs:
         bai="{output_folder}/merged_bam/{sample}/merged.bam.bai",
         # sites=config["snv_sites_to_genotype"],
         sites=config["references_data"][config["reference"]]["snv_sites_to_genotype"],
-        fasta="workflow/data/ref_genomes/{ref}.fa.gz".format(ref=config["reference"]),
-        fasta_index="workflow/data/ref_genomes/{ref}.fa.gz.fai".format(ref=config["reference"]),
+        fasta=config["references_data"][config["reference"]]["reference_fasta"],
+        fasta_index="{fasta}.fai".format(fasta=config["references_data"][config["reference"]]["reference_fasta"]),
     output:
         vcf="{output_folder}/snv_genotyping/{sample}/{chrom,chr[0-9A-Z]+}.vcf",
     log:
@@ -57,7 +57,7 @@ rule regenotype_SNVs:
     shell:
         """
         (freebayes \
-            -f {input.fa} \
+            -f {input.fasta} \
             -r {wildcards.chrom} \
             -@ {input.sites} \
             --only-use-input-alleles {input.bam} \
