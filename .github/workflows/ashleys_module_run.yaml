@@ -5,6 +5,7 @@ on:
     branches:
       - master
       - smk_wf_catalog
+      - ref_genomes
 
 jobs:
   # WORK

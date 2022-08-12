@@ -1,0 +1,27 @@
+name: strandphaser
+channels:
+  - conda-forge
+  - bioconda
+  - r
+  - anaconda
+dependencies:
+  - bioconductor-biocgenerics
+  - bioconductor-bsgenome
+  - bioconductor-bsgenome.hsapiens.ucsc.hg19
+  - bioconductor-bsgenome.hsapiens.ucsc.hg38
+  - bioconductor-fastseg
+  - bioconductor-genomicalignments
+  - bioconductor-genomicranges
+  - bioconductor-rsamtools
+  - bioconductor-s4vectors
+  - r-base>=4.2
+  - r-cowplot
+  - r-devtools
+  - r-doparallel
+  - r-foreach
+  - r-ggplot2
+  - r-gtools
+  - r-reshape2
+  - r-zoo
+  - r-cairo
+  - fonts-anaconda

@@ -30,12 +30,14 @@ input_bam_location: ".tests/data_CHR21"
 ## Output location
 output_location: ".tests/output_CHR21"
 
-# External files
-## 1000G SNV sites to genotype : https://sandbox.zenodo.org/record/1060653/files/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz
-snv_sites_to_genotype: .tests/external_data/1000G_chr21.vcf.gz
+reference: "hg38"
 
-# Reference genome : https://sandbox.zenodo.org/record/1060653/files/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna
-reference: .tests/external_data/chr21.fna
+references_data:
+  "hg38":
+    reference_fasta: ".tests/external_data/chr21.fna"
+    R_reference: "BSgenome.Hsapiens.UCSC.hg38"
+    segdups: "workflow/data/segdups/segDups_hg38_UCSCtrack.bed.gz"
+    snv_sites_to_genotype: ".tests/external_data/1000G_chr21.vcf.gz"
 
 # Chromosomes list to process
 chromosomes:
@@ -81,9 +83,9 @@ paired_end: True
 window: 100000
 
 ## METHODS
-methods:
-  - "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0_regfactor6_filterFALSE"
-  - "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.05_regfactor6_filterTRUE"
+# methods:
+#   - "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0_regfactor6_filterFALSE"
+#   - "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.05_regfactor6_filterTRUE"
 
 llr: 4
 poppriors: TRUE
@@ -117,3 +119,22 @@ additional_sce_cutoff: 20000000
 sce_min_distance: 500000
 
 abs_path: "/"
+
+methods:
+  lenient:
+    method_name: "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0_regfactor6_filterFALSE"
+    llr: 4
+    poppriors: TRUE
+    haplotags: TRUE
+    gtcutoff: 0
+    regfactor: 6
+    filter: FALSE
+
+  stringent:
+    method_name: "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.05_regfactor6_filterTRUE"
+    llr: 4
+    poppriors: TRUE
+    haplotags: TRUE
+    gtcutoff: 0.05
+    regfactor: 6
+    filter: TRUE
