@@ -93,28 +93,31 @@ rule final_results:
 
 rule plot_SV_consistency_barplot:
     input:
-        sv_calls="{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}.tsv",
+        sv_calls="{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}_filter{filter}.tsv",
     output:
         barplot_bypos=report(
-            "{output_folder}/plots/{sample}/sv_consistency/{method}.consistency-barplot-bypos.pdf",
+            "{output_folder}/plots/{sample}/sv_consistency/{method}_filter{filter}.consistency-barplot-bypos.pdf",
             category="SV Consistency",
             subcategory="{sample}",
             labels={
                 "Barplot type": "By position",
                 "method": "{method}",
+                "filter": "{filter}",
             },
         ),
         barplot_byaf=report(
-            "{output_folder}/plots/{sample}/sv_consistency/{method}.consistency-barplot-byaf.pdf",
+            "{output_folder}/plots/{sample}/sv_consistency/{method}_filter{filter}.consistency-barplot-byaf.pdf",
             category="SV Consistency",
             subcategory="{sample}",
             labels={
                 "Barplot type": "By AF",
                 "method": "{method}",
+                "filter": "{filter}",
+                
             },
         ),
     log:
-        "{output_folder}/log/plot_SV_consistency/{sample}/{method}.log",
+        "{output_folder}/log/plot_SV_consistency/{sample}/{method}_filter{filter}.log",
     conda:
         "../envs/rtools.yaml"
     resources:
@@ -125,20 +128,21 @@ rule plot_SV_consistency_barplot:
 
 rule plot_clustering:
     input:
-        sv_calls="{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}.tsv",
+        sv_calls="{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}_filter{filter}.tsv",
         binbed="workflow/data/bin_200kb_all.bed",
     output:
         position=report(
-            "{output_folder}/plots/{sample}/sv_clustering/{method}-position.pdf",
+            "{output_folder}/plots/{sample}/sv_clustering/{method}-filter{filter}-position.pdf",
             category="SV Clustering",
             subcategory="{sample}",
             labels={
                 "method": "{method}",
+                "filter": "{filter}",
             },
         ),
-        chromosome="{output_folder}/plots/{sample}/sv_clustering/{method}-chromosome.pdf",
+        # chromosome="{output_folder}/plots/{sample}/sv_clustering/{method}-chromosome.pdf",
     log:
-        "{output_folder}/log/plot_clustering/{sample}/{method}.log",
+        "{output_folder}/log/plot_clustering/{sample}/{method}_filter{filter}.log",
     conda:
         "../envs/rtools.yaml"
     resources:
@@ -151,14 +155,14 @@ rule plot_SV_calls:
     input:
         counts="{output_folder}/counts/{sample}/{sample}.txt.gz",
         calls="{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}_filter{filter}.tsv",
-        complex_calls="{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}_filter{filter}.complex.tsv",
+        complex_calls="{output_folder}/mosaiclassifier/complex/{sample}/{method}_filter{filter}.tsv",
         strand="{output_folder}/strandphaser/{sample}/StrandPhaseR_final_output.txt",
         segments="{output_folder}/segmentation/{sample}/Selection_jointseg.txt",
         scsegments="{output_folder}/segmentation/{sample}/Selection_singleseg.txt",
         grouptrack="{output_folder}/mosaiclassifier/postprocessing/group-table/{sample}/{method}.tsv",
     output:
         report(
-            "{output_folder}/plots/{sample}/sv_calls/{method}_filter{filter}.{chrom}.pdf",
+            "{output_folder}/plots/{sample}/sv_calls/{method}_filter{filter}/{chrom}.pdf",
             category="SV Calls",
             subcategory="{sample}",
             labels={
@@ -168,7 +172,7 @@ rule plot_SV_calls:
             },
         ),
     log:
-        "{output_folder}/log/plot_SV_calls/{sample}/{method}_filter{filter}.{chrom}.log",
+        "{output_folder}/log/plot_SV_calls/{sample}/{method}_filter{filter}/{chrom}.log",
     conda:
         "../envs/rtools.yaml"
     resources:
@@ -186,3 +190,45 @@ rule plot_SV_calls:
             {wildcards.chrom} \
             {output} > {log} 2>&1
         """
+
+
+# rule plot_SV_calls:
+#     input:
+#         counts="{output_folder}/counts/{sample}/{sample}.txt.gz",
+#         calls="{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}_filter{filter}.tsv",
+#         complex_calls="{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}_filter{filter}.complex.tsv",
+#         strand="{output_folder}/strandphaser/{sample}/StrandPhaseR_final_output.txt",
+#         segments="{output_folder}/segmentation/{sample}/Selection_jointseg.txt",
+#         scsegments="{output_folder}/segmentation/{sample}/Selection_singleseg.txt",
+#         grouptrack="{output_folder}/mosaiclassifier/postprocessing/group-table/{sample}/{method}.tsv",
+#     output:
+#         report(
+#             "{output_folder}/plots/{sample}/sv_calls/{method}_filter{filter}.{chrom}.pdf",
+#             category="SV Calls",
+#             subcategory="{sample}",
+#             labels={
+#                 "method": "{method}",
+#                 "filter": "{filter}",
+#                 "Chrom": "{chrom}",
+#             },
+#         ),
+#     log:
+#         "{output_folder}/log/plot_SV_calls/{sample}/{method}_filter{filter}.{chrom}.log",
+#     conda:
+#         "../envs/rtools.yaml"
+#     resources:
+#         mem_mb=get_mem_mb,
+#     shell:
+#         """
+#         Rscript workflow/scripts/plotting/plot-sv-calls.R \
+#             segments={input.segments} \
+#             singlecellsegments={input.scsegments} \
+#             strand={input.strand} \
+#             complex={input.complex_calls} \
+#             groups={input.grouptrack} \
+#             calls={input.calls} \
+#             {input.counts} \
+#             {wildcards.chrom} \
+#             {output} > {log} 2>&1
+#         """
+

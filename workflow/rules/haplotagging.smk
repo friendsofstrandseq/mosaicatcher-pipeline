@@ -27,8 +27,8 @@ rule haplotag_bams:
             if wc.sample in bam_per_sample_local
             else "FOOBAR",
         ),
-        fasta="workflow/data/ref_genomes/{ref}.fa.gz".format(ref=config["reference"]),
-        fasta_index="workflow/data/ref_genomes/{ref}.fa.gz.fai".format(ref=config["reference"]),
+        fasta=config["references_data"][config["reference"]]["reference_fasta"],
+        fasta_index="{fasta}.fai".format(fasta=config["references_data"][config["reference"]]["reference_fasta"]),
     output:
         "{output_folder}/haplotag/bam/{sample}/{cell}.bam",
     log:

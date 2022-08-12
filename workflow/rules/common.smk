@@ -1,6 +1,12 @@
 import pandas as pd
 from scripts.utils import handle_input
+import os
 
+os.environ["LC_CTYPE"] = "C"
+
+
+envvars:
+    "LC_CTYPE",
 
 # Create configuration file with samples
 c = handle_input.HandleInput(
@@ -180,7 +186,7 @@ def get_mem_mb(wildcards, attempt):
     attemps = reiterations + 1
     Max number attemps = 8
     """
-    mem_avail = [1, 2, 4, 8, 16, 64, 128, 256]
+    mem_avail = [2, 4, 8, 16, 64, 128, 256]
     # print(mem_avail[attempt-1] * 1000, attempt, mem_avail)
     return mem_avail[attempt - 1] * 1000
 
@@ -235,29 +241,40 @@ def get_all_plots(wildcards):
 
     list_indiv_plots.extend(
         expand(
-            "{output_folder}/plots/{sample}/sv_calls/{method}.{chrom}.pdf",
+            "{output_folder}/plots/{sample}/sv_calls/{method}_filter{filter}/{chrom}.pdf",
             output_folder=config["output_location"],
             sample=samples,
             chrom=config["chromosomes"],
             method=config["methods"],
+            filter=["TRUE", "FALSE",]
         ),
     )
     list_indiv_plots.extend(
         expand(
-            "{output_folder}/plots/{sample}/sv_consistency/{method}.consistency-barplot-{plottype}.pdf",
+            "{output_folder}/plots/{sample}/sv_consistency/{method}_filter{filter}.consistency-barplot-{plottype}.pdf",
             output_folder=config["output_location"],
             sample=samples,
             method=config["methods"],
             plottype=config["plottype_consistency"],
+            filter=["TRUE", "FALSE",]
         ),
     )
     list_indiv_plots.extend(
         expand(
-            "{output_folder}/plots/{sample}/sv_clustering/{method}-{plottype}.pdf",
+            "{output_folder}/plots/{sample}/sv_clustering/{method}-filter{filter}-{plottype}.pdf",
             output_folder=config["output_location"],
             sample=samples,
             method=config["methods"],
-            plottype=config["plottype_clustering"],
+            # plottype=config["plottype_clustering"],
+            plottype=["position"],
+            filter=["TRUE", "FALSE",]
+        ),
+    )
+    list_indiv_plots.extend(
+        expand(
+            "{output_folder}/plots/{sample}/ploidy/{sample}.pdf",
+            output_folder=config["output_location"],
+            sample=samples,
         ),
     )
     list_indiv_plots.extend(
@@ -269,13 +286,14 @@ def get_all_plots(wildcards):
     )
     list_indiv_plots.extend(
         expand(
-            "{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}.tsv",
+            "{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}_filter{filter}.tsv",
             output_folder=config["output_location"],
             sample=samples,
             method=config["methods"],
+            filter=["TRUE", "FALSE",]
         )
     ),
-    print(list_indiv_plots)
+    # print(list_indiv_plots)
     return list_indiv_plots
 # def get_final_plots():
 #     final_list = list()
