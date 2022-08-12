@@ -29,7 +29,7 @@ rule summary_statistics:
 rule aggregate_summary_statistics:
     input:
         tsv=expand(
-            "{output_folder}/stats/{sample}/{method}.tsv",
+            "{output_folder}/stats/{sample}/{method}_filter{filter}.tsv",
             output_folder=config["output_location"],
             method=config["methods"],
             sample=samples,
