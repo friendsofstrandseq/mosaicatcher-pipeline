@@ -24,14 +24,14 @@ containerized: "docker://weber8thomas/mosaicatcher-pipeline:1.5.1"
 if config["ashleys_pipeline"] is True:
 
     module ashleys_qc:
-        # snakefile:
-        #     github(
-        #         "friendsofstrandseq/ashleys-qc-pipeline",
-        #         path="workflow/Snakefile",
-        #         branch="smk_wf_catalog",
-        #     )
         snakefile:
-            "../../ashleys-qc-pipeline/workflow/Snakefile"
+            github(
+                "friendsofstrandseq/ashleys-qc-pipeline",
+                path="workflow/Snakefile",
+                branch="ref_genomes",
+            )
+        # snakefile:
+        #     "../../ashleys-qc-pipeline/workflow/Snakefile"
         config:
             config
 
