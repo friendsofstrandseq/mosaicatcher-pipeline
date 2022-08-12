@@ -32,6 +32,7 @@ rule aggregate_summary_statistics:
             "{output_folder}/stats/{sample}/{method}_filter{filter}.tsv",
             output_folder=config["output_location"],
             method=config["methods"],
+            filter=["TRUE", "FALSE"],
             sample=samples,
         ),
     output:
