@@ -22,7 +22,12 @@ elif snakemake.config["ashleys_pipeline"] is True:
     # labels_path = snakemake.input.labels
     labels = pd.read_csv(labels_path, sep="\t")
     print(labels)
-    cells_to_keep = labels.loc[labels["prediction"] == 1]["cell"].str.replace(".sort.mdup.bam", "").tolist()
+
+    cells_to_keep_ashleys = labels.loc[labels["prediction"] == 1]["cell"].str.replace(".sort.mdup.bam", "").sort_values().tolist()
+    cells_to_keep_mosaic = df.loc[df["pass1"] == 1]["cell"].unique().tolist()
+    cells_to_keep = list(sorted(list(set(cells_to_keep_ashleys).intersection(cells_to_keep_mosaic))))
+
+    # cells_to_keep = labels.loc[labels["prediction"] == 1]["cell"].str.replace(".sort.mdup.bam", "").tolist()
     df_kept = df.loc[df["cell"].isin(cells_to_keep)]
     df_removed = df.loc[~df["cell"].isin(cells_to_keep)]
 

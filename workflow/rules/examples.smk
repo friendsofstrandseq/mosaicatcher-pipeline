@@ -78,14 +78,16 @@ rule download_hg19_reference:
             keep_local=True,
         ),
     output:
-        touch("{output_folder}/config/ref_genomes/download_hg19_reference.ok".format(output_folder=config["output_location"])),
+        "workflow/data/ref_genomes/hg19.fa",
     log:
-        touch("{output_folder}/log/ref_genomes/download_hg19_reference.ok".format(output_folder=config["output_location"])),
+        "workflow/data/ref_genomes/log/hg19.ok",
     run:
         directory = "workflow/data/ref_genomes/"
         if not os.path.exists(directory):
             os.makedirs(directory)
         shell("mv {input} workflow/data/ref_genomes/hg19.fa.gz")
+        shell("gunzip workflow/data/ref_genomes/hg19.fa.gz")
+
 
 rule download_hg38_reference:
     input:
@@ -94,14 +96,16 @@ rule download_hg38_reference:
             keep_local=True,
         ),
     output:
-        touch("{output_folder}/config/ref_genomes/download_hg38_reference.ok".format(output_folder=config["output_location"])),
+        "workflow/data/ref_genomes/hg38.fa",
     log:
-        touch("{output_folder}/log/ref_genomes/download_hg38_reference.ok".format(output_folder=config["output_location"])),
+        "workflow/data/ref_genomes/log/hg38.ok",
     run:
         directory = "workflow/data/ref_genomes/"
         if not os.path.exists(directory):
             os.makedirs(directory)
         shell("mv {input} workflow/data/ref_genomes/hg38.fa.gz")
+        shell("gunzip workflow/data/ref_genomes/hg38.fa.gz")
+
 
 rule download_T2T_reference:
     input:
@@ -110,20 +114,47 @@ rule download_T2T_reference:
             keep_local=True,
         ),
     output:
-        touch("{output_folder}/config/ref_genomes/download_T2T_reference.ok".format(output_folder=config["output_location"])),
+        "workflow/data/ref_genomes/T2T.fa",
     log:
-        touch("{output_folder}/log/ref_genomes/download_T2T_reference.ok".format(output_folder=config["output_location"])),
+        "workflow/data/ref_genomes/log/T2T.ok",
     run:
         directory = "workflow/data/ref_genomes/"
         if not os.path.exists(directory):
             os.makedirs(directory)
         shell("mv {input} workflow/data/ref_genomes/T2T.fa.gz")
+        shell("gunzip workflow/data/ref_genomes/T2T.fa.gz")
+
+
+# rule download_T2T_tarball:
+#     input:
+#         HTTP.remote()
+#     output: 
+#         ".tar.gz"
+#     log:
+#     run:
+
+rule install_T2T_tarball:
+    input: 
+        ".tar.gz"
+    output:
+        touch("workflow/data/ref_genomes/config/T2T_R_tarball_install.ok")
+    log:
+        "workflow/data/ref_genomes/log/T2T_R_tarball_install.log"
+    conda:
+        "../envs/rtools.yaml"
+    shell:
+        """
+        R_path=$(which R | grep -P "\.snakemake" | sed 's/R is //g')
+        "$R_path" -e 'install.packages("{input}")  2>&1 > {log}'
+        """
+
+
 
 rule samtools_faindex:
     input:
-        "{file}.fa.gz"
+        ancient("{file}.fa")
     output:
-        "{file}.fa.gz.fai"
+        "{file}.fa.fai"
     log:
         "{file}.log"
     conda:
