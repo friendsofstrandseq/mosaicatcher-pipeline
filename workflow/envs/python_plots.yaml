@@ -1,0 +1,8 @@
+name: python_plots_env
+channels:
+  - conda-forge
+dependencies:
+  - seaborn
+  - matplotlib
+  - pandas
+  - numpy
