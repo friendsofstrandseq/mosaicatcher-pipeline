@@ -20,6 +20,9 @@ df = df.sort_values(by=["#chrom", "start"])
 # STARTING SUBPLOTS
 f, ax = plt.subplots(ncols=len(df["#chrom"].unique()), figsize=(3 * len(df["#chrom"].unique()), 35))
 
+if len(df["#chrom"].unique()) == 1:
+    ax = np.array(ax)
+
 # ITERATE OVER CHROM
 for i, chrom in enumerate(df["#chrom"].unique().tolist()):
     # PLOTTING MAIN FIGURE
