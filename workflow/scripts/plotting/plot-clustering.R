@@ -1,365 +1,116 @@
 
-
-
 plot.clustering <- function(inputfile, bin.bed.filename, position.outputfile, chromosome.outputfile) {
-# plot.clustering <- function(inputfile, bin.bed.filename, position.outputfile) {
- 
+    genome_bins <- read.table(bin.bed.filename, sep = "\t", header = F, comment.char = "")
+    list_directory <- dir("./", full.names = TRUE)
+
+    pdf(position.outputfile, width = 11, height = 10)
+
+
+    data1 <- read.table(inputfile, sep = "\t", header = T, comment.char = "")
+
+    data1$color <- 0
+    ash12rainbow <- c("#77AADD", "#4477AA", "#114477", "#CC99BB", "#AA4488", "#771155", "#DDDD77", "#AAAA44", "#777711", "#DDAA77", "#AA7744", "#774411")
+    sv_call_name <- c("del_h1", "del_h2", "del_hom", "dup_h1", "dup_h2", "dup_hom", "inv_h1", "inv_h2", "inv_hom", "idup_h1", "idup_h2", "complex")
+
+    for (j in 1:length(sv_call_name)) {
+        tmp <- which(data1[, 9] == sv_call_name[j])
+        data1[tmp, 15] <- j
+    }
+
+    data1_pos <- data1[, 1:3]
+    data1_pos_uniq <- unique(data1_pos)
+    data1_pos_uniq_sort <- data1_pos_uniq[data1_pos_uniq$chrom == "chr1", ]
+    chrom <- c("chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9", "chr10", "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17", "chr18", "chr19", "chr20", "chr21", "chr22", "chrX")
+
+    for (i in 2:length(chrom)) {
+        data1_pos_uniq_sort <- rbind(data1_pos_uniq_sort, data1_pos_uniq[data1_pos_uniq$chrom == chrom[i], ])
+    }
+
+    data1_pos_uniq_sort$posind <- c(1:nrow(data1_pos_uniq_sort))
+
+
+    data1_cell <- data1[, 5]
+    data1_cell_uniq <- unique(data1_cell)
+    data1_cell_uniq_sort <- as.matrix(sort(data1_cell_uniq))
+
+    result <- matrix(0, nrow(data1_cell_uniq_sort), nrow(data1_pos_uniq))
+    result_sv <- matrix(0, nrow(data1_cell_uniq_sort), nrow(data1_pos_uniq))
+
+    for (i in 1:nrow(data1)) {
+        pos_ind <- which(data1_pos_uniq_sort[, 1] == data1[i, 1] & data1_pos_uniq_sort[, 2] == data1[i, 2] & data1_pos_uniq_sort[, 3] == data1[i, 3])
+        cell_ind <- which(data1_cell_uniq_sort[, 1] == data1[i, 5])
+        result[cell_ind, pos_ind] <- data1[i, 13]
+        result_sv[cell_ind, pos_ind] <- data1[i, 15]
+    }
+
+    rownames(result) <- data1_cell_uniq_sort
+    colnames(result) <- data1_pos_uniq_sort$posind
+    result[result == Inf] <- max(c(1, result[result != Inf]))
+    rownames(result_sv) <- data1_cell_uniq_sort
+    colnames(result_sv) <- data1_pos_uniq_sort$posind
+
+    ## Add chromosome color code to heatmap
+    data1_pos_uniq_sort$color <- "magenta"
+    data1_pos_uniq_sort[data1_pos_uniq_sort$chrom == "chr2", 5] <- "purple"
+    data1_pos_uniq_sort[data1_pos_uniq_sort$chr == "chr4", 5] <- "purple"
+    data1_pos_uniq_sort[data1_pos_uniq_sort$chr == "chr6", 5] <- "purple"
+    data1_pos_uniq_sort[data1_pos_uniq_sort$chr == "chr8", 5] <- "purple"
+    data1_pos_uniq_sort[data1_pos_uniq_sort$chr == "chr10", 5] <- "purple"
+    data1_pos_uniq_sort[data1_pos_uniq_sort$chr == "chr12", 5] <- "purple"
+    data1_pos_uniq_sort[data1_pos_uniq_sort$chr == "chr14", 5] <- "purple"
+    data1_pos_uniq_sort[data1_pos_uniq_sort$chr == "chr16", 5] <- "purple"
+    data1_pos_uniq_sort[data1_pos_uniq_sort$chr == "chr18", 5] <- "purple"
+    data1_pos_uniq_sort[data1_pos_uniq_sort$chr == "chr20", 5] <- "purple"
+    data1_pos_uniq_sort[data1_pos_uniq_sort$chr == "chr22", 5] <- "purple"
+    data1_pos_uniq_sort[data1_pos_uniq_sort$chr == "chrY", 5] <- "purple"
+
 
     library(pheatmap)
     library(gplots)
     library(ComplexHeatmap)
-    library(RColorBrewer)
-    library(reshape2)
 
-
-    # Colors, SV types & Chroms instanciation
-    ash12rainbow <-
-      c(
-        "#77AADD",
-        "#4477AA",
-        "#114477",
-        "#CC99BB",
-        "#AA4488",
-        "#771155",
-        "#DDDD77",
-        "#AAAA44",
-        "#777711",
-        "#DDAA77",
-        "#AA7744",
-        "#774411"
-      )
-    sv_call_name <-
-      c(
-        "del_h1",
-        "del_h2",
-        "del_hom",
-        "dup_h1",
-        "dup_h2",
-        "dup_hom",
-        "inv_h1",
-        "inv_h2",
-        "inv_hom",
-        "idup_h1",
-        "idup_h2",
-        "complex"
-      )
-    chrom <-
-      c(
-        "chr1",
-        "chr2",
-        "chr3",
-        "chr4",
-        "chr5",
-        "chr6",
-        "chr7",
-        "chr8",
-        "chr9",
-        "chr10",
-        "chr11",
-        "chr12",
-        "chr13",
-        "chr14",
-        "chr15",
-        "chr16",
-        "chr17",
-        "chr18",
-        "chr19",
-        "chr20",
-        "chr21",
-        "chr22",
-        "chrX"
-      )
-    
-    # Genome bins loading
-    ## Correspond to 200kb size bins for each of the chroms
-    genome_bins <-
-      read.table(
-        bin.bed.filename,
-        sep = "\t",
-        header = F,
-        comment.char = ""
-      )
-    
-    
-    
-    # READ SV calls data
-    data1 <-
-      read.table(inputfile,
-                 sep = "\t",
-                 header = T,
-                 comment.char = "")
-    
-    
-    data1$color <- 0
-    
-    
-    
-    # GOBACK
-    list_directory <- dir("./", full.names = TRUE)
-    
-    # Open PDF for output file
-    pdf(position.outputfile, width = 11, height = 10)
-    
-    # FOR loop to replace AF by the corresponding index in sv_call_name list
-    for (j in 1:length(sv_call_name)) {
-      # Select all elements corresponding to SV index
-      tmp <- which(data1[, 9] == sv_call_name[j])
-      # AF column value become index list
-      data1[tmp, 15] <- j
-    }
-    
-    # Subset only SV segments positions (a SV can overlap multiple segments)
-    data1_pos <- data1[, 1:3]
-    # Unique
-    data1_pos_uniq <- unique(data1_pos)
-    # Sort only chr1 (numeric sorting)
-    data1_pos_uniq_sort <-
-      data1_pos_uniq[data1_pos_uniq$chrom == "chr1", ]
-    
-    # Do the same for chrom 2 to X & concatenate at each iteration
-    for (i in 2:length(chrom)) {
-      data1_pos_uniq_sort <-
-        rbind(data1_pos_uniq_sort, data1_pos_uniq[data1_pos_uniq$chrom == chrom[i],])
-    }
-    # New column to get position in the list
-    data1_pos_uniq_sort$posind <- c(1:nrow(data1_pos_uniq_sort))
-    
-    # Get all cell names
-    data1_cell <- data1[, 5]
-    # Unique
-    data1_cell_uniq <- unique(data1_cell)
-    # Sort
-    data1_cell_uniq_sort <- as.matrix(sort(data1_cell_uniq))
-    
-    # Matrix, row=nb of cells, col=nb of SV (unique positions)
-    result <-
-      matrix(0, nrow(data1_cell_uniq_sort), nrow(data1_pos_uniq))
-    
-    # Matrix, row=nb of cells, col=nb of SV (unique positions)
-    result_sv <-
-      matrix(0, nrow(data1_cell_uniq_sort), nrow(data1_pos_uniq))
-    
-    
-    # FOR loop: for each SV
-    for (i in 1:nrow(data1)) {
-      # Get pos index in data1_pos_uniq_sort
-      pos_ind <-
-        which(
-          data1_pos_uniq_sort[, 1] == data1[i, 1] &
-            data1_pos_uniq_sort[, 2] == data1[i, 2] &
-            data1_pos_uniq_sort[, 3] == data1[i, 3]
-        )
-      # Get cell index in data1_pos_uniq_sort
-      cell_ind <- which(data1_cell_uniq_sort[, 1] == data1[i, 5])
-      
-      # Fill the matrix at corresponding indexes with llr_to_ref & af (SV type) columns
-      result[cell_ind, pos_ind] <- data1[i, 13]
-      result_sv[cell_ind, pos_ind] <- data1[i, 15]
-    }
-    
-    # Replace row & col names
-    rownames(result) <- data1_cell_uniq_sort
-    colnames(result) <- data1_pos_uniq_sort$posind
-    rownames(result_sv) <- data1_cell_uniq_sort
-    colnames(result_sv) <- data1_pos_uniq_sort$posind
-    
-    # Replace Inf values
-    result[result == Inf] <- max(c(1, result[result != Inf]))
-    
-    
-    
-    
-    ########
-    
-    
-    # Create seq
     breaksList <- seq(4, 30, by = 0.1)
-    # Add max of result matrix
     breaksList <- append(breaksList, max(result))
-    # Add -1 at index 0
-    breaksList <- append(breaksList,-1, 0)
-    # Unique & Sort
+    breaksList <- append(breaksList, -1, 0)
     breaksList <- unique(sort(breaksList))
-    # Create color range
-    mycol <-
-      gplots::colorpanel(
-        n = length(breaksList) - 1,
-        low = "lightgoldenrodyellow",
-        mid = "darkorange",
-        high = "firebrick2"
-      )
-    
-    
-    # Sed seed for R Color Brewer
-    set.seed(90)
-    
-    
-    # Generate color list based on chroms length
-    qual_col_pals = brewer.pal.info[brewer.pal.info$category == 'qual',]
-    col_vector = unlist(mapply(brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
-    colors_chroms = sample(col_vector, length(chrom))
-    # Instanciate data$color column
-    data1_pos_uniq_sort$color = "NA"
-    # Iterate over chrom to attribute color
-    for (i in 1:length(chrom)) {
-      chrom_index_list <- which(data1_pos_uniq_sort$chrom == chrom[i])
-      data1_pos_uniq_sort[chrom_index_list, "color"] = colors_chroms[i]
-    }
-    
-    # Sort data based on define factor
-    chrOrder <-
-      c(paste("chr", 1:22, sep = ""), "chrX", "chrY", "chrM")
-    data1_pos_uniq_sort$chrom <-
-      factor(data1_pos_uniq_sort$chr, levels = chrOrder)
-    data1_pos_uniq_sort[order(data1_pos_uniq_sort$chrom),]
-    
-    # Retrieve information & metadata for ComplexHeatmap
-    Chroms <- sample(col_vector, length(chrom))
-    names(Chroms) <- chrom
-    anno_colors <- list(Chroms = Chroms)
-    col_annotation <- as.data.frame(data1_pos_uniq_sort$chrom)
+    mycol <- colorpanel(n = length(breaksList) - 1, low = "lightgoldenrodyellow", mid = "darkorange", high = "firebrick2")
+
+
+    Var1 <- c("magenta", "purple")
+    names(Var1) <- c("magenta", "purple")
+    anno_colors <- list(Var1 = Var1)
+    col_annotation <- as.data.frame(data1_pos_uniq_sort$color)
     rownames(col_annotation) <- colnames(result)
-    colnames(col_annotation) <- "Chroms"
-    
-    # Plot Clustered Heatmap
-    res <-
-      pheatmap::pheatmap(
-        # name = "HELLO",
-        result,
-        border_color = NA,
-        show_rownames = T,
-        show_colnames = F,
-        cluster_cols = F,
-        cluster_rows = T,
-        clustering_method = "ward.D",
-        scale = "none",
-        col = mycol,
-        main = tools::file_path_sans_ext(basename(inputfile)),
-        annotation_col = col_annotation,
-        annotation_colors = anno_colors,
-        breaks = breaksList,
-        annotation_legend = TRUE
-      )
-    # print(res)
-    # dev.off()
-    
-    ######################
-    
-    # Add chrom name + start_end
+    colnames(col_annotation) <- "Var1"
+
+
+    res <- pheatmap(result, border_color = NA, show_rownames = T, show_colnames = F, cluster_cols = F, cluster_rows = T, clustering_method = "ward.D", scale = "none", col = mycol, main = inputfile, annotation_col = col_annotation, annotation_colors = anno_colors, breaks = breaksList, annotation_legend = FALSE)
+    # res <- pheatmap(result, border_color = NA, show_rownames = T, show_colnames = F, cluster_cols = F, cluster_rows = T, clustering_method = "ward.D", scale = "none", col = mycol, cex = 0.7, main = inputfile, annotation_col = col_annotation, annotation_colors = anno_colors, breaks = breaksList, annotation_legend = FALSE)
+
     chr_name <- matrix("chr", ncol(result), 1)
     for (i in 1:ncol(result)) {
-      chr_name[i, 1] <-
-        paste0(data1_pos_uniq_sort[i, 1],
-               "_",
-               data1_pos_uniq_sort[i, 2],
-               "_",
-               data1_pos_uniq_sort[i, 3])
+        chr_name[i, 1] <- paste0(data1_pos_uniq_sort[i, 1], "_", data1_pos_uniq_sort[i, 2], "_", data1_pos_uniq_sort[i, 3])
     }
 
-    # Add as col names to result_sv    
     colnames(result_sv) <- chr_name
-    
-    # SV list
-    sv_list <-
-      c(
-        "none",
-        "del_h1",
-        "del_h2",
-        "del_hom",
-        "dup_h1",
-        "dup_h2",
-        "dup_hom",
-        "inv_h1",
-        "inv_h2",
-        "inv_hom",
-        "idup_h1",
-        "idup_h2",
-        "complex"
-      )
+    colors <- structure(c("white", "#77AADD", "#4477AA", "#114477", "#CC99BB", "#AA4488", "#771155", "#DDDD77", "#AAAA44", "#777711", "#DDAA77", "#AA7744", "#774411"), names = c(0:12))
 
-    # SV type colors
-    colors <-
-      structure(
-        c(
-          "white",
-          "#77AADD",
-          "#4477AA",
-          "#114477",
-          "#CC99BB",
-          "#AA4488",
-          "#771155",
-          "#DDDD77",
-          "#AAAA44",
-          "#777711",
-          "#DDAA77",
-          "#AA7744",
-          "#774411"
-        ),
-        names = c(0:12)
-      )
-    
- 
-    # Create data frame based on previous pheatmap
+    sv_list <- c("none", "del_h1", "del_h2", "del_hom", "dup_h1", "dup_h2", "dup_hom", "inv_h1", "inv_h2", "inv_hom", "idup_h1", "idup_h2", "complex")
+    sv_tmp <- matrix(0, 13, 1)
+    for (i in 1:13) {
+        sv_tmp[i, 1] <- sum(result_sv == (i - 1))
+    }
+    sv_list_sub <- sv_list[sv_tmp > 0]
+
     mat <- as.data.frame(result_sv[res$tree_row$order, ])
-    # library(reshape2)
-    melt_mat <- reshape2::melt(data1$af)
-    print(sv_call_name)
-    print(data1$af)
-    print(data1$sv_call_name)
-    print(table(melt_mat$value))
-    sv_list_sub = sv_list[as.numeric(names(table(melt_mat$value)))]
-    print(sv_list_sub)
-    new_colors = colors[as.numeric(names(table(melt_mat$value)))]
-    
-    # 
-    # 
-    # print(head(mat))
-    # print(colors)
-    # print(sv_list_sub)
-    # print(length(sv_list_sub))
-    # print(new_colors)
-    # print(length(new_colors))
-    # # print(mat)
-    # print(1:length(sv_list_sub))
+    ha_column <- HeatmapAnnotation(
+        df = data.frame(type1 = data1_pos_uniq_sort$color),
+        col = list(type1 = c("magenta" = "magenta", "purple" = "purple"))
+    )
+    ht1 <- Heatmap(mat, name = "", col = colors, heatmap_legend_param = list(labels = sv_list_sub), cluster_rows = FALSE, cluster_columns = FALSE, column_title = inputfile, row_names_gp = gpar(fontsize = 5), column_names_gp = gpar(fontsize = 1), column_title_gp = gpar(fontsize = 7, fontface = "bold"), top_annotation = ha_column)
+    draw(ht1, show_annotation_legend = FALSE)
 
-    print(colors)
-    print(typeof(colors))
-    print(new_colors)
-    print(sv_list_sub)
-    print(length(sv_list_sub))
-    # print(0:length(sv_list_sub)-1)
-    len_sv_list_sub = length(sv_list_sub) - 1
-    print(len_sv_list_sub)
-    print(0:len_sv_list_sub)
-    print(length(0:len_sv_list_sub))
-    # Heatmap metadata
-    ha_column <-
-      ComplexHeatmap::HeatmapAnnotation(df = col_annotation,
-                                        col = anno_colors)
-    print(mat)
-    print(sv_list)
-    # Draw Heatmap based on SV type
-    ht1 <-
-      ComplexHeatmap::Heatmap(
-        data.matrix(mat),
-        name = "SV type",
-        col = colors,
-        heatmap_legend_param = list(at = 0:length(sv_list), labels = sv_list),
-        cluster_rows = FALSE,
-        cluster_columns = FALSE,
-        column_title = tools::file_path_sans_ext(basename(inputfile)),
-        row_names_gp = gpar(fontsize = 5),
-        column_names_gp = gpar(fontsize = 1),
-        column_title_gp = gpar(fontsize = 7, fontface = "bold"),
-        top_annotation = ha_column
-      )
-    # print(ht1)
-    draw(ht1, show_annotation_legend = TRUE)
-     
-
-    # FIXME: second part of plots are not functional
-
-    # dev.off()
+    dev.off()
 
     # pdf(chromosome.outputfile, width = 11, height = 5)
 
@@ -383,7 +134,7 @@ plot.clustering <- function(inputfile, bin.bed.filename, position.outputfile, ch
     # for (i in 2:length(chrom)) {
     #     data1_pos_uniq_sort <- rbind(data1_pos_uniq_sort, data1_pos_uniq[data1_pos_uniq$chrom == chrom[i], ])
     # }
-
+    
     # data1_pos_uniq_sort$posind <- c(1:nrow(data1_pos_uniq_sort))
 
     # data1_cell <- data1[, 5]
@@ -465,5 +216,5 @@ plot.clustering <- function(inputfile, bin.bed.filename, position.outputfile, ch
     #     }
     # }
 
-    dev.off()
+    # dev.off()
 }
