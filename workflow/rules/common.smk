@@ -1,5 +1,5 @@
 import pandas as pd
-from scripts.utils import handle_input
+from scripts.utils import handle_input, make_log_useful
 import os
 
 os.environ["LC_CTYPE"] = "C"
@@ -189,6 +189,20 @@ def get_mem_mb(wildcards, attempt):
     mem_avail = [2, 4, 8, 16, 64, 128, 256]
     # print(mem_avail[attempt-1] * 1000, attempt, mem_avail)
     return mem_avail[attempt - 1] * 1000
+
+
+def onsuccess_fct(wildcards):
+    print("Workflow finished, no error")
+    make_log_useful.make_log_useful(log, 'SUCCESS')
+
+    shell('mail -s "[Snakemake] DGA - SUCCESS" {} < {{log}}'.format(config['mail']))
+
+def onerror_fct(wildcards):
+    print("An error occurred")
+    make_log_useful.make_log_useful(log, 'ERROR')
+
+    shell('mail -s "[Snakemake] DGA - ERRROR" {} < {{log}}'.format(config['mail']))
+
 
 
 def get_all_plots(wildcards):
