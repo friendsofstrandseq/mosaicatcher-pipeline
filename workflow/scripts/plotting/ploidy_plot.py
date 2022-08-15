@@ -18,10 +18,10 @@ df["#chrom"] = pd.Categorical(df["#chrom"], categories=chroms, ordered=True)
 df = df.sort_values(by=["#chrom", "start"])
 
 # STARTING SUBPLOTS
-f, ax = plt.subplots(ncols=len(df["#chrom"].unique()), figsize=(3 * len(df["#chrom"].unique()), 35))
+col_nb = len(df["#chrom"].unique())
+col_nb = col_nb + 1 if col_nb == 1 else col_nb
+f, ax = plt.subplots(ncols=col_nb, figsize=(3 * col_nb, 35))
 
-if len(df["#chrom"].unique()) == 1:
-    ax = np.array(ax)
 
 # ITERATE OVER CHROM
 for i, chrom in enumerate(df["#chrom"].unique().tolist()):
@@ -50,7 +50,7 @@ for i, chrom in enumerate(df["#chrom"].unique().tolist()):
         ax[i].set_ylabel("Position (Mbp)", fontsize=30)
     else:
         ax[i].get_yaxis().set_visible(False)
-f.suptitle("Sample: {}".format("RPE-BM510"), fontsize=50)
+f.suptitle("Sample: {}".format(snakemake.wildcards.sample), fontsize=50)
 plt.tight_layout()
 plt.subplots_adjust(top=0.95)
 plt.savefig(snakemake.output[0], dpi=300)
