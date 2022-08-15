@@ -298,25 +298,53 @@ plot.clustering <- function(inputfile, bin.bed.filename, position.outputfile, ch
         names = c(0:12)
       )
     
-
+ 
     # Create data frame based on previous pheatmap
     mat <- as.data.frame(result_sv[res$tree_row$order, ])
-    melt_mat = reshape2::melt(mat)
+    # library(reshape2)
+    melt_mat <- reshape2::melt(data1$af)
+    print(sv_call_name)
+    print(data1$af)
+    print(data1$sv_call_name)
+    print(table(melt_mat$value))
     sv_list_sub = sv_list[as.numeric(names(table(melt_mat$value)))]
+    print(sv_list_sub)
+    new_colors = colors[as.numeric(names(table(melt_mat$value)))]
+    
+    # 
+    # 
+    # print(head(mat))
+    # print(colors)
+    # print(sv_list_sub)
+    # print(length(sv_list_sub))
+    # print(new_colors)
+    # print(length(new_colors))
+    # # print(mat)
+    # print(1:length(sv_list_sub))
 
+    print(colors)
+    print(typeof(colors))
+    print(new_colors)
+    print(sv_list_sub)
+    print(length(sv_list_sub))
+    # print(0:length(sv_list_sub)-1)
     len_sv_list_sub = length(sv_list_sub) - 1
-
+    print(len_sv_list_sub)
+    print(0:len_sv_list_sub)
+    print(length(0:len_sv_list_sub))
     # Heatmap metadata
     ha_column <-
       ComplexHeatmap::HeatmapAnnotation(df = col_annotation,
                                         col = anno_colors)
+    print(mat)
+    print(sv_list)
     # Draw Heatmap based on SV type
     ht1 <-
       ComplexHeatmap::Heatmap(
         data.matrix(mat),
         name = "SV type",
         col = colors,
-        heatmap_legend_param = list(at = 0:len_sv_list_sub, labels = sv_list_sub),
+        heatmap_legend_param = list(at = 0:length(sv_list), labels = sv_list),
         cluster_rows = FALSE,
         cluster_columns = FALSE,
         column_title = tools::file_path_sans_ext(basename(inputfile)),
@@ -327,7 +355,7 @@ plot.clustering <- function(inputfile, bin.bed.filename, position.outputfile, ch
       )
     # print(ht1)
     draw(ht1, show_annotation_legend = TRUE)
-    
+     
 
     # FIXME: second part of plots are not functional
 
