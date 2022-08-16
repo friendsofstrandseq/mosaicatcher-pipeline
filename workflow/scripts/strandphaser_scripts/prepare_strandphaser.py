@@ -1,13 +1,8 @@
-#!/usr/bin/python
-
 with open(snakemake.output[0], "w") as f:
     print("[General]", file=f)
     print("numCPU           = 1", file=f)
     print("chromosomes      = '" + snakemake.wildcards.chrom + "'", file=f)
-    if snakemake.config["paired_end"]:
-        print("pairedEndReads   = TRUE", file=f)
-    else:
-        print("pairedEndReads   = FALSE", file=f)
+    print("pairedEndReads   = '" + [e.strip() for e in open(snakemake.input.single_paired_end_detect, "r").readlines()][0] + "'", file=f)
     print("min.mapq         = 10", file=f)
     print("", file=f)
     print("[StrandPhaseR]", file=f)

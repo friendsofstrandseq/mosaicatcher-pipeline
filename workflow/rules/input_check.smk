@@ -14,8 +14,6 @@ rule generate_exclude_file_for_mosaic_count:
             input_folder=config["input_bam_location"],
             sample=samples,
             cell=bam_per_sample_local[str(wc.sample)]
-            if wc.sample in bam_per_sample_local
-            else "FOOBAR",
         ),
     output:
         "{output_folder}/config_output/{sample}/exclude_file",

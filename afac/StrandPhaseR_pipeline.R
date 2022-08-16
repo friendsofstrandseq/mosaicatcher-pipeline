@@ -11,9 +11,9 @@ load_all("/g/korbel2/weber/Gits/StrandPhaseR/")
 
 
 strandPhaseR(
-    inputfolder = "/g/korbel2/weber/MosaiCatcher_files/LCL_TALL/H2NCTAFX2_GM20509B_20s000579-1-1/selected",
-    outputfolder = "/g/korbel2/weber/MosaiCatcher_output/Mosaicatcher_output_singularity_LCL-TALL/strandphaser/H2NCTAFX2_GM20509B_20s000579-1-1/StrandPhaseR_analysis.chrX",
-    configfile = "/g/korbel2/weber/MosaiCatcher_output/Mosaicatcher_output_singularity_LCL-TALL/strandphaser/H2NCTAFX2_GM20509B_20s000579-1-1/StrandPhaseR.chrX.config",
-    WCregions = "/g/korbel2/weber/MosaiCatcher_output/Mosaicatcher_output_singularity_LCL-TALL/strandphaser/H2NCTAFX2_GM20509B_20s000579-1-1/strandphaser_input.txt",
-    positions = "/g/korbel2/weber/MosaiCatcher_output/Mosaicatcher_output_singularity_LCL-TALL/snv_genotyping/H2NCTAFX2_GM20509B_20s000579-1-1/chrX.vcf",
+    inputfolder = "/g/korbel2/weber/MosaiCatcher_files/HGSVC_WH/GM12329/all",
+    outputfolder = "/g/korbel2/weber/MosaiCatcher_output/HGSVC_WH/strandphaser/GM12329/StrandPhaseR_analysis.chr21",
+    configfile = "/g/korbel2/weber/MosaiCatcher_output/HGSVC_WH/strandphaser/GM12329/StrandPhaseR.chr21.config",
+    WCregions = "/g/korbel2/weber/MosaiCatcher_output/HGSVC_WH/strandphaser/GM12329/strandphaser_input.txt",
+    positions = "/g/korbel2/weber/MosaiCatcher_output/HGSVC_WH/snv_genotyping/GM12329/chr21.vcf",
 )

@@ -6,30 +6,32 @@ subprocess.call("grep '^#' {} > {}".format(snakemake.input.info_raw, snakemake.o
 
 df = pd.read_csv(snakemake.input.info_raw, skiprows=13, sep="\t")
 df["pass1"] = df["pass1"].astype(int)
-if snakemake.config["ashleys_pipeline"] is False:
-    print("Ashleys pipeline NOT RUNNED, filtering cells that cannot be used for segmentation:")
+# if snakemake.config["ashleys_pipeline"] is False:
+#     print("Ashleys pipeline NOT RUNNED, filtering cells that cannot be used for segmentation:")
 
-    df_kept = df.loc[df["pass1"] == 1]
-    df_removed = df.loc[df["pass1"] == 0]
-    # print(df_removed["Cell"].unique().tolist())
-    cells_to_keep = df_kept["cell"].unique().tolist()
-elif snakemake.config["ashleys_pipeline"] is True:
-    # if os.path.isfile(labels_path) is True:
-    print("Ashleys pipeline RUNNED, filtering cells that cannot be used for segmentation based on ashleys-qc predictions:")
-    labels_path = "{folder}/{sample}/cell_selection/labels.tsv".format(
-        folder=snakemake.config["input_bam_location"], sample=snakemake.wildcards.sample
-    )
-    # labels_path = snakemake.input.labels
-    labels = pd.read_csv(labels_path, sep="\t")
-    print(labels)
+#     df_kept = df.loc[df["pass1"] == 1]
+#     df_removed = df.loc[df["pass1"] == 0]
+#     # print(df_removed["Cell"].unique().tolist())
+#     cells_to_keep = df_kept["cell"].unique().tolist()
+# elif snakemake.config["ashleys_pipeline"] is True:
+#     # if os.path.isfile(labels_path) is True:
+#     print("Ashleys pipeline RUNNED, filtering cells that cannot be used for segmentation based on ashleys-qc predictions:")
 
-    cells_to_keep_ashleys = labels.loc[labels["prediction"] == 1]["cell"].str.replace(".sort.mdup.bam", "").sort_values().tolist()
-    cells_to_keep_mosaic = df.loc[df["pass1"] == 1]["cell"].unique().tolist()
-    cells_to_keep = list(sorted(list(set(cells_to_keep_ashleys).intersection(cells_to_keep_mosaic))))
+# labels_path = "{folder}/{sample}/cell_selection/labels.tsv".format(
+#     folder=snakemake.config["input_bam_location"], sample=snakemake.wildcards.sample
+# )
 
-    # cells_to_keep = labels.loc[labels["prediction"] == 1]["cell"].str.replace(".sort.mdup.bam", "").tolist()
-    df_kept = df.loc[df["cell"].isin(cells_to_keep)]
-    df_removed = df.loc[~df["cell"].isin(cells_to_keep)]
+labels_path = snakemake.input.labels
+labels = pd.read_csv(labels_path, sep="\t")
+print(labels)
+
+cells_to_keep_labels = labels.loc[labels["prediction"] == 1]["cell"].str.replace(".sort.mdup.bam", "").sort_values().tolist()
+cells_to_keep_mosaic = df.loc[df["pass1"] == 1]["cell"].unique().tolist()
+cells_to_keep = list(sorted(list(set(cells_to_keep_labels).intersection(cells_to_keep_mosaic))))
+
+# cells_to_keep = labels.loc[labels["prediction"] == 1]["cell"].str.replace(".sort.mdup.bam", "").tolist()
+df_kept = df.loc[df["cell"].isin(cells_to_keep)]
+df_removed = df.loc[~df["cell"].isin(cells_to_keep)]
 
 
 print(sorted(cells_to_keep))
