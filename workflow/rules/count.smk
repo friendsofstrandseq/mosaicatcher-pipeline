@@ -65,11 +65,19 @@ if config["ashleys_pipeline"] is False:
 
     if config["input_old_behavior"] is False:
 
-        rule blank_labels:
+        rule mosaic_labels:
+            input:
+                "{output_folder}/counts/{sample}/{sample}.info_raw"
             output:
-                touch("{input_folder}/{sample}/cell_selection/labels.tsv"),
+                "{input_folder}/{sample}/cell_selection/labels.tsv",
             log:
                 "{input_folder}/log/{sample}/blank_labels/labels.log",
+            run:
+                df = pd.read_csv(input[0], skiprows=13, sep="\t")
+                df["pass1"] = df["pass1"].astype(int)
+                df = df.loc[df["pass1"] == 1].rename({"pass1" : "probability"}, axis=1)
+                df["prediction"] = 1
+                df.to_csv(output[0])
 
     else:
 
