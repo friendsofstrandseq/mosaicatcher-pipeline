@@ -63,11 +63,27 @@ rule mosaic_count:
 
 if config["ashleys_pipeline"] is False:
 
-    rule blank_labels:
-        output:
-            touch("{input_folder}/{sample}/cell_selection/labels.tsv"),
-        log:
-            "{input_folder}/log/{sample}/blank_labels/labels.log",
+    if config["input_old_behavior"] is False:
+
+        rule blank_labels:
+            output:
+                touch("{input_folder}/{sample}/cell_selection/labels.tsv"),
+            log:
+                "{input_folder}/log/{sample}/blank_labels/labels.log",
+
+    else:
+
+        rule selected_cells:
+            input:
+                path = "{input_folder}/{sample}"
+            output:
+                "{input_folder}/{sample}/cell_selection/labels.tsv"
+            log:
+                "{input_folder}/log/{sample}/blank_labels/labels.log",
+            conda:
+                "../envs/mc_base.yaml"
+            script:
+                "../scripts/utils/handle_input_old_behavior.py"
 
 
 rule order_mosaic_count_output:
@@ -87,16 +103,26 @@ rule order_mosaic_count_output:
         df = df.sort_values(by=["sample", "cell", "chrom", "start"])
         df.to_csv(output[0], index=False, compression="gzip", sep="\t")
 
+rule copy_labels:
+    input:
+        # "{input_folder}/{sample}/cell_selection/labels.tsv",
+        expand("{input_folder}/{sample}/cell_selection/labels.tsv", input_folder=config["input_bam_location"], sample=samples)
+    output:
+        "{output_folder}/cell_selection/{sample}/labels.tsv"    
+        # expand("{output_folder}/cell_selection/{sample}/labels.tsv", output_folder=config["output_location"], sample=samples)
+    log:
+        "{output_folder}/log/cell_selection/{sample}.log",
+    conda:
+        "../envs/mc_base.yaml"
+    shell:
+        "cp {input} {output}"
+
 
 checkpoint filter_bad_cells_from_mosaic_count:
     input:
         info_raw="{output_folder}/counts/{sample}/{sample}.info_raw",
         counts_sort="{output_folder}/counts/{sample}/{sample}.txt.sort.gz",
-        labels=expand(
-            "{input_folder}/{sample}/cell_selection/labels.tsv",
-            input_folder=config["input_bam_location"],
-            sample=samples,
-        ),
+        labels="{output_folder}/cell_selection/{sample}/labels.tsv",
     output:
         info="{output_folder}/counts/{sample}/{sample}.info",
         info_removed="{output_folder}/counts/{sample}/{sample}.info_rm",

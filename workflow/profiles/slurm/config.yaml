@@ -28,3 +28,5 @@ restart-times: 6
 keep-going: True
 rerun-incomplete: True
 # scheduler: greedy
+
+use-conda: true
