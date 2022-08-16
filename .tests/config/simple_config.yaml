@@ -14,6 +14,8 @@ ashleys_pipeline: False
 hand_selection: False
 use_light_data: False
 
+input_old_behavior: False
+
 ### Modes ["count", "segmentation", "mosaiclassifier"]
 mode: "mosaiclassifier"
 ### Plot enabled [True] or disabled [False]
