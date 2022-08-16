@@ -22,8 +22,8 @@ df["pass1"] = df["pass1"].astype(int)
 # )
 
 if snakemake.config["input_old_behavior"] is True:
-    labels_path = snakemake.input.labels
-    labels = pd.read_csv(labels_path, sep="\t")
+labels_path = snakemake.input.labels
+labels = pd.read_csv(labels_path, sep="\t")
 else:
     labels = pd.DataFrame(columns=["cell", "probability", "prediction"])
 
