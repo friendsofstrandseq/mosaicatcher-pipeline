@@ -21,8 +21,12 @@ df["pass1"] = df["pass1"].astype(int)
 #     folder=snakemake.config["input_bam_location"], sample=snakemake.wildcards.sample
 # )
 
-labels_path = snakemake.input.labels
-labels = pd.read_csv(labels_path, sep="\t")
+if snakemake.config["input_old_behavior"] is False:
+    labels_path = snakemake.input.labels
+    labels = pd.read_csv(labels_path, sep="\t")
+else:
+    labels = pd.DataFrame(columns=["cell", "probability", "prediction"])
+
 print(labels)
 
 cells_to_keep_labels = labels.loc[labels["prediction"] == 1]["cell"].str.replace(".sort.mdup.bam", "").sort_values().tolist()
