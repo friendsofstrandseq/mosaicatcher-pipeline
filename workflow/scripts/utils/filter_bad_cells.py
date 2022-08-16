@@ -21,7 +21,7 @@ df["pass1"] = df["pass1"].astype(int)
 #     folder=snakemake.config["input_bam_location"], sample=snakemake.wildcards.sample
 # )
 
-if snakemake.config["input_old_behavior"] is False:
+if snakemake.config["input_old_behavior"] is True:
     labels_path = snakemake.input.labels
     labels = pd.read_csv(labels_path, sep="\t")
 else:
