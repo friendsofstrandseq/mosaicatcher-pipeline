@@ -8,6 +8,9 @@ os.environ["LC_CTYPE"] = "C"
 envvars:
     "LC_CTYPE",
 
+
+bam = True if config["ashleys_pipeline"] is False else True
+
 # Create configuration file with samples
 c = handle_input.HandleInput(
     input_path=config["input_bam_location"],
@@ -15,7 +18,7 @@ c = handle_input.HandleInput(
         input_bam_location=config["input_bam_location"]
     ),
     check_sm_tag=False,
-    bam=False,
+    bam=bam,
 )
 
 # Read config file previously produced
