@@ -69,9 +69,9 @@ if config["ashleys_pipeline"] is False:
             input:
                 "{output_folder}/counts/{sample}/{sample}.info_raw"
             output:
-                "{input_folder}/{sample}/cell_selection/labels.tsv",
+                "{output_folder}/cell_selection/{sample}/labels.tsv"    
             log:
-                "{input_folder}/log/{sample}/blank_labels/labels.log",
+                "{output_folder}/log/cell_selection/{sample}.log",
             run:
                 df = pd.read_csv(input[0], skiprows=13, sep="\t")
                 df["pass1"] = df["pass1"].astype(int)
@@ -92,6 +92,21 @@ if config["ashleys_pipeline"] is False:
                 "../envs/mc_base.yaml"
             script:
                 "../scripts/utils/handle_input_old_behavior.py"
+            
+            rule copy_labels:
+                input:
+                    # "{input_folder}/{sample}/cell_selection/labels.tsv",
+                    expand("{input_folder}/{sample}/cell_selection/labels.tsv", input_folder=config["input_bam_location"], sample=samples)
+                output:
+                    "{output_folder}/cell_selection/{sample}/labels.tsv"    
+                    # expand("{output_folder}/cell_selection/{sample}/labels.tsv", output_folder=config["output_location"], sample=samples)
+                log:
+                    "{output_folder}/log/cell_selection/{sample}.log",
+                conda:
+                    "../envs/mc_base.yaml"
+                shell:
+                    "cp {input} {output}"
+
 
 
 rule order_mosaic_count_output:
@@ -111,19 +126,7 @@ rule order_mosaic_count_output:
         df = df.sort_values(by=["sample", "cell", "chrom", "start"])
         df.to_csv(output[0], index=False, compression="gzip", sep="\t")
 
-rule copy_labels:
-    input:
-        # "{input_folder}/{sample}/cell_selection/labels.tsv",
-        expand("{input_folder}/{sample}/cell_selection/labels.tsv", input_folder=config["input_bam_location"], sample=samples)
-    output:
-        "{output_folder}/cell_selection/{sample}/labels.tsv"    
-        # expand("{output_folder}/cell_selection/{sample}/labels.tsv", output_folder=config["output_location"], sample=samples)
-    log:
-        "{output_folder}/log/cell_selection/{sample}.log",
-    conda:
-        "../envs/mc_base.yaml"
-    shell:
-        "cp {input} {output}"
+
 
 
 checkpoint filter_bad_cells_from_mosaic_count:
