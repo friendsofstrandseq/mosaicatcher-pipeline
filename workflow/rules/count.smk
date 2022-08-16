@@ -93,19 +93,19 @@ if config["ashleys_pipeline"] is False:
             script:
                 "../scripts/utils/handle_input_old_behavior.py"
             
-            rule copy_labels:
-                input:
-                    # "{input_folder}/{sample}/cell_selection/labels.tsv",
-                    expand("{input_folder}/{sample}/cell_selection/labels.tsv", input_folder=config["input_bam_location"], sample=samples)
-                output:
-                    "{output_folder}/cell_selection/{sample}/labels.tsv"    
-                    # expand("{output_folder}/cell_selection/{sample}/labels.tsv", output_folder=config["output_location"], sample=samples)
-                log:
-                    "{output_folder}/log/cell_selection/{sample}.log",
-                conda:
-                    "../envs/mc_base.yaml"
-                shell:
-                    "cp {input} {output}"
+        rule copy_labels:
+            input:
+                # "{input_folder}/{sample}/cell_selection/labels.tsv",
+                expand("{input_folder}/{sample}/cell_selection/labels.tsv", input_folder=config["input_bam_location"], sample=samples)
+            output:
+                "{output_folder}/cell_selection/{sample}/labels.tsv"    
+                # expand("{output_folder}/cell_selection/{sample}/labels.tsv", output_folder=config["output_location"], sample=samples)
+            log:
+                "{output_folder}/log/cell_selection/{sample}.log",
+            conda:
+                "../envs/mc_base.yaml"
+            shell:
+                "cp {input} {output}"
 
 
 
