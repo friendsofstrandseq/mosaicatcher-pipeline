@@ -66,6 +66,7 @@ rule create_haplotag_table:
         bam="{output_folder}/haplotag/bam/{sample}/{cell}.bam",
         bai="{output_folder}/haplotag/bam/{sample}/{cell}.bam.bai",
         bed="{output_folder}/haplotag/bed/{sample}.bed",
+        paired_end="{output_folder}/config/{sample}/single_paired_end_detection.txt",
     output:
         tsv="{output_folder}/haplotag/table/{sample}/by-cell/{cell}.tsv",
     log:

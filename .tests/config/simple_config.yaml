@@ -40,6 +40,7 @@ references_data:
     R_reference: "BSgenome.Hsapiens.UCSC.hg38"
     segdups: "workflow/data/segdups/segDups_hg38_UCSCtrack.bed.gz"
     snv_sites_to_genotype: ".tests/external_data/1000G_chr21.vcf.gz"
+    # snv_sites_to_genotype: ""
 
 # Chromosomes list to process
 chromosomes:

@@ -63,23 +63,7 @@ rule mosaic_count:
 
 if config["ashleys_pipeline"] is False:
 
-    if config["input_old_behavior"] is False:
-
-        rule mosaic_labels:
-            input:
-                "{output_folder}/counts/{sample}/{sample}.info_raw"
-            output:
-                "{output_folder}/cell_selection/{sample}/labels.tsv"    
-            log:
-                "{output_folder}/log/cell_selection/{sample}.log",
-            run:
-                df = pd.read_csv(input[0], skiprows=13, sep="\t")
-                df["pass1"] = df["pass1"].astype(int)
-                df = df.loc[df["pass1"] == 1].rename({"pass1" : "probability"}, axis=1)
-                df["prediction"] = 1
-                df.to_csv(output[0])
-
-    else:
+    if config["input_old_behavior"] is True:
 
         rule selected_cells:
             input:
@@ -87,7 +71,7 @@ if config["ashleys_pipeline"] is False:
             output:
                 "{input_folder}/{sample}/cell_selection/labels.tsv"
             log:
-                "{input_folder}/log/{sample}/blank_labels/labels.log",
+                "{input_folder}/log/{sample}/selected_cells/labels.log",
             conda:
                 "../envs/mc_base.yaml"
             script:
@@ -101,11 +85,22 @@ if config["ashleys_pipeline"] is False:
                 "{output_folder}/cell_selection/{sample}/labels.tsv"    
                 # expand("{output_folder}/cell_selection/{sample}/labels.tsv", output_folder=config["output_location"], sample=samples)
             log:
-                "{output_folder}/log/cell_selection/{sample}.log",
+                "{output_folder}/log/copy_labels/{sample}.log",
             conda:
                 "../envs/mc_base.yaml"
             shell:
                 "cp {input} {output}"
+    else:
+        rule touch_labels:
+            output:
+                "{output_folder}/cell_selection/{sample}/labels.tsv"    
+                # expand("{output_folder}/cell_selection/{sample}/labels.tsv", output_folder=config["output_location"], sample=samples)
+            log:
+                "{output_folder}/log/touch_labels/{sample}.log",
+            conda:
+                "../envs/mc_base.yaml"
+            shell:
+                "echo 'cell\tprobability\tprediction' > {output} 2>&1 > {log}"
 
 
 
@@ -134,6 +129,7 @@ checkpoint filter_bad_cells_from_mosaic_count:
         info_raw="{output_folder}/counts/{sample}/{sample}.info_raw",
         counts_sort="{output_folder}/counts/{sample}/{sample}.txt.sort.gz",
         labels="{output_folder}/cell_selection/{sample}/labels.tsv",
+        # path = expand("{input_folder}/{sample}", input_folder=config["input_bam_location"], sample=samples),
     output:
         info="{output_folder}/counts/{sample}/{sample}.info",
         info_removed="{output_folder}/counts/{sample}/{sample}.info_rm",

@@ -69,3 +69,27 @@ rule regenotype_SNVs:
             --include "QUAL>=10" \
         > {output.vcf}) 2> {log}
         """
+
+
+
+rule call_SNVs_bcftools_chrom:
+    input:
+        bam="{output_folder}/merged_bam/{sample}/merged.bam",
+        bai="{output_folder}/merged_bam/{sample}/merged.bam.bai",
+        fasta=config["references_data"][config["reference"]]["reference_fasta"],
+        fasta_index="{fasta}.fai".format(fasta=config["references_data"][config["reference"]]["reference_fasta"]),
+        ploidy="{output_folder}/ploidy/{sample}/ploidy_bcftools.txt"
+    output:
+        vcf="{output_folder}/snv_calls/{sample}/{chrom,chr[0-9A-Z]+}.vcf",
+    log:
+        "{output_folder}/log/snv_calls/{sample}/{chrom,chr[0-9A-Z]+}.vcf",
+    conda:
+        "../envs/mc_bioinfo_tools.yaml"
+    resources:
+        mem_mb=get_mem_mb,
+        time="10:00:00",
+    shell:
+        """
+        bcftools mpileup -r {wildcards.chrom} -f {input.fasta} {input.bam} \
+        | bcftools call -mv --ploidy-file {input.ploidy} | bcftools view --genotype het --types snps > {output} 2> {log}
+        """

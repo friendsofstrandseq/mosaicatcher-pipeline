@@ -105,7 +105,8 @@ rule run_strandphaser_per_chrom:
     input:
         install_strandphaser=rules.install_rlib_strandphaser.output,
         wcregions="{output_folder}/strandphaser/{sample}/strandphaser_input.txt",
-        snppositions="{output_folder}/snv_genotyping/{sample}/{chrom}.vcf",
+        # snppositions="{output_folder}/snv_genotyping/{sample}/{chrom}.vcf",
+        snppositions=locate_snv_vcf,
         configfile="{output_folder}/strandphaser/{sample}/StrandPhaseR.{chrom}.config",
     output:
         "{output_folder}/strandphaser/{sample}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt",
