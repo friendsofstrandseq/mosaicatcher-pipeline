@@ -191,6 +191,20 @@ rule plot_SV_calls:
             {output} > {log} 2>&1
         """
 
+rule plot_ploidy:
+    input:
+        ploidy_detailled="{output_folder}/ploidy/{sample}/ploidy_detailled.txt"
+    output:
+        report(
+            "{output_folder}/plots/{sample}/ploidy/{sample}.pdf",
+            category="Ploidy",
+        ),
+    log:
+        "{output_folder}/log/plot_ploidy/{sample}.log"
+    conda:
+        "../envs/ashleys.yaml"
+    script:
+        "../scripts/plotting/ploidy_plot.py"
 
 # rule plot_SV_calls:
 #     input:

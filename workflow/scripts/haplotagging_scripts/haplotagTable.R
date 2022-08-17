@@ -72,7 +72,7 @@ getHaplotagTable <- function(sv.table = NULL, bam.path = NULL) {
 #' @param CPUs Number of CPUs to use for data processing.
 #' @author David Porubsky
 
-getHaplotagTable2 <- function(bedFile = NULL, bam.file = NULL, CPUs = 4, file.destination = NULL) {
+getHaplotagTable2 <- function(bedFile = NULL, bam.file = NULL, CPUs = 4, paired_end = TRUE, file.destination = NULL) {
   suppressPackageStartupMessages({
     requireNamespace("tools")
   })
@@ -98,7 +98,7 @@ getHaplotagTable2 <- function(bedFile = NULL, bam.file = NULL, CPUs = 4, file.de
   print(cell.id)
   ## read in reads for selected regions
 
-  fragments <- bamregion2GRanges(bamfile = bam.file, region = regions.gr, pairedEndReads = T, min.mapq = 10, filterAltAlign = TRUE)
+  fragments <- bamregion2GRanges(bamfile = bam.file, region = regions.gr, pairedEndReads = paired_end, min.mapq = 10, filterAltAlign = TRUE)
 
 
 
