@@ -59,6 +59,10 @@ assert (
     config["plot"]
 )
 
+if config["ashleys_pipeline"] is True:
+    assert (config["ashleys_pipeline"] != config["input_old_behavior"]
+    ), "ashleys_pipeline and input_old_behavior parameters cannot both be set to True"
+
 
 dict_cells_nb_per_sample = (
     df_config_files.loc[df_config_files["Selected"] == True]

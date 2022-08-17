@@ -98,6 +98,21 @@ def aggregate_vcf_gz_tbi(wildcards):
     )
 
 
+def locate_snv_vcf(wildcards):
+    if "snv_calls" not in config["references_data"][config["reference"]] or wildcards.sample not in config["references_data"][config["reference"]]["snv_calls"] or config["references_data"][config["reference"]]["snv_sites_to_genotype"][wildcards.sample] == "":
+        if "snv_sites_to_genotype" in config["references_data"][config["reference"]] and config["references_data"][config["reference"]]["snv_sites_to_genotype"] != "" :
+            if os.path.isfile(config["references_data"][config["reference"]]["snv_sites_to_genotype"]):
+                return "{}/snv_genotyping/{}/{}.vcf".format(wildcards.output_folder, wildcards.sample, wildcards.chrom)
+            else:
+                print("[", wildcards.sample, "/", wildcards.chrom, "] `snv_sites_to_genotype` set to \"",
+                      config["references_data"][config["reference"]]["snv_sites_to_genotype"], "\" but file does not seem to exist. "
+                      "Start de novo SNV calling", sep = "")
+                return "{}/snv_calls/{}/{}.vcf".format(wildcards.output_folder, wildcards.sample, wildcards.chrom)
+        else:
+            return "{}/snv_calls/{}/{}.vcf".format(wildcards.output_folder, wildcards.sample, wildcards.chrom)
+    else:
+        return "{}/external_snv_calls/{}/{}.vcf".format(wildcards.output_folder, wildcards.sample, wildcards.chrom)
+
 def aggregate_cells_segmentation(wildcards):
     df = pd.read_csv(
         checkpoints.filter_bad_cells_from_mosaic_count.get(
