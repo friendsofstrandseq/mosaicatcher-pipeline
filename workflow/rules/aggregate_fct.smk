@@ -104,9 +104,8 @@ def locate_snv_vcf(wildcards):
             if os.path.isfile(config["references_data"][config["reference"]]["snv_sites_to_genotype"]):
                 return "{}/snv_genotyping/{}/{}.vcf".format(wildcards.output_folder, wildcards.sample, wildcards.chrom)
             else:
-                print("[", wildcards.sample, "/", wildcards.chrom, "] `snv_sites_to_genotype` set to \"",
-                      config["references_data"][config["reference"]]["snv_sites_to_genotype"], "\" but file does not seem to exist. "
-                      "Start de novo SNV calling", sep = "")
+                print("ISSUE")
+
                 return "{}/snv_calls/{}/{}.vcf".format(wildcards.output_folder, wildcards.sample, wildcards.chrom)
         else:
             return "{}/snv_calls/{}/{}.vcf".format(wildcards.output_folder, wildcards.sample, wildcards.chrom)
