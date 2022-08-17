@@ -88,7 +88,7 @@ if config["ashleys_pipeline"] is False:
             conda:
                 "../envs/mc_base.yaml"
             shell:
-                "echo 'cell\tprobability\tprediction' > {output} 2>&1 > {log}"
+                "echo 'cell\tprobability\tprediction' > {output}"
 
 rule copy_labels:
     input:
@@ -107,11 +107,7 @@ rule copy_labels:
 rule order_mosaic_count_output:
     input:
         raw_count="{output_folder}/counts/{sample}/{sample}.txt.raw.gz",
-        labels=expand(
-            "{input_folder}/{sample}/cell_selection/labels.tsv",
-            input_folder=config["input_bam_location"],
-            sample=samples,
-        ),
+        labels="{output_folder}/cell_selection/{sample}/labels.tsv"    
     output:
         "{output_folder}/counts/{sample}/{sample}.txt.sort.gz",
     log:
@@ -120,7 +116,6 @@ rule order_mosaic_count_output:
         df = pd.read_csv(input.raw_count, compression="gzip", sep="\t")
         df = df.sort_values(by=["sample", "cell", "chrom", "start"])
         df.to_csv(output[0], index=False, compression="gzip", sep="\t")
-
 
 
 
