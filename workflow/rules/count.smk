@@ -4,7 +4,7 @@ rule mosaic_count:
             "{input_folder}/{sample}/all/{cell}.sort.mdup.bam",
             input_folder=config["input_bam_location"],
             sample=samples,
-            cell=bam_per_sample_local[str(wc.sample)]
+            cell=bam_per_sample_local[str(wc.sample)],
         ),
         bai=lambda wc: expand(
             "{input_folder}/{sample}/all/{cell}.sort.mdup.bam.bai",

@@ -19,7 +19,7 @@ configfile: "config/config.yaml"
 report: "report/workflow.rst"
 
 
-containerized: "docker://weber8thomas/mosaicatcher-pipeline:1.5.1"
+containerized: "docker://weber8thomas/mosaicatcher-pipeline:1.7.0"
 
 
 if config["ashleys_pipeline"] is True:
