@@ -113,7 +113,6 @@ rule plot_SV_consistency_barplot:
                 "Barplot type": "By AF",
                 "method": "{method}",
                 "filter": "{filter}",
-                
             },
         ),
     log:
@@ -140,7 +139,6 @@ rule plot_clustering:
                 "filter": "{filter}",
             },
         ),
-        # chromosome="{output_folder}/plots/{sample}/sv_clustering/{method}-chromosome.pdf",
     log:
         "{output_folder}/log/plot_clustering/{sample}/{method}_filter{filter}.log",
     conda:
@@ -191,22 +189,24 @@ rule plot_SV_calls:
             {output} > {log} 2>&1
         """
 
+
 rule plot_ploidy:
     input:
-        ploidy_detailled="{output_folder}/ploidy/{sample}/ploidy_detailled.txt"
+        ploidy_detailled="{output_folder}/ploidy/{sample}/ploidy_detailled.txt",
     output:
         report(
             "{output_folder}/plots/{sample}/ploidy/{sample}.pdf",
             category="Ploidy",
         ),
     log:
-        "{output_folder}/log/plot_ploidy/{sample}.log"
+        "{output_folder}/log/plot_ploidy/{sample}.log",
     conda:
         "../envs/python_plots.yaml"
     resources:
         mem_mb=get_mem_mb,
     script:
         "../scripts/plotting/ploidy_plot.py"
+
 
 # rule plot_SV_calls:
 #     input:
@@ -247,4 +247,3 @@ rule plot_ploidy:
 #             {wildcards.chrom} \
 #             {output} > {log} 2>&1
 #         """
-

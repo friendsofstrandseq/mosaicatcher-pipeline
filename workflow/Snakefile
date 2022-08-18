@@ -15,6 +15,7 @@ onstart:
 
 configfile: "config/config.yaml"
 
+
 report: "report/workflow.rst"
 
 
@@ -30,18 +31,16 @@ if config["ashleys_pipeline"] is True:
                 path="workflow/Snakefile",
                 branch="ref_genomes",
             )
-        # snakefile:
-        #     "../../ashleys-qc-pipeline/workflow/Snakefile"
         config:
             config
 
     use rule * from ashleys_qc as ashleys_*
 
 
-include: "rules/utils.smk"
-
-
 include: "rules/common.smk"
+
+
+include: "rules/utils.smk"
 
 
 include: "rules/aggregate_fct.smk"
@@ -96,7 +95,7 @@ if config["ashleys_pipeline"] is True:
 
 
 else:
-    if config["dl_external_files"] is False and  config["dl_bam_example"] is False:
+    if config["dl_external_files"] is False and config["dl_bam_example"] is False:
 
         rule all:
             input:
@@ -112,26 +111,33 @@ else:
                     rules.dl_example_data.output,
 
 
-        elif config["dl_bam_example"] is False and config["dl_external_files"] is True and config["reference"] in ["hg19", "hg38", "T2T"]:
+        elif (
+            config["dl_bam_example"] is False
+            and config["dl_external_files"] is True
+            and config["reference"] in ["hg19", "hg38", "T2T"]
+        ):
             if config["reference"] == "hg19":
+
                 rule all:
                     input:
                         rules.download_hg19_reference.output,
+
+
             elif config["reference"] == "hg38":
+
                 rule all:
                     input:
                         rules.download_hg38_reference.output,
+
+
             elif config["reference"] == "T2T":
+
                 rule all:
                     input:
                         rules.download_T2T_reference.output,
-                        # rules.download_T2T_tarball.output,
-
-
 
 
 if config["mail"]:
-    
 
     onsuccess:
         onsuccess_fct()

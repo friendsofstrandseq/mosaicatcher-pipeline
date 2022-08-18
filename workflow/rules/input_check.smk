@@ -13,7 +13,7 @@ rule generate_exclude_file_for_mosaic_count:
             "{input_folder}/{sample}/all/{cell}.sort.mdup.bam",
             input_folder=config["input_bam_location"],
             sample=samples,
-            cell=bam_per_sample_local[str(wc.sample)]
+            cell=bam_per_sample_local[str(wc.sample)],
         ),
     output:
         "{output_folder}/config_output/{sample}/exclude_file",
