@@ -1,18 +1,3 @@
-# from workflow.scripts.utils.utils import get_mem_mb
-
-# import pandas as pd
-# config_df = pd.read_csv("config/config_df.tsv", sep="\t")
-# bam_per_sample = config_df.loc[config_df["Selected"] == True].groupby("Sample")["File"].apply(list).to_dict()
-# bam_per_sample = df_config_files.loc[df_config_files["Selected"] == True].groupby("Sample")["File"].apply(list).to_dict()
-
-################################################################################
-# Haplotagging                                                                 #
-################################################################################
-
-# DOCME : --skip-missing-contigs option to remove unused chroms
-# "whatshap haplotag -o {output_folder} -r {params.ref} {input.vcf} {input.bam} > {log} 2>{log}  "
-# bai = config["input_bam_location"] + "{sample}/selected/{cell}.bam.bai"
-
 
 rule haplotag_bams:
     input:

@@ -191,20 +191,9 @@ else:
             "../envs/mc_base.yaml"
         shell:
             "cp {input} {output}"
-################################################################################
-
-
-
-# Single-Cell Segmentation                                                                 #
-################################################################################
 
 
 rule extract_single_cell_counts:
-    """
-    rule fct: extract from count the rows coming from the given cell
-    input: mosaic count output file for the sample according a given window 
-    output: count per cell file for the sample according a given window
-    """
     input:
         info="{output_folder}/counts/{sample}/{sample}.info",
         counts="{output_folder}/counts/{sample}/{sample}.txt.gz",
