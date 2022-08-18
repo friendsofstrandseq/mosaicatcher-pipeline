@@ -67,13 +67,13 @@ rule check_single_paired_end:
             else "FOOBAR",
         ),
     output:
-        single_paired_end_detect = "{output_folder}/config/{sample}/single_paired_end_detection.txt",
+        single_paired_end_detect="{output_folder}/config/{sample}/single_paired_end_detection.txt",
     log:
         "{output_folder}/log/config/{sample}/single_paired_end.log",
     conda:
         "../envs/mc_base.yaml"
     script:
-        "../scripts/utils/detect_single_paired_end.py"    
+        "../scripts/utils/detect_single_paired_end.py"
 
 
 # TODO : replace by clean config file if possible or by temporary removed file
@@ -84,8 +84,8 @@ rule prepare_strandphaser_config_per_chrom:
     output: config file used by strandphaser
     """
     input:
-        seg_initial_str_state = "{output_folder}/segmentation/{sample}/Selection_initial_strand_state",
-        single_paired_end_detect = "{output_folder}/config/{sample}/single_paired_end_detection.txt",
+        seg_initial_str_state="{output_folder}/segmentation/{sample}/Selection_initial_strand_state",
+        single_paired_end_detect="{output_folder}/config/{sample}/single_paired_end_detection.txt",
     output:
         "{output_folder}/strandphaser/{sample}/StrandPhaseR.{chrom}.config",
     log:

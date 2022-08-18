@@ -61,7 +61,7 @@ def aggregate_phased_haps(wildcards):
         sep="\t",
     )
     df = df.loc[df["50%"] >= 2]
-    chrom_list = [e for e in df["#chrom"].values.tolist() if e != "genome"] 
+    chrom_list = [e for e in df["#chrom"].values.tolist() if e != "genome"]
     return expand(
         "{{output_folder}}/strandphaser/{{sample}}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt",
         chrom=chrom_list,
@@ -76,7 +76,7 @@ def aggregate_vcf_gz(wildcards):
         sep="\t",
     )
     df = df.loc[df["50%"] >= 2]
-    chrom_list = [e for e in df["#chrom"].values.tolist() if e != "genome"] 
+    chrom_list = [e for e in df["#chrom"].values.tolist() if e != "genome"]
     return expand(
         "{{output_folder}}/strandphaser/{{sample}}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz",
         chrom=chrom_list,
@@ -91,7 +91,7 @@ def aggregate_vcf_gz_tbi(wildcards):
         sep="\t",
     )
     df = df.loc[df["50%"] >= 2]
-    chrom_list = [e for e in df["#chrom"].values.tolist() if e != "genome"] 
+    chrom_list = [e for e in df["#chrom"].values.tolist() if e != "genome"]
     return expand(
         "{{output_folder}}/strandphaser/{{sample}}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz.tbi",
         chrom=chrom_list,
@@ -99,18 +99,41 @@ def aggregate_vcf_gz_tbi(wildcards):
 
 
 def locate_snv_vcf(wildcards):
-    if "snv_calls" not in config["references_data"][config["reference"]] or wildcards.sample not in config["references_data"][config["reference"]]["snv_calls"] or config["references_data"][config["reference"]]["snv_sites_to_genotype"][wildcards.sample] == "":
-        if "snv_sites_to_genotype" in config["references_data"][config["reference"]] and config["references_data"][config["reference"]]["snv_sites_to_genotype"] != "" :
-            if os.path.isfile(config["references_data"][config["reference"]]["snv_sites_to_genotype"]):
-                return "{}/snv_genotyping/{}/{}.vcf".format(wildcards.output_folder, wildcards.sample, wildcards.chrom)
+    if (
+        "snv_calls" not in config["references_data"][config["reference"]]
+        or wildcards.sample
+        not in config["references_data"][config["reference"]]["snv_calls"]
+        or config["references_data"][config["reference"]]["snv_sites_to_genotype"][
+            wildcards.sample
+        ]
+        == ""
+    ):
+        if (
+            "snv_sites_to_genotype" in config["references_data"][config["reference"]]
+            and config["references_data"][config["reference"]]["snv_sites_to_genotype"]
+            != ""
+        ):
+            if os.path.isfile(
+                config["references_data"][config["reference"]]["snv_sites_to_genotype"]
+            ):
+                return "{}/snv_genotyping/{}/{}.vcf".format(
+                    wildcards.output_folder, wildcards.sample, wildcards.chrom
+                )
             else:
                 print("ISSUE")
 
-                return "{}/snv_calls/{}/{}.vcf".format(wildcards.output_folder, wildcards.sample, wildcards.chrom)
+                return "{}/snv_calls/{}/{}.vcf".format(
+                    wildcards.output_folder, wildcards.sample, wildcards.chrom
+                )
         else:
-            return "{}/snv_calls/{}/{}.vcf".format(wildcards.output_folder, wildcards.sample, wildcards.chrom)
+            return "{}/snv_calls/{}/{}.vcf".format(
+                wildcards.output_folder, wildcards.sample, wildcards.chrom
+            )
     else:
-        return "{}/external_snv_calls/{}/{}.vcf".format(wildcards.output_folder, wildcards.sample, wildcards.chrom)
+        return "{}/external_snv_calls/{}/{}.vcf".format(
+            wildcards.output_folder, wildcards.sample, wildcards.chrom
+        )
+
 
 def aggregate_cells_segmentation(wildcards):
     df = pd.read_csv(

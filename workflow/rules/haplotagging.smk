@@ -28,7 +28,9 @@ rule haplotag_bams:
             else "FOOBAR",
         ),
         fasta=config["references_data"][config["reference"]]["reference_fasta"],
-        fasta_index="{fasta}.fai".format(fasta=config["references_data"][config["reference"]]["reference_fasta"]),
+        fasta_index="{fasta}.fai".format(
+            fasta=config["references_data"][config["reference"]]["reference_fasta"]
+        ),
     output:
         "{output_folder}/haplotag/bam/{sample}/{cell}.bam",
     log:
