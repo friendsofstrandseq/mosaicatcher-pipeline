@@ -96,7 +96,7 @@ if config["ashleys_pipeline"] is True:
 
 
 else:
-    if config["mode"] != "download_data":
+    if config["dl_external_files"] is False and  config["dl_bam_example"] is False:
 
         rule all:
             input:
@@ -104,14 +104,6 @@ else:
 
 
     else:
-        if config["dl_bam_example"] is True and config["dl_external_files"] is True:
-
-            rule all:
-                input:
-                    rules.dl_example_data.output,
-                    rules.dl_external_data.output,
-                    rules.dl_external_data_index.output,
-
 
         if config["dl_bam_example"] is True and config["dl_external_files"] is False:
 
@@ -120,7 +112,7 @@ else:
                     rules.dl_example_data.output,
 
 
-        if config["dl_bam_example"] is False and config["dl_external_files"] is True and config["reference"] in ["hg19", "hg38", "T2T"]:
+        elif config["dl_bam_example"] is False and config["dl_external_files"] is True and config["reference"] in ["hg19", "hg38", "T2T"]:
             if config["reference"] == "hg19":
                 rule all:
                     input:

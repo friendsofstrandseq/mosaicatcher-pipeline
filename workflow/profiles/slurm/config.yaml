@@ -30,3 +30,5 @@ rerun-incomplete: True
 # scheduler: greedy
 
 use-conda: true
+conda-frontend: "conda"
+use-singularity: true
