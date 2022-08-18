@@ -112,7 +112,6 @@ output_expand = [
     for k in allbams_per_sample.keys()
 ]
 output_expand = [sub_e for e in output_expand for sub_e in e]
-# print(expand(config["input_bam_location"] + "{sample}/raw/{cell}.sort.mdup.bam", zip, sample=samples_expand, cell=cell_expand))
 # print(samples)
 # print(input_expand)
 
