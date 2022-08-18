@@ -29,7 +29,7 @@ rule install_rlib_strandphaser:
     conda:
         "../envs/rtools.yaml"
     resources:
-        mem_mb=8000,
+        mem_mb=get_mem_mb_heavy,
     params:
         version=config["git_commit_strandphaser"],
         repo=config["git_repo_strandphaser"],

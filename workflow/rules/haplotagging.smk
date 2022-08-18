@@ -52,6 +52,8 @@ rule create_haplotag_segment_bed:
         "{output_folder}/log/haplotag/bed/{sample}.log",
     params:
         window=config["window"],
+    resources:
+        mem_mb=get_mem_mb,
     conda:
         "../envs/mc_base.yaml"
     shell:
@@ -93,5 +95,7 @@ rule merge_haplotag_tables:
         "{output_folder}/log/haplotag/table/{sample}/haplotag_counts_merged.log",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
+    resources:
+        mem_mb=get_mem_mb,
     shell:
         "(head -n1 {input.tsvs[0]} && tail -q -n +2 {input.tsvs}) > {output.tsv}"

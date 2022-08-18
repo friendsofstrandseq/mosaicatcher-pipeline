@@ -202,7 +202,9 @@ rule plot_ploidy:
     log:
         "{output_folder}/log/plot_ploidy/{sample}.log"
     conda:
-        "../envs/ashleys.yaml"
+        "../envs/python_plots.yaml"
+    resources:
+        mem_mb=get_mem_mb,
     script:
         "../scripts/plotting/ploidy_plot.py"
 

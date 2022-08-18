@@ -23,7 +23,7 @@ rule mergeBams:
     log:
         "{output_folder}/log/mergeBams/{sample}.log",
     resources:
-        mem_mb=get_mem_mb,
+        mem_mb=get_mem_mb_heavy,
         time="01:00:00",
     threads: 10
     conda:
@@ -50,7 +50,7 @@ rule regenotype_SNVs:
     log:
         "{output_folder}/log/snv_genotyping/{sample}/{chrom}.log",
     resources:
-        mem_mb=get_mem_mb,
+        mem_mb=get_mem_mb_heavy,
         time="10:00:00",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
@@ -86,7 +86,7 @@ rule call_SNVs_bcftools_chrom:
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     resources:
-        mem_mb=get_mem_mb,
+        mem_mb=get_mem_mb_heavy,
         time="10:00:00",
     shell:
         """
