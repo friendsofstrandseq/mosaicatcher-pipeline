@@ -66,6 +66,8 @@ workflow/test.txt
 .snakemake
 
 # Exceptions
+!docs/images/plots/
+!docs/images/plots/*.png
 !docs/images/*.png
 !workflow/data/segdups/segDups_hg38_UCSCtrack.bed.gz
 !workflow/data/bin_200kb_all.bed

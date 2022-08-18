@@ -1,44 +1,25 @@
 #######################################
-#   MOSAICATCHER CONFIGURATION FILE.  #
+#   MOSAICATCHER CONFIGURATION FILE   #
 #######################################
 
+# To be informed of pipeline status
 mail: ""
-
-#######################################
-## Command-line options
-#######################################
-
-# ashleys-qc pipeline arguments
-mosaicatcher_pipeline: True
-ashleys_pipeline: False
-hand_selection: False
-use_light_data: False
-
-input_old_behavior: False
-
-### Modes ["count", "segmentation", "mosaiclassifier"]
-mode: "mosaiclassifier"
-### Plot enabled [True] or disabled [False]
-plot: False
-### Enable / Disable comparison for each BAM file between folder name & SM tag
-check_sm_tag: True
-### Enable / Disable download of BAM examples (RPE-BM510)
-dl_bam_example: False
-### Enable / Disable download of external files (1000G SNV & Fasta ref genome)
-dl_external_files: False
-
-## Input BAM location
+# Input BAM location
 input_bam_location: ".tests/data_CHR21"
-## Output location
+# Output location
 output_location: ".tests/output_CHR21"
-
-# External files
-## 1000G SNV sites to genotype : https://sandbox.zenodo.org/record/1060653/files/ALL.chr1-22plusX_GRCh38_sites.20170504.renamedCHR.vcf.gz
-
-# Reference genome : https://sandbox.zenodo.org/record/1060653/files/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna
-# reference: sandbox.zenodo.org/record/1074721/files/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna
+# Reference assembly selected
 reference: "hg38"
-
+# Mutually exclusive with ashleys_pipeline
+input_old_behavior: False
+# Enable/Disable ashleys-qc-pipeline module loading to start pipeline from FASTQ files
+ashleys_pipeline: False
+# Enable / Disable comparison for each BAM file between folder name & SM tag
+check_sm_tag: True
+# Enable / Disable download of BAM examples (RPE-BM510)
+dl_bam_example: False
+# Enable / Disable download of external files (1000G SNV & Fasta ref genome)
+dl_external_files: False
 # Chromosomes list to process
 chromosomes:
   - chr1
@@ -66,36 +47,35 @@ chromosomes:
   - chrX
 
 ##############################
-# Advanced configuration.  #
+# Advanced configuration.    #
 ##############################
 
-samples: "config/samples.tsv"
+## Reference assembly data
+references_data:
+  "hg38":
+    reference_fasta: "workflow/data/ref_genomes/hg38.fa"
+    R_reference: "BSgenome.Hsapiens.UCSC.hg38"
+    segdups: "workflow/data/segdups/segDups_hg38_UCSCtrack.bed.gz"
+    snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/ALL.chr1-22plusXY_GRCh38_sites.20170504.renamedCHR.vcf.gz"
+  "hg19":
+    reference_fasta: "workflow/data/ref_genomes/hg19.fa"
+    R_reference: "BSgenome.Hsapiens.UCSC.hg19"
+    segdups: "workflow/data/segdups/segDups_hg19_UCSCtrack.bed.gz"
+    snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/ALL.chr1-22plusXY_hg19_sites.20170504.renamedCHR.vcf.gz"
+  "T2T":
+    reference_fasta: "workflow/data/ref_genomes/T2T.fa"
+    R_reference: "BSgenome.T2T.CHM13.V2"
+    segdups: "workflow/data/segdups/segDups_T2T_UCSCtrack.bed.gz"
+    snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/ALL.chr1-22plusXY_T2T_sites.20170504.renamedCHR.vcf.gz"
 
-# Enable conda & singularity usage
-use-conda: True
-use-singularity: True
-containerized: True
-singularity-args: "-B /g:/g"
-latency-wait: 60
-
-# Default conda frontend
-conda-frontend: "conda"
-
-# Print shell commands
-printshellcmds: True
-
-# Strandphaser
+# Strandphaser repo info
 git_commit_strandphaser: "69c9fb4"
 git_repo_strandphaser: "https://github.com/daewoooo/StrandPhaseR"
-paired_end: True
 
-# CHECKME : Parameters optimization ?
-# PARAMETERS
-
-## WINDOW
+## Mosaic bin window size
 window: 100000
 
-## METHODS
+## Methods dictionnary
 methods:
   lenient:
     method_name: "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0_regfactor6_filterFALSE"
@@ -115,19 +95,6 @@ methods:
     regfactor: 6
     filter: TRUE
 
-llr: 4
-poppriors: TRUE
-haplotags:
-  - TRUE
-  - FALSE
-gtcutoff:
-  - 0
-  - 0.05
-regfactor: 6
-filter:
-  - TRUE
-  - FALSE
-
 plottype_consistency:
   - "byaf"
   - "bypos"
@@ -136,33 +103,26 @@ plottype_clustering:
   - "position"
   - "chromosome"
 
-## BPDENS
-### JOINT SEG
+## Breakpoint density
+# joint segmentation
 min_diff_jointseg: 0.1
-### SINGLE SEG
+# single segmentation
 min_diff_singleseg: 0.5
-### SCE CUTOFF
+# SCE cutoff
 additional_sce_cutoff: 20000000
-### SCE MIN DISTANCE
+# SCE min distance
 sce_min_distance: 500000
 
+# ashleys-qc pipeline arguments
+mosaicatcher_pipeline: True
+hand_selection: False
+use_light_data: False
+
+# Others
 abs_path: "/"
+# CURRENTLY DISABLED
 
-## REFERENCE GENOMES
-
-references_data:
-  "hg38":
-    reference_fasta: "workflow/data/ref_genomes/hg38.fa"
-    R_reference: "BSgenome.Hsapiens.UCSC.hg38"
-    segdups: "workflow/data/segdups/segDups_hg38_UCSCtrack.bed.gz"
-    snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/ALL.chr1-22plusXY_GRCh38_sites.20170504.renamedCHR.vcf.gz"
-  "hg19":
-    reference_fasta: "workflow/data/ref_genomes/hg19.fa"
-    R_reference: "BSgenome.Hsapiens.UCSC.hg19"
-    segdups: "workflow/data/segdups/segDups_hg19_UCSCtrack.bed.gz"
-    snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/ALL.chr1-22plusXY_hg19_sites.20170504.renamedCHR.vcf.gz"
-  "T2T":
-    reference_fasta: "workflow/data/ref_genomes/T2T.fa"
-    R_reference: "BSgenome.T2T.CHM13.V2"
-    segdups: "workflow/data/segdups/segDups_T2T_UCSCtrack.bed.gz"
-    snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/ALL.chr1-22plusXY_T2T_sites.20170504.renamedCHR.vcf.gz"
+### Modes ["count", "segmentation", "mosaiclassifier"] [CURRENTLY DISABLED]
+# mode: "mosaiclassifier"
+### Plot enabled [True] or disabled [False]
+# plot: False [CURRENTLY DISABLED]
