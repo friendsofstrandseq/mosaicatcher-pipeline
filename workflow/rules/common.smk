@@ -30,20 +30,20 @@ samples = list(sorted(list(df_config_files.Sample.unique().tolist())))
 # print(df_config_files)
 
 
-mode_selected = config["mode"].lower()
-correct_modes = ["count", "segmentation", "mosaiclassifier", "download_data"]
-assert (
-    mode_selected in correct_modes
-), "Wrong mode selected : {}\nFollowing list of modes are available : {}".format(
-    config["mode"], ", ".join(correct_modes)
-)
+# mode_selected = config["mode"].lower()
+# correct_modes = ["count", "segmentation", "mosaiclassifier", "download_data"]
+# assert (
+#     mode_selected in correct_modes
+# ), "Wrong mode selected : {}\nFollowing list of modes are available : {}".format(
+#     config["mode"], ", ".join(correct_modes)
+# )
 
-plot_option_selected = config["plot"]
-assert (
-    type(plot_option_selected) is bool
-), "Wrong plot option selected : {}\nPlease enter a valid value (True / False)".format(
-    config["plot"]
-)
+# plot_option_selected = config["plot"]
+# assert (
+#     type(plot_option_selected) is bool
+# ), "Wrong plot option selected : {}\nPlease enter a valid value (True / False)".format(
+#     config["plot"]
+# )
 
 dl_bam_example_option_selected = config["dl_bam_example"]
 assert (
@@ -60,7 +60,8 @@ assert (
 )
 
 if config["ashleys_pipeline"] is True:
-    assert (config["ashleys_pipeline"] != config["input_old_behavior"]
+    assert (
+        config["ashleys_pipeline"] != config["input_old_behavior"]
     ), "ashleys_pipeline and input_old_behavior parameters cannot both be set to True"
 
 
@@ -201,16 +202,16 @@ def get_mem_mb_heavy(wildcards, attempt):
 
 def onsuccess_fct(wildcards):
     print("Workflow finished, no error")
-    make_log_useful.make_log_useful(log, 'SUCCESS')
+    make_log_useful.make_log_useful(log, "SUCCESS")
 
-    shell('mail -s "[Snakemake] DGA - SUCCESS" {} < {{log}}'.format(config['mail']))
+    shell('mail -s "[Snakemake] DGA - SUCCESS" {} < {{log}}'.format(config["mail"]))
+
 
 def onerror_fct(wildcards):
     print("An error occurred")
-    make_log_useful.make_log_useful(log, 'ERROR')
+    make_log_useful.make_log_useful(log, "ERROR")
 
-    shell('mail -s "[Snakemake] DGA - ERRROR" {} < {{log}}'.format(config['mail']))
-
+    shell('mail -s "[Snakemake] DGA - ERRROR" {} < {{log}}'.format(config["mail"]))
 
 
 def get_all_plots(wildcards):
@@ -268,7 +269,10 @@ def get_all_plots(wildcards):
             sample=samples,
             chrom=config["chromosomes"],
             method=config["methods"],
-            filter=["TRUE", "FALSE",]
+            filter=[
+                "TRUE",
+                "FALSE",
+            ],
         ),
     )
     list_indiv_plots.extend(
@@ -278,7 +282,10 @@ def get_all_plots(wildcards):
             sample=samples,
             method=config["methods"],
             plottype=config["plottype_consistency"],
-            filter=["TRUE", "FALSE",]
+            filter=[
+                "TRUE",
+                "FALSE",
+            ],
         ),
     )
     list_indiv_plots.extend(
@@ -289,7 +296,10 @@ def get_all_plots(wildcards):
             method=config["methods"],
             # plottype=config["plottype_clustering"],
             plottype=["position"],
-            filter=["TRUE", "FALSE",]
+            filter=[
+                "TRUE",
+                "FALSE",
+            ],
         ),
     )
     list_indiv_plots.extend(
@@ -312,7 +322,10 @@ def get_all_plots(wildcards):
             output_folder=config["output_location"],
             sample=samples,
             method=config["methods"],
-            filter=["TRUE", "FALSE",]
+            filter=[
+                "TRUE",
+                "FALSE",
+            ],
         )
     ),
     # print(list_indiv_plots)

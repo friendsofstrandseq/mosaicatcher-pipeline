@@ -56,6 +56,7 @@ rule create_haplotag_likelihoods:
 #     script:
 #         "../scripts/mosaiclassifier_scripts/mosaiClassifier_call.snakemake.R"
 
+
 rule mosaiClassifier_make_call:
     input:
         probs="{output_folder}/mosaiclassifier/haplotag_likelihoods/{sample}.Rdata",

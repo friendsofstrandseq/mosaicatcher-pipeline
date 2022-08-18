@@ -19,8 +19,6 @@ rule dl_example_data:
         touch("config_output/dl_example_data.ok"),
     log:
         touch("log/config_output/dl_example_data.ok"),
-    conda:
-        "../envs/mc_base.yaml"
     run:
         shell("unzip {input} -d .")
         # directory = ".tests/data_example/"
@@ -28,7 +26,6 @@ rule dl_example_data:
         #     os.makedirs(directory)
         # shell("mv {input} .tests/data_example/TEST_EXAMPLE_DATA.zip")
         # shell("unzip .tests/data_example/TEST_EXAMPLE_DATA.zip")
-
 
 
 
@@ -89,18 +86,19 @@ rule download_T2T_reference:
 # rule download_T2T_tarball:
 #     input:
 #         HTTP.remote()
-#     output: 
+#     output:
 #         ".tar.gz"
 #     log:
 #     run:
 
+
 rule install_T2T_tarball:
-    input: 
-        ".tar.gz"
+    input:
+        ".tar.gz",
     output:
-        touch("workflow/data/ref_genomes/config/T2T_R_tarball_install.ok")
+        touch("workflow/data/ref_genomes/config/T2T_R_tarball_install.ok"),
     log:
-        "workflow/data/ref_genomes/log/T2T_R_tarball_install.log"
+        "workflow/data/ref_genomes/log/T2T_R_tarball_install.log",
     conda:
         "../envs/rtools.yaml"
     shell:
@@ -110,16 +108,14 @@ rule install_T2T_tarball:
         """
 
 
-
 rule samtools_faindex:
     input:
-        ancient("{file}.fa")
+        ancient("{file}.fa"),
     output:
-        "{file}.fa.fai"
+        "{file}.fa.fai",
     log:
-        "{file}.log"
+        "{file}.log",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     shell:
         "samtools faidx {input}"
-

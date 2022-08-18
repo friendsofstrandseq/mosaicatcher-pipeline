@@ -25,6 +25,8 @@ rule postprocessing_filter:
         export LC_ALL=en_US.UTF-8 
         workflow/scripts/postprocessing/filter_MosaiCatcher_calls.pl {input.calls} {params.segdups} > {output.calls}
         """
+
+
 # # CHECKME : segdup file only in hg38
 # rule postprocessing_filter:
 #     input:
@@ -42,8 +44,8 @@ rule postprocessing_filter:
 #         mem_mb=get_mem_mb,
 #     shell:
 #         """
-#         export LC_CTYPE=en_US.UTF-8 
-#         export LC_ALL=en_US.UTF-8 
+#         export LC_CTYPE=en_US.UTF-8
+#         export LC_ALL=en_US.UTF-8
 #         workflow/scripts/postprocessing/filter_MosaiCatcher_calls.pl {input.calls} {params.segdups} > {output.calls}
 #         """
 
@@ -80,8 +82,8 @@ rule postprocessing_merge:
 #         mem_mb=get_mem_mb,
 #     shell:
 #         """
-#         export LC_CTYPE=en_US.UTF-8 
-#         export LC_ALL=en_US.UTF-8 
+#         export LC_CTYPE=en_US.UTF-8
+#         export LC_ALL=en_US.UTF-8
 #         workflow/scripts/postprocessing/group_nearby_calls_of_same_AF_and_generate_output_table.pl {input.calls}  > {output.calls}
 #         """
 
@@ -102,6 +104,7 @@ rule postprocessing_sv_group_table:
         PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)
         workflow/scripts/postprocessing/create-sv-group-track.py {input.calls}  > {output.grouptrack}
         """
+
 
 # rule postprocessing_sv_group_table:
 #     input:
@@ -141,6 +144,8 @@ rule filter_calls:
         PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)
         workflow/scripts/postprocessing/apply_filter.py {input.inputcalls} {input.mergedcalls} > {output.calls}
         """
+
+
 # rule filter_calls:
 #     input:
 #         # inputcalls = "mosaiclassifier/sv_calls/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}_filterFALSE.tsv",

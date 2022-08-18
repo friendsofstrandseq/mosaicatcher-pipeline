@@ -44,7 +44,9 @@ rule regenotype_SNVs:
         # sites=config["snv_sites_to_genotype"],
         sites=config["references_data"][config["reference"]]["snv_sites_to_genotype"],
         fasta=config["references_data"][config["reference"]]["reference_fasta"],
-        fasta_index="{fasta}.fai".format(fasta=config["references_data"][config["reference"]]["reference_fasta"]),
+        fasta_index="{fasta}.fai".format(
+            fasta=config["references_data"][config["reference"]]["reference_fasta"]
+        ),
     output:
         vcf="{output_folder}/snv_genotyping/{sample}/{chrom,chr[0-9A-Z]+}.vcf",
     log:
@@ -71,14 +73,15 @@ rule regenotype_SNVs:
         """
 
 
-
 rule call_SNVs_bcftools_chrom:
     input:
         bam="{output_folder}/merged_bam/{sample}/merged.bam",
         bai="{output_folder}/merged_bam/{sample}/merged.bam.bai",
         fasta=config["references_data"][config["reference"]]["reference_fasta"],
-        fasta_index="{fasta}.fai".format(fasta=config["references_data"][config["reference"]]["reference_fasta"]),
-        ploidy="{output_folder}/ploidy/{sample}/ploidy_bcftools.txt"
+        fasta_index="{fasta}.fai".format(
+            fasta=config["references_data"][config["reference"]]["reference_fasta"]
+        ),
+        ploidy="{output_folder}/ploidy/{sample}/ploidy_bcftools.txt",
     output:
         vcf="{output_folder}/snv_calls/{sample}/{chrom,chr[0-9A-Z]+}.vcf",
     log:
