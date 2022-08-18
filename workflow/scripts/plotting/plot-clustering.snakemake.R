@@ -8,7 +8,7 @@ plot.clustering(
     bin.bed.filename = snakemake@input[["binbed"]],
     position.outputfile = snakemake@output[["position"]],
 )
-    # chromosome.outputfile = snakemake@output[["chromosome"]]
+# chromosome.outputfile <- snakemake@output[["chromosome"]]
 
 # args <- commandArgs(trailingOnly = TRUE)
 
