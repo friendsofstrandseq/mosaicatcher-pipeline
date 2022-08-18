@@ -192,6 +192,7 @@ jobs:
         with:
           directory: .
           snakefile: ./workflow/Snakefile
+          stagein: "mamba install -c conda-forge unzip"
           args: "--cores 1 --config dl_bam_example=True -p --verbose --debug"
   Downloading_hg19:
     runs-on: ubuntu-latest
