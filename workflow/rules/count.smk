@@ -1,40 +1,17 @@
-# from workflow.scripts.utils.utils import get_mem_mb
-
-# import pandas as pd
-# config_df = pd.read_csv("config/config_df.tsv", sep="\t")
-# bam_per_sample_local = config_df.loc[config_df["Selected"] == True].groupby("Sample")["File"].apply(list).to_dict()
-
-# bam_per_sample_local = df_config_files.loc[df_config_files["Selected"] == True].groupby("Sample")["File"].apply(list).to_dict()
-
-################################################################################
-# Read counting                                                                #
-################################################################################
-
-
-# DOCME : mosaic count read orientation ?
 rule mosaic_count:
-    """
-    rule fct: Call mosaic count C++ function to count reads in each BAM file according defined window
-    input: For the moment, individual BAM file in the selected folder of the associated sample
-    output: counts: read counts for the BAM file according defined window ; info file : summary statistics 
-    """
     input:
         bam=lambda wc: expand(
             "{input_folder}/{sample}/all/{cell}.sort.mdup.bam",
             input_folder=config["input_bam_location"],
             sample=samples,
             cell=bam_per_sample_local[str(wc.sample)]
-            if wc.sample in bam_per_sample_local
-            else "FOOBAR",
         ),
         bai=lambda wc: expand(
             "{input_folder}/{sample}/all/{cell}.sort.mdup.bam.bai",
             input_folder=config["input_bam_location"],
             sample=samples,
             cell=bam_per_sample_local[str(wc.sample)],
-        )
-        if wc.sample in bam_per_sample_local
-        else "FOOBAR",
+        ),
         excl="{output_folder}/config_output/{sample}/exclude_file",
     output:
         counts="{output_folder}/counts/{sample}/{sample}.txt.raw.gz",
@@ -137,22 +114,26 @@ checkpoint filter_bad_cells_from_mosaic_count:
         "../scripts/utils/filter_bad_cells.py"
 
 
-if (config["window"] in [50000, 100000, 200000]) and (config["reference"] == "hg38") and (config["normalized_counts"] is True):
-    
-
+if (
+    (config["window"] in [50000, 100000, 200000])
+    and (config["reference"] == "hg38")
+    and (config["normalized_counts"] is True)
+):
 
     rule merge_blacklist_bins:
-        """
-        rule fct: Call Python script to merge HGVSC normalization defined file & inversion whitelist file
-        input: norm: HGSVC predefined BED file by the group ; whitelist: whitelist inversion file predefined by the group
-        """
         input:
-            norm="workflow/data/normalization/HGSVC.{{window}}.txt".format(config["window"]),
+            norm="workflow/data/normalization/HGSVC.{{window}}.txt".format(
+                config["window"]
+            ),
             whitelist="workflow/data/normalization/inversion-whitelist.tsv",
         output:
-            merged="{{output_folder}}/normalizations/HGSVC.{{window}}.merged.tsv".format(config["output_location"], config["window"]),
+            merged="{{output_folder}}/normalizations/HGSVC.{{window}}.merged.tsv".format(
+                config["output_location"], config["window"]
+            ),
         log:
-            "{{output_folder}}/log/merge_blacklist_bins/{{window}}.log".format(config["output_location"], config["window"]),
+            "{{output_folder}}/log/merge_blacklist_bins/{{window}}.log".format(
+                config["output_location"], config["window"]
+            ),
         conda:
             "../envs/mc_base.yaml"
         shell:
@@ -160,16 +141,14 @@ if (config["window"] in [50000, 100000, 200000]) and (config["reference"] == "hg
             workflow/scripts/normalization/merge-blacklist.py --merge_distance 500000 {input.norm} --whitelist {input.whitelist} --min_whitelist_interval_size 100000 > {output.merged} 2>> {log}
             """
 
-
     rule normalize_counts:
-        """
-        rule fct: Normalization of mosaic counts based on merged normalization file produced with a linear relation (count * scaling_factor)
-        input: counts: counts file coming from `rule mosaic_count` ; norm: merged normalization file produced by `rule merge_blacklist_bins`
-        output: normalized counts based predefined factors for each window
-        """
         input:
             counts="{output_folder}/counts/{sample}/{sample}.txt.filter.gz",
-            norm=expand("{output_folder}/normalizations/HGSVC.{window}.merged.tsv", output_folder=config["output_location"], window=config["window"]),
+            norm=expand(
+                "{output_folder}/normalizations/HGSVC.{window}.merged.tsv",
+                output_folder=config["output_location"],
+                window=config["window"],
+            ),
         output:
             "{output_folder}/counts/{sample}/{sample}.txt.norm.gz",
         log:
@@ -189,18 +168,18 @@ if (config["window"] in [50000, 100000, 200000]) and (config["reference"] == "hg
         log:
             "{output_folder}/sort_norm_counts/{sample}.log",
         run:
-            df = pd.read_csv(input[0], sep="\t", compression='gzip')
+            df = pd.read_csv(input[0], sep="\t", compression="gzip")
             df["start"] = df["start"].astype(int)
             df["end"] = df["end"].astype(int)
             chroms = ["chr" + str(c) for c in list(range(1, 23))] + ["chrX"]
             df["chrom"] = pd.Categorical(df["chrom"], categories=chroms, ordered=True)
-            df.sort_values(by=["cell", "chrom", "start", "end"]).to_csv(output[0], compression='gzip', sep="\t", index=False)
-
-
+            df.sort_values(by=["cell", "chrom", "start", "end"]).to_csv(
+                output[0], compression="gzip", sep="\t", index=False
+            )
 
 
 else:
-    
+
     rule cp_mosaic_count:
         input:
             "{output_folder}/counts/{sample}/{sample}.txt.filter.gz",
@@ -212,9 +191,10 @@ else:
             "../envs/mc_base.yaml"
         shell:
             "cp {input} {output}"
-
-
 ################################################################################
+
+
+
 # Single-Cell Segmentation                                                                 #
 ################################################################################
 
