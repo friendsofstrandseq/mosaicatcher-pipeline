@@ -510,26 +510,26 @@ library(ggnewscale)
     plt <- ggplot(local_counts)
     
     # Add background colors for segments, if available:
-    if (background_segment == TRUE) {
-      if (!is.null(f_segments)) {
-        message("   * Adding segment colors")
-        # Segments need to be multiplied by "CELLS"
-        local_seg <- CELLS[, as.data.table(seg), by = sample_cell]
-        if (nrow(local_seg) > 0) {
-          plt <- plt +
-            geom_rect(
-              data = local_seg,
-              alpha = 0.4,
-              aes(
-                xmin = start,
-                xmax = end,
-                ymin = -Inf,
-                ymax = Inf,
-                fill = SV_class
-              )
-            ) + labs(fill = 'Sample level\nsegmentation')    +   scale_fill_manual(values = manual_colors_bg) +  new_scale_fill()
-        }
+    # if (background_segment == TRUE) {
+    if (!is.null(f_segments)) {
+      message("   * Adding segment colors")
+      # Segments need to be multiplied by "CELLS"
+      local_seg <- CELLS[, as.data.table(seg), by = sample_cell]
+      if (nrow(local_seg) > 0) {
+        plt <- plt +
+          geom_rect(
+            data = local_seg,
+            alpha = 0.4,
+            aes(
+              xmin = start,
+              xmax = end,
+              ymin = -Inf,
+              ymax = Inf,
+              fill = SV_class
+            )
+          ) + labs(fill = 'Sample level\nsegmentation')    +   scale_fill_manual(values = manual_colors_bg) +  new_scale_fill()
       }
+      # }
     }
     
     # Add colors for SV calls, if available
@@ -573,28 +573,28 @@ library(ggnewscale)
     }
     
     # Add lines for single cell segmentation, if available
-    if (background_segment == TRUE) {
-      if (!is.null(f_scsegments)) {
-        message("   * Adding single cell segments")
-        local_scsegments <-
-          scsegments[CELLS, on = .(sample_cell), nomatch = 0]
-        if (nrow(local_scsegments) > 0) {
-          local_scsegments$cat <- rep('sc-segment', nrow(local_scsegments))
-          plt <- plt +
-            geom_segment(
-              data = local_scsegments,
-              aes(
-                x = position,
-                xend = position,
-                y = -Inf,
-                yend = -.8 * y_lim,
-                linetype = 'sc-segment'
-              ),
-              color = "blue"
-            ) +  scale_linetype_manual("Single-cell\nsegmentation", values = c("sc-segment" = 1))
-        }
-      }
+    # if (background_segment == TRUE) {
+  if (!is.null(f_scsegments)) {
+    message("   * Adding single cell segments")
+    local_scsegments <-
+      scsegments[CELLS, on = .(sample_cell), nomatch = 0]
+    if (nrow(local_scsegments) > 0) {
+      local_scsegments$cat <- rep('sc-segment', nrow(local_scsegments))
+      plt <- plt +
+        geom_segment(
+          data = local_scsegments,
+          aes(
+            x = position,
+            xend = position,
+            y = -Inf,
+            yend = -.8 * y_lim,
+            linetype = 'sc-segment'
+          ),
+          color = "blue"
+        ) +  scale_linetype_manual("Single-cell\nsegmentation", values = c("sc-segment" = 1))
     }
+  }
+    # }
     
     # Add bars for strand states, if available
     if (!is.null(f_strand)) {
