@@ -130,81 +130,88 @@ checkpoint filter_bad_cells_from_mosaic_count:
     output:
         info="{output_folder}/counts/{sample}/{sample}.info",
         info_removed="{output_folder}/counts/{sample}/{sample}.info_rm",
-        counts="{output_folder}/counts/{sample}/{sample}.txt.gz",
+        counts="{output_folder}/counts/{sample}/{sample}.txt.filter.gz",
     log:
         "{output_folder}/log/filter_bad_cells_from_mosaic_count/{sample}/{sample}.log",
     script:
         "../scripts/utils/filter_bad_cells.py"
 
 
-# CHECKME : to keep or to improve ? @jeong @mc @kg
-################################################################################
-# Normalize counts                                                             #
-################################################################################
+if (config["window"] in [50000, 100000, 200000]) and (config["reference"] == "hg38") and (config["normalized_counts"] is True):
+    
 
 
-# TODO : check if inversion file is corresponded to previously published
-rule merge_blacklist_bins:
-    """
-    rule fct: Call Python script to merge HGVSC normalization defined file & inversion whitelist file
-    input: norm: HGSVC predefined BED file by the group ; whitelist: whitelist inversion file predefined by the group
-    """
-    input:
-        norm="utils/normalization/HGSVC.{window}.txt",
-        whitelist="utils/normalization/inversion-whitelist.tsv",
-    output:
-        merged="{output_folder}/normalizations/HGSVC.{window}.merged.tsv",
-    log:
-        "{output_folder}/log/merge_blacklist_bins/{window}.log",
-    conda:
-        "../envs/mc_base.yaml"
-    shell:
+    rule merge_blacklist_bins:
         """
-        PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)
-        utils/merge-blacklist.py --merge_distance 500000 {input.norm} --whitelist {input.whitelist} --min_whitelist_interval_size 100000 > {output.merged} 2>> {log}
+        rule fct: Call Python script to merge HGVSC normalization defined file & inversion whitelist file
+        input: norm: HGSVC predefined BED file by the group ; whitelist: whitelist inversion file predefined by the group
         """
+        input:
+            norm="workflow/data/normalization/HGSVC.{{window}}.txt".format(config["window"]),
+            whitelist="workflow/data/normalization/inversion-whitelist.tsv",
+        output:
+            merged="{{output_folder}}/normalizations/HGSVC.{{window}}.merged.tsv".format(config["output_location"], config["window"]),
+        log:
+            "{{output_folder}}/log/merge_blacklist_bins/{{window}}.log".format(config["output_location"], config["window"]),
+        conda:
+            "../envs/mc_base.yaml"
+        shell:
+            """
+            workflow/scripts/normalization/merge-blacklist.py --merge_distance 500000 {input.norm} --whitelist {input.whitelist} --min_whitelist_interval_size 100000 > {output.merged} 2>> {log}
+            """
 
 
-# FIXME : snakemake ambiguity with I/O paths
-# CHECKME : Check R code for normalization
-rule normalize_counts:
-    """
-    rule fct: Normalization of mosaic counts based on merged normalization file produced with a linear relation (count * scaling_factor)
-    input: counts: counts file coming from `rule mosaic_count` ; norm: merged normalization file produced by `rule merge_blacklist_bins`
-    output: normalized counts based predefined factors for each window
-    """
-    input:
-        counts="{output_folder}/counts/{sample}/{window}.txt.gz",
-        norm="{output_folder}/normalizations/HGSVC.{window}.merged.tsv",
-    output:
-        "{output_folder}/norm_counts/{sample}/{window}.txt.gz",
-    log:
-        "{output_folder}/log/normalize_counts/{sample}/{window}.log",
-    conda:
-        "../envs/rtools.yaml"
-    shell:
+    rule normalize_counts:
         """
-        Rscript utils/normalize.R {input.counts} {input.norm} {output} 2>&1 > {log}
+        rule fct: Normalization of mosaic counts based on merged normalization file produced with a linear relation (count * scaling_factor)
+        input: counts: counts file coming from `rule mosaic_count` ; norm: merged normalization file produced by `rule merge_blacklist_bins`
+        output: normalized counts based predefined factors for each window
         """
+        input:
+            counts="{output_folder}/counts/{sample}/{sample}.txt.filter.gz",
+            norm=expand("{output_folder}/normalizations/HGSVC.{window}.merged.tsv", output_folder=config["output_location"], window=config["window"]),
+        output:
+            "{output_folder}/counts/{sample}/{sample}.txt.norm.gz",
+        log:
+            "{output_folder}/log/normalize_counts/{sample}.log",
+        conda:
+            "../envs/rtools.yaml"
+        shell:
+            """
+            Rscript workflow/scripts/normalization/normalize.R {input.counts} {input.norm} {output} 2>&1 > {log}
+            """
+
+    rule sort_norm_counts:
+        input:
+            "{output_folder}/counts/{sample}/{sample}.txt.norm.gz",
+        output:
+            "{output_folder}/counts/{sample}/{sample}.txt.gz",
+        log:
+            "{output_folder}/sort_norm_counts/{sample}.log",
+        run:
+            df = pd.read_csv(input[0], sep="\t", compression='gzip')
+            df["start"] = df["start"].astype(int)
+            df["end"] = df["end"].astype(int)
+            chroms = ["chr" + str(c) for c in list(range(1, 23))] + ["chrX"]
+            df["chrom"] = pd.Categorical(df["chrom"], categories=chroms, ordered=True)
+            df.sort_values(by=["cell", "chrom", "start", "end"]).to_csv(output[0], compression='gzip', sep="\t", index=False)
 
 
-# FIXME : cleaner way to symlink info files
-rule link_normalized_info_file:
-    """
-    rule fct: Symlink info file ouput mosaic count to normalization count directory
-    input: Global summary statistics produced by mosaic count
-    output: symlink in norm_counts output directory
-    """
-    input:
-        info="{output_folder}/counts/{sample}/{window}.info",
-    output:
-        info="{output_folder}/norm_counts/{sample}/{window}.info",
-    log:
-        "{output_folder}/log/norm_counts/{sample}/{window}.log",
-    run:
-        d = os.path.dirname(output.info)
-        file = os.path.basename(output.info)
-        shell("cd {d} && ln -s {input.info} {file}")
+
+
+else:
+    
+    rule cp_mosaic_count:
+        input:
+            "{output_folder}/counts/{sample}/{sample}.txt.filter.gz",
+        output:
+            "{output_folder}/counts/{sample}/{sample}.txt.gz",
+        log:
+            "{output_folder}/log/counts/{sample}.log",
+        conda:
+            "../envs/mc_base.yaml"
+        shell:
+            "cp {input} {output}"
 
 
 ################################################################################

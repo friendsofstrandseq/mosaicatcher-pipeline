@@ -15,7 +15,7 @@ input_old_behavior: False
 # Enable/Disable ashleys-qc-pipeline module loading to start pipeline from FASTQ files
 ashleys_pipeline: False
 # Enable / Disable comparison for each BAM file between folder name & SM tag
-check_sm_tag: True
+check_sm_tag: True"
 # Enable / Disable download of BAM examples (RPE-BM510)
 dl_bam_example: False
 # Enable / Disable download of external files (1000G SNV & Fasta ref genome)
@@ -74,6 +74,9 @@ git_repo_strandphaser: "https://github.com/daewoooo/StrandPhaseR"
 
 ## Mosaic bin window size
 window: 100000
+
+# Normalize or not mosaic counts
+normalized_counts: False
 
 ## Methods dictionnary
 methods:
