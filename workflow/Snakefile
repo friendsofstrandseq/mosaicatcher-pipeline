@@ -52,18 +52,36 @@ include: "rules/setup.smk"
 include: "rules/input_check.smk"
 
 
-# include: "rules/count.smk"
+include: "rules/count.smk"
 
 
 include: "rules/segmentation.smk"
+
+
 include: "rules/plots.smk"
+
+
 include: "rules/regenotyping.smk"
+
+
 include: "rules/strandphaser.smk"
+
+
 include: "rules/haplotagging.smk"
+
+
 include: "rules/mosaiclassifier.smk"
+
+
 include: "rules/postprocessing.smk"
+
+
 include: "rules/ploidy.smk"
+
+
 include: "rules/stats.smk"
+
+
 include: "rules/examples.smk"
 
 
