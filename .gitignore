@@ -50,6 +50,14 @@ workflow/static/
 __pycache__
 workflow/scripts/__pycache__
 
+# HTTP
+s3-us-west-2.amazonaws.com/
+hgdownload.soe.ucsc.edu/
+.ipynb_checkpoints/
+
+# REF GENOMES
+workflow/data/ref_genomes/
+
 # Zenodo
 workflow/sandbox.zenodo.org/
 sandbox.zenodo.org/
@@ -65,6 +73,7 @@ workflow/test.txt
 !docs/images/*.png
 !workflow/data/segdups/segDups_hg38_UCSCtrack.bed.gz
 !workflow/data/bin_200kb_all.bed
+!workflow/data/normalization/*
 !config/config.yaml
 !config/*
 
@@ -73,13 +82,15 @@ workflow/test.txt
 .tests/unit/
 
 ## OUTPUT TEST
-.tests/output/
+.tests/output*/
 .tests/output_CHR21/
 .tests/output_CHR21_LITE_FNA/
 .tests/output2/
 
 ## DATA
 .tests/data_CHR21_LITE_FNA/
+.tests/data_HG19/
+.tests/data_T2T/
 .tests/data/RPE-BM510/all/*.bai
 .tests/data/RPE-BM510/all/*.bam
 .tests/data/RPE-BM510/all/*.log

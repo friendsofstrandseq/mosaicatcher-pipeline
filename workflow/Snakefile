@@ -24,7 +24,7 @@ docker_container = "docker://weber8thomas/mosaicatcher-pipeline:{version}".forma
 )
 
 
-containerized: docker_container
+containerized: "docker://weber8thomas/mosaicatcher-pipeline:1.7.0"
 
 
 if config["ashleys_pipeline"] is True:
@@ -34,7 +34,7 @@ if config["ashleys_pipeline"] is True:
             github(
                 "friendsofstrandseq/ashleys-qc-pipeline",
                 path="workflow/Snakefile",
-                branch="dev",
+                branch="ref_genomes",
             )
         config:
             config
@@ -42,10 +42,10 @@ if config["ashleys_pipeline"] is True:
     use rule * from ashleys_qc as ashleys_*
 
 
-include: "rules/utils.smk"
-
-
 include: "rules/common.smk"
+
+
+include: "rules/utils.smk"
 
 
 include: "rules/aggregate_fct.smk"
@@ -81,6 +81,9 @@ include: "rules/mosaiclassifier.smk"
 include: "rules/postprocessing.smk"
 
 
+include: "rules/ploidy.smk"
+
+
 include: "rules/stats.smk"
 
 
@@ -97,7 +100,7 @@ if config["ashleys_pipeline"] is True:
 
 
 else:
-    if config["mode"] != "download_data":
+    if config["dl_external_files"] is False and config["dl_bam_example"] is False:
 
         rule all:
             input:
@@ -105,14 +108,6 @@ else:
 
 
     else:
-        if config["dl_bam_example"] is True and config["dl_external_files"] is True:
-
-            rule all:
-                input:
-                    rules.dl_example_data.output,
-                    rules.dl_external_data.output,
-                    rules.dl_external_data_index.output,
-
 
         if config["dl_bam_example"] is True and config["dl_external_files"] is False:
 
@@ -121,22 +116,36 @@ else:
                     rules.dl_example_data.output,
 
 
-        if config["dl_bam_example"] is False and config["dl_external_files"] is True:
+        elif (
+            config["dl_bam_example"] is False
+            and config["dl_external_files"] is True
+            and config["reference"] in ["hg19", "hg38", "T2T"]
+        ):
+            if config["reference"] == "hg19":
 
-            rule all:
-                input:
-                    rules.dl_external_data.output,
-                    rules.dl_external_data_index.output,
+                rule all:
+                    input:
+                        rules.download_hg19_reference.output,
+
+
+            elif config["reference"] == "hg38":
+
+                rule all:
+                    input:
+                        rules.download_hg38_reference.output,
+
+
+            elif config["reference"] == "T2T":
+
+                rule all:
+                    input:
+                        rules.download_T2T_reference.output,
 
 
 if config["mail"]:
 
     onsuccess:
-        print("Workflow finished, no error")
-        shell('mail -s "Workflow finished, no error"' + config["mail"] + "< {log}")
+        onsuccess_fct()
 
     onerror:
-        print("An error occurred")
-        shell(
-            'mail -s "Workflow failed, an error occurred"' + config["mail"] + "< {log}"
-        )
+        onerror_fct

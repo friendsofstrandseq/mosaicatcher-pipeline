@@ -30,7 +30,7 @@ rule create_haplotag_likelihoods:
     output:
         "{output_folder}/mosaiclassifier/haplotag_likelihoods/{sample}.Rdata",
     log:
-        "{output_folder}/og/create_haplotag_likelihoods/{sample}.log",
+        "{output_folder}/log/create_haplotag_likelihoods/{sample}.log",
     conda:
         "../envs/rtools.yaml"
     resources:
@@ -39,18 +39,42 @@ rule create_haplotag_likelihoods:
         "../scripts/mosaiclassifier_scripts/haplotagProbs.snakemake.R"
 
 
+# rule mosaiClassifier_make_call:
+#     input:
+#         probs="{output_folder}/mosaiclassifier/haplotag_likelihoods/{sample}.Rdata",
+#     output:
+#         "{output_folder}/mosaiclassifier/sv_calls/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}_filterFALSE.tsv",
+#     log:
+#         "{output_folder}/log/mosaiClassifier_make_call/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.log",
+#     conda:
+#         "../envs/rtools.yaml"
+#     params:
+#         minFrac_used_bins=0.8,
+#         window=config["window"],
+#     resources:
+#         mem_mb=get_mem_mb,
+#     script:
+#         "../scripts/mosaiclassifier_scripts/mosaiClassifier_call.snakemake.R"
+
+
 rule mosaiClassifier_make_call:
     input:
         probs="{output_folder}/mosaiclassifier/haplotag_likelihoods/{sample}.Rdata",
     output:
-        "{output_folder}/mosaiclassifier/sv_calls/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}_filterFALSE.tsv",
+        "{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}_filterFALSE.tsv",
     log:
-        "{output_folder}/log/mosaiClassifier_make_call/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.log",
+        "{output_folder}/log/mosaiClassifier_make_call/{sample}/{method}.log",
     conda:
         "../envs/rtools.yaml"
     params:
         minFrac_used_bins=0.8,
         window=config["window"],
+        llr=lambda wc: config["methods"][wc.method]["llr"],
+        poppriors=lambda wc: config["methods"][wc.method]["poppriors"],
+        haplotags=lambda wc: config["methods"][wc.method]["haplotags"],
+        gtcutoff=lambda wc: config["methods"][wc.method]["gtcutoff"],
+        regfactor=lambda wc: config["methods"][wc.method]["regfactor"],
+        filter=lambda wc: config["methods"][wc.method]["filter"],
     resources:
         mem_mb=get_mem_mb,
     script:
@@ -74,11 +98,11 @@ rule mosaiClassifier_make_call_biallelic:
 
 rule call_complex_regions:
     input:
-        calls="{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}.tsv",
+        calls="{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}_filter{filter}.tsv",
     output:
-        complex_regions="{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}.complex.tsv",
+        complex_regions="{output_folder}/mosaiclassifier/complex/{sample}/{method}_filter{filter}.tsv",
     log:
-        "{output_folder}/log/call_complex_regions/{sample}/{method}.log",
+        "{output_folder}/log/call_complex_regions/{sample}/{method}_filter{filter}.log",
     conda:
         "../envs/mc_base.yaml"
     resources:

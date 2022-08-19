@@ -4,6 +4,8 @@ channels:
   - bioconda
 dependencies:
   - pandas
+  - intervaltree
+  - scipy
   - pysam
   - tqdm
   - perl
