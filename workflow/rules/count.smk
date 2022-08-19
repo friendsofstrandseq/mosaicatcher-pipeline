@@ -12,7 +12,7 @@ rule mosaic_count:
             sample=samples,
             cell=bam_per_sample_local[str(wc.sample)],
         ),
-        excl="{output_folder}/config_output/{sample}/exclude_file",
+        excl="{output_folder}/config/{sample}/exclude_file",
     output:
         counts="{output_folder}/counts/{sample}/{sample}.txt.raw.gz",
         info="{output_folder}/counts/{sample}/{sample}.info_raw",
