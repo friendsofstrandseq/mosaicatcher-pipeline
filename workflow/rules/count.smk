@@ -166,7 +166,7 @@ if (
         output:
             "{output_folder}/counts/{sample}/{sample}.txt.gz",
         log:
-            "{output_folder}/sort_norm_counts/{sample}.log",
+            "{output_folder}/log/sort_norm_counts/{sample}.log",
         run:
             df = pd.read_csv(input[0], sep="\t", compression="gzip")
             df["start"] = df["start"].astype(int)
