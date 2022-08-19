@@ -82,7 +82,7 @@ rule final_results:
     input:
         get_all_plots,
     output:
-        touch("{output_folder}/plots/{sample}/final_results/{sample}.txt"),
+        "{output_folder}/plots/{sample}/final_results/{sample}.txt",
     log:
         "{output_folder}/log/final_blank_results/{sample}.log",
     conda:
