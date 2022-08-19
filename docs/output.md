@@ -72,6 +72,7 @@ The files listed below will be created in the selected results directory (`outpu
 ### Mosaic count - reads density across bins
 
 ---
+
 File path: `<OUTPUT_FOLDER>/plots/<SAMPLE>/counts/CountComplete.pdf`
 
 Report category: `Mosaic counts`
@@ -84,32 +85,33 @@ The plots present in this file will allow you to visualize both global statistic
 but also individual Strand-Seq karyotypes at the cell level.
 
 The first page of the pdf file shows the statistics of the analysis result, such
-as the distribution of total number of reads per cell, duplication rate, or excluded bins per chromosomes. 
-
+as the distribution of total number of reads per cell, duplication rate, or excluded bins per chromosomes.
 
 | ![summary](images/plots/stats.png) |
 | :--------------------------------: |
-| *Global statistics - Sample level* |
+| _Global statistics - Sample level_ |
 
 Afterwards, every pages show the overview of binning count result of each of the single-cells as presented below. The depth of Crick reads are depicted in the green color in the right side, and the depth of Watson reads are depicted in the orange color in the left side of each chromosome lines. HMM automatically defines the WW/WC/CC status according the reads distribution (yellow background: WC, green background: CC, orange background: WW).
 
-
 |   ![summary](images/plots/414.png)   |
 | :----------------------------------: |
-| *Strand-seq karyotype visualisation* |
+| _Strand-seq karyotype visualisation_ |
 
-*Strand-seq karyotype visualisation based on reads counting according defined window (here 100kb). Additionnal statistics are also presented in the upper part of the figure.* 
+_Strand-seq karyotype visualisation based on reads counting according defined window (here 100kb). Additionnal statistics are also presented in the upper part of the figure._
 
+Examples of good-quality and low-quality cells are presented [here](./mosaic_count.md)
 
 
 Examples of good-quality and low-quality cells are presented [here](./mosaic_count.md)
 
 ### SV calls
+
 ---
 File path: `<OUTPUT_FOLDER>/plots/<SAMPLE>/sv_calls/<METHOD>.<CHR>.pdf`
 
-Report category: `SV Calls`
+File path: `<OUTPUT_FOLDER>/plots/<SAMPLE>/sv_calls/<METHOD>.<CHR>.pdf`
 
+Report category: `SV Calls`
 
 ---
 The SV calls plots allow to identify and analyse at the single-cell level, the SV detected in the pipeline. 
@@ -132,16 +134,55 @@ Description of the parameters used can be found in th[parameters section here](.
 |                                                          *SV calls*                                                           |
 | *Here we can identify heterozygous deletions (blue) as well as heterozygous duplication (pink) on cells PE20453 and PE20458.* |
 
+The SV calls plots allow to identify and analyse at the single-cell level, the SV detected in the pipeline.
+
+SV calls plot correspond to chromosome-wise plots summarizing all informations computed during the pipeline (count binning = orange/green core signal, grey/white background: mosaic segments, bottom green/yellow/orange line: W/C state, additional colors: SV groups).
+
+Each different file corresponds to a different chromosome and each file presents a different track for each library processed successfully during the pipeline.
+
+As two different filtering methods are currently set (stringent/lenient filtering, stringent: a SV must be present in more than 5% of the cells), two groups of files can be found:
+
+- simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.05_regfactor6_filterTRUE.chr<N>.pdf
+- simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0_regfactor6_filterFALSE.chr<N>.pdf
+
+Description of the parameters used can be found in th[parameters section here](./parameters.md).
+
+|                                           ![summary](images/plots/sv_calls_new.png)                                           |
+| :---------------------------------------------------------------------------------------------------------------------------: |
+|                                                          _SV calls_                                                           |
+| _Here we can identify heterozygous deletions (blue) as well as heterozygous duplication (pink) on cells PE20453 and PE20458._ |
 
 ### SV consistency
+
 ---
+File path: `<OUTPUT_FOLDER>/plots/<SAMPLE>/sv_consistency/<METHOD>.consistency-barplot-<byaf|bypos>.pdf`
+
 File path: `<OUTPUT_FOLDER>/plots/<SAMPLE>/sv_consistency/<METHOD>.consistency-barplot-<byaf|bypos>.pdf`
 
 Report category: `SV Consistency`
 
-
 ---
 
+SV consistency plots correspond to barplots representing SV events (rows) according their frequency across cells and their class (del, dup, inv, ...).
+
+These plots are complentary to the other outputs available and are presented either sorted by Variant Allele Fraction (VAF) or by position.
+
+Like SV calls and SV clustering plots, SV consistency are also presented regarding the two filtering methods (stringent/lenient filtering), two groups of files can be found:
+
+- simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.05_regfactor6_filterTRUE.<byaf|bypos>.pdf
+- simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0_regfactor6_filterFALSE.<byaf|bypos>.pdf
+
+Here are some important points to better analyse these plots:
+
+- If the VAF is close to 1, the SVs are expected to be germline variant
+- If the VAF is below 1, the SVs are expected to be somatic variant
+- If the SVs only detected by one cell, it can be rare SV event, or an SCE (sister chromatid exchange) event
+- SCEs happen independently in each single cell, and unlike SVs, SCEs are not transmitted clonally to
+  daughter cells. Hence, changepoints resulting from SCEs are very unlikely to recur at the same position in >1 cell of a sample
+
+| ![summary](images/plots/sv_consistency_af.png) |
+| :--------------------------------------------: |
+|       _SV consistency (position sorted)_       |
 
 SV consistency plots correspond to barplots representing SV events (rows) according their frequency across cells and their class (del, dup, inv, ...).
 
@@ -171,7 +212,9 @@ daughter cells. Hence, changepoints resulting from SCEs are very unlikely to rec
 
 
 ### SV clustering
+
 ---
+
 File path: `<OUTPUT_FOLDER>/plots/<SAMPLE>/sv_clustering/<CELL>.pdf`
 
 Report category: `SV Clustering`
@@ -202,13 +245,13 @@ By using these heatmaps, the user can easily identify subclones based on the SV 
 
 
 ## Statistics
+
 ---
 File path: `<OUTPUT_FOLDER>/stats/<SAMPLE>/stats-merged.tsv`
 
 Report category: `Stats`
 
 ---
-
 
 | Col nb | Col title                       | Comment                                                                                  |
 | ------ | ------------------------------- | ---------------------------------------------------------------------------------------- |
@@ -238,8 +281,8 @@ Report category: `Stats`
 | 24     | length_sum_af10to80_complex_mb  | cumulative length of complex SV calls where SV sample allelic frequency is 10 < x < 80%  |
 | 25     | length_sum_af80to100_complex_mb | cumulative length of complex SV calls where SV sample allelic frequency is 80 < x < 100% |
 
-
 ## Raw SV calls (tab-seperated file)
+
 ---
 File path: `<OUTPUT_FOLDER>/mosaiclassifier/sv_calls/<SAMPLE>/<method>.pdf`
 

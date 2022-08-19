@@ -37,4 +37,5 @@ dependencies:
   - r-stringr=1.4.0
   - r-cairo
   - fonts-anaconda
-##
+  # - r-r.utils
+  # - r-ggnewscale
