@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """
 Ploidy / copy number estimation in genomic bins based on Strand-seq Watson/Crick read counts.
 
