@@ -12,7 +12,7 @@ rule mosaic_count:
             sample=samples,
             cell=bam_per_sample_local[str(wc.sample)],
         ),
-        excl="{output_folder}/config_output/{sample}/exclude_file",
+        excl="{output_folder}/config/{sample}/exclude_file",
     output:
         counts="{output_folder}/counts/{sample}/{sample}.txt.raw.gz",
         info="{output_folder}/counts/{sample}/{sample}.info_raw",
@@ -109,7 +109,7 @@ checkpoint filter_bad_cells_from_mosaic_count:
         info_removed="{output_folder}/counts/{sample}/{sample}.info_rm",
         counts="{output_folder}/counts/{sample}/{sample}.txt.filter.gz",
     log:
-        "{output_folder}/log/filter_bad_cells_from_mosaic_count/{sample}/{sample}.log",
+        "{output_folder}/log/filter_bad_cells_from_mosaic_count/{sample}.log",
     script:
         "../scripts/utils/filter_bad_cells.py"
 
