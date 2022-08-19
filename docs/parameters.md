@@ -32,8 +32,7 @@ All these arguments can be specified in two ways:
 
 | Parameter           | Comment                                                                                                                                  | Default |
 | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| `containerized`     | Use or not the docker worfklow with pre-installed and compiled all required dependencies generation                                      | False   |
-| `plot`              | _Enable_ or _disable_ the plots generation                                                                                               | False   |
+| `plot`              | *Enable* or *disable* the plots generation                                                                                               | True    |
 | `check_sm_tag`      | Based on pysam, will compare for each BAM file, if the header SM tag is identical to the folder name in order to prevent further issues. | True    |
 | `dl_bam_example`    | Allow to retrieve automatically BAM fullsize example data.                                                                               | False   |
 | `dl_external_files` | Allow to retrieve automatically external files (GRCh38 reference genome + 1000G SNV VCF file) required to run the pipeline.              | False   |
@@ -49,14 +48,21 @@ All these arguments can be specified in two ways:
 
 ### Processing options
 
-| Parameter               | Comment                                                                                                    | Related-section | Default  |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------- | --------------- | -------- |
-| `window`                | Window size used for binning by mosaic count (Can be of high importance regarding library coverage)        | Count           | 100000   |
-| `min_diff_jointseg`     | Minimum difference in error term to include another breakpoint in the joint segmentation (default=0.5)     | Segmentation    | 0.1      |
-| `min_diff_singleseg`    | Minimum difference in error term to include another breakpoint in the single-cell segmentation (default=1) | Segmentation    | 0.5      |
-| `additional_sce_cutoff` | Minimum gain in mismatch distance needed to add an additional SCE                                          | Segmentation    | 20000000 |
-| `sce_min_distance`      | Minimum distance of an SCE to a break in the joint segmentation                                            | Segmentation    | 500000   |
-| `llr`                   | Likelihood ratio used to detect SV calls                                                                   | Mosaiclassifier | 4        |
+| Parameter               | Comment                                                                                                    | Default       |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------- | ------------- |
+| `window`                | Window size used for binning by mosaic count (Can be of high importance regarding library coverage)        | 100000        |
+| `min_diff_jointseg`     | Minimum difference in error term to include another breakpoint in the joint segmentation (default=0.5)     | 0.1           |
+| `min_diff_singleseg`    | Minimum difference in error term to include another breakpoint in the single-cell segmentation (default=1) | 0.5           |
+| `additional_sce_cutoff` | Minimum gain in mismatch distance needed to add an additional SCE                                          | 20000000      |
+| `sce_min_distance`      | Minimum distance of an SCE to a break in the joint segmentation                                            | 500000        |
+| `llr`                   | Likelihood ratio used to  detect SV calls                                                                  | 4             |
+| `poppriors`             |                                                                                                            |               |
+| `haplotags`             |                                                                                                            |               |
+| `gtcutoff`              |                                                                                                            |               |
+| `regfactor`             |                                                                                                            |               |
+| `filter`                |                                                                                                            |               |
+| `chromosomes`           | List of chromosomes to be processed in the pipeline                                                        | chr1..22,chrX |
+
 
 ### Execution profile
 

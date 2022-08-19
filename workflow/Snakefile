@@ -3,6 +3,9 @@ from snakemake.utils import min_version
 min_version("7.4.1")
 
 
+configfile: "config/config.yaml"
+
+
 onstart:
     arg = "ENABLED" if config["ashleys_pipeline"] is True else "DISABLED"
     print("###################################")
@@ -13,10 +16,12 @@ onstart:
     print("Output folder selected : {}".format(config["output_location"]))
 
 
-configfile: "config/config.yaml"
-
-
 report: "report/workflow.rst"
+
+
+docker_container = "docker://weber8thomas/mosaicatcher-pipeline:{version}".format(
+    version=str(config["version"])
+)
 
 
 containerized: "docker://weber8thomas/mosaicatcher-pipeline:1.7.0"
