@@ -19,8 +19,8 @@ rule index_input_bam:
         "{input_folder}/log/index_input_bam/{sample}/{cell}.log",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
-    # resources:
-    #     mem_mb=get_mem_mb,
+    resources:
+        mem_mb=get_mem_mb,
     shell:
         "samtools index {input} > {log} 2>&1"
 
@@ -39,8 +39,8 @@ rule index_haplotag_bam:
         "{output_folder}/log/index_haplotag_bam/{sample}/{cell}.log",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
-    # resources:
-    #     mem_mb=get_mem_mb,
+    resources:
+        mem_mb=get_mem_mb,
     shell:
         "samtools index {input} > {log} 2>&1"
 
@@ -59,8 +59,8 @@ rule index_merged_bam:
         "{output_folder}/log/merged_bam/{sample}/merged.log",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
-    # resources:
-    #     mem_mb=get_mem_mb,
+    resources:
+        mem_mb=get_mem_mb,
     shell:
         "samtools index {input} > {log} 2>&1"
 
@@ -79,6 +79,8 @@ rule compress_indiv_freebayes_vcf:
         "{output_folder}/log/compress_indiv_freebayes_vcf/{sample}/{chrom}.log",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
+    resources:
+        mem_mb=get_mem_mb,
     shell:
         "bgzip {input.vcf} > {log} 2>&1"
 
@@ -97,6 +99,8 @@ rule index_indiv_freebayes_vcf:
         "{output_folder}/log/index_indiv_freebayes_vcf/{sample}/{chrom}.log",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
+    resources:
+        mem_mb=get_mem_mb,
     shell:
         "tabix -p vcf {input.vcf} > {log} 2>&1"
 
@@ -115,6 +119,8 @@ rule compress_indiv_strandphaser_vcf:
         "{output_folder}/log/compress_indiv_strandphaser_vcf/{sample}/{chrom}.log",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
+    resources:
+        mem_mb=get_mem_mb,
     shell:
         "bgzip {input.vcf} > {log} 2>&1"
 
@@ -133,6 +139,8 @@ rule index_indiv_strandphaser_vcf:
         "{output_folder}/log/index_indiv_strandphaser_vcf/{sample}/{chrom}.log",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
+    resources:
+        mem_mb=get_mem_mb,
     shell:
         "tabix -p vcf {input.vcf} > {log} 2>&1"
 
@@ -151,5 +159,7 @@ rule index_merged_strandphaser_vcf:
         "{output_folder}/log/index_merged_strandphaser_vcf/phased-snvs/{sample}.log",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
+    resources:
+        mem_mb=get_mem_mb,
     shell:
         "tabix -p vcf {input.vcf} > {log} 2>&1"

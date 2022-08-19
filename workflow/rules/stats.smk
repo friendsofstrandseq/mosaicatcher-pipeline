@@ -14,7 +14,7 @@ rule summary_statistics:
         segmentation="{output_folder}/segmentation/{sample}/Selection_jointseg.txt",
         strandstates="{output_folder}/segmentation/{sample}/Selection_initial_strand_state",
         sv_calls="{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}_filter{filter}.tsv",
-        complex="{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}_filter{filter}.complex.tsv",
+        complex="{output_folder}/mosaiclassifier/complex/{sample}/{method}_filter{filter}.tsv",
         merged="{output_folder}/mosaiclassifier/postprocessing/merge/{sample}/{method}.tsv",
     output:
         tsv="{output_folder}/stats/{sample}/{method}_filter{filter}.tsv",
@@ -29,9 +29,10 @@ rule summary_statistics:
 rule aggregate_summary_statistics:
     input:
         tsv=expand(
-            "{output_folder}/stats/{sample}/{method}.tsv",
+            "{output_folder}/stats/{sample}/{method}_filter{filter}.tsv",
             output_folder=config["output_location"],
             method=config["methods"],
+            filter=["TRUE", "FALSE"],
             sample=samples,
         ),
     output:

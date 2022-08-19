@@ -1,0 +1,143 @@
+#######################################
+#   MOSAICATCHER CONFIGURATION FILE.  #
+#######################################
+
+mail: ""
+
+#######################################
+## Command-line options
+#######################################
+
+# ashleys-qc pipeline arguments
+mosaicatcher_pipeline: True
+ashleys_pipeline: False
+hand_selection: False
+use_light_data: False
+
+input_old_behavior: False
+
+### Modes ["count", "segmentation", "mosaiclassifier"]
+mode: "mosaiclassifier"
+### Plot enabled [True] or disabled [False]
+plot: False
+### Enable / Disable comparison for each BAM file between folder name & SM tag
+check_sm_tag: True
+### Enable / Disable download of BAM examples (RPE-BM510)
+dl_bam_example: False
+### Enable / Disable download of external files (1000G SNV & Fasta ref genome)
+dl_external_files: False
+
+## Input BAM location
+input_bam_location: ".tests/data_CHR21"
+## Output location
+output_location: ".tests/output_CHR21"
+
+reference: "hg38"
+
+references_data:
+  "hg38":
+    reference_fasta: ".tests/external_data/chr21.fna"
+    R_reference: "BSgenome.Hsapiens.UCSC.hg38"
+    segdups: "workflow/data/segdups/segDups_hg38_UCSCtrack.bed.gz"
+    snv_sites_to_genotype: ""
+    # snv_sites_to_genotype: ""
+
+# Chromosomes list to process
+chromosomes:
+  - chr21
+
+##############################
+# Advanced configuration.  #
+##############################
+
+samples: "config/samples.tsv"
+
+# Enable conda & singularity usage
+use-conda: True
+use-singularity: True
+containerized: True
+singularity-args: "-B /g:/g"
+latency-wait: 60
+
+# Default conda frontend
+conda-frontend: "conda"
+
+# Print shell commands
+printshellcmds: True
+
+# External static data
+# R Ref
+R_reference: "BSgenome.Hsapiens.UCSC.hg38"
+# SegDups file
+segdups: "workflow/data/segdups/segDups_hg38_UCSCtrack.bed.gz"
+
+# Exclude cells
+exclude_list: []
+
+# Strandphaser
+git_commit_strandphaser: "69c9fb4"
+git_repo_strandphaser: "https://github.com/daewoooo/StrandPhaseR"
+paired_end: True
+
+# CHECKME : Parameters optimization ?
+# PARAMETERS
+
+## WINDOW
+window: 100000
+
+## METHODS
+# methods:
+#   - "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0_regfactor6_filterFALSE"
+#   - "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.05_regfactor6_filterTRUE"
+
+llr: 4
+poppriors: TRUE
+haplotags:
+  - TRUE
+  - FALSE
+gtcutoff:
+  - 0
+  - 0.05
+regfactor: 6
+filter:
+  - TRUE
+  - FALSE
+
+plottype_consistency:
+  - "byaf"
+  - "bypos"
+
+plottype_clustering:
+  - "position"
+  - "chromosome"
+
+## BPDENS
+### JOINT SEG
+min_diff_jointseg: 0.1
+### SINGLE SEG
+min_diff_singleseg: 0.5
+### SCE CUTOFF
+additional_sce_cutoff: 20000000
+### SCE MIN DISTANCE
+sce_min_distance: 500000
+
+abs_path: "/"
+
+methods:
+  lenient:
+    method_name: "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0_regfactor6_filterFALSE"
+    llr: 4
+    poppriors: TRUE
+    haplotags: TRUE
+    gtcutoff: 0
+    regfactor: 6
+    filter: FALSE
+
+  stringent:
+    method_name: "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.05_regfactor6_filterTRUE"
+    llr: 4
+    poppriors: TRUE
+    haplotags: TRUE
+    gtcutoff: 0.05
+    regfactor: 6
+    filter: TRUE

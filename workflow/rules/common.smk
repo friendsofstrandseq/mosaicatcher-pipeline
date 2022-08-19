@@ -1,5 +1,13 @@
 import pandas as pd
-from scripts.utils import handle_input
+from scripts.utils import handle_input, make_log_useful
+import os
+
+os.environ["LC_CTYPE"] = "C"
+
+
+envvars:
+    "LC_CTYPE",
+
 
 bam = True if config["ashleys_pipeline"] is False else True
 
@@ -22,20 +30,20 @@ samples = list(sorted(list(df_config_files.Sample.unique().tolist())))
 # print(df_config_files)
 
 
-mode_selected = config["mode"].lower()
-correct_modes = ["count", "segmentation", "mosaiclassifier", "download_data"]
-assert (
-    mode_selected in correct_modes
-), "Wrong mode selected : {}\nFollowing list of modes are available : {}".format(
-    config["mode"], ", ".join(correct_modes)
-)
+# mode_selected = config["mode"].lower()
+# correct_modes = ["count", "segmentation", "mosaiclassifier", "download_data"]
+# assert (
+#     mode_selected in correct_modes
+# ), "Wrong mode selected : {}\nFollowing list of modes are available : {}".format(
+#     config["mode"], ", ".join(correct_modes)
+# )
 
-plot_option_selected = config["plot"]
-assert (
-    type(plot_option_selected) is bool
-), "Wrong plot option selected : {}\nPlease enter a valid value (True / False)".format(
-    config["plot"]
-)
+# plot_option_selected = config["plot"]
+# assert (
+#     type(plot_option_selected) is bool
+# ), "Wrong plot option selected : {}\nPlease enter a valid value (True / False)".format(
+#     config["plot"]
+# )
 
 dl_bam_example_option_selected = config["dl_bam_example"]
 assert (
@@ -50,6 +58,11 @@ assert (
 ), "Wrong plot option selected : {}\nPlease enter a valid value (True / False)".format(
     config["plot"]
 )
+
+if config["ashleys_pipeline"] is True:
+    assert (
+        config["ashleys_pipeline"] != config["input_old_behavior"]
+    ), "ashleys_pipeline and input_old_behavior parameters cannot both be set to True"
 
 
 dict_cells_nb_per_sample = (
@@ -99,7 +112,6 @@ output_expand = [
     for k in allbams_per_sample.keys()
 ]
 output_expand = [sub_e for e in output_expand for sub_e in e]
-# print(expand(config["input_bam_location"] + "{sample}/raw/{cell}.sort.mdup.bam", zip, sample=samples_expand, cell=cell_expand))
 # print(samples)
 # print(input_expand)
 
@@ -176,14 +188,29 @@ def get_final_output():
 
 
 def get_mem_mb(wildcards, attempt):
-    """
-    To adjust resources in the rules
-    attemps = reiterations + 1
-    Max number attemps = 8
-    """
-    mem_avail = [1, 2, 4, 8, 16, 64, 128, 256]
+    mem_avail = [2, 4, 8, 16, 64, 128, 256]
     # print(mem_avail[attempt-1] * 1000, attempt, mem_avail)
     return mem_avail[attempt - 1] * 1000
+
+
+def get_mem_mb_heavy(wildcards, attempt):
+    mem_avail = [8, 16, 64, 128, 256]
+    # print(mem_avail[attempt-1] * 1000, attempt, mem_avail)
+    return mem_avail[attempt - 1] * 1000
+
+
+def onsuccess_fct(wildcards):
+    print("Workflow finished, no error")
+    make_log_useful.make_log_useful(log, "SUCCESS")
+
+    shell('mail -s "[Snakemake] DGA - SUCCESS" {} < {{log}}'.format(config["mail"]))
+
+
+def onerror_fct(wildcards):
+    print("An error occurred")
+    make_log_useful.make_log_useful(log, "ERROR")
+
+    shell('mail -s "[Snakemake] DGA - ERRROR" {} < {{log}}'.format(config["mail"]))
 
 
 def get_all_plots(wildcards):
@@ -236,29 +263,49 @@ def get_all_plots(wildcards):
 
     list_indiv_plots.extend(
         expand(
-            "{output_folder}/plots/{sample}/sv_calls/{method}.{chrom}.pdf",
+            "{output_folder}/plots/{sample}/sv_calls/{method}_filter{filter}/{chrom}.pdf",
             output_folder=config["output_location"],
             sample=samples,
             chrom=config["chromosomes"],
             method=config["methods"],
+            filter=[
+                "TRUE",
+                "FALSE",
+            ],
         ),
     )
     list_indiv_plots.extend(
         expand(
-            "{output_folder}/plots/{sample}/sv_consistency/{method}.consistency-barplot-{plottype}.pdf",
+            "{output_folder}/plots/{sample}/sv_consistency/{method}_filter{filter}.consistency-barplot-{plottype}.pdf",
             output_folder=config["output_location"],
             sample=samples,
             method=config["methods"],
             plottype=config["plottype_consistency"],
+            filter=[
+                "TRUE",
+                "FALSE",
+            ],
         ),
     )
     list_indiv_plots.extend(
         expand(
-            "{output_folder}/plots/{sample}/sv_clustering/{method}-{plottype}.pdf",
+            "{output_folder}/plots/{sample}/sv_clustering/{method}-filter{filter}-{plottype}.pdf",
             output_folder=config["output_location"],
             sample=samples,
             method=config["methods"],
-            plottype=config["plottype_clustering"],
+            # plottype=config["plottype_clustering"],
+            plottype=["position"],
+            filter=[
+                "TRUE",
+                "FALSE",
+            ],
+        ),
+    )
+    list_indiv_plots.extend(
+        expand(
+            "{output_folder}/plots/{sample}/ploidy/{sample}.pdf",
+            output_folder=config["output_location"],
+            sample=samples,
         ),
     )
     list_indiv_plots.extend(
@@ -270,13 +317,17 @@ def get_all_plots(wildcards):
     )
     list_indiv_plots.extend(
         expand(
-            "{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}.tsv",
+            "{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}_filter{filter}.tsv",
             output_folder=config["output_location"],
             sample=samples,
             method=config["methods"],
+            filter=[
+                "TRUE",
+                "FALSE",
+            ],
         )
     ),
-    print(list_indiv_plots)
+    # print(list_indiv_plots)
     return list_indiv_plots
 # def get_final_plots():
 #     final_list = list()
