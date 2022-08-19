@@ -7,7 +7,7 @@
 1. Create a dedicated conda environment
 
 ```bash
-conda create -n snakemake -c bioconda "snakemake=7.4.1" && conda activate snakemake
+conda create -n snakemake -c bioconda snakemake=7.5.0 && conda activate snakemake
 ```
 
 2. Clone the repository
@@ -77,7 +77,7 @@ If possible, it is also highly recommended to install and use `mamba` package ma
 
 ```bash
 conda install -c conda-forge mamba
-mamba create -n snakemake -c bioconda "snakemake=7.4.1"
+mamba create -n snakemake -c bioconda snakemake=7.5.0
 conda activate mosaicatcher_env
 ```
 
@@ -186,7 +186,7 @@ Parent_folder
 |       |-- Cell_02.sort.mdup.bam
 |       |-- Cell_03.sort.mdup.bam
 |       `-- Cell_04.sort.mdup.bam
-| 
+|
 `-- Sample_2
     `-- all
         |-- Cell_21.sort.mdup.bam
