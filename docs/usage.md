@@ -181,22 +181,15 @@ Your `<INPUT>` directory should look like this:
 ```bash
 Parent_folder
 |-- Sample_1
-|   |-- all
-|   |   |-- Cell_01.sort.mdup.bam
-|   |   |-- Cell_02.sort.mdup.bam
-|   |   |-- Cell_03.sort.mdup.bam
-|   |   `-- Cell_04.sort.mdup.bam
-|   `-- selected
+|   `-- all
 |       |-- Cell_01.sort.mdup.bam
 |       |-- Cell_02.sort.mdup.bam
+|       |-- Cell_03.sort.mdup.bam
 |       `-- Cell_04.sort.mdup.bam
+| 
 `-- Sample_2
-    |-- all
-    |   |-- Cell_21.sort.mdup.bam
-    |   |-- Cell_22.sort.mdup.bam
-    |   |-- Cell_23.sort.mdup.bam
-    |   `-- Cell_24.sort.mdup.bam
-    `-- selected
+    `-- all
+        |-- Cell_21.sort.mdup.bam
         |-- Cell_22.sort.mdup.bam
         |-- Cell_23.sort.mdup.bam
         `-- Cell_24.sort.mdup.bam
@@ -264,7 +257,6 @@ After defining your configuration, you can launch the pipeline the following way
 snakemake \
     --cores <N> \
     --profile workflow/profiles/local/conda_singularity/
-
 ```
 
 Otherwise, you must specify your input and output folder like the following:

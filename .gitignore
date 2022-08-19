@@ -9,6 +9,8 @@
 .condarc
 files.txt
 workflow/.conda/
+.local/share/jupyter/
+.jupyter/
 
 # Tmp files & execution outputs
 *.pyc

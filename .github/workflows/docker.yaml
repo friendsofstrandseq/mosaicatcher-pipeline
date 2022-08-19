@@ -13,9 +13,10 @@ jobs:
       IMAGE_NAME: mosaicatcher-pipeline
     steps:
       - uses: actions/checkout@v2
-      - name: Set output
-        id: vars
-        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+      - name: Read upstream tag without version
+        id: gettag
+        run: |
+          echo '::set-output name=tag::$(grep -P "^version" config/config.yaml| sed "s/version: //g"'
       - name: Build Image
         id: build-image
         uses: redhat-actions/buildah-build@v2
