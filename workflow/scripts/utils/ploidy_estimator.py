@@ -51,6 +51,8 @@ def parse_command_line():
         help="Gzipped, tab-separated table with Watson/Crick read " "counts in fixed bins. A header line is required.",
     )
     parser.add_argument("--output", "-o", type=str, dest="output", required=True, help="Full path to output text file.")
+    parser.add_argument("--log", type=str, dest="log", required=True, help="Full path to log text file.")
+
     parser.add_argument(
         "--dump-table",
         "-tab",
@@ -154,7 +156,8 @@ class Mixture:
                 break
             v = new_v
             n += 1
-            if n > 100:
+            logger.debug(n)
+            if n > 1000:
                 raise RuntimeError("Fitting process does not converge - last v estimate: {}".format(new_v))
         return
 
@@ -580,6 +583,14 @@ def main():
     """
 
     args = parse_command_line()
+
+    log.basicConfig(
+        level=log.DEBUG,
+        format="%(asctime)s %(levelname)-8s %(message)s",
+        datefmt="%a, %d %b %Y %H:%M:%S",
+        filename=args.log,
+        filemode="w",
+    )
 
     if args.debug:
         log.basicConfig(

@@ -13,7 +13,7 @@ with open(snakemake.output[0], "w") as f:
     print("translateBases   = TRUE", file=f)
     print("fillMissAllele   = NULL", file=f)
     print("splitPhasedReads = TRUE", file=f)
-    print("compareSingleCells = TRUE", file=f)
+    print("compareSingleCells = FALSE", file=f)
     print("callBreaks       = FALSE", file=f)
     print("exportVCF        = '", snakemake.wildcards.sample, "'", sep="", file=f)
     print("bsGenome         = '", snakemake.config["references_data"][snakemake.config["reference"]]["R_reference"], "'", sep="", file=f)

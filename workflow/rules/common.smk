@@ -112,60 +112,11 @@ output_expand = [
     for k in allbams_per_sample.keys()
 ]
 output_expand = [sub_e for e in output_expand for sub_e in e]
-# print(samples)
-# print(input_expand)
 
 
 def get_final_output():
 
     final_list = list()
-    # final_list= ["{}/counts/{}/counts-per-cell.ok".format(config['input_location'], sample) for sample in samples]
-    # final_list.extend([
-    #     "{}/{}/selected/{}.sort.mdup.bam".format(config["input_bam_location"], sample, cell)
-    #     for sample, cell in zip(samples_expand, cell_expand)
-    # ])
-    # print(cell_per_sample)
-    # if config["ashleys_pipeline"] is True:
-    # final_list.extend(([sub_e for e in [expand("{path}/{sample}/fastqc/{cell}_{pair}_fastqc.html", path=config["input_bam_location"], sample=samples, cell=cell_per_sample[sample], pair=[1,2]) for sample in samples] for sub_e in e]))
-    # final_list.extend(expand("{path}/config/{sample}_selected_cells.ok", path=config["input_bam_location"], sample=samples,))
-
-    # final_list.extend(
-    #     expand(
-    #         "{output_folder}/counts/{sample}/counts-per-cell/{cell}.txt.gz",
-    #         output_folder=config["output_location"],
-    #         sample=samples,
-    #         cell=cell_per_sample
-    #     )
-    # )
-
-    # final_list.extend(
-    #     (
-    #             [sub_e for e in
-    #                 [
-    #                     expand(
-    #                         "{output_folder}/log/segmentation/{sample}/segmentation-per-cell.ok",
-    #                         output_folder=config["output_location"], sample=samples
-    #                 )
-    #             for sample in samples
-    #             ]
-    #             for sub_e in e
-    #             ]
-    #     )
-    # )
-    # final_list.extend(
-    #     (
-    #             [sub_e for e in
-    #                 [
-    #                     expand(
-    #                         "{output_folder}/segmentation/{sample}/Selection_initial_strand_state",
-    #                         output_folder=config["output_location"], sample=samples
-    #                 )
-    #             for sample in samples
-    #             ]
-    #             for sub_e in e
-    #             ]
-    #     )
-    # )
 
     final_list.extend(
         expand(
@@ -174,15 +125,6 @@ def get_final_output():
             sample=samples,
         )
     )
-    # final_list.extend(
-    #     expand(
-    #         "{input_folder}/{sample}/cell_selection/labels.tsv",
-    #         input_folder=config["input_bam_location"],
-    #         sample=samples,
-    #     )
-    # )
-
-    # print(final_list)
 
     return final_list
 
@@ -253,54 +195,74 @@ def get_all_plots(wildcards):
         ]
     )
 
-    # list_indiv_plots.extend(
-    #     expand(
-    #         "{output_folder}/plots/{sample}/counts/CountComplete.pdf",
-    #         output_folder=config["output_location"],
-    #         sample=samples
-    #         )
-    # )
-
     list_indiv_plots.extend(
-        expand(
-            "{output_folder}/plots/{sample}/sv_calls/{method}_filter{filter}/{chrom}.pdf",
-            output_folder=config["output_location"],
-            sample=samples,
-            chrom=config["chromosomes"],
-            method=config["methods"],
-            filter=[
-                "TRUE",
-                "FALSE",
-            ],
-        ),
+        [
+            sub_e
+            for e in [
+                expand(
+                    "{output_folder}/plots/{sample}/sv_calls/{method}_filter{filter}/{chrom}.pdf",
+                    output_folder=config["output_location"],
+                    sample=samples,
+                    method=method,
+                    chrom=config["chromosomes"],
+                    filter=config["methods"][method]["filter"],
+                )
+                for method in config["methods"]
+            ]
+            for sub_e in e
+        ]
     )
     list_indiv_plots.extend(
-        expand(
-            "{output_folder}/plots/{sample}/sv_consistency/{method}_filter{filter}.consistency-barplot-{plottype}.pdf",
-            output_folder=config["output_location"],
-            sample=samples,
-            method=config["methods"],
-            plottype=config["plottype_consistency"],
-            filter=[
-                "TRUE",
-                "FALSE",
-            ],
-        ),
+        [
+            sub_e
+            for e in [
+                expand(
+                    "{output_folder}/plots/{sample}/sv_consistency/{method}_filter{filter}.consistency-barplot-{plottype}.pdf",
+                    output_folder=config["output_location"],
+                    sample=samples,
+                    method=method,
+                    plottype=["position"],
+                    filter=config["methods"][method]["filter"],
+                )
+                for method in config["methods"]
+            ]
+            for sub_e in e
+        ]
     )
     list_indiv_plots.extend(
-        expand(
-            "{output_folder}/plots/{sample}/sv_clustering/{method}-filter{filter}-{plottype}.pdf",
-            output_folder=config["output_location"],
-            sample=samples,
-            method=config["methods"],
-            # plottype=config["plottype_clustering"],
-            plottype=["position"],
-            filter=[
-                "TRUE",
-                "FALSE",
-            ],
-        ),
+        [
+            sub_e
+            for e in [
+                expand(
+                    "{output_folder}/plots/{sample}/sv_clustering/{method}-filter{filter}-{plottype}.pdf",
+                    output_folder=config["output_location"],
+                    sample=samples,
+                    method=method,
+                    # plottype=config["plottype_clustering"],
+                    plottype=["position"],
+                    filter=config["methods"][method]["filter"],
+                )
+                for method in config["methods"]
+            ]
+            for sub_e in e
+        ]
     )
+    list_indiv_plots.extend(
+        [
+            sub_e
+            for e in [
+                expand(
+                    "{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}_filter{filter}.tsv",
+                    output_folder=config["output_location"],
+                    sample=samples,
+                    method=method,
+                    filter=config["methods"][method]["filter"],
+                )
+                for method in config["methods"]
+            ]
+            for sub_e in e
+        ]
+    ),
     list_indiv_plots.extend(
         expand(
             "{output_folder}/plots/{sample}/ploidy/{sample}.pdf",
@@ -315,20 +277,4 @@ def get_all_plots(wildcards):
             sample=samples,
         ),
     )
-    list_indiv_plots.extend(
-        expand(
-            "{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}_filter{filter}.tsv",
-            output_folder=config["output_location"],
-            sample=samples,
-            method=config["methods"],
-            filter=[
-                "TRUE",
-                "FALSE",
-            ],
-        )
-    ),
-    # print(list_indiv_plots)
     return list_indiv_plots
-# def get_final_plots():
-#     final_list = list()
-#     return final_list
