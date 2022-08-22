@@ -11,14 +11,14 @@ rule estimate_ploidy:
     output:
         "{output_folder}/ploidy/{sample}/ploidy_detailled.txt",
     log:
-        "{output_folder}/log/ploidy/{sample}/ploidy_detailled.log",
+        "{output_folder}/log/estimate_ploidy/{sample}.log",
     threads: 48
     resources:
         mem_mb=get_mem_mb,
     params:
         # TODO move this to config
         merge_window=1000000,
-        shift_step=500000,
+        shift_step=int(config["window"]) * 5,
         boundary_alpha=0.05,
         max_ploidy=6,
         add_bg_component="to_be_done",
@@ -33,7 +33,8 @@ rule estimate_ploidy:
             --boundary-alpha {params.boundary_alpha} \
             --jobs {threads} \
             --input {input.counts} \
-            --output {output}
+            --output {output} \
+            --log {log}
         """
 
 
@@ -43,7 +44,7 @@ checkpoint summarise_ploidy:
     output:
         summary="{output_folder}/ploidy/{sample}/ploidy_summary.txt",
     log:
-        "{output_folder}/ploidy/{sample}/ploidy_summary.log",
+        "{output_folder}/log/ploidy/{sample}/ploidy_summary.log",
     run:
         df = pd.read_csv(input.ploidy, sep="\t").groupby("#chrom")[
             "ploidy_estimate"
@@ -63,7 +64,7 @@ rule ploidy_bcftools:
     output:
         "{output_folder}/ploidy/{sample}/ploidy_bcftools.txt",
     log:
-        "{output_folder}/ploidy/{sample}/ploidy_bcftools.log",
+        "{output_folder}/log/ploidy/{sample}/ploidy_bcftools.log",
     conda:
         "../envs/mc_base.yaml"
     script:

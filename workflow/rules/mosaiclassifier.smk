@@ -18,7 +18,7 @@ rule mosaiClassifier_calc_probs:
     conda:
         "../envs/rtools.yaml"
     resources:
-        mem_mb=get_mem_mb,
+        mem_mb=get_mem_mb_heavy,
     script:
         "../scripts/mosaiclassifier_scripts/mosaiClassifier.snakemake.R"
 
@@ -34,7 +34,7 @@ rule create_haplotag_likelihoods:
     conda:
         "../envs/rtools.yaml"
     resources:
-        mem_mb=get_mem_mb,
+        mem_mb=get_mem_mb_heavy,
     script:
         "../scripts/mosaiclassifier_scripts/haplotagProbs.snakemake.R"
 
@@ -76,7 +76,7 @@ rule mosaiClassifier_make_call:
         regfactor=lambda wc: config["methods"][wc.method]["regfactor"],
         filter=lambda wc: config["methods"][wc.method]["filter"],
     resources:
-        mem_mb=get_mem_mb,
+        mem_mb=get_mem_mb_heavy,
     script:
         "../scripts/mosaiclassifier_scripts/mosaiClassifier_call.snakemake.R"
 
@@ -91,7 +91,7 @@ rule mosaiClassifier_make_call_biallelic:
     conda:
         "../envs/rtools.yaml"
     resources:
-        mem_mb=get_mem_mb,
+        mem_mb=get_mem_mb_heavy,
     script:
         "../scripts/mosaiclassifier_scripts/mosaiClassifier_call_biallelic.snakemake.R"
 
@@ -106,7 +106,7 @@ rule call_complex_regions:
     conda:
         "../envs/mc_base.yaml"
     resources:
-        mem_mb=get_mem_mb,
+        mem_mb=get_mem_mb_heavy,
     shell:
         """
         PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)
