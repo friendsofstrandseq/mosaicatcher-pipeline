@@ -57,17 +57,21 @@ references_data:
     reference_fasta: "workflow/data/ref_genomes/hg38.fa"
     R_reference: "BSgenome.Hsapiens.UCSC.hg38"
     segdups: "workflow/data/segdups/segDups_hg38_UCSCtrack.bed.gz"
-    snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/ALL.chr1-22plusXY_GRCh38_sites.20170504.renamedCHR.vcf.gz"
+    snv_sites_to_genotype: ""
+    # snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/ALL.chr1-22plusXY_GRCh38_sites.20170504.renamedCHR.vcf.gz"
+
   "hg19":
     reference_fasta: "workflow/data/ref_genomes/hg19.fa"
     R_reference: "BSgenome.Hsapiens.UCSC.hg19"
     segdups: "workflow/data/segdups/segDups_hg19_UCSCtrack.bed.gz"
-    snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/ALL.chr1-22plusXY_hg19_sites.20170504.renamedCHR.vcf.gz"
+    snv_sites_to_genotype: ""
+    # snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/ALL.chr1-22plusXY_hg19_sites.20170504.renamedCHR.vcf.gz"
   "T2T":
     reference_fasta: "workflow/data/ref_genomes/T2T.fa"
     R_reference: "BSgenome.T2T.CHM13.V2"
     segdups: "workflow/data/segdups/segDups_T2T_UCSCtrack.bed.gz"
-    snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/ALL.chr1-22plusXY_T2T_sites.20170504.renamedCHR.vcf.gz"
+    snv_sites_to_genotype: ""
+    # snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/ALL.chr1-22plusXY_T2T_sites.20170504.renamedCHR.vcf.gz"
 
 # Strandphaser repo info
 git_commit_strandphaser: "69c9fb4"
