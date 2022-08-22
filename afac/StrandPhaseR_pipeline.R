@@ -11,9 +11,9 @@ load_all("/g/korbel2/weber/Gits/StrandPhaseR/")
 
 
 strandPhaseR(
-    inputfolder = "/g/korbel2/weber/MosaiCatcher_files/HGSVC_WH/GM12329/all",
-    outputfolder = "/g/korbel2/weber/MosaiCatcher_output/HGSVC_WH/strandphaser/GM12329/StrandPhaseR_analysis.chr21",
-    configfile = "/g/korbel2/weber/MosaiCatcher_output/HGSVC_WH/strandphaser/GM12329/StrandPhaseR.chr21.config",
-    WCregions = "/g/korbel2/weber/MosaiCatcher_output/HGSVC_WH/strandphaser/GM12329/strandphaser_input.txt",
-    positions = "/g/korbel2/weber/MosaiCatcher_output/HGSVC_WH/snv_genotyping/GM12329/chr21.vcf",
+    inputfolder = "/g/korbel2/weber/MosaiCatcher_files/POOLING/POOLING_POOL1/HGSVCxpool1/all",
+    outputfolder = "/g/korbel2/weber/MosaiCatcher_output/POOLING/POOLING1_190822_100KB/strandphaser/HGSVCxpool1/StrandPhaseR_analysis.22",
+    configfile = "/g/korbel2/weber/MosaiCatcher_output/POOLING/POOLING1_190822_100KB/strandphaser/HGSVCxpool1/StrandPhaseR.chr22.config",
+    WCregions = "/g/korbel2/weber/MosaiCatcher_output/POOLING/POOLING1_190822_100KB/strandphaser/HGSVCxpool1/strandphaser_input.txt",
+    positions = "/g/korbel2/weber/MosaiCatcher_output/POOLING/POOLING1_190822_100KB/snv_calls/HGSVCxpool1/chr22.vcf",
 )

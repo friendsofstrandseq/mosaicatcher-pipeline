@@ -25,17 +25,17 @@ from collections import defaultdict
 Testmode = False
 
 path_to_orig_samples = (
-    "/g/korbel2/weber/MosaiCatcher_files/POOLING/POOLING_LITE_HG00155"
+    "/g/korbel2/weber/MosaiCatcher_files/POOLING/POOLING_POOL1"
 )
 
 
-SAMPLE, BAM, ONEKG = glob_wildcards(
-    path_to_orig_samples + "/{sm}/chm13/{id}_sorted_{sample_1000G}.bam"
+SAMPLE, BAM = glob_wildcards(
+    path_to_orig_samples + "/{sm}/chm13/{id}.bam"
 )
 SAMPLES = sorted(set(SAMPLE))
 print(SAMPLE)
 print(BAM)
-print(ONEKG)
+# print(ONEKG)
 
 ### THIS PART IS STOLEN FROM MOSAICATCHER ###
 CELL_PER_SAMPLE = defaultdict(list)
@@ -45,6 +45,7 @@ for sample, bam in zip(SAMPLE, BAM):
     CELL_PER_SAMPLE[sample].append(bam.replace("_sorted", ""))
 
 ALLBAMS_PER_SAMPLE = BAM_PER_SAMPLE
+print(BAM_PER_SAMPLE)
 
 print("Detected {} samples:".format(len(SAMPLES)))
 for s in SAMPLES:
@@ -61,38 +62,38 @@ bais_all = []
 bams_select = []
 bais_select = []
 for s in SAMPLES:
-    bams_all.append(
+    bams_all.extend(
         expand(
-            "{path}/{SM}/all/{ID}.bam",
+            "{path}/{SM}/all/{ID}.sort.mdup.bam",
             path=path_to_orig_samples,
             SM=s,
             ID=ALLBAMS_PER_SAMPLE[s],
         )
     )
-    bais_all.append(
-        expand(
-            "{path}/{SM}/all/{ID}.bam.bai",
-            path=path_to_orig_samples,
-            SM=s,
-            ID=ALLBAMS_PER_SAMPLE[s],
-        )
-    )
-    bams_select.append(
-        expand(
-            "{path}/{SM}/selected/{ID}.bam",
-            path=path_to_orig_samples,
-            SM=s,
-            ID=ALLBAMS_PER_SAMPLE[s],
-        )
-    )
-    bais_select.append(
-        expand(
-            "{path}/{SM}/selected/{ID}.bam",
-            path=path_to_orig_samples,
-            SM=s,
-            ID=ALLBAMS_PER_SAMPLE[s],
-        )
-    )
+    # bais_all.append(
+    #     expand(
+    #         "{path}/{SM}/all/{ID}.sort.mdup.bam.bai",
+    #         path=path_to_orig_samples,
+    #         SM=s,
+    #         ID=ALLBAMS_PER_SAMPLE[s],
+    #     )
+    # )
+    # bams_select.append(
+    #     expand(
+    #         "{path}/{SM}/selected/{ID}.bam",
+    #         path=path_to_orig_samples,
+    #         SM=s,
+    #         ID=ALLBAMS_PER_SAMPLE[s],
+    #     )
+    # )
+    # bais_select.append(
+    #     expand(
+    #         "{path}/{SM}/selected/{ID}.bam",
+    #         path=path_to_orig_samples,
+    #         SM=s,
+    #         ID=ALLBAMS_PER_SAMPLE[s],
+    #     )
+    # )
 
 
 # bams_all = ['HG00513/all/HG00513_IV_045.bam']
@@ -106,17 +107,16 @@ rule all:
 
 rule change_id_and_sam:
     input:
-        bam_orig=expand(
-            "{path}/{SM}/chm13/{ID}_sorted_{sample_1000G}.bam",
-            zip,
-            path=path_to_orig_samples,
-            SM=SAMPLE,
-            ID=BAM,
-            sample_1000G=ONEKG,
-        ),
-        #bam_orig = "{SM}/{ID}_sorted.bam"
+        # bam_orig=expand(
+        #     "{path}/{SM}/chm13/{ID}.bam",
+        #     zip,
+        #     path=path_to_orig_samples,
+        #     SM=SAMPLE,
+        #     ID=BAM,
+        # ),
+        bam_orig = "{path}/{SM}/chm13/{ID}.bam"
     output:
-        bam_out="{path}/{SM}/all/{ID}.bam",
+        bam_out="{path}/{SM}/all/{ID}.sort.mdup.bam",
     shell:
         """
         # First, the 'ID' tag
@@ -134,24 +134,12 @@ rule change_id_and_sam:
 
 rule add_idx:
     input:
-        bam="{path}/{SM}/all/{ID}.bam",
+        bam="{path}/{SM}/all/{ID}.sort.mdup.bam",
     output:
-        bai="{path}/{SM}/all/{ID}.bam.bai",
+        bai="{path}/{SM}/all/{ID}.sort.mdup.bam.bai",
     shell:
         """
         samtools index {input.bam}
         """
 
 
-rule symlink_all_to_select:
-    input:
-        bam="{path}/{SM}/all/{ID}.bam",
-        bai="{path}/{SM}/all/{ID}.bam.bai",
-    output:
-        bam="{path}/{SM}/selected/{ID}.bam",
-        bai="{path}/{SM}/selected/{ID}.bam.bai",
-    shell:
-        """
-        ln -s ../all/{wildcards.ID}.bam {output.bam}
-        ln -s ../all/{wildcards.ID}.bam.bai {output.bai}
-        """
