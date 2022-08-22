@@ -111,13 +111,13 @@ rule run_strandphaser_per_chrom:
     output:
         "{output_folder}/strandphaser/{sample}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt",
         "{output_folder}/strandphaser/{sample}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf",
-        report(
-            "{output_folder}/strandphaser/{sample}/StrandPhaseR_analysis.{chrom}/SingleCellHaps/{chrom}_singleCellHaps.pdf",
-            category="StrandPhaseR",
-            subcategory="{sample}",
-            caption="../report/strandphaser_haplotypes.rst",
-            labels={"Sample": "{sample}", "Chrom": "{chrom}"},
-        ),
+        # report(
+        #     "{output_folder}/strandphaser/{sample}/StrandPhaseR_analysis.{chrom}/SingleCellHaps/{chrom}_singleCellHaps.pdf",
+        #     category="StrandPhaseR",
+        #     subcategory="{sample}",
+        #     caption="../report/strandphaser_haplotypes.rst",
+        #     labels={"Sample": "{sample}", "Chrom": "{chrom}"},
+        # ),
     log:
         "{output_folder}/log/run_strandphaser_per_chrom/{sample}/{chrom}.log",
     conda:
