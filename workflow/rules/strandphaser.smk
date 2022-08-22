@@ -105,19 +105,11 @@ rule run_strandphaser_per_chrom:
     input:
         install_strandphaser=rules.install_rlib_strandphaser.output,
         wcregions="{output_folder}/strandphaser/{sample}/strandphaser_input.txt",
-        # snppositions="{output_folder}/snv_genotyping/{sample}/{chrom}.vcf",
         snppositions=locate_snv_vcf,
         configfile="{output_folder}/strandphaser/{sample}/StrandPhaseR.{chrom}.config",
     output:
         "{output_folder}/strandphaser/{sample}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt",
         "{output_folder}/strandphaser/{sample}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf",
-        # report(
-        #     "{output_folder}/strandphaser/{sample}/StrandPhaseR_analysis.{chrom}/SingleCellHaps/{chrom}_singleCellHaps.pdf",
-        #     category="StrandPhaseR",
-        #     subcategory="{sample}",
-        #     caption="../report/strandphaser_haplotypes.rst",
-        #     labels={"Sample": "{sample}", "Chrom": "{chrom}"},
-        # ),
     log:
         "{output_folder}/log/run_strandphaser_per_chrom/{sample}/{chrom}.log",
     conda:
