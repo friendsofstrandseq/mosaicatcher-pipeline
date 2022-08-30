@@ -5,6 +5,9 @@ import bisect
 import gzip
 from math import ceil
 import copy
+import logging as log
+
+logger = log.getLogger(__name__)
 
 
 class Segmentation:
@@ -249,6 +252,7 @@ def main():
     # ARGS
     parser = ArgumentParser(prog="detect_strand_states.py", description=__doc__)
     parser.add_argument("--samplename", default="UNNAMED", help="Sample name (to be mentioned in output files)")
+
     parser.add_argument(
         "--cellnames", default=None, help="Comma-separated list of single cell names, in the same order as the SINGLESEG files are given."
     )
@@ -282,6 +286,14 @@ def main():
     )
     args = parser.parse_args()
 
+    # log.basicConfig(
+    #     level=log.DEBUG,
+    #     format="%(asctime)s %(levelname)-8s %(message)s",
+    #     datefmt="%a, %d %b %Y %H:%M:%S",
+    #     filename=args.log,
+    #     filemode="w",
+    # )
+
     if args.cellnames is None:
         # use filenames in the absence of given single cell names
         cell_names = args.singleseg
@@ -290,7 +302,7 @@ def main():
         assert len(l) == len(args.singleseg)
         cell_names = l
 
-    print(args.counts, args.jointseg, args.singleseg)
+    print(args.counts, args.jointseg, args.singleseg, file=sys.stderr)
 
     nb_params = read_info_file(args.info)
     # print(nb_params['TALL2x2PE20420'])

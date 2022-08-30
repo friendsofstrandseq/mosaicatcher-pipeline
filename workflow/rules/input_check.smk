@@ -1,4 +1,3 @@
-# Pipeline input rules
 
 
 rule generate_exclude_file_for_mosaic_count:
@@ -12,11 +11,11 @@ rule generate_exclude_file_for_mosaic_count:
         bam=lambda wc: expand(
             "{input_folder}/{sample}/all/{cell}.sort.mdup.bam",
             input_folder=config["input_bam_location"],
-            sample=samples,
+            sample=wc.sample,
             cell=bam_per_sample_local[str(wc.sample)],
         ),
     output:
-        "{output_folder}/config/{sample}/exclude_file",
+        "{output_folder}/config/{sample}/chroms_to_exclude.txt",
     log:
         "{output_folder}/log/config_output/{sample}/exclude_file.log",
     params:

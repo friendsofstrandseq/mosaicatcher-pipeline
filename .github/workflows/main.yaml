@@ -6,6 +6,7 @@ on:
       - master
       - smk_wf_catalog
       - ref_genomes
+      - dev
 
 jobs:
   # WORK
