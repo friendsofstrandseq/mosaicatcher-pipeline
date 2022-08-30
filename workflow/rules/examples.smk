@@ -83,19 +83,26 @@ rule download_T2T_reference:
         shell("gunzip workflow/data/ref_genomes/T2T.fa.gz")
 
 
-# rule download_T2T_tarball:
-#     input:
-#         HTTP.remote()
-#     output:
-#         ".tar.gz"
-#     log:
-#     run:
-
+rule download_T2T_tarball:
+    input:
+        HTTP.remote(
+            "https://sandbox.zenodo.org/record/1097504/files/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz",
+            keep_local=True
+        )
+    output:
+        "workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz"
+    log:
+        "workflow/data/ref_genomes/log/T2T_tarball.ok",    run:
+    run:
+        directory = "workflow/data/ref_genomes/"
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        shell("mv {input} workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz")
 
 
 rule install_T2T_BSgenome_tarball:
     input:
-        config["references_data"]["T2T"]["R_reference_tarball"],
+        "workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz",
     output:
         touch("workflow/data/ref_genomes/config/T2T_R_tarball_install.ok"),
     log:
