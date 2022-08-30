@@ -236,4 +236,4 @@ jobs:
         with:
           directory: .
           snakefile: ./workflow/Snakefile
-          args: "--cores 1 --config dl_external_files=True reference=hg38 -p --verbose --debug"
+          args: "--cores 1 --config dl_external_files=True reference=T2T -p --verbose --debug"
