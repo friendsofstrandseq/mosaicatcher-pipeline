@@ -92,7 +92,7 @@ rule download_T2T_tarball:
     output:
         "workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz"
     log:
-        "workflow/data/ref_genomes/log/T2T_tarball.ok",    run:
+        "workflow/data/ref_genomes/log/T2T_tarball.ok",
     run:
         directory = "workflow/data/ref_genomes/"
         if not os.path.exists(directory):
