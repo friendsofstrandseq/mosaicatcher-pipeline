@@ -46,15 +46,16 @@ checkpoint summarise_ploidy:
     log:
         "{output_folder}/log/ploidy/{sample}/ploidy_summary.log",
     run:
-        df = pd.read_csv(input.ploidy, sep="\t").groupby("#chrom")[
-            "ploidy_estimate"
-        ].describe()
+        df = (
+            pd.read_csv(input.ploidy, sep="\t")
+            .groupby("#chrom")["ploidy_estimate"]
+            .describe()
+        )
         df.to_csv(output.summary, sep="\t")
         # haploid_chroms = df.loc[df["50%"] == 1, "#chrom"].values.tolist()
         # if not haploid_chroms:
         #     haploid_chroms = "None"
         # log[0].write("")
-
 
 
 

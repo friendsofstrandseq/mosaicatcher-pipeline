@@ -92,20 +92,21 @@ rule download_T2T_reference:
 #     run:
 
 
-rule install_T2T_tarball:
+
+rule install_T2T_BSgenome_tarball:
     input:
-        ".tar.gz",
+        config["references_data"]["T2T"]["R_reference_tarball"],
     output:
         touch("workflow/data/ref_genomes/config/T2T_R_tarball_install.ok"),
     log:
         "workflow/data/ref_genomes/log/T2T_R_tarball_install.log",
     conda:
         "../envs/rtools.yaml"
-    shell:
-        """
-        R_path=$(which R | grep -P "\.snakemake" | sed 's/R is //g')
-        "$R_path" -e 'install.packages("{input}")  2>&1 > {log}'
-        """
+    resources:
+        mem_mb=get_mem_mb_heavy,
+    script:
+        "../scripts/utils/install_R_tarball.R"
+
 
 
 rule samtools_faindex:

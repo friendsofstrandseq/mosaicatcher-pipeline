@@ -34,15 +34,13 @@ checkpoint determine_sex_per_cell:
         bam=lambda wc: expand(
             "{input_folder}/{sample}/all/{cell}.sort.mdup.bam",
             input_folder=config["input_bam_location"],
-            sample=samples,
-            cell=bam_per_sample_local[str(wc.sample)]
-            if wc.sample in bam_per_sample_local
-            else "FOOBAR",
+            sample=wc.sample,
+            cell=bam_per_sample_local[str(wc.sample)],
         ),
         bai=lambda wc: expand(
             "{input_folder}/{sample}/all/{cell}.sort.mdup.bam.bai",
             input_folder=config["input_bam_location"],
-            sample=samples,
+            sample=wc.sample,
             cell=bam_per_sample_local[str(wc.sample)],
         ),
     output:
@@ -61,10 +59,8 @@ rule check_single_paired_end:
         bam=lambda wc: expand(
             "{input_folder}/{sample}/all/{cell}.sort.mdup.bam",
             input_folder=config["input_bam_location"],
-            sample=samples,
-            cell=bam_per_sample_local[str(wc.sample)]
-            if wc.sample in bam_per_sample_local
-            else "FOOBAR",
+            sample=wc.sample,
+            cell=bam_per_sample_local[str(wc.sample)],
         ),
     output:
         single_paired_end_detect="{output_folder}/config/{sample}/single_paired_end_detection.txt",

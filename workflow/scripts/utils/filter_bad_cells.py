@@ -40,7 +40,7 @@ else:
 
     # ELSE NORMAL MODE
     else:
-        snakemake_log.write("Standard mode using only 'mosaic count info' file")
+        # snakemake_log.write("Standard mode using only 'mosaic count info' file")
         cells_to_keep = df.loc[df["pass1"] == 1]["cell"].unique().tolist()
 
 

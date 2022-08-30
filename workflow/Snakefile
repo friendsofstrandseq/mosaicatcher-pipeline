@@ -7,6 +7,7 @@ configfile: "config/config.yaml"
 
 
 onstart:
+
     arg = "ENABLED" if config["ashleys_pipeline"] is True else "DISABLED"
     print("###################################")
     print("# MOSAICATCHER SNAKEMAKE PIPELINE #")
@@ -31,11 +32,12 @@ if config["ashleys_pipeline"] is True:
 
     module ashleys_qc:
         snakefile:
-            github(
-                "friendsofstrandseq/ashleys-qc-pipeline",
-                path="workflow/Snakefile",
-                branch="ref_genomes",
-            )
+            "../../ashleys-qc-pipeline/workflow/Snakefile"
+            # github(
+            #     "friendsofstrandseq/ashleys-qc-pipeline",
+            #     path="workflow/Snakefile",
+            #     branch="ref_genomes",
+            # )
         config:
             config
 
@@ -139,13 +141,14 @@ else:
 
                 rule all:
                     input:
-                        rules.download_T2T_reference.output,
+                        [rules.download_T2T_reference.output, rules.install_T2T_tarball.output],
+                        
 
 
-if config["mail"]:
+if config["email"]:
 
     onsuccess:
-        onsuccess_fct()
+        onsuccess_fct
 
     onerror:
         onerror_fct

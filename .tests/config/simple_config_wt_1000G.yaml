@@ -2,7 +2,7 @@
 #   MOSAICATCHER CONFIGURATION FILE.  #
 #######################################
 
-mail: ""
+email: ""
 
 #######################################
 ## Command-line options
@@ -103,14 +103,6 @@ filter:
   - TRUE
   - FALSE
 
-plottype_consistency:
-  - "byaf"
-  - "bypos"
-
-plottype_clustering:
-  - "position"
-  - "chromosome"
-
 ## BPDENS
 ### JOINT SEG
 min_diff_jointseg: 0.1
@@ -123,6 +115,7 @@ sce_min_distance: 500000
 
 abs_path: "/"
 
+## Methods dictionnary
 methods:
   lenient:
     method_name: "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0_regfactor6_filterFALSE"
@@ -131,7 +124,7 @@ methods:
     haplotags: TRUE
     gtcutoff: 0
     regfactor: 6
-    filter: FALSE
+    filter: "FALSE"
 
   stringent:
     method_name: "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.05_regfactor6_filterTRUE"
@@ -140,4 +133,12 @@ methods:
     haplotags: TRUE
     gtcutoff: 0.05
     regfactor: 6
-    filter: TRUE
+    filter: "TRUE"
+
+plottype_consistency:
+  - "byaf"
+  - "bypos"
+
+plottype_clustering:
+  - "position"
+  # - "chromosome"

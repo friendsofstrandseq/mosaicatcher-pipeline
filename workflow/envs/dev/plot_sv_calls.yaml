@@ -1,0 +1,17 @@
+name: plot_sv_calls
+channels:
+  - conda-forge
+  - bioconda
+  - r
+  - anaconda
+dependencies:
+  - r-assertthat
+  - r-data.table
+  - r-dplyr
+  - r-ggplot2
+  - r-rcolorbrewer
+  - r-scales
+  - r-scales
+  - r-stringr
+  - r-ggnewscale
+  - r-r.utils
