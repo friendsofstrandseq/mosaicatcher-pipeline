@@ -140,6 +140,7 @@ TEST*
 TEST*/
 .cache/fontconfig/
 .oracle_jre_usage/
+TMP/
 
 # git
 
