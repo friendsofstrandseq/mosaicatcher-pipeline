@@ -168,6 +168,7 @@ def get_all_plots(wildcards):
 
     dict_cells_nb_per_sample = df.groupby("sample")["cell"].nunique().to_dict()
     samples = list(dict_cells_nb_per_sample.keys())
+    print(samples)
 
     cell_list = df.cell.tolist()
     tmp_dict = (
@@ -283,4 +284,6 @@ def get_all_plots(wildcards):
             sample=samples,
         ),
     )
+    from pprint import pprint
+    pprint(list_indiv_plots)
     return list_indiv_plots
