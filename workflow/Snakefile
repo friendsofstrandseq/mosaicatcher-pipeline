@@ -141,7 +141,7 @@ else:
 
                 rule all:
                     input:
-                        rules.install_T2T_tarball.output,
+                        [rules.install.download_T2T_reference, rules.install_T2T_tarball.output],
                         
 
 
