@@ -80,7 +80,7 @@ rule final_results:
     input:
         get_all_plots,
     output:
-        touch("{output_folder}/plots/{sample}/final_results/{sample}.txt"),
+        "{output_folder}/plots/{sample}/final_results/{sample}.txt",
     log:
         "{output_folder}/log/final_blank_results/{sample}.log",
     conda:
@@ -158,7 +158,7 @@ rule plot_SV_calls:
         grouptrack="{output_folder}/mosaiclassifier/postprocessing/group-table/{sample}/{method}.tsv",
     output:
         report(
-            "{output_folder}/plots/{sample}/sv_calls/{method}_filter{filter}/{chrom}.pdf",
+            "{output_folder}/plots/{sample}/sv_calls_new/{method}_filter{filter}/{chrom}.pdf",
             category="SV Calls",
             subcategory="{sample}",
             labels={
@@ -170,12 +170,13 @@ rule plot_SV_calls:
     log:
         "{output_folder}/log/plot_SV_calls/{sample}/{method}_filter{filter}/{chrom}.log",
     conda:
-        "../envs/rtools.yaml"
+        "../envs/dev/plot_sv_calls.yaml"
+        # "../envs/rtools.yaml"
     resources:
         mem_mb=get_mem_mb,
     shell:
         """
-        Rscript workflow/scripts/plotting/plot-sv-calls.R \
+        Rscript workflow/scripts/plotting/plot-sv-calls_new.R \
             segments={input.segments} \
             singlecellsegments={input.scsegments} \
             strand={input.strand} \

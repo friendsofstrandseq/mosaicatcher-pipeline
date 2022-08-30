@@ -3,16 +3,16 @@ rule mosaic_count:
         bam=lambda wc: expand(
             "{input_folder}/{sample}/all/{cell}.sort.mdup.bam",
             input_folder=config["input_bam_location"],
-            sample=samples,
+            sample=wc.sample,
             cell=bam_per_sample_local[str(wc.sample)],
         ),
         bai=lambda wc: expand(
             "{input_folder}/{sample}/all/{cell}.sort.mdup.bam.bai",
             input_folder=config["input_bam_location"],
-            sample=samples,
+            sample=wc.sample,
             cell=bam_per_sample_local[str(wc.sample)],
         ),
-        excl="{output_folder}/config/{sample}/exclude_file",
+        excl="{output_folder}/config/{sample}/chroms_to_exclude.txt",
     output:
         counts="{output_folder}/counts/{sample}/{sample}.txt.raw.gz",
         info="{output_folder}/counts/{sample}/{sample}.info_raw",
@@ -70,13 +70,13 @@ if config["ashleys_pipeline"] is False:
 
 rule copy_labels:
     input:
-        expand(
+        lambda wc: expand(
             "{input_folder}/{sample}/cell_selection/labels.tsv",
             input_folder=config["input_bam_location"],
-            sample=samples,
+            sample=wc.sample,
         ),
     output:
-        "{output_folder}/cell_selection/{sample}/labels.tsv",
+        "{output_folder}/config/{sample}/labels.tsv",
     log:
         "{output_folder}/log/copy_labels/{sample}.log",
     conda:
@@ -88,7 +88,7 @@ rule copy_labels:
 rule order_mosaic_count_output:
     input:
         raw_count="{output_folder}/counts/{sample}/{sample}.txt.raw.gz",
-        labels="{output_folder}/cell_selection/{sample}/labels.tsv",
+        labels="{output_folder}/config/{sample}/labels.tsv",
     output:
         "{output_folder}/counts/{sample}/{sample}.txt.sort.gz",
     log:
@@ -103,7 +103,7 @@ checkpoint filter_bad_cells_from_mosaic_count:
     input:
         info_raw="{output_folder}/counts/{sample}/{sample}.info_raw",
         counts_sort="{output_folder}/counts/{sample}/{sample}.txt.sort.gz",
-        labels="{output_folder}/cell_selection/{sample}/labels.tsv",
+        labels="{output_folder}/config/{sample}/labels.tsv",
     output:
         info="{output_folder}/counts/{sample}/{sample}.info",
         info_removed="{output_folder}/counts/{sample}/{sample}.info_rm",
