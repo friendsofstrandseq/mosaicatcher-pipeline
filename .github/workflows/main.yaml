@@ -231,7 +231,7 @@ jobs:
     #   - Formatting
     steps:
       - uses: actions/checkout@v2
-      - name: Downloading_hg38
+      - name: Downloading_T2T
         uses: snakemake/snakemake-github-action@v1.23.0
         with:
           directory: .
