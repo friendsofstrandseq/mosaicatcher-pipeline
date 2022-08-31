@@ -186,15 +186,15 @@ def get_all_plots(wildcards):
 
     list_indiv_plots = list()
 
-    list_indiv_plots.extend(
-        [
-            "{}/plots/{}/counts/{}.{}.pdf".format(
-                config["output_location"], sample, tmp_dict[sample][i], i
-            )
-            for sample in samples
-            for i in range(dict_cells_nb_per_sample[sample] + 1)
-        ]
-    )
+    # list_indiv_plots.extend(
+    #     [
+    #         "{}/plots/{}/counts/{}.{}.pdf".format(
+    #             config["output_location"], sample, tmp_dict[sample][i], i
+    #         )
+    #         for sample in samples
+    #         for i in range(dict_cells_nb_per_sample[sample] + 1)
+    #     ]
+    # )
 
     # list_indiv_plots.extend(
     #     [
