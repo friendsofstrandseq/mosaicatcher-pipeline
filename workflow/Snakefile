@@ -141,7 +141,7 @@ else:
 
                 rule all:
                     input:
-                        [rules.download_T2T_reference.output, rules.install_T2T_tarball.output],
+                        [rules.download_T2T_reference.output, rules.install_T2T_BSgenome_tarball.output],
                         
 
 
