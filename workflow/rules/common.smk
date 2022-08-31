@@ -270,13 +270,13 @@ def get_all_plots(wildcards):
             sample=samples,
         ),
     )
-    # list_indiv_plots.extend(
-    #     expand(
-    #         "{output_folder}/stats/{sample}/stats-merged.tsv",
-    #         output_folder=config["output_location"],
-    #         sample=samples,
-    #     ),
-    # )
+    list_indiv_plots.extend(
+        expand(
+            "{output_folder}/stats/{sample}/stats-merged.tsv",
+            output_folder=config["output_location"],
+            sample=samples,
+        ),
+    )
     # list_indiv_plots.extend(
     #     expand(
     #         "{output_folder}/config/{sample}/run_summary.txt",
