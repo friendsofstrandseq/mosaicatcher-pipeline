@@ -196,73 +196,73 @@ def get_all_plots(wildcards):
         ]
     )
 
-    # list_indiv_plots.extend(
-    #     [
-    #         sub_e
-    #         for e in [
-    #             expand(
-    #                 "{output_folder}/plots/{sample}/sv_calls/{method}_filter{filter}/{chrom}.pdf",
-    #                 output_folder=config["output_location"],
-    #                 sample=samples,
-    #                 method=method,
-    #                 chrom=config["chromosomes"],
-    #                 filter=config["methods"][method]["filter"],
-    #             )
-    #             for method in config["methods"]
-    #         ]
-    #         for sub_e in e
-    #     ]
-    # )
-    # list_indiv_plots.extend(
-    #     [
-    #         sub_e
-    #         for e in [
-    #             expand(
-    #                 "{output_folder}/plots/{sample}/sv_consistency/{method}_filter{filter}.consistency-barplot-{plottype}.pdf",
-    #                 output_folder=config["output_location"],
-    #                 sample=samples,
-    #                 method=method,
-    #                 plottype=config["plottype_consistency"],
-    #                 filter=config["methods"][method]["filter"],
-    #             )
-    #             for method in config["methods"]
-    #         ]
-    #         for sub_e in e
-    #     ]
-    # )
-    # list_indiv_plots.extend(
-    #     [
-    #         sub_e
-    #         for e in [
-    #             expand(
-    #                 "{output_folder}/plots/{sample}/sv_clustering/{method}-filter{filter}-{plottype}.pdf",
-    #                 output_folder=config["output_location"],
-    #                 sample=samples,
-    #                 method=method,
-    #                 plottype=config["plottype_clustering"],
-    #                 filter=config["methods"][method]["filter"],
-    #             )
-    #             for method in config["methods"]
-    #         ]
-    #         for sub_e in e
-    #     ]
-    # )
     list_indiv_plots.extend(
         [
             sub_e
             for e in [
                 expand(
-                    "{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}_filter{filter}.tsv",
+                    "{output_folder}/plots/{sample}/sv_calls/{method}_filter{filter}/{chrom}.pdf",
                     output_folder=config["output_location"],
                     sample=samples,
                     method=method,
+                    chrom=config["chromosomes"],
                     filter=config["methods"][method]["filter"],
                 )
                 for method in config["methods"]
             ]
             for sub_e in e
         ]
-    ),
+    )
+    list_indiv_plots.extend(
+        [
+            sub_e
+            for e in [
+                expand(
+                    "{output_folder}/plots/{sample}/sv_consistency/{method}_filter{filter}.consistency-barplot-{plottype}.pdf",
+                    output_folder=config["output_location"],
+                    sample=samples,
+                    method=method,
+                    plottype=config["plottype_consistency"],
+                    filter=config["methods"][method]["filter"],
+                )
+                for method in config["methods"]
+            ]
+            for sub_e in e
+        ]
+    )
+    list_indiv_plots.extend(
+        [
+            sub_e
+            for e in [
+                expand(
+                    "{output_folder}/plots/{sample}/sv_clustering/{method}-filter{filter}-{plottype}.pdf",
+                    output_folder=config["output_location"],
+                    sample=samples,
+                    method=method,
+                    plottype=config["plottype_clustering"],
+                    filter=config["methods"][method]["filter"],
+                )
+                for method in config["methods"]
+            ]
+            for sub_e in e
+        ]
+    )
+    # list_indiv_plots.extend(
+    #     [
+    #         sub_e
+    #         for e in [
+    #             expand(
+    #                 "{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}_filter{filter}.tsv",
+    #                 output_folder=config["output_location"],
+    #                 sample=samples,
+    #                 method=method,
+    #                 filter=config["methods"][method]["filter"],
+    #             )
+    #             for method in config["methods"]
+    #         ]
+    #         for sub_e in e
+    #     ]
+    # ),
     list_indiv_plots.extend(
         expand(
             "{output_folder}/plots/{sample}/ploidy/{sample}.pdf",
@@ -270,13 +270,13 @@ def get_all_plots(wildcards):
             sample=samples,
         ),
     )
-    # list_indiv_plots.extend(
-    #     expand(
-    #         "{output_folder}/stats/{sample}/stats-merged.tsv",
-    #         output_folder=config["output_location"],
-    #         sample=samples,
-    #     ),
-    # )
+    list_indiv_plots.extend(
+        expand(
+            "{output_folder}/stats/{sample}/stats-merged.tsv",
+            output_folder=config["output_location"],
+            sample=samples,
+        ),
+    )
     list_indiv_plots.extend(
         expand(
             "{output_folder}/config/{sample}/run_summary.txt",
