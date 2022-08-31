@@ -247,29 +247,29 @@ def get_all_plots(wildcards):
     #         for sub_e in e
     #     ]
     # )
-    # list_indiv_plots.extend(
-    #     [
-    #         sub_e
-    #         for e in [
-    #             expand(
-    #                 "{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}_filter{filter}.tsv",
-    #                 output_folder=config["output_location"],
-    #                 sample=samples,
-    #                 method=method,
-    #                 filter=config["methods"][method]["filter"],
-    #             )
-    #             for method in config["methods"]
-    #         ]
-    #         for sub_e in e
-    #     ]
-    # ),
-    # list_indiv_plots.extend(
-    #     expand(
-    #         "{output_folder}/plots/{sample}/ploidy/{sample}.pdf",
-    #         output_folder=config["output_location"],
-    #         sample=samples,
-    #     ),
-    # )
+    list_indiv_plots.extend(
+        [
+            sub_e
+            for e in [
+                expand(
+                    "{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}_filter{filter}.tsv",
+                    output_folder=config["output_location"],
+                    sample=samples,
+                    method=method,
+                    filter=config["methods"][method]["filter"],
+                )
+                for method in config["methods"]
+            ]
+            for sub_e in e
+        ]
+    ),
+    list_indiv_plots.extend(
+        expand(
+            "{output_folder}/plots/{sample}/ploidy/{sample}.pdf",
+            output_folder=config["output_location"],
+            sample=samples,
+        ),
+    )
     # list_indiv_plots.extend(
     #     expand(
     #         "{output_folder}/stats/{sample}/stats-merged.tsv",
@@ -277,13 +277,13 @@ def get_all_plots(wildcards):
     #         sample=samples,
     #     ),
     # )
-    # list_indiv_plots.extend(
-    #     expand(
-    #         "{output_folder}/config/{sample}/run_summary.txt",
-    #         output_folder=config["output_location"],
-    #         sample=samples,
-    #     ),
-    # )
+    list_indiv_plots.extend(
+        expand(
+            "{output_folder}/config/{sample}/run_summary.txt",
+            output_folder=config["output_location"],
+            sample=samples,
+        ),
+    )
     from pprint import pprint
     pprint(list_indiv_plots)
     return list_indiv_plots
