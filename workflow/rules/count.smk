@@ -167,15 +167,10 @@ if (
             "{output_folder}/counts/{sample}/{sample}.txt.gz",
         log:
             "{output_folder}/log/sort_norm_counts/{sample}.log",
-        run:
-            df = pd.read_csv(input[0], sep="\t", compression="gzip")
-            df["start"] = df["start"].astype(int)
-            df["end"] = df["end"].astype(int)
-            chroms = ["chr{}".format(str(c)) for c in list(range(1, 23))] + ["chrX"]
-            df["chrom"] = pd.Categorical(df["chrom"], categories=chroms, ordered=True)
-            df.sort_values(by=["cell", "chrom", "start", "end"]).to_csv(
-                output[0], compression="gzip", sep="\t", index=False
-            )
+        conda:
+            "../envs/mc_base.yaml"
+        script:
+            "../scripts/utils/sort_norm_counts.py"
 
 
 else:
