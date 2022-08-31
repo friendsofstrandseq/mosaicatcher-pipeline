@@ -230,23 +230,23 @@ def get_all_plots(wildcards):
             for sub_e in e
         ]
     )
-    # list_indiv_plots.extend(
-    #     [
-    #         sub_e
-    #         for e in [
-    #             expand(
-    #                 "{output_folder}/plots/{sample}/sv_clustering/{method}-filter{filter}-{plottype}.pdf",
-    #                 output_folder=config["output_location"],
-    #                 sample=samples,
-    #                 method=method,
-    #                 plottype=config["plottype_clustering"],
-    #                 filter=config["methods"][method]["filter"],
-    #             )
-    #             for method in config["methods"]
-    #         ]
-    #         for sub_e in e
-    #     ]
-    # )
+    list_indiv_plots.extend(
+        [
+            sub_e
+            for e in [
+                expand(
+                    "{output_folder}/plots/{sample}/sv_clustering/{method}-filter{filter}-{plottype}.pdf",
+                    output_folder=config["output_location"],
+                    sample=samples,
+                    method=method,
+                    plottype=config["plottype_clustering"],
+                    filter=config["methods"][method]["filter"],
+                )
+                for method in config["methods"]
+            ]
+            for sub_e in e
+        ]
+    )
     # list_indiv_plots.extend(
     #     [
     #         sub_e
