@@ -102,7 +102,7 @@ rule download_T2T_tarball:
 
 rule install_T2T_BSgenome_tarball:
     input:
-        "workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz",
+        tarball = "workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz",
     output:
         touch("workflow/data/ref_genomes/config/T2T_R_tarball_install.ok"),
     log:
