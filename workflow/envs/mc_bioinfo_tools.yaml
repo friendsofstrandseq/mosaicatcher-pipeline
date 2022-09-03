@@ -1,11 +1,42 @@
-name: mc-bioinfo-tools
+name: /g/korbel2/weber/workspace/mosaicatcher-update/workflow/.snakemake/conda/edc8dd5fe97a2d057b24d4461322f03f
 channels:
-  - conda-forge
   - bioconda
+  - conda-forge
+  - defaults
 dependencies:
-  - bcftools
-  - freebayes
-  - mosaicatcher
-  - samtools
-  - tabix
-  - whatshap
+  - _libgcc_mutex=0.1=conda_forge
+  - _openmp_mutex=4.5=2_gnu
+  - boost-cpp=1.74.0=h75c5d50_8
+  - bwa=0.7.17=h7132678_9
+  - bzip2=1.0.8=h7f98852_4
+  - c-ares=1.18.1=h7f98852_0
+  - ca-certificates=2022.6.15=ha878542_0
+  - htslib=1.15.1=h9753748_0
+  - icu=70.1=h27087fc_0
+  - keyutils=1.6.1=h166bdaf_0
+  - krb5=1.19.3=h3790be6_0
+  - ldc=1.28.1=hcf88599_0
+  - libcurl=7.83.1=h7bff187_0
+  - libdeflate=1.10=h7f98852_0
+  - libedit=3.1.20191231=he28a2e2_2
+  - libev=4.33=h516909a_1
+  - libgcc-ng=12.1.0=h8d9b700_16
+  - libgomp=12.1.0=h8d9b700_16
+  - libllvm12=12.0.1=hf817b99_2
+  - libnghttp2=1.47.0=h727a467_0
+  - libnsl=2.0.0=h7f98852_0
+  - libssh2=1.10.0=ha56f1ee_2
+  - libstdcxx-ng=12.1.0=ha89aaad_16
+  - libzlib=1.2.12=h166bdaf_2
+  - lz4-c=1.9.3=h9c3ff4c_1
+  - mosaicatcher=0.3.1=h4bdb77e_0
+  - ncurses=6.3=h27087fc_1
+  - openssl=1.1.1q=h166bdaf_0
+  - perl=5.32.1=2_h7f98852_perl5
+  - sambamba=0.8.2=h98b6b92_2
+  - samtools=1.15.1=h1170115_0
+  - tabix=1.11=hdfd78af_0
+  - xz=5.2.5=h516909a_1
+  - zlib=1.2.12=h166bdaf_2
+  - zstd=1.5.2=h8a70e8d_2
+prefix: /g/korbel2/weber/workspace/mosaicatcher-update/workflow/.snakemake/conda/edc8dd5fe97a2d057b24d4461322f03f
