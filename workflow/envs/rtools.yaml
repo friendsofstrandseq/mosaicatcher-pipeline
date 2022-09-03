@@ -256,4 +256,3 @@ dependencies:
   - xz=5.2.6=h166bdaf_0
   - zlib=1.2.12=h166bdaf_2
   - zstd=1.5.2=h6239696_4
-prefix: /g/korbel2/weber/workspace/mosaicatcher-update/workflow/.snakemake/conda/a0750cd705d2e9eb66e85974e35d9692
