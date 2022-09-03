@@ -154,4 +154,3 @@ dependencies:
   - xorg-xproto=7.0.31=h7f98852_1007
   - xz=5.2.6=h166bdaf_0
   - zstd=1.5.2=h6239696_4
-prefix: /g/korbel2/weber/workspace/mosaicatcher-update/workflow/.snakemake/conda/5be969ddfd482a937d19968b7b8e420c
