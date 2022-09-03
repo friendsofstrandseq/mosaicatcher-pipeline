@@ -73,4 +73,3 @@ dependencies:
   - xz=5.2.5=h516909a_1
   - zipp=3.8.0=pyhd8ed1ab_0
   - zlib=1.2.12=h166bdaf_2
-prefix: /g/korbel2/weber/workspace/mosaicatcher-update/workflow/.snakemake/conda/370aa682f79c54f7f42128e84f6c4763
