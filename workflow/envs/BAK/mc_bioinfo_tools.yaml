@@ -1,0 +1,11 @@
+name: mc-bioinfo-tools
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - bcftools
+  - freebayes
+  - mosaicatcher
+  - samtools
+  - tabix
+  - whatshap
