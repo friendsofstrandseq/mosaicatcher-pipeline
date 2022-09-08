@@ -7,7 +7,7 @@
 
 rule estimate_ploidy:
     input:
-        counts="{output_folder}/counts/{sample}/{sample}.txt.gz",
+        counts="{output_folder}/counts/{sample}/{sample}.txt.sort.gz",
     output:
         "{output_folder}/ploidy/{sample}/ploidy_detailled.txt",
     log:
