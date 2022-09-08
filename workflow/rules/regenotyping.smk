@@ -17,7 +17,7 @@ rule mergeBams:
             bam=allbams_per_sample[wc.sample],
         )
     output:
-        "{output_folder}/merged_bam/{sample}/merged.bam",
+        "{output_folder}/merged_bam/{sample}/merged.raw.bam",
     log:
         "{output_folder}/log/mergeBams/{sample}.log",
     resources:
@@ -28,6 +28,27 @@ rule mergeBams:
         "../envs/mc_bioinfo_tools.yaml"
     shell:
         "samtools merge -@ {threads} {output} {input} 2>&1 > {log}"
+
+rule mergeSortBams:
+    """
+    rule fct:
+    input:
+    output:
+    """
+    input:
+        "{output_folder}/merged_bam/{sample}/merged.raw.bam",
+    output:
+        "{output_folder}/merged_bam/{sample}/merged.bam",
+    log:
+        "{output_folder}/log/mergeBams/{sample}.log",
+    resources:
+        mem_mb=get_mem_mb_heavy,
+        time="01:00:00",
+    threads: 10
+    conda:
+        "../envs/mc_bioinfo_tools.yaml"
+    shell:
+        "samtools sort -@ {threads} -o {output} {input} 2>&1 > {log}"
 
 
 rule regenotype_SNVs:

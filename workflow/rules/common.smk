@@ -263,27 +263,27 @@ def get_all_plots(wildcards):
             for sub_e in e
         ]
     ),
-    # list_indiv_plots.extend(
-    #     expand(
-    #         "{output_folder}/plots/{sample}/ploidy/{sample}.pdf",
-    #         output_folder=config["output_location"],
-    #         sample=samples,
-    #     ),
-    # )
-    # list_indiv_plots.extend(
-    #     expand(
-    #         "{output_folder}/stats/{sample}/stats-merged.tsv",
-    #         output_folder=config["output_location"],
-    #         sample=samples,
-    #     ),
-    # )
-    # list_indiv_plots.extend(
-    #     expand(
-    #         "{output_folder}/config/{sample}/run_summary.txt",
-    #         output_folder=config["output_location"],
-    #         sample=samples,
-    #     ),
-    # )
+    list_indiv_plots.extend(
+        expand(
+            "{output_folder}/plots/{sample}/ploidy/{sample}.pdf",
+            output_folder=config["output_location"],
+            sample=samples,
+        ),
+    )
+    list_indiv_plots.extend(
+        expand(
+            "{output_folder}/stats/{sample}/stats-merged.tsv",
+            output_folder=config["output_location"],
+            sample=samples,
+        ),
+    )
+    list_indiv_plots.extend(
+        expand(
+            "{output_folder}/config/{sample}/run_summary.txt",
+            output_folder=config["output_location"],
+            sample=samples,
+        ),
+    )
     from pprint import pprint
     pprint(list_indiv_plots)
     return list_indiv_plots
