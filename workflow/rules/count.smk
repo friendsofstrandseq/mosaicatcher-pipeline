@@ -85,24 +85,24 @@ rule copy_labels:
         "cp {input} {output}"
 
 
-rule order_mosaic_count_output:
-    input:
-        raw_count="{output_folder}/counts/{sample}/{sample}.txt.raw.gz",
-        labels="{output_folder}/config/{sample}/labels.tsv",
-    output:
-        "{output_folder}/counts/{sample}/{sample}.txt.sort.gz",
-    log:
-        "{output_folder}/log/counts/{sample}/{sample}.log",
-    run:
-        df = pd.read_csv(input.raw_count, compression="gzip", sep="\t")
-        df = df.sort_values(by=["sample", "cell", "chrom", "start"])
-        df.to_csv(output[0], index=False, compression="gzip", sep="\t")
+# rule order_mosaic_count_output:
+#     input:
+#         raw_count="{output_folder}/counts/{sample}/{sample}.txt.raw.gz",
+#         labels="{output_folder}/config/{sample}/labels.tsv",
+#     output:
+#         "{output_folder}/counts/{sample}/{sample}.txt.sort.gz",
+#     log:
+#         "{output_folder}/log/counts/{sample}/{sample}.log",
+#     run:
+#         df = pd.read_csv(input.raw_count, compression="gzip", sep="\t")
+#         df = df.sort_values(by=["sample", "cell", "chrom", "start"])
+#         df.to_csv(output[0], index=False, compression="gzip", sep="\t")
 
 
 checkpoint filter_bad_cells_from_mosaic_count:
     input:
         info_raw="{output_folder}/counts/{sample}/{sample}.info_raw",
-        counts_sort="{output_folder}/counts/{sample}/{sample}.txt.sort.gz",
+        counts_sort="{output_folder}/counts/{sample}/{sample}.txt.raw.gz",
         labels="{output_folder}/config/{sample}/labels.tsv",
     output:
         info="{output_folder}/counts/{sample}/{sample}.info",
@@ -150,7 +150,8 @@ if (
                 window=config["window"],
             ),
         output:
-            "{output_folder}/counts/{sample}/{sample}.txt.norm.gz",
+            # "{output_folder}/counts/{sample}/{sample}.txt.norm.gz",
+            "{output_folder}/counts/{sample}/{sample}.txt.gz",
         log:
             "{output_folder}/log/normalize_counts/{sample}.log",
         conda:
@@ -162,9 +163,9 @@ if (
 
     rule sort_norm_counts:
         input:
-            "{output_folder}/counts/{sample}/{sample}.txt.norm.gz",
-        output:
             "{output_folder}/counts/{sample}/{sample}.txt.gz",
+        output:
+            "{output_folder}/counts/{sample}/{sample}.txt.sort.gz",
         log:
             "{output_folder}/log/sort_norm_counts/{sample}.log",
         conda:
