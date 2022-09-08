@@ -45,4 +45,4 @@ output_h = output_h.loc[~output_h["Contig"].isin(snakemake.params["chroms"])]
 # print(output_h)
 
 # EXPORT
-output_h["Contig"].unique().to_csv(snakemake.output[0], index=False, sep="\t", header=False)
+output_h["Contig"].drop_duplicates().to_csv(snakemake.output[0], index=False, sep="\t", header=False)
