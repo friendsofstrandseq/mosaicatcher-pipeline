@@ -156,6 +156,8 @@ rule combine_strandphaser_output:
         "{output_folder}/log/combine_strandphaser_output/{sample}.log",
     resources:
         mem_mb=get_mem_mb,
+    conda:
+        "../envs/mc_base.yaml"
     script:
         "../scripts/strandphaser_scripts/combine_strandphaser_output.py"
 
