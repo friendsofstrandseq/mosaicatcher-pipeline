@@ -6,9 +6,9 @@ version: 1.6.0
 # To be informed of pipeline status
 email: ""
 # Input BAM location
-input_bam_location: ".tests/data_CHR21"
+input_bam_location: ".tests/data_CHR17"
 # Output location
-output_location: ".tests/output_CHR21"
+output_location: ".tests/output_CHR17"
 # Reference assembly selected
 reference: "hg38"
 # Mutually exclusive with ashleys_pipeline
@@ -73,7 +73,7 @@ references_data:
     R_reference_tarball: "/g/korbel2/weber/MosaiCatcher_files/EXTERNAL_DATA/R_reference//BSgenome.T2T.CHM13.V2_1.0.0.tar.gz"
     segdups: "workflow/data/segdups/segDups_T2T_UCSCtrack.bed.gz"
     snv_sites_to_genotype: ""
-  
+
     # snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/ALL.chr1-22plusXY_T2T_sites.20170504.renamedCHR.vcf.gz"
 
 # Strandphaser repo info
