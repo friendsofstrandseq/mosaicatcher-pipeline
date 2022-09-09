@@ -83,9 +83,6 @@ workflow/test.txt
 
 ## OUTPUT TEST
 .tests/output*/
-.tests/output_CHR21/
-.tests/output_CHR21_LITE_FNA/
-.tests/output2/
 
 ## DATA
 .tests/data_CHR21_LITE_FNA/
@@ -118,9 +115,9 @@ workflow/test.txt
 .tests/data_CHR21/RPE-BM510/cell_selection/
 
 ## DATA EXCEPTIONS
-!.tests/data_CHR21/RPE-BM510/fastq/*.fastq.gz
-!.tests/data_CHR21/RPE-BM510/all/BM*.sort.mdup.bam
-!.tests/external_data/1000G_chr21.vcf.gz
+!.tests/data_CHR17/RPE-BM510/fastq/*.fastq.gz
+!.tests/data_CHR17/RPE-BM510/all/BM*.sort.mdup.bam
+# !.tests/external_data/1000G_chr21.vcf.gz
 
 # Dev
 discover_big_files_git.sh
