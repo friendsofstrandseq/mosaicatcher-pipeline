@@ -45,7 +45,7 @@ jobs:
         with:
           directory: .
           snakefile: ./workflow/Snakefile
-          # stagein: "conda config --set channel_priority flexible"
+          stagein: "conda config --set channel_priority flexible"
           args: "--cores 1 --use-conda --configfile .tests/config/simple_config.yaml --conda-frontend mamba -p --verbose --debug"
       - name: Testing report
         uses: snakemake/snakemake-github-action@v1.23.0
@@ -65,7 +65,7 @@ jobs:
         with:
           directory: .
           snakefile: ./workflow/Snakefile
-          # stagein: "conda config --set channel_priority flexible"
+          stagein: "conda config --set channel_priority flexible"
           args: "--cores 1 --use-conda --configfile .tests/config/simple_config.yaml --config normalized_counts=True --conda-frontend mamba -p --verbose --debug"
       - name: Testing report
         uses: snakemake/snakemake-github-action@v1.23.0
