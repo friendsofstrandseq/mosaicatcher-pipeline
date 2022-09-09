@@ -91,11 +91,12 @@ def aggregate_cells_segmentation(wildcards):
     cell_list = df.cell.tolist()
 
     return expand(
-                "{output_folder}/segmentation/{sample}/segmentation-per-cell/{cell}.txt",
-                output_folder=config["output_location"],
-                sample=wildcards.sample,
-                cell=cell_list,
-            )
+        "{output_folder}/segmentation/{sample}/segmentation-per-cell/{cell}.txt",
+        output_folder=config["output_location"],
+        sample=wildcards.sample,
+        cell=cell_list,
+    )
+
 
 def aggregate_cells_count_plot(wildcards):
     import pandas as pd
@@ -123,9 +124,9 @@ def aggregate_cells_count_plot(wildcards):
         tmp_dict[s][0] = "SummaryPage"
 
     return expand(
-                "{output_folder}/plots/{sample}/counts/{cell}.{i}.pdf",
-                output_folder=config["output_location"],
-                sample=wildcards.sample,
-                cell=cell_list,
-                i=tmp_dict[i],
-            )
+        "{output_folder}/plots/{sample}/counts/{cell}.{i}.pdf",
+        output_folder=config["output_location"],
+        sample=wildcards.sample,
+        cell=cell_list,
+        i=tmp_dict[i],
+    )

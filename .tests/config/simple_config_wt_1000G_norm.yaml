@@ -46,7 +46,7 @@ references_data:
 
 # Chromosomes list to process
 chromosomes:
-  - chr21
+  - chr17
 
 ##############################
 # Advanced configuration.  #

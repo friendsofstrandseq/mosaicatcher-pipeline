@@ -28,7 +28,7 @@ rule summary_statistics:
 
 rule aggregate_summary_statistics:
     input:
-        tsv= [
+        tsv=[
             sub_e
             for e in [
                 expand(
@@ -41,7 +41,7 @@ rule aggregate_summary_statistics:
                 for method in config["methods"]
             ]
             for sub_e in e
-        ]
+        ],
     output:
         # tsv=report("stats/{sample}/stats-merged.tsv", category="Stats", labels={"Type" : "Complete stats"})
         tsv="{output_folder}/stats/{sample}/stats-merged.tsv",
