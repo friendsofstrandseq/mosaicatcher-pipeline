@@ -30,15 +30,15 @@ dl_external_files: False
 normalized_counts: True
 
 ## Input BAM location
-input_bam_location: ".tests/data_CHR21"
+input_bam_location: ".tests/data_CHR17"
 ## Output location
-output_location: ".tests/output_CHR21"
+output_location: ".tests/output_CHR17"
 
 reference: "hg38"
 
 references_data:
   "hg38":
-    reference_fasta: ".tests/external_data/chr21.fna"
+    reference_fasta: ".tests/external_data/chr17.fna"
     R_reference: "BSgenome.Hsapiens.UCSC.hg38"
     segdups: "workflow/data/segdups/segDups_hg38_UCSCtrack.bed.gz"
     snv_sites_to_genotype: ""
