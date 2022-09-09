@@ -15,7 +15,7 @@ rule mergeBams:
             input_folder=config["input_bam_location"],
             sample=wc.sample,
             bam=allbams_per_sample[wc.sample],
-        )
+        ),
     output:
         "{output_folder}/merged_bam/{sample}/merged.raw.bam",
     log:
@@ -28,6 +28,7 @@ rule mergeBams:
         "../envs/mc_bioinfo_tools.yaml"
     shell:
         "samtools merge -@ {threads} {output} {input} 2>&1 > {log}"
+
 
 rule mergeSortBams:
     """
