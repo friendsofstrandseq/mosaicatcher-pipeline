@@ -27,6 +27,8 @@ dl_bam_example: False
 ### Enable / Disable download of external files (1000G SNV & Fasta ref genome)
 dl_external_files: False
 
+normalized_counts: False
+
 ## Input BAM location
 input_bam_location: ".tests/data_CHR17"
 ## Output location
