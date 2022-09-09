@@ -7,7 +7,7 @@
 
 rule estimate_ploidy:
     input:
-        counts="{output_folder}/counts/{sample}/{sample}.txt.gz",
+        counts="{output_folder}/counts/{sample}/{sample}.txt.sort.gz",
     output:
         "{output_folder}/ploidy/{sample}/ploidy_detailled.txt",
     log:
@@ -46,9 +46,17 @@ checkpoint summarise_ploidy:
     log:
         "{output_folder}/log/ploidy/{sample}/ploidy_summary.log",
     run:
-        pd.read_csv(input.ploidy, sep="\t").groupby("#chrom")[
-            "ploidy_estimate"
-        ].describe().to_csv(output.summary, sep="\t")
+        df = (
+            pd.read_csv(input.ploidy, sep="\t")
+            .groupby("#chrom")["ploidy_estimate"]
+            .describe()
+        )
+        df.to_csv(output.summary, sep="\t")
+        # haploid_chroms = df.loc[df["50%"] == 1, "#chrom"].values.tolist()
+        # if not haploid_chroms:
+        #     haploid_chroms = "None"
+        # log[0].write("")
+
 
 
 rule ploidy_bcftools:

@@ -6,6 +6,8 @@ import multiprocessing as mp
 import numpy as np
 
 
+# snakemake_log = open(snakemake.log[0], "w")
+
 l_files_selected = snakemake.input.bam
 
 
@@ -42,9 +44,7 @@ elif np.mean(l_df) == 0:
     else:
         paired_end = True
 
-print("Paired-end: {paired_end} for sample: {sample}".format(paired_end=paired_end, sample=snakemake.wildcards.sample))
-print(l_files_selected)
-print(l_df)
+# snakemake_log.write("Paired-end: {paired_end} for sample: {sample}".format(paired_end=paired_end, sample=snakemake.wildcards.sample))
 
 with open(snakemake.output.single_paired_end_detect, "w") as output:
     output.write(str(paired_end).upper())

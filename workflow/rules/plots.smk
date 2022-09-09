@@ -170,6 +170,7 @@ rule plot_SV_calls:
     log:
         "{output_folder}/log/plot_SV_calls/{sample}/{method}_filter{filter}/{chrom}.log",
     conda:
+        # "../envs/dev/plot_sv_calls.yaml"
         "../envs/rtools.yaml"
     resources:
         mem_mb=get_mem_mb,

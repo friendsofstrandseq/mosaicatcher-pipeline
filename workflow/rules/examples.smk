@@ -83,29 +83,36 @@ rule download_T2T_reference:
         shell("gunzip workflow/data/ref_genomes/T2T.fa.gz")
 
 
-# rule download_T2T_tarball:
-#     input:
-#         HTTP.remote()
-#     output:
-#         ".tar.gz"
-#     log:
-#     run:
-
-
-rule install_T2T_tarball:
+rule download_T2T_tarball:
     input:
-        ".tar.gz",
+        HTTP.remote(
+            "https://sandbox.zenodo.org/record/1097504/files/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz",
+            keep_local=True,
+        ),
+    output:
+        "workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz",
+    log:
+        "workflow/data/ref_genomes/log/T2T_tarball.ok",
+    run:
+        directory = "workflow/data/ref_genomes/"
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        shell("mv {input} workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz")
+
+
+rule install_T2T_BSgenome_tarball:
+    input:
+        tarball="workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz",
     output:
         touch("workflow/data/ref_genomes/config/T2T_R_tarball_install.ok"),
     log:
         "workflow/data/ref_genomes/log/T2T_R_tarball_install.log",
     conda:
         "../envs/rtools.yaml"
-    shell:
-        """
-        R_path=$(which R | grep -P "\.snakemake" | sed 's/R is //g')
-        "$R_path" -e 'install.packages("{input}")  2>&1 > {log}'
-        """
+    resources:
+        mem_mb=get_mem_mb_heavy,
+    script:
+        "../scripts/utils/install_R_tarball.R"
 
 
 rule samtools_faindex:

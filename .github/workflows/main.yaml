@@ -6,6 +6,7 @@ on:
       - master
       - smk_wf_catalog
       - ref_genomes
+      - dev
 
 jobs:
   # WORK
@@ -72,26 +73,46 @@ jobs:
           directory: .
           snakefile: ./workflow/Snakefile
           args: "--cores 1 --use-conda --configfile .tests/config/simple_config.yaml --config normalized_counts=True --conda-frontend mamba --report report.zip"
-  Testing_wt_1000G:
-    runs-on: ubuntu-latest
-    # needs:
-    #   - Linting
-    #   - Formatting
-    steps:
-      - uses: actions/checkout@v2
-      - name: Testing data
-        uses: snakemake/snakemake-github-action@v1.23.0
-        with:
-          directory: .
-          snakefile: ./workflow/Snakefile
-          stagein: "conda config --set channel_priority flexible"
-          args: "--cores 1 --use-conda --configfile .tests/config/simple_config_wt_1000G.yaml --conda-frontend mamba -p --verbose --debug"
-      - name: Testing report
-        uses: snakemake/snakemake-github-action@v1.23.0
-        with:
-          directory: .
-          snakefile: ./workflow/Snakefile
-          args: "--cores 1 --use-conda --configfile .tests/config/simple_config_wt_1000G.yaml --conda-frontend mamba --report report.zip"
+  # Testing_wt_1000G:
+  #   runs-on: ubuntu-latest
+  #   # needs:
+  #   #   - Linting
+  #   #   - Formatting
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Testing data
+  #       uses: snakemake/snakemake-github-action@v1.23.0
+  #       with:
+  #         directory: .
+  #         snakefile: ./workflow/Snakefile
+  #         stagein: "conda config --set channel_priority flexible"
+  #         args: "--cores 1 --use-conda --configfile .tests/config/simple_config_wt_1000G.yaml --conda-frontend mamba -p --verbose --debug"
+  #     - name: Testing report
+  #       uses: snakemake/snakemake-github-action@v1.23.0
+  #       with:
+  #         directory: .
+  #         snakefile: ./workflow/Snakefile
+  #         args: "--cores 1 --use-conda --configfile .tests/config/simple_config_wt_1000G.yaml --conda-frontend mamba --report report.zip"
+  # Testing_wt_1000G_norm:
+  #   runs-on: ubuntu-latest
+  #   # needs:
+  #   #   - Linting
+  #   #   - Formatting
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Testing data
+  #       uses: snakemake/snakemake-github-action@v1.23.0
+  #       with:
+  #         directory: .
+  #         snakefile: ./workflow/Snakefile
+  #         stagein: "conda config --set channel_priority flexible"
+  #         args: "--cores 1 --use-conda --configfile .tests/config/simple_config_wt_1000G.yaml --conda-frontend mamba -p --verbose --debug"
+  #     - name: Testing report
+  #       uses: snakemake/snakemake-github-action@v1.23.0
+  #       with:
+  #         directory: .
+  #         snakefile: ./workflow/Snakefile
+  #         args: "--cores 1 --use-conda --configfile .tests/config/simple_config_wt_1000G_norm.yaml --conda-frontend mamba --report report.zip"
 
   Linting_ashleys:
     runs-on: ubuntu-latest
@@ -123,26 +144,26 @@ jobs:
           directory: .
           snakefile: ./workflow/Snakefile
           args: "--cores 1 --use-conda --configfile .tests/config/simple_config.yaml --config ashleys_pipeline=True use_light_data=True --conda-frontend mamba --report report.zip"
-  Testing_ashleys_wt_1000G:
-    runs-on: ubuntu-latest
-    # needs:
-    #   - Linting
-    #   - Formatting
-    steps:
-      - uses: actions/checkout@v2
-      - name: Testing data
-        uses: snakemake/snakemake-github-action@v1.23.0
-        with:
-          directory: .
-          snakefile: ./workflow/Snakefile
-          stagein: "conda config --set channel_priority flexible"
-          args: "--cores 1 --use-conda --configfile .tests/config/simple_config_wt_1000G.yaml --config ashleys_pipeline=True use_light_data=True --conda-frontend mamba -p --verbose --debug"
-      - name: Testing report
-        uses: snakemake/snakemake-github-action@v1.23.0
-        with:
-          directory: .
-          snakefile: ./workflow/Snakefile
-          args: "--cores 1 --use-conda --configfile .tests/config/simple_config_wt_1000G.yaml --config ashleys_pipeline=True use_light_data=True snv_sites_to_genotype=BLANK.vcf --conda-frontend mamba --report report.zip"
+  # Testing_ashleys_wt_1000G:
+  #   runs-on: ubuntu-latest
+  #   # needs:
+  #   #   - Linting
+  #   #   - Formatting
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Testing data
+  #       uses: snakemake/snakemake-github-action@v1.23.0
+  #       with:
+  #         directory: .
+  #         snakefile: ./workflow/Snakefile
+  #         stagein: "conda config --set channel_priority flexible"
+  #         args: "--cores 1 --use-conda --configfile .tests/config/simple_config_wt_1000G.yaml --config ashleys_pipeline=True use_light_data=True --conda-frontend mamba -p --verbose --debug"
+  #     - name: Testing report
+  #       uses: snakemake/snakemake-github-action@v1.23.0
+  #       with:
+  #         directory: .
+  #         snakefile: ./workflow/Snakefile
+  #         args: "--cores 1 --use-conda --configfile .tests/config/simple_config_wt_1000G.yaml --config ashleys_pipeline=True use_light_data=True snv_sites_to_genotype=BLANK.vcf --conda-frontend mamba --report report.zip"
   Testing_ashleys_norm_counts:
     runs-on: ubuntu-latest
     # needs:
@@ -223,3 +244,17 @@ jobs:
           directory: .
           snakefile: ./workflow/Snakefile
           args: "--cores 1 --config dl_external_files=True reference=hg38 -p --verbose --debug"
+  Downloading_installing_T2T:
+    runs-on: ubuntu-latest
+    # needs:
+    #   - Linting
+    #   - Formatting
+    steps:
+      - uses: actions/checkout@v2
+      - name: Downloading_T2T
+        uses: snakemake/snakemake-github-action@v1.23.0
+        with:
+          directory: .
+          snakefile: ./workflow/Snakefile
+          stagein: "conda config --set channel_priority flexible"
+          args: "--cores 1  --use-conda --conda-frontend mamba --config dl_external_files=True reference=T2T -p --verbose --debug"

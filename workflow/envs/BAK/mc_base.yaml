@@ -1,0 +1,14 @@
+name: mc-base
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - pandas
+  - intervaltree
+  - scipy
+  - pysam
+  - tqdm
+  - perl
+  - pypdf2
+  - parmap
+  - samtools
