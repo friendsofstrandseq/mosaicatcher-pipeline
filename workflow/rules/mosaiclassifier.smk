@@ -95,20 +95,24 @@ rule mosaiClassifier_make_call_biallelic:
     script:
         "../scripts/mosaiclassifier_scripts/mosaiClassifier_call_biallelic.snakemake.R"
 
+
 rule debug_complex:
     input:
         calls="{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}_filter{filter}.tsv",
     output:
-        touch("{output_folder}/mosaiclassifier/sv_calls_debug/{sample}/{method}_filter{filter}.ok")
+        touch(
+            "{output_folder}/mosaiclassifier/sv_calls_debug/{sample}/{method}_filter{filter}.ok"
+        ),
     log:
-        "{output_folder}/mosaiclassifier/sv_calls_debug/{sample}/{method}_filter{filter}.log"
+        "{output_folder}/mosaiclassifier/sv_calls_debug/{sample}/{method}_filter{filter}.log",
     shell:
         "cat {input.calls}"
+
 
 rule call_complex_regions:
     input:
         calls="{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}_filter{filter}.tsv",
-        debug="{output_folder}/mosaiclassifier/sv_calls_debug/{sample}/{method}_filter{filter}.ok"
+        debug="{output_folder}/mosaiclassifier/sv_calls_debug/{sample}/{method}_filter{filter}.ok",
     output:
         complex_regions="{output_folder}/mosaiclassifier/complex/{sample}/{method}_filter{filter}.tsv",
     log:

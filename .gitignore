@@ -85,6 +85,7 @@ workflow/test.txt
 .tests/output*/
 
 ## DATA
+.tests/data_CHR21_BAK/
 .tests/data_CHR21_LITE_FNA/
 .tests/data_HG19/
 .tests/data_T2T/

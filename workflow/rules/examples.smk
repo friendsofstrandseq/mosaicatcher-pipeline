@@ -87,10 +87,10 @@ rule download_T2T_tarball:
     input:
         HTTP.remote(
             "https://sandbox.zenodo.org/record/1097504/files/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz",
-            keep_local=True
-        )
+            keep_local=True,
+        ),
     output:
-        "workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz"
+        "workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz",
     log:
         "workflow/data/ref_genomes/log/T2T_tarball.ok",
     run:
@@ -102,7 +102,7 @@ rule download_T2T_tarball:
 
 rule install_T2T_BSgenome_tarball:
     input:
-        tarball = "workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz",
+        tarball="workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz",
     output:
         touch("workflow/data/ref_genomes/config/T2T_R_tarball_install.ok"),
     log:
@@ -113,7 +113,6 @@ rule install_T2T_BSgenome_tarball:
         mem_mb=get_mem_mb_heavy,
     script:
         "../scripts/utils/install_R_tarball.R"
-
 
 
 rule samtools_faindex:

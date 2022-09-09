@@ -83,9 +83,10 @@ rule copy_labels:
         "../envs/mc_base.yaml"
     shell:
         "cp {input} {output}"
-
-
 # rule order_mosaic_count_output:
+
+
+
 #     input:
 #         raw_count="{output_folder}/counts/{sample}/{sample}.txt.raw.gz",
 #         labels="{output_folder}/config/{sample}/labels.tsv",

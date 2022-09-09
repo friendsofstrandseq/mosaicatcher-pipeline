@@ -24,14 +24,10 @@ from collections import defaultdict
 
 Testmode = False
 
-path_to_orig_samples = (
-    "/g/korbel2/weber/MosaiCatcher_files/POOLING/POOLING_POOL1"
-)
+path_to_orig_samples = "/g/korbel2/weber/MosaiCatcher_files/POOLING/POOLING_POOL1"
 
 
-SAMPLE, BAM = glob_wildcards(
-    path_to_orig_samples + "/{sm}/chm13/{id}.bam"
-)
+SAMPLE, BAM = glob_wildcards(path_to_orig_samples + "/{sm}/chm13/{id}.bam")
 SAMPLES = sorted(set(SAMPLE))
 print(SAMPLE)
 print(BAM)
@@ -70,30 +66,30 @@ for s in SAMPLES:
             ID=ALLBAMS_PER_SAMPLE[s],
         )
     )
-    # bais_all.append(
-    #     expand(
-    #         "{path}/{SM}/all/{ID}.sort.mdup.bam.bai",
-    #         path=path_to_orig_samples,
-    #         SM=s,
-    #         ID=ALLBAMS_PER_SAMPLE[s],
-    #     )
-    # )
-    # bams_select.append(
-    #     expand(
-    #         "{path}/{SM}/selected/{ID}.bam",
-    #         path=path_to_orig_samples,
-    #         SM=s,
-    #         ID=ALLBAMS_PER_SAMPLE[s],
-    #     )
-    # )
-    # bais_select.append(
-    #     expand(
-    #         "{path}/{SM}/selected/{ID}.bam",
-    #         path=path_to_orig_samples,
-    #         SM=s,
-    #         ID=ALLBAMS_PER_SAMPLE[s],
-    #     )
-    # )
+# bais_all.append(
+#     expand(
+#         "{path}/{SM}/all/{ID}.sort.mdup.bam.bai",
+#         path=path_to_orig_samples,
+#         SM=s,
+#         ID=ALLBAMS_PER_SAMPLE[s],
+#     )
+# )
+# bams_select.append(
+#     expand(
+#         "{path}/{SM}/selected/{ID}.bam",
+#         path=path_to_orig_samples,
+#         SM=s,
+#         ID=ALLBAMS_PER_SAMPLE[s],
+#     )
+# )
+# bais_select.append(
+#     expand(
+#         "{path}/{SM}/selected/{ID}.bam",
+#         path=path_to_orig_samples,
+#         SM=s,
+#         ID=ALLBAMS_PER_SAMPLE[s],
+#     )
+# )
 
 
 # bams_all = ['HG00513/all/HG00513_IV_045.bam']
@@ -114,7 +110,7 @@ rule change_id_and_sam:
         #     SM=SAMPLE,
         #     ID=BAM,
         # ),
-        bam_orig = "{path}/{SM}/chm13/{ID}.bam"
+        bam_orig="{path}/{SM}/chm13/{ID}.bam",
     output:
         bam_out="{path}/{SM}/all/{ID}.sort.mdup.bam",
     shell:
@@ -141,5 +137,3 @@ rule add_idx:
         """
         samtools index {input.bam}
         """
-
-
