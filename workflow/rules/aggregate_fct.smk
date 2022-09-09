@@ -1,58 +1,3 @@
-# def aggregate_phased_haps(wildcards):
-#     with checkpoints.determine_sex_per_cell.get(
-#         sample=wildcards.sample, output_folder=config["output_location"]
-#     ).output.sex_analysis_samplewise.open() as f:
-#         sex = f.read().strip().split("\t")[1]
-#         if sex == "M":
-#             config["chromosomes"] = [
-#                 c for c in config["chromosomes"] if c not in ["chrX", "chrY"]
-#             ]
-#         elif sex == "F":
-#             config["chromosomes"] = [
-#                 c for c in config["chromosomes"] if c not in ["chrY"]
-#             ]
-#         return expand(
-#             "{{output_folder}}/strandphaser/{{sample}}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt",
-#             chrom=config["chromosomes"],
-#         )
-
-
-# def aggregate_vcf_gz(wildcards):
-#     with checkpoints.determine_sex_per_cell.get(
-#         sample=wildcards.sample, output_folder=config["output_location"]
-#     ).output.sex_analysis_samplewise.open() as f:
-#         sex = f.read().strip().split("\t")[1]
-#         if sex == "M":
-#             config["chromosomes"] = [
-#                 c for c in config["chromosomes"] if c not in ["chrX", "chrY"]
-#             ]
-#         elif sex == "F":
-#             config["chromosomes"] = [
-#                 c for c in config["chromosomes"] if c not in ["chrY"]
-#             ]
-#         return expand(
-#             "{{output_folder}}/strandphaser/{{sample}}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz",
-#             chrom=config["chromosomes"],
-#         )
-
-
-# def aggregate_vcf_gz_tbi(wildcards):
-#     with checkpoints.determine_sex_per_cell.get(
-#         sample=wildcards.sample, output_folder=config["output_location"]
-#     ).output.sex_analysis_samplewise.open() as f:
-#         sex = f.read().strip().split("\t")[1]
-#         if sex == "M":
-#             config["chromosomes"] = [
-#                 c for c in config["chromosomes"] if c not in ["chrX", "chrY"]
-#             ]
-#         elif sex == "F":
-#             config["chromosomes"] = [
-#                 c for c in config["chromosomes"] if c not in ["chrY"]
-#             ]
-#         return expand(
-#             "{{output_folder}}/strandphaser/{{sample}}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz.tbi",
-#             chrom=config["chromosomes"],
-#         )
 def aggregate_phased_haps(wildcards):
     df = pd.read_csv(
         checkpoints.summarise_ploidy.get(
@@ -145,19 +90,12 @@ def aggregate_cells_segmentation(wildcards):
     )
     cell_list = df.cell.tolist()
 
-    return [
-        sub_e
-        for e in [
-            expand(
-                "{output_folder}/segmentation/{sample}/segmentation-per-cell/{cell}.txt",
-                output_folder=config["output_location"],
-                sample=samples,
-                cell=cell_list,
-            )
-            for sample in samples
-        ]
-        for sub_e in e
-    ]
+    return expand(
+        "{output_folder}/segmentation/{sample}/segmentation-per-cell/{cell}.txt",
+        output_folder=config["output_location"],
+        sample=wildcards.sample,
+        cell=cell_list,
+    )
 
 
 def aggregate_cells_count_plot(wildcards):
@@ -185,17 +123,10 @@ def aggregate_cells_count_plot(wildcards):
     for s in tmp_dict.keys():
         tmp_dict[s][0] = "SummaryPage"
 
-    return [
-        sub_e
-        for e in [
-            expand(
-                "{output_folder}/plots/{sample}/counts/{cell}.{i}.pdf",
-                output_folder=config["output_location"],
-                sample=samples,
-                cell=cell_list,
-                i=tmp_dict[i],
-            )
-            for sample in samples
-        ]
-        for sub_e in e
-    ]
+    return expand(
+        "{output_folder}/plots/{sample}/counts/{cell}.{i}.pdf",
+        output_folder=config["output_location"],
+        sample=wildcards.sample,
+        cell=cell_list,
+        i=tmp_dict[i],
+    )

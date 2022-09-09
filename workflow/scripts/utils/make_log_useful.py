@@ -1,6 +1,7 @@
 import sys, os
 
 
+
 def make_log_useful(log_path, status):
 
     error_buffer = []
@@ -25,7 +26,7 @@ def make_log_useful(log_path, status):
             else:
                 continue
 
-    with open(log_path_out, "w") as logfile:
+    with open(log_path, "w") as logfile:
         _ = logfile.write("\n".join(error_buffer))
         _ = logfile.write("\n\n")
 
@@ -40,6 +41,9 @@ def make_log_useful(log_path, status):
         _ = logfile.write("Screen: {}\n".format(my_env.get("STY", "N/A")))
         _ = logfile.write("Conda ENV: {}\n".format(my_env.get("CONDA_DEFAULT_ENV", "N/A")))
         _ = logfile.write("\n")
+
     return
 
 
+# if __name__ == "__main__":
+#     make_log_useful(sys.argv[1], sys.argv[2], sys.argv[3])

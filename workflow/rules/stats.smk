@@ -28,13 +28,20 @@ rule summary_statistics:
 
 rule aggregate_summary_statistics:
     input:
-        tsv=expand(
-            "{output_folder}/stats/{sample}/{method}_filter{filter}.tsv",
-            output_folder=config["output_location"],
-            method=config["methods"],
-            filter=["TRUE", "FALSE"],
-            sample=samples,
-        ),
+        tsv=[
+            sub_e
+            for e in [
+                expand(
+                    "{output_folder}/stats/{sample}/{method}_filter{filter}.tsv",
+                    output_folder=config["output_location"],
+                    sample=samples,
+                    method=method,
+                    filter=config["methods"][method]["filter"],
+                )
+                for method in config["methods"]
+            ]
+            for sub_e in e
+        ],
     output:
         # tsv=report("stats/{sample}/stats-merged.tsv", category="Stats", labels={"Type" : "Complete stats"})
         tsv="{output_folder}/stats/{sample}/stats-merged.tsv",

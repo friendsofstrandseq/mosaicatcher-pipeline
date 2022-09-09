@@ -2,7 +2,7 @@
 #   MOSAICATCHER CONFIGURATION FILE.  #
 #######################################
 
-mail: ""
+email: ""
 
 #######################################
 ## Command-line options
@@ -27,24 +27,26 @@ dl_bam_example: False
 ### Enable / Disable download of external files (1000G SNV & Fasta ref genome)
 dl_external_files: False
 
+normalized_counts: False
+
 ## Input BAM location
-input_bam_location: ".tests/data_CHR21"
+input_bam_location: ".tests/data_CHR17"
 ## Output location
-output_location: ".tests/output_CHR21"
+output_location: ".tests/output_CHR17"
 
 reference: "hg38"
 
 references_data:
   "hg38":
-    reference_fasta: ".tests/external_data/chr21.fna"
+    reference_fasta: ".tests/external_data/chr17.fa.gz"
     R_reference: "BSgenome.Hsapiens.UCSC.hg38"
     segdups: "workflow/data/segdups/segDups_hg38_UCSCtrack.bed.gz"
-    snv_sites_to_genotype: ".tests/external_data/1000G_chr21.vcf.gz"
-    # snv_sites_to_genotype: ""
+    # snv_sites_to_genotype: ".tests/external_data/1000G_chr21.vcf.gz"
+    snv_sites_to_genotype: ""
 
 # Chromosomes list to process
 chromosomes:
-  - chr21
+  - chr17
 
 ##############################
 # Advanced configuration.  #
@@ -103,14 +105,6 @@ filter:
   - TRUE
   - FALSE
 
-plottype_consistency:
-  - "byaf"
-  - "bypos"
-
-plottype_clustering:
-  - "position"
-  - "chromosome"
-
 ## BPDENS
 ### JOINT SEG
 min_diff_jointseg: 0.1
@@ -123,6 +117,7 @@ sce_min_distance: 500000
 
 abs_path: "/"
 
+## Methods dictionnary
 methods:
   lenient:
     method_name: "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0_regfactor6_filterFALSE"
@@ -131,7 +126,7 @@ methods:
     haplotags: TRUE
     gtcutoff: 0
     regfactor: 6
-    filter: FALSE
+    filter: "FALSE"
 
   stringent:
     method_name: "simpleCalls_llr4_poppriorsTRUE_haplotagsFALSE_gtcutoff0.05_regfactor6_filterTRUE"
@@ -140,4 +135,12 @@ methods:
     haplotags: TRUE
     gtcutoff: 0.05
     regfactor: 6
-    filter: TRUE
+    filter: "TRUE"
+
+plottype_consistency:
+  - "byaf"
+  - "bypos"
+
+plottype_clustering:
+  - "position"
+  # - "chromosome"

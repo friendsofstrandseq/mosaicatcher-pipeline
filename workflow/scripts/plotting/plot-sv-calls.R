@@ -214,6 +214,8 @@ if (!is.null(f_segments)) {
 
   # FIXME : tmp
   seg <- seg[seg$chrom %in% chroms, ]
+  seg <- seg[seg$bps > 0, ] # SOLVE T2T ISSUE
+
   # print(seg)
 
   assert_that(

@@ -9,7 +9,8 @@ envvars:
     "LC_CTYPE",
 
 
-bam = True if config["ashleys_pipeline"] is False else True
+bam = True if config["ashleys_pipeline"] is False else False
+
 
 # Create configuration file with samples
 c = handle_input.HandleInput(
@@ -143,20 +144,19 @@ def get_mem_mb_heavy(wildcards, attempt):
 
 def onsuccess_fct(wildcards):
     print("Workflow finished, no error")
-    make_log_useful.make_log_useful(log, "SUCCESS")
+    make_log_useful.make_log_useful(log, "SUCCESS", config["ouput_location", samples])
 
-    shell('mail -s "[Snakemake] DGA - SUCCESS" {} < {{log}}'.format(config["mail"]))
+    shell('mail -s "[Snakemake] DGA - SUCCESS" {} < {{log}}'.format(config["email"]))
 
 
 def onerror_fct(wildcards):
     print("An error occurred")
     make_log_useful.make_log_useful(log, "ERROR")
 
-    shell('mail -s "[Snakemake] DGA - ERRROR" {} < {{log}}'.format(config["mail"]))
+    shell('mail -s "[Snakemake] DGA - ERRROR" {} < {{log}}'.format(config["email"]))
 
 
 def get_all_plots(wildcards):
-    import pandas as pd
 
     df = pd.read_csv(
         checkpoints.filter_bad_cells_from_mosaic_count.get(
@@ -221,7 +221,7 @@ def get_all_plots(wildcards):
                     output_folder=config["output_location"],
                     sample=samples,
                     method=method,
-                    plottype=["position"],
+                    plottype=config["plottype_consistency"],
                     filter=config["methods"][method]["filter"],
                 )
                 for method in config["methods"]
@@ -238,8 +238,7 @@ def get_all_plots(wildcards):
                     output_folder=config["output_location"],
                     sample=samples,
                     method=method,
-                    # plottype=config["plottype_clustering"],
-                    plottype=["position"],
+                    plottype=config["plottype_clustering"],
                     filter=config["methods"][method]["filter"],
                 )
                 for method in config["methods"]
@@ -252,7 +251,7 @@ def get_all_plots(wildcards):
             sub_e
             for e in [
                 expand(
-                    "{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}_filter{filter}.tsv",
+                    "{output_folder}/mosaiclassifier/complex/{sample}/{method}_filter{filter}.tsv",
                     output_folder=config["output_location"],
                     sample=samples,
                     method=method,
@@ -273,6 +272,13 @@ def get_all_plots(wildcards):
     list_indiv_plots.extend(
         expand(
             "{output_folder}/stats/{sample}/stats-merged.tsv",
+            output_folder=config["output_location"],
+            sample=samples,
+        ),
+    )
+    list_indiv_plots.extend(
+        expand(
+            "{output_folder}/config/{sample}/run_summary.txt",
             output_folder=config["output_location"],
             sample=samples,
         ),
