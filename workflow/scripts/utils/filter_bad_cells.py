@@ -2,6 +2,8 @@ import subprocess
 import pandas as pd
 import sys, os
 
+# snakemake_log = open(snakemake.log[0], "w")
+
 # Prepare header of info files
 subprocess.call("grep '^#' {} > {}".format(snakemake.input.info_raw, snakemake.output.info), shell=True)
 subprocess.call("grep '^#' {} > {}".format(snakemake.input.info_raw, snakemake.output.info_removed), shell=True)
@@ -14,13 +16,14 @@ labels_path = snakemake.input.labels
 labels = pd.read_csv(labels_path, sep="\t")
 
 
-print(labels)
+# snakemake_log.write(labels.to_str())
 
 b_ashleys = "ENABLED" if snakemake.config["ashleys_pipeline"] is True else "DISABLED"
 b_old = "ENABLED" if snakemake.config["input_old_behavior"] is True else "DISABLED"
-print("ASHLEYS preprocessing module: {}".format(b_ashleys))
-print("input_old_behavior parametr: {}".format(b_old))
-print("Computing intersection between lists ...")
+
+# snakemake_log.write("ASHLEYS preprocessing module: {}".format(b_ashleys))
+# snakemake_log.write("input_old_behavior parameter: {}".format(b_old))
+# snakemake_log.write("Computing intersection between lists ...")
 
 # IF BOTH MOSAIC INFO FILE & LABELS DF ARE AVAILABLE + SAME SIZE
 if labels.shape[0] == df.shape[0]:
@@ -37,7 +40,7 @@ else:
 
     # ELSE NORMAL MODE
     else:
-        print("Standard mode using only 'mosaic count info' file")
+        # snakemake_log.write("Standard mode using only 'mosaic count info' file")
         cells_to_keep = df.loc[df["pass1"] == 1]["cell"].unique().tolist()
 
 
@@ -45,8 +48,14 @@ else:
 df_kept = df.loc[df["cell"].isin(cells_to_keep)]
 df_removed = df.loc[~df["cell"].isin(cells_to_keep)]
 
+# snakemake_log.write("List of cells kept: ")
+# for cell in sorted(cells_to_keep):
+#     snakemake_log.write("- {cell}".format(cell=cell))
 
-print(sorted(cells_to_keep))
+# snakemake_log.write("List of cells removed:")
+# for cell in sorted(df_removed["cell"].values.tolist()):
+#     snakemake_log.write("- {cell}".format(cell=cell))
+
 
 df_counts = pd.read_csv(snakemake.input.counts_sort, compression="gzip", sep="\t")
 df_counts = df_counts.loc[df_counts["cell"].isin(cells_to_keep)]

@@ -16,7 +16,7 @@ if (length(args)!=3) {
 
 # Read counts
 message(" * Reading counts from ", args[1])
-counts = fread(paste("zcat",args[1]))
+counts = fread(paste("zcat", args[1]))
 assert_that(is.data.table(counts),
             "chrom"  %in% colnames(counts),
             "start"  %in% colnames(counts),

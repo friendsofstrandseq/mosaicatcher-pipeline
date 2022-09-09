@@ -4,13 +4,8 @@ rule haplotag_bams:
         vcf="{output_folder}/strandphaser/phased-snvs/{sample}.vcf.gz",
         tbi="{output_folder}/strandphaser/phased-snvs/{sample}.vcf.gz.tbi",
         bam=lambda wc: expand(
-            "{input_folder}/{sample}/all/{cell}.sort.mdup.bam",
-            zip,
+            "{input_folder}/{{sample}}/all/{{cell}}.sort.mdup.bam",
             input_folder=config["input_bam_location"],
-            sample=samples,
-            cell=bam_per_sample_local[str(wc.sample)]
-            if wc.sample in bam_per_sample_local
-            else "FOOBAR",
         ),
         fasta=config["references_data"][config["reference"]]["reference_fasta"],
         fasta_index="{fasta}.fai".format(
@@ -63,7 +58,7 @@ rule create_haplotag_table:
     conda:
         "../envs/rtools.yaml"
     resources:
-        mem_mb=get_mem_mb,
+        mem_mb=get_mem_mb_heavy,
     script:
         "../scripts/haplotagging_scripts/haplotagTable.snakemake.R"
 

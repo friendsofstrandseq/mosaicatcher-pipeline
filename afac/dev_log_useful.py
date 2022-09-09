@@ -1,8 +1,4 @@
-import sys, os
-
-
-
-def make_log_useful(log_path, status):
+def make_log_useful(log_path, status, output_folder=str(), samples=list()):
 
     error_buffer = []
     record = 0
@@ -41,6 +37,13 @@ def make_log_useful(log_path, status):
         _ = logfile.write("Screen: {}\n".format(my_env.get("STY", "N/A")))
         _ = logfile.write("Conda ENV: {}\n".format(my_env.get("CONDA_DEFAULT_ENV", "N/A")))
         _ = logfile.write("\n")
+
+        if status == "SUCCESS":
+            filenames = ["{output_folder}/config/{sample}/run_summary.txt".format(output_folder=output_folder, sample=s) for s in samples]
+            with open(log_path, "a") as outfile:
+                for fname in filenames:
+                    with open(fname) as infile:
+                        outfile.write(infile.read())
 
     return
 
