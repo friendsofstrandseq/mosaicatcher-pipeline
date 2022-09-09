@@ -108,9 +108,12 @@ workflow/test.txt
 .tests/data/RPE-BM510/selected_PE/
 
 ## DATA CHR21
-.tests/data_CHR21/RPE-BM510/all/*.bai
+.tests/data_CHR17/RPE-BM510/all/*.bai
 .tests/data_CHR21/RPE-BM510/all/*.bam
-.tests/data_CHR21/RPE-BM510/all/*.log
+.tests/data_CHR17/RPE-BM510/all/*.log
+.tests/data_CHR17/config/
+.tests/data_CHR17/RPE-BM510/cell_selection/
+.tests/data_CHR17/RPE-BM510/predictions/
 
 .tests/data_CHR21/RPE-BM510/predictions/
 .tests/data_CHR21/RPE-BM510/cell_selection/

@@ -1,4 +1,4 @@
-name: /g/korbel2/weber/workspace/mosaicatcher-update/workflow/.snakemake/conda/a0750cd705d2e9eb66e85974e35d9692
+name: rtools
 channels:
   - anaconda
   - bioconda

@@ -31,4 +31,4 @@ rerun-incomplete: True
 
 use-conda: true
 conda-frontend: "conda"
-# use-singularity: true
+use-singularity: false

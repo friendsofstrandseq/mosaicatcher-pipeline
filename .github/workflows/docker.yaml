@@ -24,7 +24,7 @@ jobs:
           image: ${{ env.IMAGE_NAME }}
           tags: ${{ steps.vars.outputs.tag }}
           dockerfiles: |
-            ./github-actions-runner/Dockerfile
+            ./github-actions-runner/Dockerfile_complete.dockerfile
       - name: Push To DockerHub
         id: push-to-dockerhub
         uses: redhat-actions/push-to-registry@v2
