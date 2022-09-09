@@ -256,4 +256,5 @@ jobs:
         with:
           directory: .
           snakefile: ./workflow/Snakefile
+          stagein: "conda config --set channel_priority flexible"
           args: "--cores 1  --use-conda --conda-frontend mamba --config dl_external_files=True reference=T2T -p --verbose --debug"
