@@ -28,7 +28,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Linting
-        uses: snakemake/snakemake-github-action@v1.23.0
+        uses: snakemake/snakemake-github-action@v1.24.0
         with:
           directory: .
           snakefile: ./workflow/Snakefile
@@ -41,14 +41,14 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Testing data
-        uses: snakemake/snakemake-github-action@v1.23.0
+        uses: snakemake/snakemake-github-action@v1.24.0
         with:
           directory: .
           snakefile: ./workflow/Snakefile
           stagein: "conda config --set channel_priority flexible"
           args: "--cores 1 --use-conda --configfile .tests/config/simple_config.yaml --conda-frontend mamba -p --verbose --debug"
       - name: Testing report
-        uses: snakemake/snakemake-github-action@v1.23.0
+        uses: snakemake/snakemake-github-action@v1.24.0
         with:
           directory: .
           snakefile: ./workflow/Snakefile
@@ -61,14 +61,14 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Testing data
-        uses: snakemake/snakemake-github-action@v1.23.0
+        uses: snakemake/snakemake-github-action@v1.24.0
         with:
           directory: .
           snakefile: ./workflow/Snakefile
           stagein: "conda config --set channel_priority flexible"
           args: "--cores 1 --use-conda --configfile .tests/config/simple_config.yaml --config normalized_counts=True --conda-frontend mamba -p --verbose --debug"
       - name: Testing report
-        uses: snakemake/snakemake-github-action@v1.23.0
+        uses: snakemake/snakemake-github-action@v1.24.0
         with:
           directory: .
           snakefile: ./workflow/Snakefile
@@ -81,14 +81,14 @@ jobs:
   #   steps:
   #     - uses: actions/checkout@v2
   #     - name: Testing data
-  #       uses: snakemake/snakemake-github-action@v1.23.0
+  #       uses: snakemake/snakemake-github-action@v1.24.0
   #       with:
   #         directory: .
   #         snakefile: ./workflow/Snakefile
   #         stagein: "conda config --set channel_priority flexible"
   #         args: "--cores 1 --use-conda --configfile .tests/config/simple_config_wt_1000G.yaml --conda-frontend mamba -p --verbose --debug"
   #     - name: Testing report
-  #       uses: snakemake/snakemake-github-action@v1.23.0
+  #       uses: snakemake/snakemake-github-action@v1.24.0
   #       with:
   #         directory: .
   #         snakefile: ./workflow/Snakefile
@@ -101,14 +101,14 @@ jobs:
   #   steps:
   #     - uses: actions/checkout@v2
   #     - name: Testing data
-  #       uses: snakemake/snakemake-github-action@v1.23.0
+  #       uses: snakemake/snakemake-github-action@v1.24.0
   #       with:
   #         directory: .
   #         snakefile: ./workflow/Snakefile
   #         stagein: "conda config --set channel_priority flexible"
   #         args: "--cores 1 --use-conda --configfile .tests/config/simple_config_wt_1000G.yaml --conda-frontend mamba -p --verbose --debug"
   #     - name: Testing report
-  #       uses: snakemake/snakemake-github-action@v1.23.0
+  #       uses: snakemake/snakemake-github-action@v1.24.0
   #       with:
   #         directory: .
   #         snakefile: ./workflow/Snakefile
@@ -119,7 +119,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Linting
-        uses: snakemake/snakemake-github-action@v1.23.0
+        uses: snakemake/snakemake-github-action@v1.24.0
         with:
           directory: .
           snakefile: ./workflow/Snakefile
@@ -132,14 +132,14 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Testing data
-        uses: snakemake/snakemake-github-action@v1.23.0
+        uses: snakemake/snakemake-github-action@v1.24.0
         with:
           directory: .
           snakefile: ./workflow/Snakefile
           stagein: "conda config --set channel_priority flexible"
           args: "--cores 1 --use-conda --configfile .tests/config/simple_config.yaml --config ashleys_pipeline=True use_light_data=True --conda-frontend mamba -p --verbose --debug"
       - name: Testing report
-        uses: snakemake/snakemake-github-action@v1.23.0
+        uses: snakemake/snakemake-github-action@v1.24.0
         with:
           directory: .
           snakefile: ./workflow/Snakefile
@@ -152,14 +152,14 @@ jobs:
   #   steps:
   #     - uses: actions/checkout@v2
   #     - name: Testing data
-  #       uses: snakemake/snakemake-github-action@v1.23.0
+  #       uses: snakemake/snakemake-github-action@v1.24.0
   #       with:
   #         directory: .
   #         snakefile: ./workflow/Snakefile
   #         stagein: "conda config --set channel_priority flexible"
   #         args: "--cores 1 --use-conda --configfile .tests/config/simple_config_wt_1000G.yaml --config ashleys_pipeline=True use_light_data=True --conda-frontend mamba -p --verbose --debug"
   #     - name: Testing report
-  #       uses: snakemake/snakemake-github-action@v1.23.0
+  #       uses: snakemake/snakemake-github-action@v1.24.0
   #       with:
   #         directory: .
   #         snakefile: ./workflow/Snakefile
@@ -172,14 +172,14 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Testing data
-        uses: snakemake/snakemake-github-action@v1.23.0
+        uses: snakemake/snakemake-github-action@v1.24.0
         with:
           directory: .
           snakefile: ./workflow/Snakefile
           stagein: "conda config --set channel_priority flexible"
           args: "--cores 1 --use-conda --configfile .tests/config/simple_config.yaml --config ashleys_pipeline=True use_light_data=True normalized_counts=True --conda-frontend mamba -p --verbose --debug"
       - name: Testing report
-        uses: snakemake/snakemake-github-action@v1.23.0
+        uses: snakemake/snakemake-github-action@v1.24.0
         with:
           directory: .
           snakefile: ./workflow/Snakefile
@@ -192,14 +192,14 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Testing data
-        uses: snakemake/snakemake-github-action@v1.23.0
+        uses: snakemake/snakemake-github-action@v1.24.0
         with:
           directory: .
           snakefile: ./workflow/Snakefile
           stagein: "conda config --set channel_priority flexible"
           args: "--cores 1 --use-conda --configfile .tests/config/simple_config.yaml --config ashleys_pipeline=True use_light_data=True hand_selection=True --conda-frontend mamba -p --verbose --debug"
       - name: Testing report
-        uses: snakemake/snakemake-github-action@v1.23.0
+        uses: snakemake/snakemake-github-action@v1.24.0
         with:
           directory: .
           snakefile: ./workflow/Snakefile
@@ -212,7 +212,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Downloading_example_data
-        uses: snakemake/snakemake-github-action@v1.23.0
+        uses: snakemake/snakemake-github-action@v1.24.0
         with:
           directory: .
           snakefile: ./workflow/Snakefile
@@ -226,7 +226,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Downloading_hg19
-        uses: snakemake/snakemake-github-action@v1.23.0
+        uses: snakemake/snakemake-github-action@v1.24.0
         with:
           directory: .
           snakefile: ./workflow/Snakefile
@@ -239,7 +239,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Downloading_hg38
-        uses: snakemake/snakemake-github-action@v1.23.0
+        uses: snakemake/snakemake-github-action@v1.24.0
         with:
           directory: .
           snakefile: ./workflow/Snakefile
@@ -252,7 +252,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Downloading_T2T
-        uses: snakemake/snakemake-github-action@v1.23.0
+        uses: snakemake/snakemake-github-action@v1.24.0
         with:
           directory: .
           snakefile: ./workflow/Snakefile
