@@ -32,8 +32,8 @@ All these arguments can be specified in two ways:
 
 | Parameter           | Comment                                                                                                                                  | Default |
 | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| `plot`              | *Enable* or *disable* the plots generation                                                                                               | True    |
-| `check_sm_tag`      | Based on pysam, will compare for each BAM file, if the header SM tag is identical to the folder name in order to prevent further issues. | True    |
+| `plot`              | _Enable_ or _disable_ the plots generation                                                                                               | True    |
+| `check_sm_tag`      | Based on pysam, will compare for each BAM file, if the header SM tag is identical to the folder name in order to prevent further issues. | False   |
 | `dl_bam_example`    | Allow to retrieve automatically BAM fullsize example data.                                                                               | False   |
 | `dl_external_files` | Allow to retrieve automatically external files (GRCh38 reference genome + 1000G SNV VCF file) required to run the pipeline.              | False   |
 
@@ -55,7 +55,7 @@ All these arguments can be specified in two ways:
 | `min_diff_singleseg`    | Minimum difference in error term to include another breakpoint in the single-cell segmentation (default=1) | 0.5           |
 | `additional_sce_cutoff` | Minimum gain in mismatch distance needed to add an additional SCE                                          | 20000000      |
 | `sce_min_distance`      | Minimum distance of an SCE to a break in the joint segmentation                                            | 500000        |
-| `llr`                   | Likelihood ratio used to  detect SV calls                                                                  | 4             |
+| `llr`                   | Likelihood ratio used to detect SV calls                                                                   | 4             |
 | `poppriors`             |                                                                                                            |               |
 | `haplotags`             |                                                                                                            |               |
 | `gtcutoff`              |                                                                                                            |               |
@@ -63,14 +63,13 @@ All these arguments can be specified in two ways:
 | `filter`                |                                                                                                            |               |
 | `chromosomes`           | List of chromosomes to be processed in the pipeline                                                        | chr1..22,chrX |
 
-
 ### Execution profile
 
-| Parameter                  | Comment | Conda | Singularity | HPC | Local |
-| -------------------------- | ------- | ----- | ----------- | --- | ----- |
-| local/conda                | /       | X     |             |     | X     |
-| local/conda_singularity    | /       | X     | X           |     | X     |
-| slurm (optimised for EMBL) | /       | X     | X           | X   |       |
+| Parameter                      | Comment | Conda | Singularity | HPC | Local |
+| ------------------------------ | ------- | ----- | ----------- | --- | ----- |
+| local/conda                    | /       | X     |             |     | X     |
+| local/conda_singularity        | /       | X     | X           |     | X     |
+| slurm (optimised for EMBL HPC) | /       | X     |             | X   |       |
 
 ## Snakemake arguments
 
@@ -154,13 +153,3 @@ On seneca for example (EMBL), use `"/g:/g"` if you are working on `/g/korbel[2]`
 Obviously, all other [snakemake CLI options](https://snakemake.readthedocs.io/en/stable/executing/cli.html) can also be used.
 
 ---
-
-### Modes of execution [Currently not usable]
-
-MosaiCatcher currently supports three different modes of execution : `count`, `segmentation` and `mosaiclassifier`.
-
-| Mode                   | Comment                                                                          | Default |
-| ---------------------- | -------------------------------------------------------------------------------- | ------- |
-| `mode=count`           | `Mosaic count` binning and count reads for each bin produced                     |         |
-| `mode=segmentation`    | `Mosaic segmentation` and selection of the correct segments                      |         |
-| `mode=mosaiclassifier` | Complete pipeline until the detection of SV in each selected cell of the samples | X       |

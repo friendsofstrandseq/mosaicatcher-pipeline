@@ -3,9 +3,6 @@ name: mosaicatcher-pipeline workflow checks
 on:
   push:
     branches:
-      - master
-      - smk_wf_catalog
-      - ref_genomes
       - dev
 
 jobs:
