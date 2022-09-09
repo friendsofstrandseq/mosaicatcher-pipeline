@@ -162,18 +162,6 @@ if (
             Rscript workflow/scripts/normalization/normalize.R {input.counts} {input.norm} {output} 2>&1 > {log}
             """
 
-rule sort_counts:
-    input:
-        "{output_folder}/counts/{sample}/{sample}.txt.gz",
-    output:
-        "{output_folder}/counts/{sample}/{sample}.txt.sort.gz",
-    log:
-        "{output_folder}/log/sort_counts/{sample}.log",
-    conda:
-        "../envs/mc_base.yaml"
-    script:
-        "../scripts/utils/sort_counts.py"
-
 
 else:
 
@@ -188,6 +176,19 @@ else:
             "../envs/mc_base.yaml"
         shell:
             "cp {input} {output}"
+
+
+rule sort_counts:
+    input:
+        "{output_folder}/counts/{sample}/{sample}.txt.gz",
+    output:
+        "{output_folder}/counts/{sample}/{sample}.txt.sort.gz",
+    log:
+        "{output_folder}/log/sort_counts/{sample}.log",
+    conda:
+        "../envs/mc_base.yaml"
+    script:
+        "../scripts/utils/sort_counts.py"
 
 
 rule extract_single_cell_counts:
