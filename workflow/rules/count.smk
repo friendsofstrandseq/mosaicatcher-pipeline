@@ -111,6 +111,8 @@ checkpoint filter_bad_cells_from_mosaic_count:
         counts="{output_folder}/counts/{sample}/{sample}.txt.filter.gz",
     log:
         "{output_folder}/log/filter_bad_cells_from_mosaic_count/{sample}.log",
+    conda:
+        "../envs/mc_base.yaml"
     script:
         "../scripts/utils/filter_bad_cells.py"
 
