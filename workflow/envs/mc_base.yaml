@@ -1,4 +1,4 @@
-name: /g/korbel2/weber/workspace/mosaicatcher-update/workflow/.snakemake/conda/15669709dccb721325e7840e7384f47f
+name: mc_base
 channels:
   - bioconda
   - conda-forge

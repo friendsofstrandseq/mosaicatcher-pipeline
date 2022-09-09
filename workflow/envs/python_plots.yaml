@@ -1,4 +1,4 @@
-name: /g/korbel2/weber/workspace/mosaicatcher-update/workflow/.snakemake/conda/117a93707f956e8f37a47c1d04a2bc45
+name: python_plots
 channels:
   - bioconda
   - conda-forge

@@ -21,7 +21,7 @@ git clone https://github.com/friendsofstrandseq/mosaicatcher-pipeline.git && cd 
 ```bash
 # Snakemake Profile: if singularity installed: workflow/profiles/local/conda_singularity/
 # Snakemake Profile: if singularity NOT installed: workflow/profiles/local/conda/
-snakemake --cores 6 --configfile .tests/config/simple_config.yaml --profile workflow/profiles/local/conda_singularity/
+snakemake --cores 6 --configfile .tests/config/simple_config.yaml --profile workflow/profiles/local/conda/
 ```
 
 4. Generate report on example data
@@ -34,7 +34,7 @@ snakemake --cores 6 --configfile .tests/config/simple_config.yaml --profile work
 
 Following commands show you an example using local execution (not HPC or cloud)
 
-1. Chose your reference (hg38 or hg19 ; T2T is coming soon) and download related data
+1. Chose your reference (hg38, hg19 or T2T) and download related data
 
 ```bash
 snakemake -c1 --config dl_external_files=True reference=hg38
@@ -45,7 +45,7 @@ snakemake -c1 --config dl_external_files=True reference=hg38
 ```bash
 snakemake \
     --cores <N> --config input_bam_location=<INPUT_DATA_FOLDER> output_location=<OUTPUT_DATA_FOLDER> \
-    --profile workflow/profiles/local/conda_singularity/
+    --profile workflow/profiles/local/conda/
 
 ```
 
@@ -54,7 +54,7 @@ snakemake \
 ```bash
 snakemake \
     --cores <N> --config input_bam_location=<INPUT_DATA_FOLDER> output_location=<OUTPUT_DATA_FOLDER> \
-    --profile workflow/profiles/local/conda_singularity/ \
+    --profile workflow/profiles/local/conda/ \
     --report <REPORT.zip>
 ```
 
@@ -71,7 +71,7 @@ Minimum system requirements vary based on the use case. We highly recommend runn
 
 ### 🐍 1. Mosaicatcher basic conda environment install
 
-MosaiCatcher leverages snakemake built-in features such as execution within container and conda predefined modular environments. That's why it is only necessary to create an environment that relies on [snakemake](https://github.com/snakemake/snakemake) (to execute the pipeline) and [pandas](https://github.com/pandas-dev/pandas) (to handle basic configuration). If you plan to generate HTML Web report including plots, it is also necessary to install [imagemagick](https://github.com/ImageMagick/ImageMagick). Finally, [pysam](https://pysam.readthedocs.io/en/latest/api.html) and [tqdm](https://github.com/tqdm/tqdm) are currently required to enable `check_sm_tag` feature that compare BAM SM tag to folder name.
+MosaiCatcher leverages snakemake built-in features such as execution within container and conda predefined modular environments. That's why it is only necessary to create an environment that relies on [snakemake](https://github.com/snakemake/snakemake) (to execute the pipeline) and [pandas](https://github.com/pandas-dev/pandas) (to handle basic configuration). If you plan to generate HTML Web report including plots, it is also necessary to install [imagemagick](https://github.com/ImageMagick/ImageMagick).
 
 If possible, it is also highly recommended to install and use `mamba` package manager instead of `conda`, which is much more efficient.
 
@@ -95,7 +95,7 @@ cd mosaicatcher-pipeline/workflow/
 #### 3A. Download external data automatically with snakemake [Optional]
 
 ```bash
-snakemake -c1 --config dl_external_files=True reference=[hg38|hg19] # T2T coming in the next release, mm10 soon
+snakemake -c1 --config dl_external_files=True reference=[hg38|hg19|T2T] # mm10 soon
 ```
 
 #### 3B. Strand-Seq BAM input data
@@ -112,7 +112,7 @@ Then, the following command will process the 18 cells (full BAM with all chromos
 
 ```bash
 snakemake -c6 --config input_bam_location=TEST_EXAMPLE_DATA output_location=TEST_OUTPUT \
-    --profile workflow/profiles/local/conda_singularity/
+    --profile workflow/profiles/local/conda/
 ```
 
 **Warning:** Download example data currently requires 3GB of free space disk.
@@ -256,7 +256,7 @@ After defining your configuration, you can launch the pipeline the following way
 ```bash
 snakemake \
     --cores <N> \
-    --profile workflow/profiles/local/conda_singularity/
+    --profile workflow/profiles/local/conda/
 ```
 
 Otherwise, you must specify your input and output folder like the following:
@@ -267,7 +267,7 @@ snakemake \
     --config \
         input_bam_location=<INPUT_FOLDER> \
         output_location=<OUTPUT_FOLDER> \
-    --profile workflow/profiles/local/conda_singularity/ --singularity-args "-B /<mounting_point>:/<mounting_point>"
+    --profile workflow/profiles/local/conda/ --singularity-args "-B /<mounting_point>:/<mounting_point>"
 ```
 
 ---
