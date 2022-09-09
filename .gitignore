@@ -118,7 +118,7 @@ workflow/test.txt
 ## DATA EXCEPTIONS
 !.tests/data_CHR17/RPE-BM510/fastq/*.fastq.gz
 !.tests/data_CHR17/RPE-BM510/all/BM*.sort.mdup.bam
-# !.tests/external_data/1000G_chr21.vcf.gz
+!.tests/external_data/chr17.fa.gz
 
 # Dev
 discover_big_files_git.sh
