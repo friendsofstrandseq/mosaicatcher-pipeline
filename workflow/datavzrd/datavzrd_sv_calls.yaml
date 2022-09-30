@@ -1,0 +1,121 @@
+name: SV calls
+datasets:
+  svcalls:
+    path: "/g/korbel2/weber/workspace/mosaicatcher-update/.tests/output_BM510_test/mosaiclassifier/sv_calls/RPE-BM510/stringent_filterTRUE.tsv"
+    separator: "\t"
+default-view: SV_calls
+views:
+  SV_calls:
+    dataset: svcalls
+    desc: |
+      ### SV Calls from MosaiCatcher
+    page-size: 50
+    render-table:
+      # index(0):
+      #   display-mode: hidden
+      regex('.*_2nd'):
+        display-mode: detail
+      af:
+        plot:
+          ticks:
+            scale: linear
+            domain:
+              - 0.0
+              - 0.5
+              - 1.0
+      class:
+        plot:
+          heatmap: 
+            scale: ordinal
+            domains:
+              - "WW"
+              - "CC"
+              - "WC"
+              - "CW"
+            range:
+              - "#f4a361"
+              - "#668b8a"
+              - "#f0e68c"
+              - "#f0e68c"
+      sv_call_name:
+        plot:
+          heatmap:
+            scale: ordinal
+            domain:
+              - dup_hom
+              - dup_h1
+              - dup_h2
+              - del_hom
+              - del_h1
+              - del_h2
+              - inv_hom
+              - inv_h1
+              - inv_h2
+              - idup_h1
+              - idup_h2
+            range:
+              - "#e19898"
+              - "#ffd7d7"
+              - "#dfbfbf"
+              - "#4f78b6"
+              - "#adc7fd"
+              - "#91cef6"
+              - "#a3d490"
+              - "#d3ffbf"
+              - "#e6ffb4"
+              - "#f2be6d"
+              - "#e2c45f"
+      sv_call_haplotype: 
+        display-mode: hidden
+      num_bins: 
+        display-mode: detail
+      scalar: 
+        display-mode: hidden
+      llr_to_ref: 
+        display-mode: detail
+      af: 
+        custom: |
+          function(value, row) {
+            var m = Number((Math.abs(value) * 100).toPrecision(15));
+            return Math.round(m) / 100 * Math.sign(value);
+            }
+  SV_calls-plot:
+    dataset: svcalls
+    desc: |
+      All movies with its *runtime* and *ratings* plotted over *time*.
+    render-plot:
+      spec-path: "specs.json"
+  # oscar-plot:
+  #   dataset: oscars
+  #   desc: |
+  #     ## My beautiful oscar scatter plot
+  #     *So many great actors and actresses*
+  #   render-plot:
+  #     spec-path: ".examples/specs/oscars.vl.json"
+  # movies:
+  #   dataset: movies
+  #   render-table:
+  #     Genre:
+  #       ellipsis: 15
+  #     imdbID:
+  #       link-to-url: "https://www.imdb.com/title/{value}/"
+  #     Title:
+  #       link-to-url: "https://de.wikipedia.org/wiki/{value}"
+  #     imdbRating:
+  #       plot:
+  #         ticks:
+  #           scale: linear
+  #           domain:
+  #             - 1
+  #             - 10
+  #     Rated:
+  #       plot:
+  #         heatmap:
+  #           scale: ordinal
+  #           color-scheme: accent
+  # movies-plot:
+  #   dataset: movies
+  #   desc: |
+  #     All movies with its *runtime* and *ratings* plotted over *time*.
+  #   render-plot:
+  #     spec-path: ".examples/specs/movies.vl.json"
