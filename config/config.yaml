@@ -106,6 +106,10 @@ methods:
     regfactor: 6
     filter: "TRUE"
 
+plottype_counts:
+  - "classic"
+  - "GC_corrected"
+
 plottype_consistency:
   - "byaf"
   - "bypos"

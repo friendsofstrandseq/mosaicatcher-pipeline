@@ -271,6 +271,28 @@ def get_all_plots(wildcards):
     )
     list_indiv_plots.extend(
         expand(
+            "{output_folder}/plots/{sample}/alfred/gc_devi.png",
+            output_folder=config["output_location"],
+            sample=samples,
+        ),
+    )
+    list_indiv_plots.extend(
+        expand(
+            "{output_folder}/plots/{sample}/alfred/gc_dist.png",
+            output_folder=config["output_location"],
+            sample=samples,
+        ),
+    )
+    list_indiv_plots.extend(
+        expand(
+            "{output_folder}/plots/{sample}/counts/CountComplete.{plottype_counts}.pdf",
+            output_folder=config["output_location"],
+            sample=samples,
+            plottype_counts=config["plottype_counts"]
+        ),
+    )
+    list_indiv_plots.extend(
+        expand(
             "{output_folder}/stats/{sample}/stats-merged.tsv",
             output_folder=config["output_location"],
             sample=samples,

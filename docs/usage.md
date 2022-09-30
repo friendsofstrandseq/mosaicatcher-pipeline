@@ -4,11 +4,19 @@
 
 0. [Optional] Install [Singularity](https://www.sylabs.io/guides/3.0/user-guide/)
 
-1. Create a dedicated conda environment
+1. A. Create a dedicated conda environment
 
 ```bash
-conda create -n snakemake -c bioconda snakemake=7.5.0 && conda activate snakemake
+conda create -n snakemake -c bioconda -c conda-forge -c defaults snakemake=7.5.0
 ```
+
+1. B. Activate the dedicated conda environment
+
+```bash
+conda activate snakemake
+```
+
+**Reminder:** You will need to verify that this conda environment is activated and provide the right snakemake before each execution (`which snakemake` command should output like <FOLDER>/<USER>/[ana|mini]conda3/envs/snakemake/bin/snakemake)
 
 2. Clone the repository
 
@@ -212,7 +220,7 @@ From Mosaicatcher version ≥ 1.6.1, it is possible to use [ashleys-qc-pipeline 
 ```bash
 Parent_folder
 |-- Sample_1
-|   `-- all
+|   `-- fastq
 |       |-- Cell_01.1.fastq.gz
 |       |-- Cell_01.2.fastq.gz
 |       |-- Cell_02.1.fastq.gz
@@ -223,7 +231,7 @@ Parent_folder
 |       `-- Cell_04.2.fastq.gz
 |
 `-- Sample_2
-    `-- all
+    `-- fastq
         |-- Cell_21.1.fastq.gz
         |-- Cell_21.2.fastq.gz
         |-- Cell_22.1.fastq.gz
@@ -249,7 +257,7 @@ Informations and modes of execution can be found on the [ashleys-qc-pipeline doc
 
 ### ⚡️ 4. Run the pipeline
 
-#### Local execution (without batch scheduler)
+#### Local execution (without batch scheduler) using conda only
 
 After defining your configuration, you can launch the pipeline the following way if you downloaded BAM example data using 3A:
 
@@ -267,8 +275,38 @@ snakemake \
     --config \
         input_bam_location=<INPUT_FOLDER> \
         output_location=<OUTPUT_FOLDER> \
-    --profile workflow/profiles/local/conda/ --singularity-args "-B /<mounting_point>:/<mounting_point>"
+    --profile workflow/profiles/local/conda/
 ```
+
+#### Local execution (without batch scheduler) using singularity X conda
+
+After defining your configuration, you can launch the pipeline the following way if you downloaded BAM example data using 3A:
+
+```bash
+snakemake \
+    --cores <N> \
+    --profile workflow/profiles/local/conda/
+```
+
+Otherwise, you must specify your input and output folder like the following:
+
+```bash
+snakemake \
+    --cores <N> \
+    --config \
+        input_bam_location=<INPUT_FOLDER> \
+        output_location=<OUTPUT_FOLDER> \
+    --profile workflow/profiles/local/conda_singularity/ --singularity-args "-B /<mouting_point>:/<mounting_point>"
+```
+
+---
+
+**ℹ️ Note**
+
+It is possible to provide multiple mouting points between system and cointainer using as many `-B` as needed in the `singularity-args` command like the following: "-B /<mouting_point1>:/<mounting_point1> -B /<mouting_point2>:/<mounting_point2>"
+For EMBL users, this can be for example "-B /g:/g -B /scratch:/scratch"
+
+---
 
 ---
 
