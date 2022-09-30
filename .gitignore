@@ -156,3 +156,5 @@ TMP/
 # afac/ debugging & dev folder
 .cache/
 .config/
+
+.java/

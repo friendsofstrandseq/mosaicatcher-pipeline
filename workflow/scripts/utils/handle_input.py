@@ -24,7 +24,7 @@ class HandleInput:
         folder = "all" if bam is True else "fastq"
         complete_df_list = list()
         # print(thisdir)
-        for sample in [e for e in os.listdir(thisdir) if e not in ["config", "log", ".DS_Store", "._.DS_Store"]]:
+        for sample in [e for e in os.listdir(thisdir) if e not in ["config", "log", ".DS_Store", "._.DS_Store", "counts"]]:
             # print(thisdir, sample, folder, ext)
 
             # print("{thisdir}/{sample}/{folder}/".format(thisdir=thisdir, sample=sample, folder=folder))
