@@ -1,6 +1,7 @@
 rule alfred:
     input:
         merged_bam = "{output_folder}/merged_bam/{sample}/merged.bam",
+        merged_bam_bai = "{output_folder}/merged_bam/{sample}/merged.bam.bai",
         fasta=config["references_data"][config["reference"]]["reference_fasta"],
         fasta_index="{fasta}.fai".format(
             fasta=config["references_data"][config["reference"]]["reference_fasta"]
