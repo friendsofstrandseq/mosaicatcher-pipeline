@@ -11,6 +11,8 @@ input_bam_location: ".tests/data_CHR17"
 output_location: ".tests/output_CHR17"
 # Reference assembly selected
 reference: "hg38"
+# Enable / Disable GC analysis
+GC_analysis: False
 # Mutually exclusive with ashleys_pipeline
 input_old_behavior: False
 # Enable/Disable ashleys-qc-pipeline module loading to start pipeline from FASTQ files
@@ -81,7 +83,7 @@ git_commit_strandphaser: "69c9fb4"
 git_repo_strandphaser: "https://github.com/daewoooo/StrandPhaseR"
 
 ## Mosaic bin window size
-window: 100000
+window: 200000
 
 # Normalize or not mosaic counts
 normalized_counts: True
