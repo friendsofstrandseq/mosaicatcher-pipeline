@@ -118,7 +118,11 @@ output_expand = [
 ]
 output_expand = [sub_e for e in output_expand for sub_e in e]
 
-plottype_counts = config["plottype_counts"] if config["GC_analysis"] is True else config["plottype_counts"][0]
+plottype_counts = (
+    config["plottype_counts"]
+    if config["GC_analysis"] is True
+    else config["plottype_counts"][0]
+)
 
 
 def get_final_output():
@@ -189,21 +193,22 @@ def get_all_plots(wildcards):
     for s in tmp_dict.keys():
         tmp_dict[s][0] = "SummaryPage"
 
-    
- 
     list_indiv_plots = list()
 
-
     tmp_l_divide = [
-            expand("{output_folder}/plots/{sample}/counts_{plottype}/{cell}.{i}.pdf", 
-            output_folder=config["output_location"], sample=sample, plottype=plottype_counts, cell=tmp_dict[sample][i], i=i
-            )
-            for sample in samples for i in range(dict_cells_nb_per_sample[sample] + 1)
-        ]
+        expand(
+            "{output_folder}/plots/{sample}/counts_{plottype}/{cell}.{i}.pdf",
+            output_folder=config["output_location"],
+            sample=sample,
+            plottype=plottype_counts,
+            cell=tmp_dict[sample][i],
+            i=i,
+        )
+        for sample in samples
+        for i in range(dict_cells_nb_per_sample[sample] + 1)
+    ]
 
-    list_indiv_plots.extend(
-        [sub_e for e in tmp_l_divide for sub_e in e]
-    )
+    list_indiv_plots.extend([sub_e for e in tmp_l_divide for sub_e in e])
 
     list_indiv_plots.extend(
         [
@@ -299,7 +304,7 @@ def get_all_plots(wildcards):
             "{output_folder}/plots/{sample}/counts/CountComplete.{plottype_counts}.pdf",
             output_folder=config["output_location"],
             sample=samples,
-            plottype_counts=config["plottype_counts"]
+            plottype_counts=config["plottype_counts"],
         ),
     )
     list_indiv_plots.extend(
