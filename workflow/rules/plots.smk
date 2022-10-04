@@ -41,27 +41,7 @@ rule plot_mosaic_counts:
 
 
 
-rule plot_mosaic_gc_norm_counts:
-    """
-    rule fct: Plot function of read counts for each bam file
-    input: mosaic count outputs (counts & info)
-    output: Generate figure based on couting results
-    """
-    input:
-        counts="{output_folder}/counts/GC_correction/{sample}/{sample}.VST.GC.scaled.txt.gz",
-        info="{output_folder}/counts/{sample}/{sample}.info",
-    output:
-        "{output_folder}/plots/{sample}/counts/CountComplete.GC_corrected.pdf",
-    log:
-        "{output_folder}/log/plot_mosaic_counts/{sample}.log",
-    conda:
-        "../envs/rtools.yaml"
-    resources:
-        mem_mb=get_mem_mb,
-    shell:
-        """
-        LC_CTYPE=C Rscript workflow/scripts/plotting/qc.R {input.counts} {input.info} {output} > {log} 2>&1
-        """
+
 
 
 rule divide_pdf:
@@ -232,6 +212,28 @@ rule plot_ploidy:
         "../scripts/plotting/ploidy_plot.py"
 
 if config["GC_analysis"] is True:
+
+    rule plot_mosaic_gc_norm_counts:
+    """
+    rule fct: Plot function of read counts for each bam file
+    input: mosaic count outputs (counts & info)
+    output: Generate figure based on couting results
+    """
+    input:
+        counts="{output_folder}/counts/GC_correction/{sample}/{sample}.VST.GC.scaled.txt.gz",
+        info="{output_folder}/counts/{sample}/{sample}.info",
+    output:
+        "{output_folder}/plots/{sample}/counts/CountComplete.GC_corrected.pdf",
+    log:
+        "{output_folder}/log/plot_mosaic_counts/{sample}.log",
+    conda:
+        "../envs/rtools.yaml"
+    resources:
+        mem_mb=get_mem_mb,
+    shell:
+        """
+        LC_CTYPE=C Rscript workflow/scripts/plotting/qc.R {input.counts} {input.info} {output} > {log} 2>&1
+        """
 
     rule alfred_plot:
         input:
