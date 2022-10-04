@@ -9,7 +9,7 @@ envvars:
     "LC_CTYPE",
 
 
-if config["input_bam_location"] == config["ouput_location"]:
+if config["input_bam_location"] == config["output_location"]:
     sys.exit("input_bam_location & output_location must be different")
 
 
