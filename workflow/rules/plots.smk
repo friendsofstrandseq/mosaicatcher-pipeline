@@ -40,13 +40,12 @@ rule plot_mosaic_counts:
         """
 
 
-
-
-
-
 rule divide_pdf:
     input:
-        expand("{{output_folder}}/plots/{{sample}}/counts/CountComplete.{plottype}.pdf", plottype=plottype_counts),
+        expand(
+            "{{output_folder}}/plots/{{sample}}/counts/CountComplete.{plottype}.pdf",
+            plottype=plottype_counts,
+        ),
     output:
         report(
             "{output_folder}/plots/{sample}/counts_{plottype}/{cell}.{i, \d+}.pdf",
@@ -200,7 +199,7 @@ rule plot_ploidy:
         report(
             "{output_folder}/plots/{sample}/ploidy/{sample}.pdf",
             category="Ploidy",
-            labels={"Sample": "{sample}"}
+            labels={"Sample": "{sample}"},
         ),
     log:
         "{output_folder}/log/plot_ploidy/{sample}.log",
@@ -211,57 +210,52 @@ rule plot_ploidy:
     script:
         "../scripts/plotting/ploidy_plot.py"
 
+
 if config["GC_analysis"] is True:
 
     rule plot_mosaic_gc_norm_counts:
-    """
-    rule fct: Plot function of read counts for each bam file
-    input: mosaic count outputs (counts & info)
-    output: Generate figure based on couting results
-    """
-    input:
-        counts="{output_folder}/counts/GC_correction/{sample}/{sample}.VST.GC.scaled.txt.gz",
-        info="{output_folder}/counts/{sample}/{sample}.info",
-    output:
-        "{output_folder}/plots/{sample}/counts/CountComplete.GC_corrected.pdf",
-    log:
-        "{output_folder}/log/plot_mosaic_counts/{sample}.log",
-    conda:
-        "../envs/rtools.yaml"
-    resources:
-        mem_mb=get_mem_mb,
-    shell:
-        """
-        LC_CTYPE=C Rscript workflow/scripts/plotting/qc.R {input.counts} {input.info} {output} > {log} 2>&1
-        """
+        input:
+            counts="{output_folder}/counts/GC_correction/{sample}/{sample}.VST.GC.scaled.txt.gz",
+            info="{output_folder}/counts/{sample}/{sample}.info",
+        output:
+            "{output_folder}/plots/{sample}/counts/CountComplete.GC_corrected.pdf",
+        log:
+            "{output_folder}/log/plot_mosaic_counts/{sample}.log",
+        conda:
+            "../envs/rtools.yaml"
+        resources:
+            mem_mb=get_mem_mb,
+        shell:
+            """
+            LC_CTYPE=C Rscript workflow/scripts/plotting/qc.R {input.counts} {input.info} {output} > {log} 2>&1
+            """
 
     rule alfred_plot:
         input:
-            table = "{output_folder}/alfred/{sample}.table"
+            table="{output_folder}/alfred/{sample}.table",
         output:
-            gcdist_plot = report(
+            gcdist_plot=report(
                 "{output_folder}/plots/{sample}/alfred/gc_dist.png",
                 category="GC analysis",
-                labels={"Sample": "{sample}", "Type": "GC distribution"}
+                labels={"Sample": "{sample}", "Type": "GC distribution"},
             ),
-            gcdevi_plot = report(
+            gcdevi_plot=report(
                 "{output_folder}/plots/{sample}/alfred/gc_devi.png",
                 category="GC analysis",
-                labels={"Sample": "{sample}", "Type": "GC deviation"}
+                labels={"Sample": "{sample}", "Type": "GC deviation"},
             ),
-            # gcdist_plot = "{output_folder}/plots/{sample}/alfred/gc_dist.png",
-            # gcdevi_plot = "{output_folder}/plots/{sample}/alfred/gc_devi.png",
         log:
-            "{output_folder}/log/alfred_plot/{sample}.log"
+            "{output_folder}/log/alfred_plot/{sample}.log",
         resources:
             mem_mb=get_mem_mb,
         conda:
             "../envs/rtools.yaml"
         script:
             "../scripts/plotting/gc.R"
-
-
 # rule datavzrd_variants_calls:
+
+
+
 #     input:
 #         config = "workflow/datavzrd/datavzrd_sv_calls.yaml",
 #     output:
@@ -273,8 +267,6 @@ if config["GC_analysis"] is True:
 #         "datavzrd"
 #     shell:
 #         "datavzrd {input.config} --output {output}"
-
-
 # rule plot_SV_calls:
 #     input:
 #         counts="{output_folder}/counts/{sample}/{sample}.txt.gz",
