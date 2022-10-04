@@ -36,6 +36,8 @@ All these arguments can be specified in two ways:
 | `check_sm_tag`      | Based on pysam, will compare for each BAM file, if the header SM tag is identical to the folder name in order to prevent further issues. | False   |
 | `dl_bam_example`    | Allow to retrieve automatically BAM fullsize example data.                                                                               | False   |
 | `dl_external_files` | Allow to retrieve automatically external files (GRCh38 reference genome + 1000G SNV VCF file) required to run the pipeline.              | False   |
+| `GC_analysis` | Allow to perform GC analysis using Alfred and GC correction for visualization (Marco Cosenza).              | False   |
+
 
 ### External files
 
