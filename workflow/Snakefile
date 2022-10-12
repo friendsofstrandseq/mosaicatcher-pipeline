@@ -6,15 +6,41 @@ min_version("7.5.0")
 configfile: "config/config.yaml"
 
 
-onstart:
-    arg = "ENABLED" if config["ashleys_pipeline"] is True else "DISABLED"
-    print("###################################")
-    print("# MOSAICATCHER SNAKEMAKE PIPELINE #")
-    print("###################################")
-    print("Ashleys preprocessing pipeline {}!".format(arg))
-    print("Input folder selected : {}".format(config["input_bam_location"]))
-    print("Output folder selected : {}".format(config["output_location"]))
+# onstart:
+#     arg = "ENABLED" if config["ashleys_pipeline"] is True else "DISABLED"
 
+#     sep = """------------------------------------------------------"""
+
+#     smk = """
+#                     _                        _        
+#     ___ _ __   __ _| | _____ _ __ ___   __ _| | _____ 
+#     / __| '_ \ / _` | |/ / _ \ '_ ` _ \ / _` | |/ / _ \\
+#     \__ \ | | | (_| |   <  __/ | | | | | (_| |   <  __/
+#     |___/_| |_|\__,_|_|\_\___|_| |_| |_|\__,_|_|\_\___|
+#     """
+
+#     wf_name = """                                                   
+#     __  __              _  ___      _      _            
+#     |  \/  |___ ___ __ _(_)/ __|__ _| |_ __| |_  ___ _ _ 
+#     | |\/| / _ (_-</ _` | | (__/ _` |  _/ _| ' \/ -_) '_|
+#     |_|  |_\___/__/\__,_|_|\___\__,_|\__\__|_||_\___|_|  
+#     """           
+#     wf_info = "smk-wf-catalog/mosacaitcher-pipeline v1.8.0"
+#     from colorama import Fore, Back, Style
+#     print(
+#         sep + Fore.GREEN + smk 
+#         )
+#     print(Style.RESET_ALL)
+#     print(Fore.YELLOW + wf_name)
+#     print(Style.RESET_ALL)
+#     print(Fore.MAGENTA + wf_info)
+#     print(Style.RESET_ALL)
+#     print(sep)
+
+#     # print("\033[1m{}Ashleys preprocessing pipeline \033[0m{}!".format(arg))
+#     print("\033[1m{:>12}\033[0m{:>12}".format("Input folder selected : ", config["input_bam_location"]))
+#     print("\033[1m{:>12}\033[0m{:>12}".format("Output folder selected : ", config["output_location"]))
+#     exit()
 
 report: "report/workflow.rst"
 
@@ -32,12 +58,12 @@ if config["ashleys_pipeline"] is True:
 
     module ashleys_qc:
         snakefile:
-            # "../../ashleys-qc-pipeline/workflow/Snakefile"
-            github(
-                "friendsofstrandseq/ashleys-qc-pipeline",
-                path="workflow/Snakefile",
-                branch="main",
-            )
+            "../../ashleys-qc-pipeline/workflow/Snakefile"
+            # github(
+            #     "friendsofstrandseq/ashleys-qc-pipeline",
+            #     path="workflow/Snakefile",
+            #     branch="main",
+            # )
         config:
             config
 
@@ -92,7 +118,7 @@ include: "rules/stats.smk"
 include: "rules/examples.smk"
 
 
-include: "rules/gc.smk"
+# include: "rules/gc.smk"
 
 
 if config["ashleys_pipeline"] is True:

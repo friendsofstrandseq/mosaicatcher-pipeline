@@ -44,7 +44,8 @@ rule divide_pdf:
     input:
         expand(
             "{{output_folder}}/plots/{{sample}}/counts/CountComplete.{plottype}.pdf",
-            plottype=plottype_counts,
+            plottype=["classic"],
+            # plottype=plottype_counts,
         ),
     output:
         report(
@@ -211,47 +212,47 @@ rule plot_ploidy:
         "../scripts/plotting/ploidy_plot.py"
 
 
-if config["GC_analysis"] is True:
+# if config["GC_analysis"] is True:
 
-    rule plot_mosaic_gc_norm_counts:
-        input:
-            counts="{output_folder}/counts/GC_correction/{sample}/{sample}.VST.GC.scaled.txt.gz",
-            info="{output_folder}/counts/{sample}/{sample}.info",
-        output:
-            "{output_folder}/plots/{sample}/counts/CountComplete.GC_corrected.pdf",
-        log:
-            "{output_folder}/log/plot_mosaic_counts/{sample}.log",
-        conda:
-            "../envs/rtools.yaml"
-        resources:
-            mem_mb=get_mem_mb,
-        shell:
-            """
-            LC_CTYPE=C Rscript workflow/scripts/plotting/qc.R {input.counts} {input.info} {output} > {log} 2>&1
-            """
+#     rule plot_mosaic_gc_norm_counts:
+#         input:
+#             counts="{output_folder}/counts/GC_correction/{sample}/{sample}.VST.GC.scaled.txt.gz",
+#             info="{output_folder}/counts/{sample}/{sample}.info",
+#         output:
+#             "{output_folder}/plots/{sample}/counts/CountComplete.GC_corrected.pdf",
+#         log:
+#             "{output_folder}/log/plot_mosaic_counts/{sample}.log",
+#         conda:
+#             "../envs/rtools.yaml"
+#         resources:
+#             mem_mb=get_mem_mb,
+#         shell:
+#             """
+#             LC_CTYPE=C Rscript workflow/scripts/plotting/qc.R {input.counts} {input.info} {output} > {log} 2>&1
+#             """
 
-    rule alfred_plot:
-        input:
-            table="{output_folder}/alfred/{sample}.table",
-        output:
-            gcdist_plot=report(
-                "{output_folder}/plots/{sample}/alfred/gc_dist.png",
-                category="GC analysis",
-                labels={"Sample": "{sample}", "Type": "GC distribution"},
-            ),
-            gcdevi_plot=report(
-                "{output_folder}/plots/{sample}/alfred/gc_devi.png",
-                category="GC analysis",
-                labels={"Sample": "{sample}", "Type": "GC deviation"},
-            ),
-        log:
-            "{output_folder}/log/alfred_plot/{sample}.log",
-        resources:
-            mem_mb=get_mem_mb,
-        conda:
-            "../envs/rtools.yaml"
-        script:
-            "../scripts/plotting/gc.R"
+#     rule alfred_plot:
+#         input:
+#             table="{output_folder}/alfred/{sample}.table",
+#         output:
+#             gcdist_plot=report(
+#                 "{output_folder}/plots/{sample}/alfred/gc_dist.png",
+#                 category="GC analysis",
+#                 labels={"Sample": "{sample}", "Type": "GC distribution"},
+#             ),
+#             gcdevi_plot=report(
+#                 "{output_folder}/plots/{sample}/alfred/gc_devi.png",
+#                 category="GC analysis",
+#                 labels={"Sample": "{sample}", "Type": "GC deviation"},
+#             ),
+#         log:
+#             "{output_folder}/log/alfred_plot/{sample}.log",
+#         resources:
+#             mem_mb=get_mem_mb,
+#         conda:
+#             "../envs/rtools.yaml"
+#         script:
+#             "../scripts/plotting/gc.R"
 # rule datavzrd_variants_calls:
 
 
