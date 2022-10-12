@@ -30,6 +30,7 @@ jobs:
           tags: "${{ steps.yaml-data.outputs.data }}"
           dockerfiles: |
             ./github-actions-runner/Dockerfile_complete.dockerfile
+            
       - name: Push To DockerHub
         id: push-to-dockerhub
         uses: redhat-actions/push-to-registry@v2
