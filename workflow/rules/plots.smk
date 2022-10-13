@@ -19,16 +19,11 @@ envvars:
 if config["ashleys_pipeline"] is False:
 
     rule plot_mosaic_counts:
-        """
-        rule fct: Plot function of read counts for each bam file
-        input: mosaic count outputs (counts & info)
-        output: Generate figure based on couting results
-        """
         input:
             counts="{folder}/{sample}/counts/{sample}.txt.raw.gz",
             info="{folder}/{sample}/counts/{sample}.info_raw",
         output:
-            "{folder}/{sample}/counts/CountComplete.classic.pdf",
+            "{folder}/{sample}/plots/counts/CountComplete.classic.pdf",
         log:
             "{folder}/log/plot_mosaic_counts/{sample}.log",
         conda:
@@ -64,17 +59,17 @@ rule divide_pdf:
         "../scripts/plotting/dividing_pdf.py"
 
 
-rule tmp_merge_divide:
-    input:
-        aggregate_cells_count_plot,
-    output:
-        touch("{folder}/{sample}/plots/divide_plots/{sample}.txt"),
-    log:
-        "{folder}/log/final_blank_results/{sample}.log",
-    conda:
-        "../envs/mc_base.yaml"
-    shell:
-        "touch {output}"
+# rule tmp_merge_divide:
+#     input:
+#         aggregate_cells_count_plot,
+#     output:
+#         touch("{folder}/{sample}/plots/divide_plots/{sample}.txt"),
+#     log:
+#         "{folder}/log/final_blank_results/{sample}.log",
+#     conda:
+#         "../envs/mc_base.yaml"
+#     shell:
+#         "touch {output}"
 
 
 rule final_results:

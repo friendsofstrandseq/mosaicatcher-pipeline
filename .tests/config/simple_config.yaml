@@ -85,7 +85,7 @@ paired_end: True
 # PARAMETERS
 
 ## WINDOW
-window: 100000
+window: 200000
 
 ## METHODS
 # methods:

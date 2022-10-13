@@ -214,7 +214,19 @@ def get_all_plots(wildcards):
     ]
     # print(tmp_l_divide)
 
-    list_indiv_plots.extend([sub_e for e in tmp_l_divide for sub_e in e])
+    print([sub_e for e in tmp_l_divide for sub_e in e])
+    # exit()
+    print(bam_per_sample_local)
+    print(tmp_dict)
+
+    print([expand(
+                "{folder}/{sample}/bam/{cell}.sort.mdup.bam",
+                folder=config["data_location"],
+                sample=sample,
+                cell=bam_per_sample_local[str(sample)],
+            ) for sample in samples])
+
+    # list_indiv_plots.extend([sub_e for e in tmp_l_divide for sub_e in e])
 
     list_indiv_plots.extend(
         [
