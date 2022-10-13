@@ -12,11 +12,11 @@ rule index_input_bam:
     output:
     """
     input:
-        "{input_folder}/{sample}/all/{cell}.sort.mdup.bam",
+        "{folder}/{sample}/bam/{cell}.sort.mdup.bam",
     output:
-        "{input_folder}/{sample}/all/{cell}.sort.mdup.bam.bai",
+        "{folder}/{sample}/bam/{cell}.sort.mdup.bam.bai",
     log:
-        "{input_folder}/log/index_input_bam/{sample}/{cell}.log",
+        "{folder}/log/index_input_bam/{sample}/{cell}.log",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     resources:
@@ -32,11 +32,11 @@ rule index_haplotag_bam:
     output:
     """
     input:
-        "{output_folder}/haplotag/bam/{sample}/{cell}.bam",
+        "{folder}/{sample}/haplotag/bam/{cell}.bam.htg",
     output:
-        "{output_folder}/haplotag/bam/{sample}/{cell}.bam.bai",
+        "{folder}/{sample}/haplotag/bam/{cell}.bam.htg.bai",
     log:
-        "{output_folder}/log/index_haplotag_bam/{sample}/{cell}.log",
+        "{folder}/log/index_haplotag_bam/{sample}/{cell}.log",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     resources:
@@ -45,24 +45,6 @@ rule index_haplotag_bam:
         "samtools index {input} > {log} 2>&1"
 
 
-rule index_merged_bam:
-    """
-    rule fct:
-    input:
-    output:
-    """
-    input:
-        "{output_folder}/merged_bam/{sample}/merged.bam",
-    output:
-        "{output_folder}/merged_bam/{sample}/merged.bam.bai",
-    log:
-        "{output_folder}/log/merged_bam/{sample}/merged.log",
-    conda:
-        "../envs/mc_bioinfo_tools.yaml"
-    resources:
-        mem_mb=get_mem_mb,
-    shell:
-        "samtools index {input} > {log} 2>&1"
 
 
 rule compress_indiv_freebayes_vcf:
@@ -72,11 +54,11 @@ rule compress_indiv_freebayes_vcf:
     output:
     """
     input:
-        vcf="{output_folder}/snv_genotyping/{sample}/{chrom}.vcf",
+        vcf="{folder}/{sample}/snv_genotyping/{chrom}.vcf",
     output:
-        vcf="{output_folder}/snv_genotyping/{sample}/{chrom}.vcf.gz",
+        vcf="{folder}/{sample}/snv_genotyping/{chrom}.vcf.gz",
     log:
-        "{output_folder}/log/compress_indiv_freebayes_vcf/{sample}/{chrom}.log",
+        "{folder}/log/compress_indiv_freebayes_vcf/{sample}/{chrom}.log",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     resources:
@@ -92,11 +74,11 @@ rule index_indiv_freebayes_vcf:
     output:
     """
     input:
-        vcf="{output_folder}/snv_genotyping/{sample}/{chrom}.vcf.gz",
+        vcf="{folder}/{sample}/snv_genotyping/{chrom}.vcf.gz",
     output:
-        vcf="{output_folder}/snv_genotyping/{sample}/{chrom}.vcf.gz.tbi",
+        vcf="{folder}/{sample}/snv_genotyping/{chrom}.vcf.gz.tbi",
     log:
-        "{output_folder}/log/index_indiv_freebayes_vcf/{sample}/{chrom}.log",
+        "{folder}/log/index_indiv_freebayes_vcf/{sample}/{chrom}.log",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     resources:
@@ -112,11 +94,11 @@ rule compress_indiv_strandphaser_vcf:
     output:
     """
     input:
-        vcf="{output_folder}/strandphaser/{sample}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf",
+        vcf="{folder}/{sample}/strandphaser/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf",
     output:
-        vcf="{output_folder}/strandphaser/{sample}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz",
+        vcf="{folder}/{sample}/strandphaser/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz",
     log:
-        "{output_folder}/log/compress_indiv_strandphaser_vcf/{sample}/{chrom}.log",
+        "{folder}/log/compress_indiv_strandphaser_vcf/{sample}/{chrom}.log",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     resources:
@@ -132,11 +114,11 @@ rule index_indiv_strandphaser_vcf:
     output:
     """
     input:
-        vcf="{output_folder}/strandphaser/{sample}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz",
+        vcf="{folder}/{sample}/strandphaser/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz",
     output:
-        vcf="{output_folder}/strandphaser/{sample}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz.tbi",
+        vcf="{folder}/{sample}/strandphaser/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz.tbi",
     log:
-        "{output_folder}/log/index_indiv_strandphaser_vcf/{sample}/{chrom}.log",
+        "{folder}/log/index_indiv_strandphaser_vcf/{sample}/{chrom}.log",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     resources:
@@ -152,11 +134,11 @@ rule index_merged_strandphaser_vcf:
     output:
     """
     input:
-        vcf="{output_folder}/strandphaser/phased-snvs/{sample}.vcf.gz",
+        vcf="{folder}/{sample}/strandphaser/phased-snvs/{sample}.vcf.gz",
     output:
-        vcf="{output_folder}/strandphaser/phased-snvs/{sample}.vcf.gz.tbi",
+        vcf="{folder}/{sample}/strandphaser/phased-snvs/{sample}.vcf.gz.tbi",
     log:
-        "{output_folder}/log/index_merged_strandphaser_vcf/phased-snvs/{sample}.log",
+        "{folder}/log/index_merged_strandphaser_vcf/phased-snvs/{sample}.log",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     resources:

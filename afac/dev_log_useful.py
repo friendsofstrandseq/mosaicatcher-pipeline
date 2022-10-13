@@ -39,7 +39,7 @@ def make_log_useful(log_path, status, output_folder=str(), samples=list()):
         _ = logfile.write("\n")
 
         if status == "SUCCESS":
-            filenames = ["{output_folder}/config/{sample}/run_summary.txt".format(output_folder=output_folder, sample=s) for s in samples]
+            filenames = ["{output_folder}/{sample}/config/run_summary.txt".format(output_folder=output_folder, sample=s) for s in samples]
             with open(log_path, "a") as outfile:
                 for fname in filenames:
                     with open(fname) as infile:

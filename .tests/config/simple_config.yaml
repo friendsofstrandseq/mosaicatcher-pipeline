@@ -30,9 +30,9 @@ dl_external_files: False
 normalized_counts: False
 
 ## Input BAM location
-input_bam_location: ".tests/data_CHR17"
+data_location: ".tests/data_CHR17"
 ## Output location
-output_location: ".tests/output_CHR17"
+# output_location: ".tests/output_CHR17"
 
 reference: "hg38"
 

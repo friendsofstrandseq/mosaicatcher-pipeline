@@ -20,11 +20,11 @@ rule segmentation:
     output: Segmentation tab file 
     """
     input:
-        counts="{output_folder}/counts/{sample}/{sample}.txt.gz",
+        counts="{folder}/{sample}/counts/{sample}.txt.gz",
     output:
-        "{output_folder}/segmentation/{sample}/{sample}.txt.fixme",
+        "{folder}/{sample}/segmentation/{sample}.txt.fixme",
     log:
-        "{output_folder}/log/segmentation/{sample}/{sample}.log",
+        "{folder}/log/segmentation/{sample}/{sample}.log",
     params:
         min_num_segs=lambda wc: math.ceil(200000 / float(config["window"])),  # bins to represent 200 kb
     conda:
@@ -50,11 +50,11 @@ rule fix_segmentation:
     output:
     """
     input:
-        ancient("{output_folder}/segmentation/{sample}/{sample}.txt.fixme"),
+        ancient("{folder}/{sample}/segmentation/{sample}.txt.fixme"),
     output:
-        "{output_folder}/segmentation/{sample}/{sample}.txt",
+        "{folder}/{sample}/segmentation/{sample}.txt",
     log:
-        "{output_folder}/log/segmentation/{sample}/{sample}.log",
+        "{folder}/log/segmentation/{sample}/{sample}.log",
     conda:
         "../envs/mc_base.yaml"
     params:
@@ -79,11 +79,11 @@ rule segment_one_cell:
     output: Segmentation file for an individual cell
     """
     input:
-        "{output_folder}/counts/{sample}/counts-per-cell/{cell}.txt.gz",
+        "{folder}/{sample}/counts/counts-per-cell/{cell}.txt.percell.gz",
     output:
-        "{output_folder}/segmentation/{sample}/segmentation-per-cell/{cell}.txt",
+        "{folder}/{sample}/segmentation/segmentation-per-cell/{cell}.txt",
     log:
-        "{output_folder}/log/segmentation/{sample}/segmentation-per-cell/{cell}.log",
+        "{folder}/log/segmentation/{sample}/segmentation-per-cell/{cell}.log",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     params:
@@ -108,16 +108,16 @@ rule segmentation_selection:
     output: initial_strand_state used for the following by strandphaser
     """
     input:
-        counts="{output_folder}/counts/{sample}/{sample}.txt.gz",
-        jointseg="{output_folder}/segmentation/{sample}/{sample}.txt",
+        counts="{folder}/{sample}/counts/{sample}.txt.gz",
+        jointseg="{folder}/{sample}/segmentation/{sample}.txt",
         singleseg=aggregate_cells_segmentation,
-        info="{output_folder}/counts/{sample}/{sample}.info",
+        info="{folder}/{sample}/counts/{sample}.info",
     output:
-        jointseg="{output_folder}/segmentation/{sample}/Selection_jointseg.txt",
-        singleseg="{output_folder}/segmentation/{sample}/Selection_singleseg.txt",
-        strand_states="{output_folder}/segmentation/{sample}/Selection_initial_strand_state",
+        jointseg="{folder}/{sample}/segmentation/Selection_jointseg.txt",
+        singleseg="{folder}/{sample}/segmentation/Selection_singleseg.txt",
+        strand_states="{folder}/{sample}/segmentation/Selection_initial_strand_state",
     log:
-        "{output_folder}/log/segmentation/segmentation_selection/{sample}.log",
+        "{folder}/log/segmentation/segmentation_selection/{sample}.log",
     params:
         cellnames=lambda wc: ",".join(
             [
