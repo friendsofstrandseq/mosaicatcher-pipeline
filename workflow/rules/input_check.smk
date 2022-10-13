@@ -15,7 +15,7 @@ rule generate_exclude_file_for_mosaic_count:
             cell=bam_per_sample_local[str(wc.sample)],
         ),
     output:
-        "{folder}/config/{sample}/chroms_to_exclude.txt",
+        "{folder}/{sample}/config/chroms_to_exclude.txt",
     log:
         "{folder}/log/config_output/{sample}/exclude_file.log",
     params:
