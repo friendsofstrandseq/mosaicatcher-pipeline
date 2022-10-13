@@ -16,51 +16,48 @@ envvars:
 # Load rules only if plot is enabled [True] in config file
 # if config["plot"] is True:
 
+if config["ashleys_pipeline"] is False:
 
-rule plot_mosaic_counts:
-    """
-    rule fct: Plot function of read counts for each bam file
-    input: mosaic count outputs (counts & info)
-    output: Generate figure based on couting results
-    """
-    input:
-        counts="{output_folder}/counts/{sample}/{sample}.txt.gz",
-        info="{output_folder}/counts/{sample}/{sample}.info",
-    output:
-        "{output_folder}/plots/{sample}/counts/CountComplete.classic.pdf",
-    log:
-        "{output_folder}/log/plot_mosaic_counts/{sample}.log",
-    conda:
-        "../envs/rtools.yaml"
-    resources:
-        mem_mb=get_mem_mb,
-    shell:
+    rule plot_mosaic_counts:
         """
-        LC_CTYPE=C Rscript workflow/scripts/plotting/qc.R {input.counts} {input.info} {output} > {log} 2>&1
+        rule fct: Plot function of read counts for each bam file
+        input: mosaic count outputs (counts & info)
+        output: Generate figure based on couting results
         """
+        input:
+            counts="{folder}/{sample}/counts/{sample}.txt.raw.gz",
+            info="{folder}/{sample}/counts/{sample}.info_raw",
+        output:
+            "{folder}/{sample}/counts/CountComplete.classic.pdf",
+        log:
+            "{folder}/log/plot_mosaic_counts/{sample}.log",
+        conda:
+            "../envs/rtools.yaml"
+        resources:
+            mem_mb=get_mem_mb,
+        shell:
+            """
+            LC_CTYPE=C Rscript workflow/scripts/plotting/qc.R {input.counts} {input.info} {output} > {log} 2>&1
+            """
 
 
 rule divide_pdf:
     input:
-        expand(
-            "{{output_folder}}/plots/{{sample}}/counts/CountComplete.{plottype}.pdf",
-            plottype=["classic"],
-            # plottype=plottype_counts,
-        ),
+            "{folder}/{sample}/plots/counts/CountComplete.{plottype}.pdf",
     output:
         report(
-            "{output_folder}/plots/{sample}/counts_{plottype}/{cell}.{i, \d+}.pdf",
+            "{folder}/{sample}/plots/counts_{plottype}/{cell}.{i, \d+}.pdf",
             caption="../report/mosaic_counts.rst",
             category="Mosaic counts",
             subcategory="{sample}",
             labels={"Cell": "{cell}", "Nb": "{i}", "Type": "{plottype}"},
         ),
     log:
-        "{output_folder}/log/plots/{sample}/counts_{plottype}/{cell}.{i, \d+}.log",
+        "{folder}/log/{sample}/plots/counts_{plottype}/{cell}.{i, \d+}.log",
     conda:
         "../envs/mc_base.yaml"
     # params:
-    #     config_df="{output_folder}/config/config_df.tsv".format(output_folder=config["output_location"]),
+    #     config_df="{folder}/config/config_df.tsv".format(folder=config["data_location"]),
     resources:
         mem_mb=get_mem_mb,
     script:
@@ -71,9 +68,9 @@ rule tmp_merge_divide:
     input:
         aggregate_cells_count_plot,
     output:
-        touch("{output_folder}/plots/{sample}/divide_plots/{sample}.txt"),
+        touch("{folder}/{sample}/plots/divide_plots/{sample}.txt"),
     log:
-        "{output_folder}/log/final_blank_results/{sample}.log",
+        "{folder}/log/final_blank_results/{sample}.log",
     conda:
         "../envs/mc_base.yaml"
     shell:
@@ -84,9 +81,9 @@ rule final_results:
     input:
         get_all_plots,
     output:
-        "{output_folder}/plots/{sample}/final_results/{sample}.txt",
+        "{folder}/{sample}/plots/final_results/{sample}.txt",
     log:
-        "{output_folder}/log/final_blank_results/{sample}.log",
+        "{folder}/log/final_blank_results/{sample}.log",
     conda:
         "../envs/mc_base.yaml"
     shell:
@@ -95,10 +92,10 @@ rule final_results:
 
 rule plot_SV_consistency_barplot:
     input:
-        sv_calls="{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}_filter{filter}.tsv",
+        sv_calls="{folder}/{sample}/mosaiclassifier/sv_calls/{method}_filter{filter}.tsv",
     output:
         barplot_bypos=report(
-            "{output_folder}/plots/{sample}/sv_consistency/{method}_filter{filter}.consistency-barplot-bypos.pdf",
+            "{folder}/{sample}/plots/sv_consistency/{method}_filter{filter}.consistency-barplot-bypos.pdf",
             category="SV Consistency",
             subcategory="{sample}",
             labels={
@@ -108,7 +105,7 @@ rule plot_SV_consistency_barplot:
             },
         ),
         barplot_byaf=report(
-            "{output_folder}/plots/{sample}/sv_consistency/{method}_filter{filter}.consistency-barplot-byaf.pdf",
+            "{folder}/{sample}/plots/sv_consistency/{method}_filter{filter}.consistency-barplot-byaf.pdf",
             category="SV Consistency",
             subcategory="{sample}",
             labels={
@@ -118,7 +115,7 @@ rule plot_SV_consistency_barplot:
             },
         ),
     log:
-        "{output_folder}/log/plot_SV_consistency/{sample}/{method}_filter{filter}.log",
+        "{folder}/log/plot_SV_consistency/{sample}/{method}_filter{filter}.log",
     conda:
         "../envs/rtools.yaml"
     resources:
@@ -129,11 +126,11 @@ rule plot_SV_consistency_barplot:
 
 rule plot_clustering:
     input:
-        sv_calls="{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}_filter{filter}.tsv",
+        sv_calls="{folder}/{sample}/mosaiclassifier/sv_calls/{method}_filter{filter}.tsv",
         binbed="workflow/data/bin_200kb_all.bed",
     output:
         position=report(
-            "{output_folder}/plots/{sample}/sv_clustering/{method}-filter{filter}-position.pdf",
+            "{folder}/{sample}/plots/sv_clustering/{method}-filter{filter}-position.pdf",
             category="SV Clustering",
             subcategory="{sample}",
             labels={
@@ -142,7 +139,7 @@ rule plot_clustering:
             },
         ),
     log:
-        "{output_folder}/log/plot_clustering/{sample}/{method}_filter{filter}.log",
+        "{folder}/log/plot_clustering/{sample}/{method}_filter{filter}.log",
     conda:
         "../envs/rtools.yaml"
     resources:
@@ -153,16 +150,16 @@ rule plot_clustering:
 
 rule plot_SV_calls:
     input:
-        counts="{output_folder}/counts/{sample}/{sample}.txt.gz",
-        calls="{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}_filter{filter}.tsv",
-        complex_calls="{output_folder}/mosaiclassifier/complex/{sample}/{method}_filter{filter}.tsv",
-        strand="{output_folder}/strandphaser/{sample}/StrandPhaseR_final_output.txt",
-        segments="{output_folder}/segmentation/{sample}/Selection_jointseg.txt",
-        scsegments="{output_folder}/segmentation/{sample}/Selection_singleseg.txt",
-        grouptrack="{output_folder}/mosaiclassifier/postprocessing/group-table/{sample}/{method}.tsv",
+        counts="{folder}/{sample}/counts/{sample}.txt.gz",
+        calls="{folder}/{sample}/mosaiclassifier/sv_calls/{method}_filter{filter}.tsv",
+        complex_calls="{folder}/{sample}/mosaiclassifier/complex/{method}_filter{filter}.tsv",
+        strand="{folder}/{sample}/strandphaser/StrandPhaseR_final_output.txt",
+        segments="{folder}/{sample}/segmentation/Selection_jointseg.txt",
+        scsegments="{folder}/{sample}/segmentation/Selection_singleseg.txt",
+        grouptrack="{folder}/{sample}/mosaiclassifier/postprocessing/group-table/{method}.tsv",
     output:
         report(
-            "{output_folder}/plots/{sample}/sv_calls/{method}_filter{filter}/{chrom}.pdf",
+            "{folder}/{sample}/plots/sv_calls/{method}_filter{filter}/{chrom}.pdf",
             category="SV Calls",
             subcategory="{sample}",
             labels={
@@ -172,7 +169,7 @@ rule plot_SV_calls:
             },
         ),
     log:
-        "{output_folder}/log/plot_SV_calls/{sample}/{method}_filter{filter}/{chrom}.log",
+        "{folder}/log/plot_SV_calls/{sample}/{method}_filter{filter}/{chrom}.log",
     conda:
         # "../envs/dev/plot_sv_calls.yaml"
         "../envs/rtools.yaml"
@@ -195,15 +192,15 @@ rule plot_SV_calls:
 
 rule plot_ploidy:
     input:
-        ploidy_detailled="{output_folder}/ploidy/{sample}/ploidy_detailled.txt",
+        ploidy_detailled="{folder}/{sample}/ploidy/ploidy_detailled.txt",
     output:
         report(
-            "{output_folder}/plots/{sample}/ploidy/{sample}.pdf",
+            "{folder}/{sample}/plots/ploidy/{sample}.pdf",
             category="Ploidy",
             labels={"Sample": "{sample}"},
         ),
     log:
-        "{output_folder}/log/plot_ploidy/{sample}.log",
+        "{folder}/log/plot_ploidy/{sample}.log",
     conda:
         "../envs/python_plots.yaml"
     resources:
@@ -216,12 +213,12 @@ rule plot_ploidy:
 
 #     rule plot_mosaic_gc_norm_counts:
 #         input:
-#             counts="{output_folder}/counts/GC_correction/{sample}/{sample}.VST.GC.scaled.txt.gz",
-#             info="{output_folder}/counts/{sample}/{sample}.info",
+#             counts="{folder}/counts/GC_correction/{sample}/{sample}.VST.GC.scaled.txt.gz",
+#             info="{folder}/{sample}/counts/{sample}.info",
 #         output:
-#             "{output_folder}/plots/{sample}/counts/CountComplete.GC_corrected.pdf",
+#             "{folder}/{sample}/plots/counts/CountComplete.GC_corrected.pdf",
 #         log:
-#             "{output_folder}/log/plot_mosaic_counts/{sample}.log",
+#             "{folder}/log/plot_mosaic_counts/{sample}.log",
 #         conda:
 #             "../envs/rtools.yaml"
 #         resources:
@@ -233,20 +230,20 @@ rule plot_ploidy:
 
 #     rule alfred_plot:
 #         input:
-#             table="{output_folder}/alfred/{sample}.table",
+#             table="{folder}/alfred/{sample}.table",
 #         output:
 #             gcdist_plot=report(
-#                 "{output_folder}/plots/{sample}/alfred/gc_dist.png",
+#                 "{folder}/{sample}/plots/alfred/gc_dist.png",
 #                 category="GC analysis",
 #                 labels={"Sample": "{sample}", "Type": "GC distribution"},
 #             ),
 #             gcdevi_plot=report(
-#                 "{output_folder}/plots/{sample}/alfred/gc_devi.png",
+#                 "{folder}/{sample}/plots/alfred/gc_devi.png",
 #                 category="GC analysis",
 #                 labels={"Sample": "{sample}", "Type": "GC deviation"},
 #             ),
 #         log:
-#             "{output_folder}/log/alfred_plot/{sample}.log",
+#             "{folder}/log/alfred_plot/{sample}.log",
 #         resources:
 #             mem_mb=get_mem_mb,
 #         conda:
@@ -270,16 +267,16 @@ rule plot_ploidy:
 #         "datavzrd {input.config} --output {output}"
 # rule plot_SV_calls:
 #     input:
-#         counts="{output_folder}/counts/{sample}/{sample}.txt.gz",
-#         calls="{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}_filter{filter}.tsv",
-#         complex_calls="{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}_filter{filter}.complex.tsv",
-#         strand="{output_folder}/strandphaser/{sample}/StrandPhaseR_final_output.txt",
-#         segments="{output_folder}/segmentation/{sample}/Selection_jointseg.txt",
-#         scsegments="{output_folder}/segmentation/{sample}/Selection_singleseg.txt",
-#         grouptrack="{output_folder}/mosaiclassifier/postprocessing/group-table/{sample}/{method}.tsv",
+#         counts="{folder}/{sample}/counts/{sample}.txt.gz",
+#         calls="{folder}/mosaiclassifier/sv_calls/{sample}/{method}_filter{filter}.tsv",
+#         complex_calls="{folder}/mosaiclassifier/sv_calls/{sample}/{method}_filter{filter}.complex.tsv",
+#         strand="{folder}/strandphaser/{sample}/StrandPhaseR_final_output.txt",
+#         segments="{folder}/segmentation/{sample}/Selection_jointseg.txt",
+#         scsegments="{folder}/segmentation/{sample}/Selection_singleseg.txt",
+#         grouptrack="{folder}/mosaiclassifier/postprocessing/group-table/{sample}/{method}.tsv",
 #     output:
 #         report(
-#             "{output_folder}/plots/{sample}/sv_calls/{method}_filter{filter}.{chrom}.pdf",
+#             "{folder}/{sample}/plots/sv_calls/{method}_filter{filter}.{chrom}.pdf",
 #             category="SV Calls",
 #             subcategory="{sample}",
 #             labels={
@@ -289,7 +286,7 @@ rule plot_ploidy:
 #             },
 #         ),
 #     log:
-#         "{output_folder}/log/plot_SV_calls/{sample}/{method}_filter{filter}.{chrom}.log",
+#         "{folder}/log/plot_SV_calls/{sample}/{method}_filter{filter}.{chrom}.log",
 #     conda:
 #         "../envs/rtools.yaml"
 #     resources:

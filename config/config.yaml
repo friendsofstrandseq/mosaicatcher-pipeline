@@ -6,9 +6,9 @@ version: 1.8.0
 # To be informed of pipeline status
 email: ""
 # Input BAM location
-input_bam_location: ".tests/data_CHR17"
+data_location: ".tests/data_CHR17"
 # Output location
-output_location: ".tests/output_CHR17"
+# output_location: ".tests/output_CHR17"
 # Reference assembly selected
 reference: "hg38"
 # Enable / Disable GC analysis

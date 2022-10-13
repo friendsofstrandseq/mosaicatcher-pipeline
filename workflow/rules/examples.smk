@@ -5,20 +5,15 @@ HTTP = HTTPRemoteProvider()
 
 
 rule dl_example_data:
-    """
-    rule fct: Download BAM example data as input for MosaiCatcher pipeline
-    input: zip file stored on Zenodo
-    output: input_bam_location given by the user
-    """
     input:
         HTTP.remote(
             "https://sandbox.zenodo.org/record/1074721/files/TEST_EXAMPLE_DATA.zip",
             keep_local=True,
         ),
     output:
-        touch("config_output/dl_example_data.ok"),
+        touch("config/dl_example_data.ok"),
     log:
-        touch("log/config_output/dl_example_data.ok"),
+        touch("log/config/dl_example_data.ok"),
     run:
         shell("unzip {input} -d .")
         # directory = ".tests/data_example/"

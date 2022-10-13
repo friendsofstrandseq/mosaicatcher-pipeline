@@ -7,11 +7,11 @@
 
 rule estimate_ploidy:
     input:
-        counts="{output_folder}/counts/{sample}/{sample}.txt.sort.gz",
+        counts="{folder}/{sample}/counts/{sample}.txt.sort.gz",
     output:
-        "{output_folder}/ploidy/{sample}/ploidy_detailled.txt",
+        "{folder}/{sample}/ploidy/ploidy_detailled.txt",
     log:
-        "{output_folder}/log/estimate_ploidy/{sample}.log",
+        "{folder}/log/estimate_ploidy/{sample}.log",
     threads: 48
     resources:
         mem_mb=get_mem_mb,
@@ -40,11 +40,11 @@ rule estimate_ploidy:
 
 checkpoint summarise_ploidy:
     input:
-        ploidy="{output_folder}/ploidy/{sample}/ploidy_detailled.txt",
+        ploidy="{folder}/{sample}/ploidy/ploidy_detailled.txt",
     output:
-        summary="{output_folder}/ploidy/{sample}/ploidy_summary.txt",
+        summary="{folder}/{sample}/ploidy/ploidy_summary.txt",
     log:
-        "{output_folder}/log/ploidy/{sample}/ploidy_summary.log",
+        "{folder}/log/ploidy/{sample}/ploidy_summary.log",
     run:
         df = (
             pd.read_csv(input.ploidy, sep="\t")
@@ -61,11 +61,11 @@ checkpoint summarise_ploidy:
 
 rule ploidy_bcftools:
     input:
-        "{output_folder}/ploidy/{sample}/ploidy_detailled.txt",
+        "{folder}/{sample}/ploidy/ploidy_detailled.txt",
     output:
-        "{output_folder}/ploidy/{sample}/ploidy_bcftools.txt",
+        "{folder}/{sample}/ploidy/ploidy_bcftools.txt",
     log:
-        "{output_folder}/log/ploidy/{sample}/ploidy_bcftools.log",
+        "{folder}/log/ploidy/{sample}/ploidy_bcftools.log",
     conda:
         "../envs/mc_base.yaml"
     script:

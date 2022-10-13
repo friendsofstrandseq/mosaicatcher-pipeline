@@ -24,7 +24,8 @@ class HandleInput:
         folder = "all" if bam is True else "fastq"
         complete_df_list = list()
         # print(thisdir)
-        for sample in [e for e in os.listdir(thisdir) if e not in ["config", "log", ".DS_Store", "._.DS_Store", "counts"]]:
+        exclude = ["._.DS_Store", ".DS_Store", "all", "ashleys_counts", "bam", "cell_selection", "config", "counts", "fastq", "fastqc", "haplotag", "log", "merged_bam", "mosaiclassifier", "normalizations", "ploidy", "plots", "predictions", "segmentation", "snv_calls", "stats", "strandphaser" ]
+        for sample in [e for e in os.listdir(thisdir) if e not in exclude]:
             # print(thisdir, sample, folder, ext)
 
             # print("{thisdir}/{sample}/{folder}/".format(thisdir=thisdir, sample=sample, folder=folder))

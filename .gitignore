@@ -109,8 +109,11 @@ workflow/test.txt
 
 ## DATA CHR21
 .tests/data_CHR17/RPE-BM510/all/*.bai
+.tests/data_CHR17/RPE-BM510/bam/*.bai
 .tests/data_CHR21/RPE-BM510/all/*.bam
+.tests/data_CHR21/RPE-BM510/bam/*.bam
 .tests/data_CHR17/RPE-BM510/all/*.log
+.tests/data_CHR17/RPE-BM510/bam/*.log
 .tests/data_CHR17/config/
 .tests/data_CHR17/RPE-BM510/cell_selection/
 .tests/data_CHR17/RPE-BM510/ashleys_counts/
@@ -123,6 +126,7 @@ workflow/test.txt
 ## DATA EXCEPTIONS
 !.tests/data_CHR17/RPE-BM510/fastq/*.fastq.gz
 !.tests/data_CHR17/RPE-BM510/all/BM*.sort.mdup.bam
+!.tests/data_CHR17/RPE-BM510/bam/BM*.sort.mdup.bam
 !.tests/external_data/chr17.fa.gz
 
 # Dev
