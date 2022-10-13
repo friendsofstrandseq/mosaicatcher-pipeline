@@ -21,7 +21,7 @@ class HandleInput:
             _type_: _description_
         """
         ext = ".bam" if bam is True else ".fastq.gz"
-        folder = "all" if bam is True else "fastq"
+        folder = "bam" if bam is True else "fastq"
         complete_df_list = list()
         # print(thisdir)
         exclude = ["._.DS_Store", ".DS_Store", "all", "ashleys_counts", "bam", "cell_selection", "config", "counts", "fastq", "fastqc", "haplotag", "log", "merged_bam", "mosaiclassifier", "normalizations", "ploidy", "plots", "predictions", "segmentation", "snv_calls", "stats", "strandphaser" ]
