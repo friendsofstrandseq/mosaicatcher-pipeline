@@ -3,15 +3,15 @@ rule install_rlib_strandphaser:
     output:
         check=touch(
             expand(
-                "{}/strandphaser/R_setup/strandphaser_version-{}.ok".format(
-                    config["output_location"], config["git_commit_strandphaser"]
+                "{folder}/config/strandphaser/R_setup/strandphaser_version-{commit}.ok".format(
+                    folder=config["data_location"], commit=config["git_commit_strandphaser"]
                 )
             )
         ),
     log:
         expand(
             "{}/log/strandphaser/R_setup/strandphaser_version-{}.ok".format(
-                config["output_location"], config["git_commit_strandphaser"]
+                config["data_location"], config["git_commit_strandphaser"]
             )
         ),
     conda:
@@ -27,14 +27,14 @@ rule install_rlib_strandphaser:
 
 rule config_run_summary:
     input:
-        labels="{output_folder}/config/{sample}/labels.tsv",
-        info_raw="{output_folder}/counts/{sample}/{sample}.info_raw",
-        ploidy_summary="{output_folder}/ploidy/{sample}/ploidy_summary.txt",
-        single_paired_end_detect="{output_folder}/config/{sample}/single_paired_end_detection.txt",
+        labels="{folder}/{sample}/config/labels.tsv",
+        info_raw="{folder}/{sample}/counts/{sample}.info_raw",
+        ploidy_summary="{folder}/{sample}/ploidy/ploidy_summary.txt",
+        single_paired_end_detect="{folder}/{sample}/config/single_paired_end_detection.txt",
     output:
-        summary="{output_folder}/config/{sample}/run_summary.txt",
+        summary="{folder}/config/{sample}/run_summary.txt",
     log:
-        "{output_folder}/log/config/{sample}/config_run_summary.txt",
+        "{folder}/log/config/{sample}/config_run_summary.txt",
     conda:
         "../envs/mc_base.yaml"
     script:

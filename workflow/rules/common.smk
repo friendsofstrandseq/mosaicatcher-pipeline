@@ -42,8 +42,8 @@ onstart:
     # Input / Output
     print("\033[1m{}\033[0m".format("Input/Output options:"))
     l = [
-        f"{Fore.BLUE}  {{:<50}}{Fore.GREEN}{{:<50}}".format("Input folder selected", ": " + str(config["input_bam_location"])),
-        f"{Fore.BLUE}  {{:<50}}{Fore.GREEN}{{:<50}}".format("Output folder selected", ": " + str(config["output_location"])),
+        f"{Fore.BLUE}  {{:<50}}{Fore.GREEN}{{:<50}}".format("Folder to processed", ": " + str(config["data_location"])),
+        # f"{Fore.BLUE}  {{:<50}}{Fore.GREEN}{{:<50}}".format("Output folder selected", ": " + str(config["data_location"])),
     ]
     [print(e) for e in l]
 
@@ -77,8 +77,8 @@ onstart:
     [print(e) for e in l]
 
 
-if config["input_bam_location"] == config["output_location"]:
-    sys.exit("input_bam_location & output_location must be different")
+# if config["data_location"] == config["data_location"]:
+#     sys.exit("data_location & data_location must be different")
 
 
 bam = True if config["ashleys_pipeline"] is False else False
@@ -86,16 +86,16 @@ bam = True if config["ashleys_pipeline"] is False else False
 
 # Create configuration file with samples
 c = handle_input.HandleInput(
-    input_path=config["input_bam_location"],
-    output_path="{input_bam_location}/config/config_df.tsv".format(
-        input_bam_location=config["input_bam_location"]
+    input_path=config["data_location"],
+    output_path="{data_location}/config/config_df.tsv".format(
+        data_location=config["data_location"]
     ),
     check_sm_tag=False,
     bam=bam,
 )
 
 # Read config file previously produced
-# df_config_files = pd.read_csv("{input_bam_location}/config/config_df.tsv".format(input_bam_location=config["input_bam_location"]), sep="\t")
+# df_config_files = pd.read_csv("{data_location}/config/config_df.tsv".format(data_location=config["data_location"]), sep="\t")
 df_config_files = c.df_config_files
 df_config_files["Selected"] = True
 # List of available samples
@@ -175,13 +175,13 @@ samples_expand = [sub_e for e in samples_expand for sub_e in e]
 cell_expand = [sub_e for e in list(allbams_per_sample.values()) for sub_e in e]
 
 input_expand = [
-    [config["input_bam_location"]] * len(allbams_per_sample[k])
+    [config["data_location"]] * len(allbams_per_sample[k])
     for k in allbams_per_sample.keys()
 ]
 input_expand = [sub_e for e in input_expand for sub_e in e]
 
 output_expand = [
-    [config["output_location"]] * len(allbams_per_sample[k])
+    [config["data_location"]] * len(allbams_per_sample[k])
     for k in allbams_per_sample.keys()
 ]
 output_expand = [sub_e for e in output_expand for sub_e in e]
@@ -199,8 +199,8 @@ def get_final_output():
 
     final_list.extend(
         expand(
-            "{output_folder}/plots/{sample}/final_results/{sample}.txt",
-            output_folder=config["output_location"],
+            "{folder}/{sample}/plots/final_results/{sample}.txt",
+            folder=config["data_location"],
             sample=samples,
         )
     )
@@ -238,35 +238,38 @@ def get_all_plots(wildcards):
 
     df = pd.read_csv(
         checkpoints.filter_bad_cells_from_mosaic_count.get(
-            sample=wildcards.sample, output_folder=config["output_location"]
+            sample=wildcards.sample, folder=config["data_location"]
         ).output.info,
         skiprows=13,
         sep="\t",
     )
 
-    dict_cells_nb_per_sample = df.groupby("sample")["cell"].nunique().to_dict()
+    # dict_cells_nb_per_sample = df.groupby("sample")["cell"].nunique().to_dict()
+    dict_cells_nb_per_sample = {k:len(v) for k,v in cell_per_sample.items()}
     samples = list(dict_cells_nb_per_sample.keys())
 
-    cell_list = df.cell.tolist()
-    tmp_dict = (
-        df[["sample", "cell"]]
-        .groupby("sample")["cell"]
-        .apply(lambda r: sorted(list(r)))
-        .to_dict()
-    )
+    # cell_list = df.cell.tolist()
+    # cell_list = cell_per_sample[wildcards.sample]
+    # tmp_dict = (
+    #     df[["sample", "cell"]]
+    #     .groupby("sample")["cell"]
+    #     .apply(lambda r: sorted(list(r)))
+    #     .to_dict()
+    # )
     tmp_dict = {
         s: {i + 1: c for i, c in enumerate(cell_list)}
-        for s, cell_list in tmp_dict.items()
+        for s, cell_list in cell_per_sample.items()
     }
     for s in tmp_dict.keys():
         tmp_dict[s][0] = "SummaryPage"
+    # print(tmp_dict)
 
     list_indiv_plots = list()
 
     tmp_l_divide = [
         expand(
-            "{output_folder}/plots/{sample}/counts_{plottype}/{cell}.{i}.pdf",
-            output_folder=config["output_location"],
+            "{folder}/{sample}/plots/counts_{plottype}/{cell}.{i}.pdf",
+            folder=config["data_location"],
             sample=sample,
             plottype=plottype_counts,
             cell=tmp_dict[sample][i],
@@ -274,7 +277,9 @@ def get_all_plots(wildcards):
         )
         for sample in samples
         for i in range(dict_cells_nb_per_sample[sample] + 1)
+        # for i in range(dict_cells_nb_per_sample[sample] + 1)
     ]
+    # print(tmp_l_divide)
 
     list_indiv_plots.extend([sub_e for e in tmp_l_divide for sub_e in e])
 
@@ -283,8 +288,8 @@ def get_all_plots(wildcards):
             sub_e
             for e in [
                 expand(
-                    "{output_folder}/plots/{sample}/sv_calls/{method}_filter{filter}/{chrom}.pdf",
-                    output_folder=config["output_location"],
+                    "{folder}/{sample}/plots/sv_calls/{method}_filter{filter}/{chrom}.pdf",
+                    folder=config["data_location"],
                     sample=samples,
                     method=method,
                     chrom=config["chromosomes"],
@@ -300,8 +305,8 @@ def get_all_plots(wildcards):
             sub_e
             for e in [
                 expand(
-                    "{output_folder}/plots/{sample}/sv_consistency/{method}_filter{filter}.consistency-barplot-{plottype}.pdf",
-                    output_folder=config["output_location"],
+                    "{folder}/{sample}/plots/sv_consistency/{method}_filter{filter}.consistency-barplot-{plottype}.pdf",
+                    folder=config["data_location"],
                     sample=samples,
                     method=method,
                     plottype=config["plottype_consistency"],
@@ -317,8 +322,8 @@ def get_all_plots(wildcards):
             sub_e
             for e in [
                 expand(
-                    "{output_folder}/plots/{sample}/sv_clustering/{method}-filter{filter}-{plottype}.pdf",
-                    output_folder=config["output_location"],
+                    "{folder}/{sample}/plots/sv_clustering/{method}-filter{filter}-{plottype}.pdf",
+                    folder=config["data_location"],
                     sample=samples,
                     method=method,
                     plottype=config["plottype_clustering"],
@@ -334,8 +339,8 @@ def get_all_plots(wildcards):
             sub_e
             for e in [
                 expand(
-                    "{output_folder}/mosaiclassifier/complex/{sample}/{method}_filter{filter}.tsv",
-                    output_folder=config["output_location"],
+                    "{folder}/{sample}/mosaiclassifier/complex/{method}_filter{filter}.tsv",
+                    folder=config["data_location"],
                     sample=samples,
                     method=method,
                     filter=config["methods"][method]["filter"],
@@ -347,45 +352,45 @@ def get_all_plots(wildcards):
     ),
     list_indiv_plots.extend(
         expand(
-            "{output_folder}/plots/{sample}/ploidy/{sample}.pdf",
-            output_folder=config["output_location"],
+            "{folder}/{sample}/plots/ploidy/{sample}.pdf",
+            folder=config["data_location"],
             sample=samples,
         ),
     )
     # if config["GC_analysis"] is True:
     #     list_indiv_plots.extend(
     #         expand(
-    #             "{output_folder}/plots/{sample}/alfred/gc_devi.png",
-    #             output_folder=config["output_location"],
+    #             "{folder}/{sample}/plots/alfred/gc_devi.png",
+    #             folder=config["data_location"],
     #             sample=samples,
     #         ),
     #     )
     #     list_indiv_plots.extend(
     #         expand(
-    #             "{output_folder}/plots/{sample}/alfred/gc_dist.png",
-    #             output_folder=config["output_location"],
+    #             "{folder}/{sample}/plots/alfred/gc_dist.png",
+    #             folder=config["data_location"],
     #             sample=samples,
     #         ),
     #     )
     # list_indiv_plots.extend(
     #     expand(
-    #         "{output_folder}/plots/{sample}/counts/CountComplete.{plottype_counts}.pdf",
-    #         output_folder=config["output_location"],
+    #         "{folder}/{sample}/plots/counts/CountComplete.{plottype_counts}.pdf",
+    #         folder=config["data_location"],
     #         sample=samples,
     #         plottype_counts=config["plottype_counts"],
     #     ),
     # )
     list_indiv_plots.extend(
         expand(
-            "{output_folder}/stats/{sample}/stats-merged.tsv",
-            output_folder=config["output_location"],
+            "{folder}/{sample}/stats/stats-merged.tsv",
+            folder=config["data_location"],
             sample=samples,
         ),
     )
     list_indiv_plots.extend(
         expand(
-            "{output_folder}/config/{sample}/run_summary.txt",
-            output_folder=config["output_location"],
+            "{folder}/config/{sample}/run_summary.txt",
+            folder=config["data_location"],
             sample=samples,
         ),
     )

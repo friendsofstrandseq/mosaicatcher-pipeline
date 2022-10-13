@@ -7,14 +7,14 @@
 
 rule mosaiClassifier_calc_probs:
     input:
-        counts="{output_folder}/counts/{sample}/{sample}.txt.gz",
-        info="{output_folder}/counts/{sample}/{sample}.info",
-        states="{output_folder}/strandphaser/{sample}/StrandPhaseR_final_output.txt",
-        bp="{output_folder}/segmentation/{sample}/Selection_jointseg.txt",
+        counts="{folder}/{sample}/counts/{sample}.txt.gz",
+        info="{folder}/{sample}/counts/{sample}.info",
+        states="{folder}/{sample}/strandphaser/StrandPhaseR_final_output.txt",
+        bp="{folder}/{sample}/segmentation/Selection_jointseg.txt",
     output:
-        output="{output_folder}/mosaiclassifier/sv_probabilities/{sample}/probabilities.Rdata",
+        output="{folder}/{sample}/mosaiclassifier/sv_probabilities/probabilities.Rdata",
     log:
-        "{output_folder}/log/mosaiClassifier_calc_probs/{sample}.log",
+        "{folder}/log/mosaiClassifier_calc_probs/{sample}.log",
     conda:
         "../envs/rtools.yaml"
     resources:
@@ -25,12 +25,12 @@ rule mosaiClassifier_calc_probs:
 
 rule create_haplotag_likelihoods:
     input:
-        haplotag_table="{output_folder}/haplotag/table/{sample}/haplotag_counts_merged.tsv",
-        sv_probs_table="{output_folder}/mosaiclassifier/sv_probabilities/{sample}/probabilities.Rdata",
+        haplotag_table="{folder}/{sample}/haplotag/table/haplotag_counts_merged.tsv",
+        sv_probs_table="{folder}/{sample}/mosaiclassifier/sv_probabilities/probabilities.Rdata",
     output:
-        "{output_folder}/mosaiclassifier/haplotag_likelihoods/{sample}.Rdata",
+        "{folder}/{sample}/mosaiclassifier/haplotag_likelihoods/{sample}.Rdata",
     log:
-        "{output_folder}/log/create_haplotag_likelihoods/{sample}.log",
+        "{folder}/log/create_haplotag_likelihoods/{sample}.log",
     conda:
         "../envs/rtools.yaml"
     resources:
@@ -41,11 +41,11 @@ rule create_haplotag_likelihoods:
 
 # rule mosaiClassifier_make_call:
 #     input:
-#         probs="{output_folder}/mosaiclassifier/haplotag_likelihoods/{sample}.Rdata",
+#         probs="{folder}/mosaiclassifier/haplotag_likelihoods/{sample}.Rdata",
 #     output:
-#         "{output_folder}/mosaiclassifier/sv_calls/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}_filterFALSE.tsv",
+#         "{folder}/mosaiclassifier/sv_calls/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}_filterFALSE.tsv",
 #     log:
-#         "{output_folder}/log/mosaiClassifier_make_call/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.log",
+#         "{folder}/log/mosaiClassifier_make_call/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.log",
 #     conda:
 #         "../envs/rtools.yaml"
 #     params:
@@ -59,11 +59,11 @@ rule create_haplotag_likelihoods:
 
 rule mosaiClassifier_make_call:
     input:
-        probs="{output_folder}/mosaiclassifier/haplotag_likelihoods/{sample}.Rdata",
+        probs="{folder}/{sample}/mosaiclassifier/haplotag_likelihoods/{sample}.Rdata",
     output:
-        "{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}_filterFALSE.tsv",
+        "{folder}/{sample}/mosaiclassifier/sv_calls/{method}_filterFALSE.tsv",
     log:
-        "{output_folder}/log/mosaiClassifier_make_call/{sample}/{method}.log",
+        "{folder}/log/mosaiClassifier_make_call/{sample}/{method}.log",
     conda:
         "../envs/rtools.yaml"
     params:
@@ -83,11 +83,11 @@ rule mosaiClassifier_make_call:
 
 rule mosaiClassifier_make_call_biallelic:
     input:
-        probs="{output_folder}/sv_probabilities/{sample}/probabilities.Rdata",
+        probs="{folder}/{sample}/sv_probabilities/*probabilities.Rdata",
     output:
-        "{output_folder}/sv_calls/{sample}/biAllelic_llr{llr}.txt",
+        "{folder}/{sample}/sv_calls/biAllelic_llr{llr}.txt",
     log:
-        "{output_folder}/log/mosaiClassifier_make_call_biallelic/{sample}/{llr}.log",
+        "{folder}/log/mosaiClassifier_make_call_biallelic/{sample}/{llr}.log",
     conda:
         "../envs/rtools.yaml"
     resources:
@@ -96,27 +96,25 @@ rule mosaiClassifier_make_call_biallelic:
         "../scripts/mosaiclassifier_scripts/mosaiClassifier_call_biallelic.snakemake.R"
 
 
-rule debug_complex:
-    input:
-        calls="{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}_filter{filter}.tsv",
-    output:
-        touch(
-            "{output_folder}/mosaiclassifier/sv_calls_debug/{sample}/{method}_filter{filter}.ok"
-        ),
-    log:
-        "{output_folder}/mosaiclassifier/sv_calls_debug/{sample}/{method}_filter{filter}.log",
-    shell:
-        "cat {input.calls}"
+# rule debug_complex:
+#     input:
+#         calls="{folder}/{sample}/mosaiclassifier/sv_calls/{method}_filter{filter}.tsv",
+#     output:
+#         "{folder}/{sample}/mosaiclassifier/sv_calls_debug/{method}_filter{filter}.ok"
+#     log:
+#         "{folder}/log/mosaiclassifier/sv_calls_debug/{sample}/{method}_filter{filter}.log",
+#     shell:
+#         "cat {input.calls}"
 
 
 rule call_complex_regions:
     input:
-        calls="{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}_filter{filter}.tsv",
-        debug="{output_folder}/mosaiclassifier/sv_calls_debug/{sample}/{method}_filter{filter}.ok",
+        calls="{folder}/{sample}/mosaiclassifier/sv_calls/{method}_filter{filter}.tsv",
+        # debug="{folder}/{sample}/mosaiclassifier/sv_calls_debug/{method}_filter{filter}.ok",
     output:
-        complex_regions="{output_folder}/mosaiclassifier/complex/{sample}/{method}_filter{filter}.tsv",
+        complex_regions="{folder}/{sample}/mosaiclassifier/complex/{method}_filter{filter}.tsv",
     log:
-        "{output_folder}/log/call_complex_regions/{sample}/{method}_filter{filter}.log",
+        "{folder}/log/call_complex_regions/{sample}/{method}_filter{filter}.log",
     conda:
         "../envs/mc_base.yaml"
     resources:

@@ -7,11 +7,11 @@
 # CHECKME : segdup file only in hg38
 rule postprocessing_filter:
     input:
-        calls="{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}_filterFALSE.tsv",
+        calls="{folder}/{sample}/mosaiclassifier/sv_calls/{method}_filterFALSE.tsv",
     output:
-        calls="{output_folder}/mosaiclassifier/postprocessing/filter/{sample}/{method}.tsv",
+        calls="{folder}/{sample}/mosaiclassifier/postprocessing/filter/{method}.tsv",
     log:
-        "{output_folder}/log/mosaiclassifier/postprocessing/filter/{sample}/{method}.log",
+        "{folder}/log/mosaiclassifier/postprocessing/filter/{sample}/{method}.log",
     conda:
         "../envs/mc_base.yaml"
     params:
@@ -30,11 +30,11 @@ rule postprocessing_filter:
 # # CHECKME : segdup file only in hg38
 # rule postprocessing_filter:
 #     input:
-#         calls="{output_folder}/mosaiclassifier/sv_calls/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}_filterFALSE.tsv",
+#         calls="{folder}/mosaiclassifier/sv_calls/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}_filterFALSE.tsv",
 #     output:
-#         calls="{output_folder}/mosaiclassifier/postprocessing/filter/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.tsv",
+#         calls="{folder}/mosaiclassifier/postprocessing/filter/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.tsv",
 #     log:
-#         "{output_folder}/log/mosaiclassifier/postprocessing/filter/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.log",
+#         "{folder}/log/mosaiclassifier/postprocessing/filter/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.log",
 #     conda:
 #         "../envs/mc_base.yaml"
 #     params:
@@ -52,11 +52,11 @@ rule postprocessing_filter:
 
 rule postprocessing_merge:
     input:
-        calls="{output_folder}/mosaiclassifier/postprocessing/filter/{sample}/{method}.tsv",
+        calls="{folder}/{sample}/mosaiclassifier/postprocessing/filter/{method}.tsv",
     output:
-        calls="{output_folder}/mosaiclassifier/postprocessing/merge/{sample}/{method}.tsv",
+        calls="{folder}/{sample}/mosaiclassifier/postprocessing/merge/{method}.tsv",
     log:
-        "{output_folder}/log/mosaiclassifier/postprocessing/merge/{sample}/{method}.log",
+        "{folder}/log/mosaiclassifier/postprocessing/merge/{sample}/{method}.log",
     conda:
         "../envs/mc_base.yaml"
     resources:
@@ -71,11 +71,11 @@ rule postprocessing_merge:
 
 # rule postprocessing_merge:
 #     input:
-#         calls="{output_folder}/mosaiclassifier/postprocessing/filter/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.tsv",
+#         calls="{folder}/mosaiclassifier/postprocessing/filter/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.tsv",
 #     output:
-#         calls="{output_folder}/mosaiclassifier/postprocessing/merge/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.tsv",
+#         calls="{folder}/mosaiclassifier/postprocessing/merge/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.tsv",
 #     log:
-#         "{output_folder}/log/mosaiclassifier/postprocessing/merge/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.log",
+#         "{folder}/log/mosaiclassifier/postprocessing/merge/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.log",
 #     conda:
 #         "../envs/mc_base.yaml"
 #     resources:
@@ -90,11 +90,11 @@ rule postprocessing_merge:
 
 rule postprocessing_sv_group_table:
     input:
-        calls="{output_folder}/mosaiclassifier/postprocessing/merge/{sample}/{method}.tsv",
+        calls="{folder}/{sample}/mosaiclassifier/postprocessing/merge/{method}.tsv",
     output:
-        grouptrack="{output_folder}/mosaiclassifier/postprocessing/group-table/{sample}/{method}.tsv",
+        grouptrack="{folder}/{sample}/mosaiclassifier/postprocessing/group-table/{method}.tsv",
     log:
-        "{output_folder}/log/mosaiclassifier/postprocessing/group-table/{sample}/{method}.log",
+        "{folder}/log/mosaiclassifier/postprocessing/group-table/{sample}/{method}.log",
     conda:
         "../envs/mc_base.yaml"
     resources:
@@ -108,11 +108,11 @@ rule postprocessing_sv_group_table:
 
 # rule postprocessing_sv_group_table:
 #     input:
-#         calls="{output_folder}/mosaiclassifier/postprocessing/merge/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.tsv",
+#         calls="{folder}/mosaiclassifier/postprocessing/merge/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.tsv",
 #     output:
-#         grouptrack="{output_folder}/mosaiclassifier/postprocessing/group-table/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.tsv",
+#         grouptrack="{folder}/mosaiclassifier/postprocessing/group-table/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.tsv",
 #     log:
-#         "{output_folder}/log/mosaiclassifier/postprocessing/group-table/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.log",
+#         "{folder}/log/mosaiclassifier/postprocessing/group-table/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.log",
 #     conda:
 #         "../envs/mc_base.yaml"
 #     resources:
@@ -127,14 +127,14 @@ rule postprocessing_sv_group_table:
 rule filter_calls:
     input:
         # inputcalls = "mosaiclassifier/sv_calls/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}_filterFALSE.tsv",
-        inputcalls="{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}_filterFALSE.tsv",
+        inputcalls="{folder}/{sample}/mosaiclassifier/sv_calls/{method}_filterFALSE.tsv",
         # mergedcalls = "mosaiclassifier/postprocessing/merge/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.tsv",
-        mergedcalls="{output_folder}/mosaiclassifier/postprocessing/merge/{sample}/{method}.tsv",
+        mergedcalls="{folder}/{sample}/mosaiclassifier/postprocessing/merge/{method}.tsv",
     output:
         # calls = "mosaiclassifier/sv_calls/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}_filterTRUE.tsv"
-        calls="{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}_filterTRUE.tsv",
+        calls="{folder}/{sample}/mosaiclassifier/sv_calls/{method}_filterTRUE.tsv",
     log:
-        "{output_folder}/log/mosaiclassifier/sv_calls/{sample}/{method}_filterTRUE.log",
+        "{folder}/log/mosaiclassifier/sv_calls/{sample}/{method}_filterTRUE.log",
     conda:
         "../envs/mc_base.yaml"
     resources:
@@ -149,14 +149,14 @@ rule filter_calls:
 # rule filter_calls:
 #     input:
 #         # inputcalls = "mosaiclassifier/sv_calls/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}_filterFALSE.tsv",
-#         inputcalls="{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}_filterFALSE.tsv",
+#         inputcalls="{folder}/mosaiclassifier/sv_calls/{sample}/{method}_filterFALSE.tsv",
 #         # mergedcalls = "mosaiclassifier/postprocessing/merge/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.tsv",
-#         mergedcalls="{output_folder}/mosaiclassifier/postprocessing/merge/{sample}/{method}.tsv",
+#         mergedcalls="{folder}/mosaiclassifier/postprocessing/merge/{sample}/{method}.tsv",
 #     output:
 #         # calls = "mosaiclassifier/sv_calls/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}_filterTRUE.tsv"
-#         calls="{output_folder}/mosaiclassifier/sv_calls/{sample}/{method}_filterTRUE.tsv",
+#         calls="{folder}/mosaiclassifier/sv_calls/{sample}/{method}_filterTRUE.tsv",
 #     log:
-#         "{output_folder}/log/mosaiclassifier/sv_calls/{sample}/{method}_filterTRUE.log",
+#         "{folder}/log/mosaiclassifier/sv_calls/{sample}/{method}_filterTRUE.log",
 #     conda:
 #         "../envs/mc_base.yaml"
 #     resources:
