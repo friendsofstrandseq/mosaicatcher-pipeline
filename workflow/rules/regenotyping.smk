@@ -2,7 +2,7 @@
 # REGENOTYPE SNV                                                               #
 ################################################################################
 
-if config["GC_analysis"] == False:
+if config["GC_analysis"] == False or config["ashleys_pipeline"] == False:
 
     rule mergeBams:
         input:

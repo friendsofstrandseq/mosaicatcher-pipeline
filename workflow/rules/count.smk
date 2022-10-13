@@ -4,8 +4,8 @@ if config["ashleys_pipeline"] is False:
         input:
             # ancient("config/samples.tsv"),
             bam=lambda wc: expand(
-                "{input_folder}/{sample}/bam/{cell}.sort.mdup.bam",
-                input_folder=config["data_location"],
+                "{folder}/{sample}/bam/{cell}.sort.mdup.bam",
+                folder=config["data_location"],
                 sample=wc.sample,
                 cell=bam_per_sample_local[str(wc.sample)],
             ),
