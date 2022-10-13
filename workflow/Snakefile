@@ -22,12 +22,13 @@ if config["ashleys_pipeline"] is True:
 
     module ashleys_qc:
         snakefile:
-            "../../ashleys-qc-pipeline/workflow/Snakefile"
-            # github(
-            #     "friendsofstrandseq/ashleys-qc-pipeline",
-            #     path="workflow/Snakefile",
-            #     branch="main",
-            # )
+            # "../../ashleys-qc-pipeline/workflow/Snakefile"
+            github(
+                "friendsofstrandseq/ashleys-qc-pipeline",
+                path="workflow/Snakefile",
+                branch="dev",
+                # branch="main",
+            )
         config:
             config
 
