@@ -57,7 +57,7 @@ the workflow goes through the following steps:
 ## Small issues to fix
 
 - [ ] Move pysam / SM tag comparison script to snakemake rule
-- [ ] replace `input_bam_location` by `input_folder` (harmonization with [ashleys-qc-pipeline](https://github.com/friendsofstrandseq/ashleys-qc-pipeline.git))
+- [x] replace `input_bam_location` by `data_location` (harmonization with [ashleys-qc-pipeline](https://github.com/friendsofstrandseq/ashleys-qc-pipeline.git))
 
 # 🛑 Troubleshooting & Current limitations
 
