@@ -12,7 +12,7 @@ data_location: ".tests/data_CHR17"
 # Reference assembly selected
 reference: "hg38"
 # Enable / Disable GC analysis
-GC_analysis: True
+GC_analysis: False
 # Normalize or not mosaic counts
 normalized_counts: True
 # Mutually exclusive with ashleys_pipeline
