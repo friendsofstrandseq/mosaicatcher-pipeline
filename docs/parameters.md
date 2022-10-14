@@ -15,12 +15,11 @@ All these arguments can be specified in two ways:
 
 ### Input/output options
 
-| Parameter            | Comment                                                                                                           | Parameter type | Default        |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------- | -------------- |
-| `input_bam_location` | Path to parent folder containing samples                                                                          | String         | .tests/data/   |
-| `output_location`    | Path to output folder where the results will be saved                                                             | String         | .tests/output/ |
-| `ashleys_pipeline`   | Allow to load and use ashleys-qc-pipeline snakemake preprocessing module and to start from FASTQ inputs           | Boolean        | False          |
-| `input_old_behavior` | Mutualy exclusive with ashleys_pipeline. Will use `selected` folder to identify high-quality libraries to process | Boolean        | False          |
+| Parameter            | Comment                                                                                                           | Parameter type | Default            |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------- | ------------------ |
+| `data_location`      | Path to parent folder containing samples                                                                          | String         | .tests/data_CHR17/ |
+| `ashleys_pipeline`   | Allow to load and use ashleys-qc-pipeline snakemake preprocessing module and to start from FASTQ inputs           | Boolean        | False              |
+| `input_old_behavior` | Mutualy exclusive with ashleys_pipeline. Will use `selected` folder to identify high-quality libraries to process | Boolean        | False              |
 
 ### Other parameters
 
@@ -36,8 +35,7 @@ All these arguments can be specified in two ways:
 | `check_sm_tag`      | Based on pysam, will compare for each BAM file, if the header SM tag is identical to the folder name in order to prevent further issues. | False   |
 | `dl_bam_example`    | Allow to retrieve automatically BAM fullsize example data.                                                                               | False   |
 | `dl_external_files` | Allow to retrieve automatically external files (GRCh38 reference genome + 1000G SNV VCF file) required to run the pipeline.              | False   |
-| `GC_analysis` | Allow to perform GC analysis using Alfred and GC correction for visualization (Marco Cosenza).              | False   |
-
+| `GC_analysis`       | Allow to perform GC analysis using Alfred and GC correction for visualization (Marco Cosenza).                                           | False   |
 
 ### External files
 
@@ -64,6 +62,7 @@ All these arguments can be specified in two ways:
 | `regfactor`             |                                                                                                            |               |
 | `filter`                |                                                                                                            |               |
 | `chromosomes`           | List of chromosomes to be processed in the pipeline                                                        | chr1..22,chrX |
+| `plate_orientation`           | List of chromosomes to be processed in the pipeline                                                        | chr1..22,chrX |
 
 ### Execution profile
 

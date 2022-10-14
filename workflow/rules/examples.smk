@@ -109,6 +109,12 @@ rule install_T2T_BSgenome_tarball:
     script:
         "../scripts/utils/install_R_tarball.R"
 
+rule empty_install:
+    output:
+        touch("workflow/data/ref_genomes/config/fake_install.ok"),
+    log:
+        "workflow/data/ref_genomes/config/fake_install.log"
+
 
 rule samtools_faindex:
     input:
