@@ -18,6 +18,7 @@ containerized: docker_container
 # containerized: "docker://weber8thomas/mosaicatcher-pipeline:1.7.0"
 
 
+
 if config["ashleys_pipeline"] is True:
 
     module ashleys_qc:
