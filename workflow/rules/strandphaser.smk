@@ -64,6 +64,13 @@ rule prepare_strandphaser_config_per_chrom:
         "../scripts/strandphaser_scripts/prepare_strandphaser.py"
 
 
+def bsgenome_install(wildcards):
+    if config["reference"] == "T2T":
+        return "workflow/data/ref_genomes/config/T2T_R_tarball_install.ok"
+    else:
+        return "workflow/data/ref_genomes/config/fake_install.ok"
+
+
 rule run_strandphaser_per_chrom:
     """
     rule fct: run strandphaser for each chromosome 
@@ -75,6 +82,7 @@ rule run_strandphaser_per_chrom:
         wcregions="{folder}/{sample}/strandphaser/strandphaser_input.txt",
         snppositions=locate_snv_vcf,
         configfile="{folder}/{sample}/strandphaser/StrandPhaseR.{chrom}.config",
+        bsgenome=bsgenome_install
     output:
         "{folder}/{sample}/strandphaser/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt",
         "{folder}/{sample}/strandphaser/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf",
