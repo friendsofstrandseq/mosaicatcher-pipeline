@@ -1,8 +1,7 @@
 import sys, os
 
 
-
-def make_log_useful(log_path, status):
+def make_log_useful(log_path, status, config):
 
     error_buffer = []
     record = 0
@@ -32,7 +31,8 @@ def make_log_useful(log_path, status):
 
     my_env = dict(os.environ)
     with open(log_path, "a") as logfile:
-        _ = logfile.write("\n===[{}]===\n".format(status))
+        _ = logfile.write("=======[{}]=======\n".format(status))
+        _ = logfile.write("\n===[{}]===\n".format("Infrastructure information"))
         _ = logfile.write("Host: {}\n".format(my_env.get("HOST", "N/A")))
         _ = logfile.write("Hostname: {}\n".format(my_env.get("HOSTNAME", "N/A")))
         _ = logfile.write("Display: {}\n".format(my_env.get("DISPLAY", "N/A")))
@@ -40,6 +40,17 @@ def make_log_useful(log_path, status):
         _ = logfile.write("Terminal: {}\n".format(my_env.get("TERM", "N/A")))
         _ = logfile.write("Screen: {}\n".format(my_env.get("STY", "N/A")))
         _ = logfile.write("Conda ENV: {}\n".format(my_env.get("CONDA_DEFAULT_ENV", "N/A")))
+
+        _ = logfile.write("\n===[{}]===\n".format("Workflow information"))
+        _ = logfile.write("smk-wf-catalog/mosacaitcher-pipeline v{version}\n".format(version=str(config["version"])))
+        _ = logfile.write("Folder to processed : {}\n".format(str(config["data_location"])))
+        _ = logfile.write("GC analysis : {}\n".format(str(config["GC_analysis"])))
+        _ = logfile.write("Read Counts normalization : {}\n".format(str(config["normalized_counts"])))
+        _ = logfile.write("Binning window size : {}\n".format(str(config["window"])))
+        _ = logfile.write("Ashleys-QC preprocessing pipeline : {}\n".format(str(config["ashleys_pipeline"])))
+        _ = logfile.write("BAM folder old format (all/selected) : {}\n".format(str(config["input_old_behavior"])))
+        _ = logfile.write("List of chromosomes processed : {}\n".format(str(config["chromosomes"])))
+        _ = logfile.write("Reference genome selected : {}\n".format(config["reference"]))
         _ = logfile.write("\n")
 
     return

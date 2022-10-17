@@ -1,4 +1,0 @@
-use-conda: true
-conda-frontend: "conda"
-use-singularity: true
-latency-wait: 60

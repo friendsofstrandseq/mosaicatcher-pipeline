@@ -1,16 +1,4 @@
-# from workflow.scripts.utils.utils import get_mem_mb
-
-################################################################################
-# StrandPhaseR things                                                          #
-################################################################################
-
-
 rule convert_strandphaser_input:
-    """
-    rule fct: extract only segmentation with WC orientation 
-    input: initial_strand_state file coming from rule segmentation_selection & info file from mosaic count output
-    output: filtered TSV file with start/end coordinates of WC-orientated segment to be used by strandphaser
-    """
     input:
         states="{folder}/{sample}/segmentation/Selection_initial_strand_state",
         info="{folder}/{sample}/counts/{sample}.info",
@@ -22,8 +10,6 @@ rule convert_strandphaser_input:
         "../envs/rtools.yaml"
     script:
         "../scripts/strandphaser_scripts/helper.convert_strandphaser_input.R"
-
-
 
 
 rule check_single_paired_end:
@@ -44,13 +30,7 @@ rule check_single_paired_end:
         "../scripts/utils/detect_single_paired_end.py"
 
 
-# TODO : replace by clean config file if possible or by temporary removed file
 rule prepare_strandphaser_config_per_chrom:
-    """
-    rule fct: prepare config file used by strandphaser
-    input: input used only for wildcards : sample, window & bpdens
-    output: config file used by strandphaser
-    """
     input:
         seg_initial_str_state="{folder}/{sample}/segmentation/Selection_initial_strand_state",
         single_paired_end_detect="{folder}/{sample}/config/single_paired_end_detection.txt",
@@ -64,25 +44,13 @@ rule prepare_strandphaser_config_per_chrom:
         "../scripts/strandphaser_scripts/prepare_strandphaser.py"
 
 
-def bsgenome_install(wildcards):
-    if config["reference"] == "T2T":
-        return "workflow/data/ref_genomes/config/T2T_R_tarball_install.ok"
-    else:
-        return "workflow/data/ref_genomes/config/fake_install.ok"
-
-
 rule run_strandphaser_per_chrom:
-    """
-    rule fct: run strandphaser for each chromosome 
-    input: strandphaser_input.txt from rule convert_strandphaser_input ; genotyped snv for each chrom by freebayes ; configfile created by rule prepare_strandphaser_config_per_chrom ; bam folder
-    output:
-    """
     input:
         install_strandphaser=rules.install_rlib_strandphaser.output,
         wcregions="{folder}/{sample}/strandphaser/strandphaser_input.txt",
         snppositions=locate_snv_vcf,
         configfile="{folder}/{sample}/strandphaser/StrandPhaseR.{chrom}.config",
-        bsgenome=bsgenome_install
+        bsgenome=bsgenome_install,
     output:
         "{folder}/{sample}/strandphaser/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt",
         "{folder}/{sample}/strandphaser/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf",

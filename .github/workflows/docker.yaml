@@ -1,9 +1,10 @@
 name: Build container
 
 on:
-  push:
-    tags:
-      - "*"
+  pull_request:
+    types: [closed]
+    branches:
+      - main
 
 jobs:
   build_mc_container:
@@ -13,15 +14,46 @@ jobs:
       IMAGE_NAME: mosaicatcher-pipeline
     steps:
       - uses: actions/checkout@v2
+      - name: Testing data
+        uses: snakemake/snakemake-github-action@v1.23.0
+        with:
+          directory: .
+          snakefile: ./workflow/Snakefile
+          stagein: "conda config --set channel_priority flexible"
+          args: "--cores 2 --use-conda --configfile ./config/config.yaml --config chromosomes=[chr17] ashleys_pipeline=True normalized_counts=True GC_analysis=True use_light_data=True  --conda-frontend mamba -p"
+      - name: Create container file
+        uses: snakemake/snakemake-github-action@v1
+        with:
+          snakefile: ./workflow/Snakefile
+          directory: .
+          task: "containerize"
+          args: "--cores 1 --use-conda --configfile ./config/config.yaml --config chromosomes=[chr17] ashleys_pipeline=True normalized_counts=True GC_analysis=True use_light_data=True"
+      - name: Edit Dockerfile
+        run: |
+          dockerfile="Dockerfile" && \
+          rtools_env=$(grep "envs/rtools.yaml /conda-envs" "$dockerfile" | \
+            grep -o "conda-envs/.*\/" | sed 's/conda-envs\///g;s/\/$//g') && \
+          echo "\n\n#CUSTOM PART\n\nRUN mamba install -c conda-forge -c bioconda samtools && \
+          chmod -R 0777 /conda-envs/"$rtools_env"/lib/R/library &&  \
+          apt-get install git && \
+          git clone -b smk_workflow_catalog https://github.com/friendsofstrandseq/mosaicatcher-pipeline.git /mosaicatcher-pipeline && \
+          /conda-envs/"$rtools_env"/bin/Rscript /mosaicatcher-pipeline/workflow/scripts/strandphaser_scripts/install_strandphaser.R 69c9fb4 https://github.com/daewoooo/StrandPhaseR  && \
+          mamba clean --all -y" >> "$dockerfile"
+
+      - name: Print Dockerfile
+        run: |
+          cat Dockerfile
+
       - name: Run read-yaml action
         id: yaml-data
-        uses: jbutcher5/read-yaml@main      # You may wish to replace main with a version tag such as '1.6' etc.
+        uses: jbutcher5/read-yaml@main # You may wish to replace main with a version tag such as '1.6' etc.
         with:
-          file: './config/config.yaml'
+          file: "./config/config.yaml"
           key-path: '["version"]' # Access the runs key then the using key and retuns the value.
 
       - name: Display read-yaml output
         run: echo "${{ steps.yaml-data.outputs.data }}"
+
       - name: Build Image
         id: build-image
         uses: redhat-actions/buildah-build@v2
@@ -29,8 +61,26 @@ jobs:
           image: ${{ env.IMAGE_NAME }}
           tags: "${{ steps.yaml-data.outputs.data }}"
           dockerfiles: |
-            ./github-actions-runner/Dockerfile_complete.dockerfile
-            
+            ./Dockerfile
+
+      # - name: Run read-yaml action
+      #   id: yaml-data
+      #   uses: jbutcher5/read-yaml@main      # You may wish to replace main with a version tag such as '1.6' etc.
+      #   with:
+      #     file: './config/config.yaml'
+      #     key-path: '["version"]' # Access the runs key then the using key and retuns the value.
+
+      # - name: Display read-yaml output
+      #   run: echo "${{ steps.yaml-data.outputs.data }}"
+      # - name: Build Image
+      #   id: build-image
+      #   uses: redhat-actions/buildah-build@v2
+      #   with:
+      #     image: ${{ env.IMAGE_NAME }}
+      #     tags: "${{ steps.yaml-data.outputs.data }}"
+      #     dockerfiles: |
+      #       ./github-actions-runner/Dockerfile_complete.dockerfile
+
       - name: Push To DockerHub
         id: push-to-dockerhub
         uses: redhat-actions/push-to-registry@v2

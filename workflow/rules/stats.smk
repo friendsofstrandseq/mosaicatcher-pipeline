@@ -1,13 +1,3 @@
-# import pandas as pd
-# config_df = pd.read_csv("config/config_df.tsv", sep="\t")
-# samples = sorted(config_df.Sample.unique().tolist())
-
-# samples = sorted(df_config_files.Sample.unique().tolist())
-
-################################################################################
-# Summary statistics on sv calls                                               #
-################################################################################
-
 
 rule summary_statistics:
     input:
@@ -51,14 +41,3 @@ rule aggregate_summary_statistics:
         "../envs/mc_base.yaml"
     shell:
         "(head -n1 {input.tsv[0]} && (tail -n1 -q {input.tsv} | sort -k1) ) > {output}"
-
-
-# rule summary_statistics_to_pdf:
-#     input:
-#         "stats/{sample}/stats-merged.tsv"
-#     output:
-#         report("stats/{sample}/stats-merged.pdf", category="Stats", labels={"Type" : "Complete stats"})
-#     run:
-#         import pandas as pd
-#         df = pd.read_csv(input[0], sep='\t')
-#         df.to_pdf

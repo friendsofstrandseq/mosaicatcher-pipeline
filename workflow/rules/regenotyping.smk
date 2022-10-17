@@ -1,7 +1,3 @@
-################################################################################
-# REGENOTYPE SNV                                                               #
-################################################################################
-
 if config["GC_analysis"] == False or config["ashleys_pipeline"] == False:
 
     rule mergeBams:
@@ -25,7 +21,6 @@ if config["GC_analysis"] == False or config["ashleys_pipeline"] == False:
         shell:
             "samtools merge -@ {threads} {output} {input} 2>&1 > {log}"
 
-
     rule mergeSortBams:
         input:
             "{folder}/{sample}/merged_bam/merged.raw.bam",
@@ -41,13 +36,8 @@ if config["GC_analysis"] == False or config["ashleys_pipeline"] == False:
             "../envs/mc_bioinfo_tools.yaml"
         shell:
             "samtools sort -@ {threads} -o {output} {input} 2>&1 > {log}"
-            
+
     rule index_merged_bam:
-        """
-        rule fct:
-        input:
-        output:
-        """
         input:
             "{folder}/{sample}/merged_bam/merged.bam",
         output:
@@ -60,6 +50,7 @@ if config["GC_analysis"] == False or config["ashleys_pipeline"] == False:
             mem_mb=get_mem_mb,
         shell:
             "samtools index {input} > {log} 2>&1"
+
 
 rule regenotype_SNVs:
     input:

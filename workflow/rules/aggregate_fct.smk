@@ -1,4 +1,9 @@
 def aggregate_phased_haps(wildcards):
+    """
+    Function based on checkpoint summarise_ploidy to process only chromosomes where
+    the median ploidy status is equal or above 2 for all segments
+    Return phased_haps.txt as input for combine_strandphaser_output
+    """
     df = pd.read_csv(
         checkpoints.summarise_ploidy.get(
             sample=wildcards.sample, folder=config["data_location"]
@@ -14,6 +19,11 @@ def aggregate_phased_haps(wildcards):
 
 
 def aggregate_vcf_gz(wildcards):
+    """
+    Function based on checkpoint summarise_ploidy to process only chromosomes where
+    the median ploidy status is equal or above 2 for all segments
+    Return {chrom}_phased.vcf.gz as input for merge_strandphaser_vcfs
+    """
     df = pd.read_csv(
         checkpoints.summarise_ploidy.get(
             sample=wildcards.sample, folder=config["data_location"]
@@ -29,6 +39,11 @@ def aggregate_vcf_gz(wildcards):
 
 
 def aggregate_vcf_gz_tbi(wildcards):
+    """
+    Function based on checkpoint summarise_ploidy to process only chromosomes where
+    the median ploidy status is equal or above 2 for all segments
+    Return {chrom}_phased.vcf.gz.tbi as input for merge_strandphaser_vcfs
+    """
     df = pd.read_csv(
         checkpoints.summarise_ploidy.get(
             sample=wildcards.sample, folder=config["data_location"]
@@ -44,6 +59,12 @@ def aggregate_vcf_gz_tbi(wildcards):
 
 
 def locate_snv_vcf(wildcards):
+    """
+    Function as an input in run_strandphaser_per_chrom
+    Trigger based on config file either:
+        - regenotyping of 1000G file / other vcf file using freebayes
+        - de novo calling using bcftools
+    """
     if (
         "snv_calls" not in config["references_data"][config["reference"]]
         or wildcards.sample
@@ -81,6 +102,11 @@ def locate_snv_vcf(wildcards):
 
 
 def aggregate_cells_segmentation(wildcards):
+    """
+    Function based on checkpoint filter_bad_cells_from_mosaic_count
+    to process the segmentation only on cells that were flagged as high-quality
+    Return {cell}.txt
+    """
     df = pd.read_csv(
         checkpoints.filter_bad_cells_from_mosaic_count.get(
             sample=wildcards.sample, folder=config["data_location"]
@@ -98,88 +124,8 @@ def aggregate_cells_segmentation(wildcards):
     )
 
 
-# def aggregate_cells_count_plot(wildcards):
-#     import pandas as pd
-
-#     df = pd.read_csv(
-#         checkpoints.filter_bad_cells_from_mosaic_count.get(
-#             sample=wildcards.sample, folder=config["data_location"]
-#         ).output.info,
-#         skiprows=13,
-#         sep="\t",
-#     )
-
-
-#     # dict_cells_nb_per_sample = df.groupby("sample")["cell"].nunique().to_dict()
-#     dict_cells_nb_per_sample = {k:len(v) for k,v in cell_per_sample.items()}
-#     samples = list(dict_cells_nb_per_sample.keys())
-
-#     # cell_list = df.cell.tolist()
-#     cell_list = cell_per_sample[wildcards.sample]
-#     # tmp_dict = (
-#     #     df[["sample", "cell"]]
-#     #     .groupby("sample")["cell"]
-#     #     .apply(lambda r: sorted(list(r)))
-#     #     .to_dict()
-#     # )
-#     tmp_dict = {
-#         s: {i + 1: c for i, c in enumerate(cell_list)}
-#         for s, cell_list in cell_per_sample.items()
-#     }
-#     for s in tmp_dict.keys():
-#         tmp_dict[s][0] = "SummaryPage"
-#     # print(tmp_dict)
-
-#     list_indiv_plots = list()
-
-#     print([sub_e for e in [ 
-#         expand(
-#             "{folder}/{sample}/plots/counts_{plottype}/{cell}.{i}.pdf",
-#             folder=config["data_location"],
-#             sample=wildcards.sample,
-#             plottype=plottype_counts,
-#             cell=tmp_dict[wildcards.sample][i],
-#             i=i,
-#         )
-#         for i in range(dict_cells_nb_per_sample[wildcards.sample] + 1)
-#         # for i in range(dict_cells_nb_per_sample[sample] + 1)
-#     ]for sub_e in e ])
-
-#     return [sub_e for e in [ 
-#         expand(
-#             "{folder}/{sample}/plots/counts_{plottype}/{cell}.{i}.pdf",
-#             folder=config["data_location"],
-#             sample=wildcards.sample,
-#             plottype=plottype_counts,
-#             cell=tmp_dict[wildcards.sample][i],
-#             i=i,
-#         )
-#         for i in range(dict_cells_nb_per_sample[wildcards.sample] + 1)
-#         # for i in range(dict_cells_nb_per_sample[sample] + 1)
-#     ]for sub_e in e ]
-
-
-
-
-
-    # cell_list = df.cell.tolist()
-    # tmp_dict = (
-    #     df[["sample", "cell"]]
-    #     .groupby("sample")["cell"]
-    #     .apply(lambda r: sorted(list(r)))
-    #     .to_dict()
-    # )
-    # tmp_dict = {
-    #     s: {i + 1: c for i, c in enumerate(cell_list)}
-    #     for s, cell_list in tmp_dict.items()
-    # }
-    # for s in tmp_dict.keys():
-    #     tmp_dict[s][0] = "SummaryPage"
-
-    # return expand(
-    #     "{folder}/{sample}/plots/counts/{cell}.{i}.pdf",
-    #     folder=config["data_location"],
-    #     sample=wildcards.sample,
-    #     cell=cell_list,
-    #     i=tmp_dict[i],
-    # )
+def bsgenome_install(wildcards):
+    if config["reference"] == "T2T":
+        return "workflow/data/ref_genomes/config/T2T_R_tarball_install.ok"
+    else:
+        return "workflow/data/ref_genomes/config/fake_install.ok"

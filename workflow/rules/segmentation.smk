@@ -1,24 +1,7 @@
-# from workflow.scripts.utils.utils import get_mem_mb
-
 import math
 
-# import pandas as pd
-# config_df = pd.read_csv("config/config_df.tsv", sep="\t")
-# cell_per_sample = config_df.loc[config_df["Selected"] == True].groupby("Sample")["Cell"].apply(list).to_dict()
 
-################################################################################
-# Joint Segmentation                                                                 #
-################################################################################
-
-
-# CHECKME : @Marco mention on Gitlab
-# CHECKME : parameters
 rule segmentation:
-    """
-    rule fct: Identify breakpoints of futur SV based on normalized read counts
-    input: mosaic [normalized] counts
-    output: Segmentation tab file 
-    """
     input:
         counts="{folder}/{sample}/counts/{sample}.txt.gz",
     output:
@@ -44,11 +27,6 @@ rule segmentation:
 
 # FIXME: This is a workaround because latest versions of "mosaic segment" don't compute the "bps" column properly. Remove once fixed in the C++ code.
 rule fix_segmentation:
-    """
-    rule fct:
-    input:
-    output:
-    """
     input:
         ancient("{folder}/{sample}/segmentation/{sample}.txt.fixme"),
     output:
@@ -67,17 +45,7 @@ rule fix_segmentation:
         """
 
 
-################################################################################
-# Single-Cell Segmentation                                                                 #
-################################################################################
-
-
 rule segment_one_cell:
-    """
-    rule fct: Same as `rule segmentation` : mosaic segment function but for individual cell
-    input: mosaic count splitted by cell produced by `rule extract_single_cell_counts`
-    output: Segmentation file for an individual cell
-    """
     input:
         "{folder}/{sample}/counts/counts-per-cell/{cell}.txt.percell.gz",
     output:
@@ -102,11 +70,6 @@ rule segment_one_cell:
 
 
 rule segmentation_selection:
-    """
-    rule fct:
-    input: mosaic read counts (txt.gz) & stats info (.info) + joint & sc segmentation 
-    output: initial_strand_state used for the following by strandphaser
-    """
     input:
         counts="{folder}/{sample}/counts/{sample}.txt.gz",
         jointseg="{folder}/{sample}/segmentation/{sample}.txt",
