@@ -4,7 +4,8 @@ rule install_rlib_strandphaser:
         check=touch(
             expand(
                 "{folder}/config/strandphaser/R_setup/strandphaser_version-{commit}.ok".format(
-                    folder=config["data_location"], commit=config["git_commit_strandphaser"]
+                    folder=config["data_location"],
+                    commit=config["git_commit_strandphaser"],
                 )
             )
         ),

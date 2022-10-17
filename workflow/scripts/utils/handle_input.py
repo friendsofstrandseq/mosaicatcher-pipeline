@@ -23,12 +23,31 @@ class HandleInput:
         ext = ".bam" if bam is True else ".fastq.gz"
         folder = "bam" if bam is True else "fastq"
         complete_df_list = list()
-        # print(thisdir)
-        exclude = ["._.DS_Store", ".DS_Store", "all", "ashleys_counts", "bam", "cell_selection", "config", "counts", "fastq", "fastqc", "haplotag", "log", "merged_bam", "mosaiclassifier", "normalizations", "ploidy", "plots", "predictions", "segmentation", "snv_calls", "stats", "strandphaser" ]
+        exclude = [
+            "._.DS_Store",
+            ".DS_Store",
+            "all",
+            "ashleys_counts",
+            "bam",
+            "cell_selection",
+            "config",
+            "counts",
+            "fastq",
+            "fastqc",
+            "haplotag",
+            "log",
+            "merged_bam",
+            "mosaiclassifier",
+            "normalizations",
+            "ploidy",
+            "plots",
+            "predictions",
+            "segmentation",
+            "snv_calls",
+            "stats",
+            "strandphaser",
+        ]
         for sample in [e for e in os.listdir(thisdir) if e not in exclude]:
-            # print(thisdir, sample, folder, ext)
-
-            # print("{thisdir}/{sample}/{folder}/".format(thisdir=thisdir, sample=sample, folder=folder))
             l_files_all = [
                 f
                 for f in os.listdir("{thisdir}/{sample}/{folder}/".format(thisdir=thisdir, sample=sample, folder=folder))
@@ -41,16 +60,9 @@ class HandleInput:
             df["Cell"] = df["File"].apply(lambda r: r.split(".")[0])
             df["Full_path"] = "{thisdir}/{sample}/{folder}/".format(thisdir=thisdir, sample=sample, folder=folder)
             df["Full_path"] = df["Full_path"] + df["File"] + ext
-            # if bam is True:s
-            # l_files_selected = [f for f in os.listdir(thisdir + "/" + sample + "/selected/") if f.endswith(".bam")]
-            # print(l_files_selected)
-            # join = list(set(l_files_all).intersection(set(l_files_selected)))
-            # df["Selected"] = False
-            # df.loc[df["File"].isin(join), "Selected"] = True
 
             complete_df_list.append(df)
 
         complete_df = pd.concat(complete_df_list)
         complete_df = complete_df.sort_values(by=["Cell", "File"]).reset_index(drop=True)
-        # complete_df = complete_df.loc[~complete_df["Cell"].isin(exclude_list)]
         return complete_df

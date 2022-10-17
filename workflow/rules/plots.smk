@@ -1,5 +1,3 @@
-# from workflow.scripts.utils.utils import get_mem_mb
-
 import os
 
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
@@ -8,13 +6,6 @@ os.environ["OPENBLAS_NUM_THREADS"] = "1"
 envvars:
     "OPENBLAS_NUM_THREADS",
 
-
-################################################################################
-# Plots                                                                        #
-################################################################################
-
-# Load rules only if plot is enabled [True] in config file
-# if config["plot"] is True:
 
 if config["ashleys_pipeline"] is False:
 
@@ -38,7 +29,7 @@ if config["ashleys_pipeline"] is False:
 
 rule divide_pdf:
     input:
-            "{folder}/{sample}/plots/counts/CountComplete.{plottype}.pdf",
+        "{folder}/{sample}/plots/counts/CountComplete.{plottype}.pdf",
     output:
         report(
             "{folder}/{sample}/plots/counts_{plottype}/{cell}.{i, \d+}.pdf",
@@ -51,25 +42,10 @@ rule divide_pdf:
         "{folder}/log/{sample}/plots/counts_{plottype}/{cell}.{i, \d+}.log",
     conda:
         "../envs/mc_base.yaml"
-    # params:
-    #     config_df="{folder}/config/config_df.tsv".format(folder=config["data_location"]),
     resources:
         mem_mb=get_mem_mb,
     script:
         "../scripts/plotting/dividing_pdf.py"
-
-
-# rule tmp_merge_divide:
-#     input:
-#         aggregate_cells_count_plot,
-#     output:
-#         touch("{folder}/{sample}/plots/divide_plots/{sample}.txt"),
-#     log:
-#         "{folder}/log/final_blank_results/{sample}.log",
-#     conda:
-#         "../envs/mc_base.yaml"
-#     shell:
-#         "touch {output}"
 
 
 rule final_results:
@@ -166,7 +142,6 @@ rule plot_SV_calls:
     log:
         "{folder}/log/plot_SV_calls/{sample}/{method}_filter{filter}/{chrom}.log",
     conda:
-        # "../envs/dev/plot_sv_calls.yaml"
         "../envs/rtools.yaml"
     resources:
         mem_mb=get_mem_mb,
@@ -202,100 +177,3 @@ rule plot_ploidy:
         mem_mb=get_mem_mb,
     script:
         "../scripts/plotting/ploidy_plot.py"
-
-
-# if config["GC_analysis"] is True:
-
-#     rule plot_mosaic_gc_norm_counts:
-#         input:
-#             counts="{folder}/counts/GC_correction/{sample}/{sample}.VST.GC.scaled.txt.gz",
-#             info="{folder}/{sample}/counts/{sample}.info",
-#         output:
-#             "{folder}/{sample}/plots/counts/CountComplete.GC_corrected.pdf",
-#         log:
-#             "{folder}/log/plot_mosaic_counts/{sample}.log",
-#         conda:
-#             "../envs/rtools.yaml"
-#         resources:
-#             mem_mb=get_mem_mb,
-#         shell:
-#             """
-#             LC_CTYPE=C Rscript workflow/scripts/plotting/qc.R {input.counts} {input.info} {output} > {log} 2>&1
-#             """
-
-#     rule alfred_plot:
-#         input:
-#             table="{folder}/alfred/{sample}.table",
-#         output:
-#             gcdist_plot=report(
-#                 "{folder}/{sample}/plots/alfred/gc_dist.png",
-#                 category="GC analysis",
-#                 labels={"Sample": "{sample}", "Type": "GC distribution"},
-#             ),
-#             gcdevi_plot=report(
-#                 "{folder}/{sample}/plots/alfred/gc_devi.png",
-#                 category="GC analysis",
-#                 labels={"Sample": "{sample}", "Type": "GC deviation"},
-#             ),
-#         log:
-#             "{folder}/log/alfred_plot/{sample}.log",
-#         resources:
-#             mem_mb=get_mem_mb,
-#         conda:
-#             "../envs/rtools.yaml"
-#         script:
-#             "../scripts/plotting/gc.R"
-# rule datavzrd_variants_calls:
-
-
-
-#     input:
-#         config = "workflow/datavzrd/datavzrd_sv_calls.yaml",
-#     output:
-#         report(
-#             directory("results/datavzrd-report"),
-#             htmlindex="index.html",
-#         ),
-#     conda:
-#         "datavzrd"
-#     shell:
-#         "datavzrd {input.config} --output {output}"
-# rule plot_SV_calls:
-#     input:
-#         counts="{folder}/{sample}/counts/{sample}.txt.gz",
-#         calls="{folder}/mosaiclassifier/sv_calls/{sample}/{method}_filter{filter}.tsv",
-#         complex_calls="{folder}/mosaiclassifier/sv_calls/{sample}/{method}_filter{filter}.complex.tsv",
-#         strand="{folder}/strandphaser/{sample}/StrandPhaseR_final_output.txt",
-#         segments="{folder}/segmentation/{sample}/Selection_jointseg.txt",
-#         scsegments="{folder}/segmentation/{sample}/Selection_singleseg.txt",
-#         grouptrack="{folder}/mosaiclassifier/postprocessing/group-table/{sample}/{method}.tsv",
-#     output:
-#         report(
-#             "{folder}/{sample}/plots/sv_calls/{method}_filter{filter}.{chrom}.pdf",
-#             category="SV Calls",
-#             subcategory="{sample}",
-#             labels={
-#                 "method": "{method}",
-#                 "filter": "{filter}",
-#                 "Chrom": "{chrom}",
-#             },
-#         ),
-#     log:
-#         "{folder}/log/plot_SV_calls/{sample}/{method}_filter{filter}.{chrom}.log",
-#     conda:
-#         "../envs/rtools.yaml"
-#     resources:
-#         mem_mb=get_mem_mb,
-#     shell:
-#         """
-#         Rscript workflow/scripts/plotting/plot-sv-calls.R \
-#             segments={input.segments} \
-#             singlecellsegments={input.scsegments} \
-#             strand={input.strand} \
-#             complex={input.complex_calls} \
-#             groups={input.grouptrack} \
-#             calls={input.calls} \
-#             {input.counts} \
-#             {wildcards.chrom} \
-#             {output} > {log} 2>&1
-#         """

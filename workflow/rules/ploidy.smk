@@ -1,10 +1,3 @@
-################################################################################
-# Ploidy estimation                                                            #
-################################################################################
-
-# if int(config["window"]) in [50000, 100000, 200000]:
-
-
 rule estimate_ploidy:
     input:
         counts="{folder}/{sample}/counts/{sample}.txt.sort.gz",
@@ -52,11 +45,6 @@ checkpoint summarise_ploidy:
             .describe()
         )
         df.to_csv(output.summary, sep="\t")
-        # haploid_chroms = df.loc[df["50%"] == 1, "#chrom"].values.tolist()
-        # if not haploid_chroms:
-        #     haploid_chroms = "None"
-        # log[0].write("")
-
 
 
 rule ploidy_bcftools:

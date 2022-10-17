@@ -1,6 +1,8 @@
 import pandas as pd
-from scripts.utils import handle_input, make_log_useful
+from scripts.utils import handle_input, make_log_useful, pipeline_aesthetic_start
 import os
+
+# Solve LC_CTYPE issue
 
 os.environ["LC_CTYPE"] = "C"
 
@@ -9,11 +11,12 @@ envvars:
     "LC_CTYPE",
 
 
+# Start with aesthetic pipeline config presentation
+onstart:
+    pipeline_aesthetic_start.pipeline_aesthetic_start(config)
 
-# if config["data_location"] == config["data_location"]:
-#     sys.exit("data_location & data_location must be different")
 
-
+# Configure if handle_input needs to be based on bam or fastq
 bam = True if config["ashleys_pipeline"] is False else False
 
 
@@ -28,29 +31,14 @@ c = handle_input.HandleInput(
 )
 
 # Read config file previously produced
-# df_config_files = pd.read_csv("{data_location}/config/config_df.tsv".format(data_location=config["data_location"]), sep="\t")
 df_config_files = c.df_config_files
 df_config_files["Selected"] = True
+
 # List of available samples
 samples = list(sorted(list(df_config_files.Sample.unique().tolist())))
-# print(df_config_files)
 
 
-# mode_selected = config["mode"].lower()
-# correct_modes = ["count", "segmentation", "mosaiclassifier", "download_data"]
-# assert (
-#     mode_selected in correct_modes
-# ), "Wrong mode selected : {}\nFollowing list of modes are available : {}".format(
-#     config["mode"], ", ".join(correct_modes)
-# )
-
-# plot_option_selected = config["plot"]
-# assert (
-#     type(plot_option_selected) is bool
-# ), "Wrong plot option selected : {}\nPlease enter a valid value (True / False)".format(
-#     config["plot"]
-# )
-
+# List of assertions to verify
 dl_bam_example_option_selected = config["dl_bam_example"]
 assert (
     type(dl_bam_example_option_selected) is bool
@@ -71,14 +59,13 @@ if config["ashleys_pipeline"] is True:
     ), "ashleys_pipeline and input_old_behavior parameters cannot both be set to True"
 
 
+# Creation of dicts to be used in the rules
 dict_cells_nb_per_sample = (
     df_config_files.loc[df_config_files["Selected"] == True]
     .groupby("Sample")["Cell"]
     .nunique()
     .to_dict()
 )
-
-# samples = list(sorted(list(dict_cells_nb_per_sample.keys())))
 
 allbams_per_sample = df_config_files.groupby("Sample")["Cell"].apply(list).to_dict()
 cell_per_sample = (
@@ -103,22 +90,6 @@ bam_per_sample = (
     .to_dict()
 )
 
-samples_expand = [[k] * len(allbams_per_sample[k]) for k in allbams_per_sample.keys()]
-samples_expand = [sub_e for e in samples_expand for sub_e in e]
-cell_expand = [sub_e for e in list(allbams_per_sample.values()) for sub_e in e]
-
-input_expand = [
-    [config["data_location"]] * len(allbams_per_sample[k])
-    for k in allbams_per_sample.keys()
-]
-input_expand = [sub_e for e in input_expand for sub_e in e]
-
-output_expand = [
-    [config["data_location"]] * len(allbams_per_sample[k])
-    for k in allbams_per_sample.keys()
-]
-output_expand = [sub_e for e in output_expand for sub_e in e]
-
 plottype_counts = (
     config["plottype_counts"]
     if config["GC_analysis"] is True
@@ -127,7 +98,9 @@ plottype_counts = (
 
 
 def get_final_output():
-
+    """
+    Input function of the pipeline, will retrieve all 'end' outputs
+    """
     final_list = list()
 
     final_list.extend(
@@ -143,31 +116,36 @@ def get_final_output():
 
 def get_mem_mb(wildcards, attempt):
     mem_avail = [2, 4, 8, 16, 64, 128, 256]
-    # print(mem_avail[attempt-1] * 1000, attempt, mem_avail)
     return mem_avail[attempt - 1] * 1000
 
 
 def get_mem_mb_heavy(wildcards, attempt):
     mem_avail = [8, 16, 64, 128, 256]
-    # print(mem_avail[attempt-1] * 1000, attempt, mem_avail)
     return mem_avail[attempt - 1] * 1000
 
 
-def onsuccess_fct(wildcards):
-    print("Workflow finished, no error")
-    make_log_useful.make_log_useful(log, "SUCCESS", config["ouput_location", samples])
+def onsuccess_fct(log):
+    make_log_useful.make_log_useful(log, "SUCCESS", config)
+    shell(
+        'mail -s "[Snakemake] smk-wf-catalog/mosacaitcher-pipeline v{} - Run on {} - SUCCESS" {} < {{log}}'.format(
+            config["version"], config["data_location"], config["email"]
+        )
+    )
 
-    shell('mail -s "[Snakemake] DGA - SUCCESS" {} < {{log}}'.format(config["email"]))
 
-
-def onerror_fct(wildcards):
-    print("An error occurred")
-    make_log_useful.make_log_useful(log, "ERROR")
-
-    shell('mail -s "[Snakemake] DGA - ERRROR" {} < {{log}}'.format(config["email"]))
+def onerror_fct(log):
+    make_log_useful.make_log_useful(log, "ERROR", config)
+    shell(
+        'mail -s "[Snakemake] smk-wf-catalog/mosacaitcher-pipeline v{} - Run on {} - ERRROR" {} < {{log}}'.format(
+            config["version"], config["data_location"], config["email"]
+        )
+    )
 
 
 def get_all_plots(wildcards):
+    """
+    Function to retrieve all the plots/stats/outputs produced during the pipeline
+    """
 
     df = pd.read_csv(
         checkpoints.filter_bad_cells_from_mosaic_count.get(
@@ -177,27 +155,20 @@ def get_all_plots(wildcards):
         sep="\t",
     )
 
-    # dict_cells_nb_per_sample = df.groupby("sample")["cell"].nunique().to_dict()
-    dict_cells_nb_per_sample = {k:len(v) for k,v in cell_per_sample.items()}
+    dict_cells_nb_per_sample = {k: len(v) for k, v in cell_per_sample.items()}
     samples = list(dict_cells_nb_per_sample.keys())
 
-    # cell_list = df.cell.tolist()
-    # cell_list = cell_per_sample[wildcards.sample]
-    # tmp_dict = (
-    #     df[["sample", "cell"]]
-    #     .groupby("sample")["cell"]
-    #     .apply(lambda r: sorted(list(r)))
-    #     .to_dict()
-    # )
+    # QC Counts section
+    # Create a tmp dictionnary and a corresponding PDF page for each of the cell of the run
+
     tmp_dict = {
         s: {i + 1: c for i, c in enumerate(cell_list)}
         for s, cell_list in cell_per_sample.items()
     }
     for s in tmp_dict.keys():
         tmp_dict[s][0] = "SummaryPage"
-    # print(tmp_dict)
 
-    list_indiv_plots = list()
+    l_outputs = list()
 
     tmp_l_divide = [
         expand(
@@ -210,13 +181,13 @@ def get_all_plots(wildcards):
         )
         for sample in samples
         for i in range(dict_cells_nb_per_sample[sample] + 1)
-        # for i in range(dict_cells_nb_per_sample[sample] + 1)
     ]
-    # print(tmp_l_divide)
 
-    list_indiv_plots.extend([sub_e for e in tmp_l_divide for sub_e in e])
+    l_outputs.extend([sub_e for e in tmp_l_divide for sub_e in e])
 
-    list_indiv_plots.extend(
+    # SV_calls section
+
+    l_outputs.extend(
         [
             sub_e
             for e in [
@@ -233,7 +204,10 @@ def get_all_plots(wildcards):
             for sub_e in e
         ]
     )
-    list_indiv_plots.extend(
+
+    # SV_consistency section
+
+    l_outputs.extend(
         [
             sub_e
             for e in [
@@ -250,7 +224,10 @@ def get_all_plots(wildcards):
             for sub_e in e
         ]
     )
-    list_indiv_plots.extend(
+
+    # SV_clustering section
+
+    l_outputs.extend(
         [
             sub_e
             for e in [
@@ -267,7 +244,10 @@ def get_all_plots(wildcards):
             for sub_e in e
         ]
     )
-    list_indiv_plots.extend(
+
+    # Complex section
+
+    l_outputs.extend(
         [
             sub_e
             for e in [
@@ -283,48 +263,33 @@ def get_all_plots(wildcards):
             for sub_e in e
         ]
     ),
-    list_indiv_plots.extend(
+
+    # Ploidy section
+    l_outputs.extend(
         expand(
             "{folder}/{sample}/plots/ploidy/{sample}.pdf",
             folder=config["data_location"],
             sample=samples,
         ),
     )
-    # if config["GC_analysis"] is True:
-    #     list_indiv_plots.extend(
-    #         expand(
-    #             "{folder}/{sample}/plots/alfred/gc_devi.png",
-    #             folder=config["data_location"],
-    #             sample=samples,
-    #         ),
-    #     )
-    #     list_indiv_plots.extend(
-    #         expand(
-    #             "{folder}/{sample}/plots/alfred/gc_dist.png",
-    #             folder=config["data_location"],
-    #             sample=samples,
-    #         ),
-    #     )
-    # list_indiv_plots.extend(
-    #     expand(
-    #         "{folder}/{sample}/plots/counts/CountComplete.{plottype_counts}.pdf",
-    #         folder=config["data_location"],
-    #         sample=samples,
-    #         plottype_counts=config["plottype_counts"],
-    #     ),
-    # )
-    list_indiv_plots.extend(
+
+    # Stats section
+
+    l_outputs.extend(
         expand(
             "{folder}/{sample}/stats/stats-merged.tsv",
             folder=config["data_location"],
             sample=samples,
         ),
     )
-    list_indiv_plots.extend(
+
+    # Run summary section
+
+    l_outputs.extend(
         expand(
             "{folder}/config/{sample}/run_summary.txt",
             folder=config["data_location"],
             sample=samples,
         ),
     )
-    return list_indiv_plots
+    return l_outputs

@@ -1,10 +1,3 @@
-# from workflow.scripts.utils.utils import get_mem_mb
-
-################################################################################
-# MosaiClassifier                                                              #
-################################################################################
-
-
 rule mosaiClassifier_calc_probs:
     input:
         counts="{folder}/{sample}/counts/{sample}.txt.gz",
@@ -37,24 +30,6 @@ rule create_haplotag_likelihoods:
         mem_mb=get_mem_mb_heavy,
     script:
         "../scripts/mosaiclassifier_scripts/haplotagProbs.snakemake.R"
-
-
-# rule mosaiClassifier_make_call:
-#     input:
-#         probs="{folder}/mosaiclassifier/haplotag_likelihoods/{sample}.Rdata",
-#     output:
-#         "{folder}/mosaiclassifier/sv_calls/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}_filterFALSE.tsv",
-#     log:
-#         "{folder}/log/mosaiClassifier_make_call/{sample}/simpleCalls_llr{llr}_poppriors{pop_priors}_haplotags{use_haplotags}_gtcutoff{gtcutoff}_regfactor{regfactor}.log",
-#     conda:
-#         "../envs/rtools.yaml"
-#     params:
-#         minFrac_used_bins=0.8,
-#         window=config["window"],
-#     resources:
-#         mem_mb=get_mem_mb,
-#     script:
-#         "../scripts/mosaiclassifier_scripts/mosaiClassifier_call.snakemake.R"
 
 
 rule mosaiClassifier_make_call:
@@ -96,21 +71,9 @@ rule mosaiClassifier_make_call_biallelic:
         "../scripts/mosaiclassifier_scripts/mosaiClassifier_call_biallelic.snakemake.R"
 
 
-# rule debug_complex:
-#     input:
-#         calls="{folder}/{sample}/mosaiclassifier/sv_calls/{method}_filter{filter}.tsv",
-#     output:
-#         "{folder}/{sample}/mosaiclassifier/sv_calls_debug/{method}_filter{filter}.ok"
-#     log:
-#         "{folder}/log/mosaiclassifier/sv_calls_debug/{sample}/{method}_filter{filter}.log",
-#     shell:
-#         "cat {input.calls}"
-
-
 rule call_complex_regions:
     input:
         calls="{folder}/{sample}/mosaiclassifier/sv_calls/{method}_filter{filter}.tsv",
-        # debug="{folder}/{sample}/mosaiclassifier/sv_calls_debug/{method}_filter{filter}.ok",
     output:
         complex_regions="{folder}/{sample}/mosaiclassifier/complex/{method}_filter{filter}.tsv",
     log:
