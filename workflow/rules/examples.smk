@@ -16,12 +16,6 @@ rule dl_example_data:
         touch("log/config/dl_example_data.ok"),
     run:
         shell("unzip {input} -d .")
-        # directory = ".tests/data_example/"
-        # if not os.path.exists(directory):
-        #     os.makedirs(directory)
-        # shell("mv {input} .tests/data_example/TEST_EXAMPLE_DATA.zip")
-        # shell("unzip .tests/data_example/TEST_EXAMPLE_DATA.zip")
-
 
 
 rule download_hg19_reference:
@@ -109,11 +103,12 @@ rule install_T2T_BSgenome_tarball:
     script:
         "../scripts/utils/install_R_tarball.R"
 
+
 rule empty_install:
     output:
         touch("workflow/data/ref_genomes/config/fake_install.ok"),
     log:
-        "workflow/data/ref_genomes/config/fake_install.log"
+        "workflow/data/ref_genomes/config/fake_install.log",
 
 
 rule samtools_faindex:

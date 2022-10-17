@@ -1,16 +1,5 @@
-# from workflow.scripts.utils.utils import get_mem_mb
-
-################################################################################
-# UTILS                                                                        #
-################################################################################
-
 
 rule index_input_bam:
-    """
-    rule fct:
-    input:
-    output:
-    """
     input:
         "{folder}/{sample}/bam/{cell}.sort.mdup.bam",
     output:
@@ -26,11 +15,6 @@ rule index_input_bam:
 
 
 rule index_haplotag_bam:
-    """
-    rule fct:
-    input:
-    output:
-    """
     input:
         "{folder}/{sample}/haplotag/bam/{cell}.bam.htg",
     output:
@@ -45,14 +29,7 @@ rule index_haplotag_bam:
         "samtools index {input} > {log} 2>&1"
 
 
-
-
 rule compress_indiv_freebayes_vcf:
-    """
-    rule fct:
-    input:
-    output:
-    """
     input:
         vcf="{folder}/{sample}/snv_genotyping/{chrom}.vcf",
     output:
@@ -68,11 +45,6 @@ rule compress_indiv_freebayes_vcf:
 
 
 rule index_indiv_freebayes_vcf:
-    """
-    rule fct:
-    input:
-    output:
-    """
     input:
         vcf="{folder}/{sample}/snv_genotyping/{chrom}.vcf.gz",
     output:
@@ -88,11 +60,6 @@ rule index_indiv_freebayes_vcf:
 
 
 rule compress_indiv_strandphaser_vcf:
-    """
-    rule fct:
-    input:
-    output:
-    """
     input:
         vcf="{folder}/{sample}/strandphaser/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf",
     output:
@@ -108,11 +75,6 @@ rule compress_indiv_strandphaser_vcf:
 
 
 rule index_indiv_strandphaser_vcf:
-    """
-    rule fct:
-    input:
-    output:
-    """
     input:
         vcf="{folder}/{sample}/strandphaser/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz",
     output:
@@ -128,11 +90,6 @@ rule index_indiv_strandphaser_vcf:
 
 
 rule index_merged_strandphaser_vcf:
-    """
-    rule fct:
-    input:
-    output:
-    """
     input:
         vcf="{folder}/{sample}/strandphaser/phased-snvs/{sample}.vcf.gz",
     output:
