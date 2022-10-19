@@ -46,7 +46,7 @@ rule prepare_strandphaser_config_per_chrom:
 
 rule run_strandphaser_per_chrom:
     input:
-        install_strandphaser=rules.install_rlib_strandphaser.output,
+        # install_strandphaser=rules.install_rlib_strandphaser.output,
         wcregions="{folder}/{sample}/strandphaser/strandphaser_input.txt",
         snppositions=locate_snv_vcf,
         configfile="{folder}/{sample}/strandphaser/StrandPhaseR.{chrom}.config",
