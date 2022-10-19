@@ -97,8 +97,6 @@ plottype_counts = (
 )
 
 
-
-
 def get_final_output():
     """
     Input function of the pipeline, will retrieve all 'end' outputs

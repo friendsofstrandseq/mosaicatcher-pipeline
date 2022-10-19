@@ -97,7 +97,8 @@ rule install_T2T_BSgenome_tarball:
     log:
         "workflow/data/ref_genomes/log/T2T_R_tarball_install.log",
     conda:
-        "../envs/rtools.yaml"
+        # "../envs/rtools.yaml"
+        "../envs/strandphaser.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
     script:
