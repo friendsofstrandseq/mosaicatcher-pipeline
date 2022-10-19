@@ -121,44 +121,46 @@ checkpoint filter_bad_cells_from_mosaic_count:
         "../scripts/utils/filter_bad_cells.py"
 
 
-if config["window"] in [50000, 100000, 200000]:
-    if config["reference"] == "hg38":
-        if config["normalized_counts"] is True:
+if (
+    config["window"] in [50000, 100000, 200000]
+    and config["reference"] == "hg38"
+    and config["normalized_counts"] == True
+):
 
-            rule merge_blacklist_bins:
-                input:
-                    norm="workflow/data/normalization/HGSVC.{window}.txt",
-                    whitelist="workflow/data/normalization/inversion-whitelist.tsv",
-                output:
-                    merged="{folder}/{sample}/normalizations/HGSVC.{window}.merged.tsv",
-                log:
-                    "{folder}/log/normalizations/{sample}/HGSVC.{window}.merged.tsv",
-                conda:
-                    "../envs/mc_base.yaml"
-                shell:
-                    """
-                    workflow/scripts/normalization/merge-blacklist.py --merge_distance 500000 {input.norm} --whitelist {input.whitelist} --min_whitelist_interval_size 100000 > {output.merged} 2>> {log}
-                    """
+    rule merge_blacklist_bins:
+        input:
+            norm="workflow/data/normalization/HGSVC.{window}.txt",
+            whitelist="workflow/data/normalization/inversion-whitelist.tsv",
+        output:
+            merged="{folder}/{sample}/normalizations/HGSVC.{window}.merged.tsv",
+        log:
+            "{folder}/log/normalizations/{sample}/HGSVC.{window}.merged.tsv",
+        conda:
+            "../envs/mc_base.yaml"
+        shell:
+            """
+            workflow/scripts/normalization/merge-blacklist.py --merge_distance 500000 {input.norm} --whitelist {input.whitelist} --min_whitelist_interval_size 100000 > {output.merged} 2>> {log}
+            """
 
-            rule normalize_counts:
-                input:
-                    counts="{folder}/{sample}/counts/{sample}.txt.filter.gz",
-                    norm=lambda wc: expand(
-                        "{folder}/{sample}/normalizations/HGSVC.{window}.merged.tsv",
-                        folder=config["data_location"],
-                        sample=wc.sample,
-                        window=config["window"],
-                    ),
-                output:
-                    "{folder}/{sample}/counts/{window}.txt.gz",
-                log:
-                    "{folder}/log/normalize_counts/{sample}_{window}.log",
-                conda:
-                    "../envs/rtools.yaml"
-                shell:
-                    """
-                    Rscript workflow/scripts/normalization/normalize.R {input.counts} {input.norm} {output} 2>&1 > {log}
-                    """
+    rule normalize_counts:
+        input:
+            counts="{folder}/{sample}/counts/{sample}.txt.filter.gz",
+            norm=lambda wc: expand(
+                "{folder}/{sample}/normalizations/HGSVC.{window}.merged.tsv",
+                folder=config["data_location"],
+                sample=wc.sample,
+                window=config["window"],
+            ),
+        output:
+            "{folder}/{sample}/counts/{window}.txt.gz",
+        log:
+            "{folder}/log/normalize_counts/{sample}_{window}.log",
+        conda:
+            "../envs/rtools.yaml"
+        shell:
+            """
+            Rscript workflow/scripts/normalization/normalize.R {input.counts} {input.norm} {output} 2>&1 > {log}
+            """
 
 
 else:
