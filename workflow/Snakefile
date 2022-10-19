@@ -17,19 +17,14 @@ docker_container = "docker://weber8thomas/mosaicatcher-pipeline:{version}".forma
 containerized: docker_container
 
 
-# containerized: "docker://weber8thomas/mosaicatcher-pipeline:1.7.0"
-
-
 if config["ashleys_pipeline"] is True:
 
     module ashleys_qc:
         snakefile:
-            # "../../ashleys-qc-pipeline/workflow/Snakefile"
             github(
                 "friendsofstrandseq/ashleys-qc-pipeline",
                 path="workflow/Snakefile",
-                branch="dev",
-                # branch="main",
+                branch="main",
             )
         config:
             config
@@ -79,7 +74,7 @@ include: "rules/ploidy.smk"
 include: "rules/stats.smk"
 
 
-include: "rules/examples.smk"
+include: "rules/external_data.smk"
 
 
 if config["ashleys_pipeline"] is True:
