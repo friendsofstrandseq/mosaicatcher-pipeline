@@ -1,10 +1,15 @@
 name: Build container
 
+# on:
+#   pull_request:
+#     types: [closed]
+#     branches:
+#       - main
+
 on:
-  pull_request:
-    types: [closed]
+  push:
     branches:
-      - main
+      - dev
 
 jobs:
   build_mc_container:
@@ -28,17 +33,17 @@ jobs:
           directory: .
           task: "containerize"
           args: "--cores 1 --use-conda --configfile ./config/config.yaml --config chromosomes=[chr17] ashleys_pipeline=True normalized_counts=True GC_analysis=True use_light_data=True"
-      - name: Edit Dockerfile
-        run: |
-          dockerfile="Dockerfile" && \
-          rtools_env=$(grep "envs/rtools.yaml /conda-envs" "$dockerfile" | \
-            grep -o "conda-envs/.*\/" | sed 's/conda-envs\///g;s/\/$//g') && \
-          echo "\n\n#CUSTOM PART\n\nRUN mamba install -c conda-forge -c bioconda samtools && \
-          chmod -R 0777 /conda-envs/"$rtools_env"/lib/R/library &&  \
-          apt-get install git && \
-          git clone -b smk_workflow_catalog https://github.com/friendsofstrandseq/mosaicatcher-pipeline.git /mosaicatcher-pipeline && \
-          /conda-envs/"$rtools_env"/bin/Rscript /mosaicatcher-pipeline/workflow/scripts/strandphaser_scripts/install_strandphaser.R 69c9fb4 https://github.com/daewoooo/StrandPhaseR  && \
-          mamba clean --all -y" >> "$dockerfile"
+      # - name: Edit Dockerfile
+      #   run: |
+      #     dockerfile="Dockerfile" && \
+      #     rtools_env=$(grep "envs/rtools.yaml /conda-envs" "$dockerfile" | \
+      #       grep -o "conda-envs/.*\/" | sed 's/conda-envs\///g;s/\/$//g') && \
+      #     echo "\n\n#CUSTOM PART\n\nRUN mamba install -c conda-forge -c bioconda samtools && \
+      #     chmod -R 0777 /conda-envs/"$rtools_env"/lib/R/library &&  \
+      #     apt-get install git && \
+      #     git clone -b smk_workflow_catalog https://github.com/friendsofstrandseq/mosaicatcher-pipeline.git /mosaicatcher-pipeline && \
+      #     /conda-envs/"$rtools_env"/bin/Rscript /mosaicatcher-pipeline/workflow/scripts/strandphaser_scripts/install_strandphaser.R 69c9fb4 https://github.com/daewoooo/StrandPhaseR  && \
+      #     mamba clean --all -y" >> "$dockerfile"
 
       - name: Print Dockerfile
         run: |
