@@ -42,7 +42,6 @@ dependencies:
   - r-optparse
   - r-tidyr
   - r-ggbeeswarm
-  - r-here
   # - r-zoo
   # - r-r.utils
   # - r-ggnewscale
