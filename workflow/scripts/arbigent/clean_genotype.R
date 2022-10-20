@@ -3,8 +3,8 @@ library(ggplot2)
 library(reshape)
 library(dplyr)
 library(tibble)
-source('clean_genotype_defs.R')
-source('vcf_defs.R')
+source('workflow/scripts/arbigent/clean_genotype_defs.R')
+source('workflow/scripts/arbigent/vcf_defs.R')
 # but first explore
 
 runname = 'review_david323'
