@@ -17,7 +17,7 @@ library(pheatmap)
 library(matrixStats)
 library(reshape2)
 library(optparse)
-source('postprocess_helpers.R')
+source('workflow/scripts/arbigent/postprocess_helpers.R')
 
 
 #INPUT INSTRUCTIONS

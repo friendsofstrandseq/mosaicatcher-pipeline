@@ -53,9 +53,9 @@ if (is.null(path_to_regenotyper) == FALSE){
   print(paste0('Staying in path', getwd()))
 }
 
-suppressMessages(source("probability_helpers.R"))
-suppressMessages(source("regenotype_helpers.R"))
-suppressMessages(source("bulk_helpers.R"))
+suppressMessages(source("workflow/scripts/arbigent/probability_helpers.R"))
+suppressMessages(source("workflow/scripts/arbigent/regenotype_helpers.R"))
+suppressMessages(source("workflow/scripts/arbigent/bulk_helpers.R"))
 
 
 
@@ -329,7 +329,7 @@ for (group in unique(probs_raw$group)){
     #### [II]a) make dumbbell plot ####
 
 
-    suppressMessages(source("regenotype_helpers.R")) #for quick manual mode
+    suppressMessages(source("workflow/scripts/arbigent/regenotype_helpers.R")) #for quick manual mode
 
     # create the ggplot plot
     g = make_dumbbell(call_llhs, groupname=group, run_shiny=F)
