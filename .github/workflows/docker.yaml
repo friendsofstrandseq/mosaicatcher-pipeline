@@ -25,14 +25,14 @@ jobs:
           directory: .
           snakefile: ./workflow/Snakefile
           stagein: "conda config --set channel_priority flexible"
-          args: "--cores 2 --use-conda --configfile ./config/config.yaml --config chromosomes=[chr17] ashleys_pipeline=True normalized_counts=True GC_analysis=True use_light_data=True  --conda-frontend mamba -p"
+          args: "--cores 2 --use-conda --configfile .tests/config/config.yaml --config chromosomes=[chr17] ashleys_pipeline=True normalized_counts=True GC_analysis=True use_light_data=True  --conda-frontend mamba -p"
       - name: Create container file
         uses: snakemake/snakemake-github-action@v1
         with:
           snakefile: ./workflow/Snakefile
           directory: .
           task: "containerize"
-          args: "--cores 1 --use-conda --configfile ./config/config.yaml --config chromosomes=[chr17] ashleys_pipeline=True normalized_counts=True GC_analysis=True use_light_data=True"
+          args: "--cores 1 --use-conda --configfile .tests/config/config.yaml --config chromosomes=[chr17] ashleys_pipeline=True normalized_counts=True GC_analysis=True use_light_data=True"
       # - name: Edit Dockerfile
       #   run: |
       #     dockerfile="Dockerfile" && \
