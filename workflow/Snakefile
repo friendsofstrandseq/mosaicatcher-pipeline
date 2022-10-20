@@ -25,7 +25,6 @@ if config["ashleys_pipeline"] is True:
                 "friendsofstrandseq/ashleys-qc-pipeline",
                 path="workflow/Snakefile",
                 # branch="main",
-                
                 branch="dev",
             )
         config:
