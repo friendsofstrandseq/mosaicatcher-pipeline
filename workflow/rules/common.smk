@@ -265,13 +265,13 @@ def get_all_plots(wildcards):
     ),
 
     # Ploidy section
-    l_outputs.extend(
-        expand(
-            "{folder}/{sample}/plots/ploidy/{sample}.pdf",
-            folder=config["data_location"],
-            sample=samples,
-        ),
-    )
+    # l_outputs.extend(
+    #     expand(
+    #         "{folder}/{sample}/plots/ploidy/{sample}.pdf",
+    #         folder=config["data_location"],
+    #         sample=samples,
+    #     ),
+    # )
 
     # Stats section
 
