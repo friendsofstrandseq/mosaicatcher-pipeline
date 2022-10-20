@@ -27,7 +27,7 @@ jobs:
           stagein: "conda config --set channel_priority flexible"
           args: "--cores 2 --use-conda --configfile .tests/config/simple_config.yaml --config chromosomes=[chr17] ashleys_pipeline=True normalized_counts=True GC_analysis=True use_light_data=True  --conda-frontend mamba -p"
       - name: Create container file
-        uses: snakemake/snakemake-github-action@v1
+        uses: snakemake/snakemake-github-action@v1.23.0
         with:
           snakefile: ./workflow/Snakefile
           directory: .
