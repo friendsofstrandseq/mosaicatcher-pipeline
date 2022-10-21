@@ -227,23 +227,23 @@ def get_all_plots(wildcards):
 
     # SV_clustering section
 
-    # l_outputs.extend(
-    #     [
-    #         sub_e
-    #         for e in [
-    #             expand(
-    #                 "{folder}/{sample}/plots/sv_clustering/{method}-filter{filter}-{plottype}.pdf",
-    #                 folder=config["data_location"],
-    #                 sample=samples,
-    #                 method=method,
-    #                 plottype=config["plottype_clustering"],
-    #                 filter=config["methods"][method]["filter"],
-    #             )
-    #             for method in config["methods"]
-    #         ]
-    #         for sub_e in e
-    #     ]
-    # )
+    l_outputs.extend(
+        [
+            sub_e
+            for e in [
+                expand(
+                    "{folder}/{sample}/plots/sv_clustering/{method}-filter{filter}-{plottype}.pdf",
+                    folder=config["data_location"],
+                    sample=samples,
+                    method=method,
+                    plottype=config["plottype_clustering"],
+                    filter=config["methods"][method]["filter"],
+                )
+                for method in config["methods"]
+            ]
+            for sub_e in e
+        ]
+    )
 
     # Complex section
 
