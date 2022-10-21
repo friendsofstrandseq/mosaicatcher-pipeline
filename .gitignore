@@ -172,3 +172,4 @@ TMP/
 # .tests/external_data/chr17.fa.gz.amb
 .tests/external_data/chr17.fa.gz.*
 log.txt
+.nfs00000000002b143a000012cb
