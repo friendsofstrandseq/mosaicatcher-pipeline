@@ -33,7 +33,7 @@ dependencies:
   - r-gplots
   - r-gtools
   - r-mc2d
-  - r-pheatmap
+  # - r-pheatmap
   - r-rcolorbrewer
   - r-reshape2
   - r-scales
