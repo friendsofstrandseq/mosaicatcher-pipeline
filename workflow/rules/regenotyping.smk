@@ -1,76 +1,70 @@
-################################################################################
-# REGENOTYPE SNV                                                               #
-################################################################################
+if config["GC_analysis"] == False or config["ashleys_pipeline"] == False:
 
+    rule mergeBams:
+        input:
+            lambda wc: expand(
+                "{folder}/{sample}/bam/{bam}.sort.mdup.bam",
+                folder=config["data_location"],
+                sample=wc.sample,
+                bam=allbams_per_sample[wc.sample],
+            ),
+        output:
+            "{folder}/{sample}/merged_bam/merged.raw.bam",
+        log:
+            "{folder}/log/mergeBams/{sample}.log",
+        resources:
+            mem_mb=get_mem_mb_heavy,
+            time="01:00:00",
+        threads: 10
+        conda:
+            "../envs/mc_bioinfo_tools.yaml"
+        shell:
+            "samtools merge -@ {threads} {output} {input} 2>&1 > {log}"
 
-rule mergeBams:
-    """
-    rule fct:
-    input:
-    output:
-    """
-    input:
-        lambda wc: expand(
-            "{input_folder}/{sample}/all/{bam}.sort.mdup.bam",
-            input_folder=config["input_bam_location"],
-            sample=wc.sample,
-            bam=allbams_per_sample[wc.sample],
-        ),
-    output:
-        "{output_folder}/merged_bam/{sample}/merged.raw.bam",
-    log:
-        "{output_folder}/log/mergeBams/{sample}.log",
-    resources:
-        mem_mb=get_mem_mb_heavy,
-        time="01:00:00",
-    threads: 10
-    conda:
-        "../envs/mc_bioinfo_tools.yaml"
-    shell:
-        "samtools merge -@ {threads} {output} {input} 2>&1 > {log}"
+    rule mergeSortBams:
+        input:
+            "{folder}/{sample}/merged_bam/merged.raw.bam",
+        output:
+            "{folder}/{sample}/merged_bam/merged.bam",
+        log:
+            "{folder}/log/mergeBams/{sample}.log",
+        resources:
+            mem_mb=get_mem_mb_heavy,
+            time="01:00:00",
+        threads: 10
+        conda:
+            "../envs/mc_bioinfo_tools.yaml"
+        shell:
+            "samtools sort -@ {threads} -o {output} {input} 2>&1 > {log}"
 
-
-rule mergeSortBams:
-    """
-    rule fct:
-    input:
-    output:
-    """
-    input:
-        "{output_folder}/merged_bam/{sample}/merged.raw.bam",
-    output:
-        "{output_folder}/merged_bam/{sample}/merged.bam",
-    log:
-        "{output_folder}/log/mergeBams/{sample}.log",
-    resources:
-        mem_mb=get_mem_mb_heavy,
-        time="01:00:00",
-    threads: 10
-    conda:
-        "../envs/mc_bioinfo_tools.yaml"
-    shell:
-        "samtools sort -@ {threads} -o {output} {input} 2>&1 > {log}"
+    rule index_merged_bam:
+        input:
+            "{folder}/{sample}/merged_bam/merged.bam",
+        output:
+            "{folder}/{sample}/merged_bam/merged.bam.bai",
+        log:
+            "{folder}/log/merged_bam/{sample}/merged.log",
+        conda:
+            "../envs/mc_bioinfo_tools.yaml"
+        resources:
+            mem_mb=get_mem_mb,
+        shell:
+            "samtools index {input} > {log} 2>&1"
 
 
 rule regenotype_SNVs:
-    """
-    rule fct:
     input:
-    output:
-    """
-    input:
-        bam="{output_folder}/merged_bam/{sample}/merged.bam",
-        bai="{output_folder}/merged_bam/{sample}/merged.bam.bai",
-        # sites=config["snv_sites_to_genotype"],
+        bam="{folder}/{sample}/merged_bam/merged.bam",
+        bai="{folder}/{sample}/merged_bam/merged.bam.bai",
         sites=config["references_data"][config["reference"]]["snv_sites_to_genotype"],
         fasta=config["references_data"][config["reference"]]["reference_fasta"],
         fasta_index="{fasta}.fai".format(
             fasta=config["references_data"][config["reference"]]["reference_fasta"]
         ),
     output:
-        vcf="{output_folder}/snv_genotyping/{sample}/{chrom,chr[0-9A-Z]+}.vcf",
+        vcf="{folder}/{sample}/snv_genotyping/{chrom,chr[0-9A-Z]+}.vcf",
     log:
-        "{output_folder}/log/snv_genotyping/{sample}/{chrom}.log",
+        "{folder}/log/snv_genotyping/{sample}/{chrom}.log",
     resources:
         mem_mb=get_mem_mb_heavy,
         time="10:00:00",
@@ -95,17 +89,17 @@ rule regenotype_SNVs:
 
 rule call_SNVs_bcftools_chrom:
     input:
-        bam="{output_folder}/merged_bam/{sample}/merged.bam",
-        bai="{output_folder}/merged_bam/{sample}/merged.bam.bai",
+        bam="{folder}/{sample}/merged_bam/merged.bam",
+        bai="{folder}/{sample}/merged_bam/merged.bam.bai",
         fasta=config["references_data"][config["reference"]]["reference_fasta"],
         fasta_index="{fasta}.fai".format(
             fasta=config["references_data"][config["reference"]]["reference_fasta"]
         ),
-        ploidy="{output_folder}/ploidy/{sample}/ploidy_bcftools.txt",
+        ploidy="{folder}/{sample}/ploidy/ploidy_bcftools.txt",
     output:
-        vcf="{output_folder}/snv_calls/{sample}/{chrom,chr[0-9A-Z]+}.vcf",
+        vcf="{folder}/{sample}/snv_calls/{chrom,chr[0-9A-Z]+}.vcf",
     log:
-        "{output_folder}/log/snv_calls/{sample}/{chrom,chr[0-9A-Z]+}.vcf",
+        "{folder}/log/snv_calls/{sample}/{chrom,chr[0-9A-Z]+}.vcf",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     resources:

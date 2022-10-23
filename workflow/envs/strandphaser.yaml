@@ -1,0 +1,11 @@
+name: strandphaser
+channels:
+  - conda-forge
+  - bioconda
+  - r
+  - anaconda
+dependencies:
+  - strandphaser
+  - bioconductor-bsgenome.hsapiens.ucsc.hg19
+  - bioconductor-bsgenome.hsapiens.ucsc.hg38
+  - r-biocmanager

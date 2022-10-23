@@ -1,20 +1,20 @@
 
 rule haplotag_bams:
     input:
-        vcf="{output_folder}/strandphaser/phased-snvs/{sample}.vcf.gz",
-        tbi="{output_folder}/strandphaser/phased-snvs/{sample}.vcf.gz.tbi",
+        vcf="{folder}/{sample}/strandphaser/phased-snvs/{sample}.vcf.gz",
+        tbi="{folder}/{sample}/strandphaser/phased-snvs/{sample}.vcf.gz.tbi",
         bam=lambda wc: expand(
-            "{input_folder}/{{sample}}/all/{{cell}}.sort.mdup.bam",
-            input_folder=config["input_bam_location"],
+            "{input_folder}/{{sample}}/bam/{{cell}}.sort.mdup.bam",
+            input_folder=config["data_location"],
         ),
         fasta=config["references_data"][config["reference"]]["reference_fasta"],
         fasta_index="{fasta}.fai".format(
             fasta=config["references_data"][config["reference"]]["reference_fasta"]
         ),
     output:
-        "{output_folder}/haplotag/bam/{sample}/{cell}.bam",
+        "{folder}/{sample}/haplotag/bam/{cell}.bam.htg",
     log:
-        "{output_folder}/log/haplotag_bams/{sample}/{cell}.log",
+        "{folder}/log/haplotag_bams/{sample}/{cell}.log",
     params:
         ref=config["reference"],
     resources:
@@ -27,11 +27,11 @@ rule haplotag_bams:
 
 rule create_haplotag_segment_bed:
     input:
-        segments="{output_folder}/segmentation/{sample}/Selection_jointseg.txt",
+        segments="{folder}/{sample}/segmentation/Selection_jointseg.txt",
     output:
-        bed="{output_folder}/haplotag/bed/{sample}.bed",
+        bed="{folder}/{sample}/haplotag/bed/{sample}.bed",
     log:
-        "{output_folder}/log/haplotag/bed/{sample}.log",
+        "{folder}/log/haplotag/bed/{sample}.log",
     params:
         window=config["window"],
     resources:
@@ -47,14 +47,14 @@ rule create_haplotag_segment_bed:
 
 rule create_haplotag_table:
     input:
-        bam="{output_folder}/haplotag/bam/{sample}/{cell}.bam",
-        bai="{output_folder}/haplotag/bam/{sample}/{cell}.bam.bai",
-        bed="{output_folder}/haplotag/bed/{sample}.bed",
-        paired_end="{output_folder}/config/{sample}/single_paired_end_detection.txt",
+        bam="{folder}/{sample}/haplotag/bam/{cell}.bam.htg",
+        bai="{folder}/{sample}/haplotag/bam/{cell}.bam.htg.bai",
+        bed="{folder}/{sample}/haplotag/bed/{sample}.bed",
+        paired_end="{folder}/{sample}/config/single_paired_end_detection.txt",
     output:
-        tsv="{output_folder}/haplotag/table/{sample}/by-cell/{cell}.tsv",
+        tsv="{folder}/{sample}/haplotag/table/by-cell/{cell}.tsv",
     log:
-        "{output_folder}/log/create_haplotag_table/{sample}.{cell}.log",
+        "{folder}/log/create_haplotag_table/{sample}.{cell}.log",
     conda:
         "../envs/rtools.yaml"
     resources:
@@ -66,15 +66,15 @@ rule create_haplotag_table:
 rule merge_haplotag_tables:
     input:
         tsvs=lambda wc: [
-            "{}/haplotag/table/{}/by-cell/{}.tsv".format(
-                config["output_location"], wc.sample, cell
+            "{}/{}/haplotag/table/by-cell/{}.tsv".format(
+                config["data_location"], wc.sample, cell
             )
             for cell in bam_per_sample[wc.sample]
         ],
     output:
-        tsv="{output_folder}/haplotag/table/{sample}/haplotag_counts_merged.tsv",
+        tsv="{folder}/{sample}/haplotag/table/haplotag_counts_merged.tsv",
     log:
-        "{output_folder}/log/haplotag/table/{sample}/haplotag_counts_merged.log",
+        "{folder}/log/haplotag/table/{sample}/haplotag_counts_merged.log",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     resources:

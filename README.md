@@ -57,16 +57,17 @@ the workflow goes through the following steps:
 ## Small issues to fix
 
 - [ ] Move pysam / SM tag comparison script to snakemake rule
-- [ ] replace `input_bam_location` by `input_folder` (harmonization with [ashleys-qc-pipeline](https://github.com/friendsofstrandseq/ashleys-qc-pipeline.git))
+- [x] replace `input_bam_location` by `data_location` (harmonization with [ashleys-qc-pipeline](https://github.com/friendsofstrandseq/ashleys-qc-pipeline.git))
 
 # 🛑 Troubleshooting & Current limitations
 
 - Do not change the structure of your input folder after running the pipeline, first execution will build a config dataframe file (`OUTPUT_DIRECTORY/config/config.tsv`) that contains the list of cells and the associated paths
-- Do not change the list of chromosomes after a first execution (i.e: first execution using `count` mode on `chr21`, second execution using `segmentation` mode on all chromosomes)
+- Do not change the list of chromosomes after a first execution (i.e: first execution on `chr17`, second execution on all chromosomes)
 
 # 💂‍♂️ Authors (alphabetical order)
 
 - Ashraf Hufash
+- Cosenza Marco
 - Ebert Peter
 - Ghareghani Maryam
 - Grimes Karen

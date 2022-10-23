@@ -72,6 +72,8 @@ workflow/test.txt
 !docs/images/plots/*.png
 !docs/images/*.png
 !workflow/data/segdups/segDups_hg38_UCSCtrack.bed.gz
+!workflow/data/segdups/segDups_hg19_UCSCtrack.bed.gz
+!workflow/data/segdups/segDups_T2T_UCSCtrack.bed.gz
 !workflow/data/bin_200kb_all.bed
 !workflow/data/normalization/*
 !config/config.yaml
@@ -108,11 +110,19 @@ workflow/test.txt
 .tests/data/RPE-BM510/selected_PE/
 
 ## DATA CHR21
+.tests/data_CHR17_NEW/
+.tests/data_CHR17_*/
 .tests/data_CHR17/RPE-BM510/all/*.bai
+.tests/data_CHR17/RPE-BM510/bam/*.bai
+.tests/data_CHR17/RPE-BM510/bam/*.sort.mdup.bam.bai
 .tests/data_CHR21/RPE-BM510/all/*.bam
+.tests/data_CHR21/RPE-BM510/bam/*.bam
 .tests/data_CHR17/RPE-BM510/all/*.log
+.tests/data_CHR17/RPE-BM510/bam/*.log
 .tests/data_CHR17/config/
 .tests/data_CHR17/RPE-BM510/cell_selection/
+.tests/data_CHR17/RPE-BM510/ashleys_counts/
+.tests/data_CHR17/RPE-BM510/config/
 .tests/data_CHR17/RPE-BM510/predictions/
 
 .tests/data_CHR21/RPE-BM510/predictions/
@@ -121,6 +131,7 @@ workflow/test.txt
 ## DATA EXCEPTIONS
 !.tests/data_CHR17/RPE-BM510/fastq/*.fastq.gz
 !.tests/data_CHR17/RPE-BM510/all/BM*.sort.mdup.bam
+!.tests/data_CHR17/RPE-BM510/bam/BM*.sort.mdup.bam
 !.tests/external_data/chr17.fa.gz
 
 # Dev
@@ -156,3 +167,9 @@ TMP/
 # afac/ debugging & dev folder
 .cache/
 .config/
+
+.java/
+# .tests/external_data/chr17.fa.gz.amb
+.tests/external_data/chr17.fa.gz.*
+log.txt
+.nfs00000000002b143a000012cb
