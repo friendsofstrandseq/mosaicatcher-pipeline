@@ -6,16 +6,6 @@ min_version("7.5.0")
 configfile: "config/config.yaml"
 
 
-onstart:
-    arg = "ENABLED" if config["ashleys_pipeline"] is True else "DISABLED"
-    print("###################################")
-    print("# MOSAICATCHER SNAKEMAKE PIPELINE #")
-    print("###################################")
-    print("Ashleys preprocessing pipeline {}!".format(arg))
-    print("Input folder selected : {}".format(config["input_bam_location"]))
-    print("Output folder selected : {}".format(config["output_location"]))
-
-
 report: "report/workflow.rst"
 
 
@@ -24,18 +14,18 @@ docker_container = "docker://weber8thomas/mosaicatcher-pipeline:{version}".forma
 )
 
 
-containerized: "docker://weber8thomas/mosaicatcher-pipeline:1.7.0"
+containerized: docker_container
 
 
 if config["ashleys_pipeline"] is True:
 
     module ashleys_qc:
         snakefile:
-            # "../../ashleys-qc-pipeline/workflow/Snakefile"
             github(
                 "friendsofstrandseq/ashleys-qc-pipeline",
                 path="workflow/Snakefile",
-                branch="ref_genomes",
+                branch="main",
+                # branch="dev",
             )
         config:
             config
@@ -53,9 +43,6 @@ include: "rules/aggregate_fct.smk"
 
 
 include: "rules/setup.smk"
-
-
-include: "rules/input_check.smk"
 
 
 include: "rules/count.smk"
@@ -88,7 +75,7 @@ include: "rules/ploidy.smk"
 include: "rules/stats.smk"
 
 
-include: "rules/examples.smk"
+include: "rules/external_data.smk"
 
 
 if config["ashleys_pipeline"] is True:
@@ -149,7 +136,7 @@ else:
 if config["email"]:
 
     onsuccess:
-        onsuccess_fct
+        onsuccess_fct(log)
 
     onerror:
-        onerror_fct
+        onerror_fct(log)

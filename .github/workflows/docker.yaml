@@ -1,30 +1,85 @@
 name: Build container
 
 on:
-  push:
-    tags:
-      - "*"
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
+# on:
+#   push:
+#     branches:
+#       - dev
+
+env:
+  IMAGE_NAME: mosaicatcher-pipeline
 
 jobs:
-  build_mc_container:
+  create_dockerfile:
+    name: Run pipeline & Create Dockerfile
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v3.1.0
+      - name: Testing data
+        uses: snakemake/snakemake-github-action@v1.24.0
+        with:
+          directory: .
+          snakefile: ./workflow/Snakefile
+          stagein: "conda config --set channel_priority flexible"
+          args: "--cores 2 --use-conda --configfile .tests/config/simple_config.yaml --config chromosomes=[chr17] ashleys_pipeline=True normalized_counts=True GC_analysis=True use_light_data=True  --conda-frontend mamba -p"
+      - name: Create container file
+        uses: snakemake/snakemake-github-action@v1.24.0
+        with:
+          snakefile: ./workflow/Snakefile
+          directory: .
+          task: "containerize"
+          args: "--cores 1 --use-conda --configfile .tests/config/simple_config.yaml --config chromosomes=[chr17] ashleys_pipeline=True normalized_counts=True GC_analysis=True use_light_data=True"
+      - name: Print Dockerfile
+        run: |
+          cat Dockerfile
+
+      - uses: actions/upload-artifact@master
+        with:
+          name: Dockerfile_artifact
+          path: ./Dockerfile
+
+  build_and_push_image:
     name: Build and push image
     runs-on: ubuntu-20.04
-    env:
-      IMAGE_NAME: mosaicatcher-pipeline
+    needs:
+      - create_dockerfile
     steps:
-      - uses: actions/checkout@v2
-      - name: Read upstream tag without version
-        id: gettag
+      - uses: actions/checkout@v3.1.0
+
+      - uses: actions/download-artifact@master
+        with:
+          name: Dockerfile_artifact
+          path: ./Dockerfile_artifact
+
+      - name: Print Dockerfile
         run: |
-          echo '::set-output name=tag::$(grep -P "^version" config/config.yaml| sed "s/version: //g"'
+          ls -lh . && tree -h . && cat ./Dockerfile_artifact/Dockerfile
+
+      - name: Run read-yaml action
+        id: yaml-data
+        uses: jbutcher5/read-yaml@main # You may wish to replace main with a version tag such as '1.6' etc.
+        with:
+          file: "./config/config.yaml"
+          key-path: '["version"]' # Access the runs key then the using key and retuns the value.
+
+      - name: Display read-yaml output
+        run: echo "${{ steps.yaml-data.outputs.data }}"
+
       - name: Build Image
         id: build-image
         uses: redhat-actions/buildah-build@v2
         with:
           image: ${{ env.IMAGE_NAME }}
-          tags: 1.7.0
+          tags: "${{ steps.yaml-data.outputs.data }}"
           dockerfiles: |
-            ./github-actions-runner/Dockerfile_complete.dockerfile
+            ./Dockerfile_artifact/Dockerfile
+
       - name: Push To DockerHub
         id: push-to-dockerhub
         uses: redhat-actions/push-to-registry@v2
@@ -34,35 +89,3 @@ jobs:
           registry: docker.io/weber8thomas
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
-
-      - name: Use the image
-        run: echo "New images has been pushed to ${{ steps.push-to-quay.outputs.registry-paths }}"
-  # build_full_container:
-  #   name: Build and push image
-  #   runs-on: ubuntu-20.04
-  #   env:
-  #     IMAGE_NAME: ashleys-mosaicatcher-pipeline
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Set output
-  #       id: vars
-  #       run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
-  #     - name: Build Image
-  #       id: build-image
-  #       uses: redhat-actions/buildah-build@v2
-  #       with:
-  #         image: ${{ env.IMAGE_NAME }}
-  #         tags: ${{ steps.vars.outputs.tag }}
-  #         dockerfiles: |
-  #           ./github-actions-runner/Dockerfile_complete.dockerfile
-  #     - name: Push To DockerHub
-  #       id: push-to-dockerhub
-  #       uses: redhat-actions/push-to-registry@v2
-  #       with:
-  #         image: ${{ steps.build-image.outputs.image }}
-  #         tags: ${{ steps.build-image.outputs.tags }}
-  #         registry: docker.io/weber8thomas
-  #         username: ${{ secrets.DOCKER_USERNAME }}
-  #         password: ${{ secrets.DOCKER_TOKEN }}
-  #     - name: Use the image
-  #       run: echo "New images has been pushed to ${{ steps.push-to-quay.outputs.registry-paths }}"

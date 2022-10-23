@@ -1,91 +1,43 @@
-# from workflow.scripts.utils.utils import get_mem_mb
-
-################################################################################
-# StrandPhaseR things                                                          #
-################################################################################
-
-
 rule convert_strandphaser_input:
-    """
-    rule fct: extract only segmentation with WC orientation 
-    input: initial_strand_state file coming from rule segmentation_selection & info file from mosaic count output
-    output: filtered TSV file with start/end coordinates of WC-orientated segment to be used by strandphaser
-    """
     input:
-        states="{output_folder}/segmentation/{sample}/Selection_initial_strand_state",
-        info="{output_folder}/counts/{sample}/{sample}.info",
+        states="{folder}/{sample}/segmentation/Selection_initial_strand_state",
+        info="{folder}/{sample}/counts/{sample}.info",
     output:
-        "{output_folder}/strandphaser/{sample}/strandphaser_input.txt",
+        "{folder}/{sample}/strandphaser/strandphaser_input.txt",
     log:
-        "{output_folder}/log/strandphaser/convert_strandphaser_input/{sample}.log",
+        "{folder}/log/strandphaser/convert_strandphaser_input/{sample}.log",
     conda:
         "../envs/rtools.yaml"
     script:
         "../scripts/strandphaser_scripts/helper.convert_strandphaser_input.R"
 
 
-checkpoint determine_sex_per_cell:
-    """
-    rule fct:
-    input:
-    output:
-    """
-    input:
-        bam=lambda wc: expand(
-            "{input_folder}/{sample}/all/{cell}.sort.mdup.bam",
-            input_folder=config["input_bam_location"],
-            sample=wc.sample,
-            cell=bam_per_sample_local[str(wc.sample)],
-        ),
-        bai=lambda wc: expand(
-            "{input_folder}/{sample}/all/{cell}.sort.mdup.bam.bai",
-            input_folder=config["input_bam_location"],
-            sample=wc.sample,
-            cell=bam_per_sample_local[str(wc.sample)],
-        ),
-    output:
-        sex_analysis_cellwise="{output_folder}/config/{sample}/sex_analysis_cells.tsv",
-        sex_analysis_samplewise="{output_folder}/config/{sample}/sex_analysis_sample.txt",
-    log:
-        "{output_folder}/log/strandphaser/determine_sex_per_cell/{sample}.log",
-    conda:
-        "../envs/mc_base.yaml"
-    script:
-        "../scripts/utils/chrxy_analysis.py"
-
-
 rule check_single_paired_end:
     input:
         bam=lambda wc: expand(
-            "{input_folder}/{sample}/all/{cell}.sort.mdup.bam",
-            input_folder=config["input_bam_location"],
+            "{folder}/{sample}/bam/{cell}.sort.mdup.bam",
+            folder=config["data_location"],
             sample=wc.sample,
             cell=bam_per_sample_local[str(wc.sample)],
         ),
     output:
-        single_paired_end_detect="{output_folder}/config/{sample}/single_paired_end_detection.txt",
+        single_paired_end_detect="{folder}/{sample}/config/single_paired_end_detection.txt",
     log:
-        "{output_folder}/log/config/{sample}/single_paired_end.log",
+        "{folder}/log/config/{sample}/single_paired_end.log",
     conda:
         "../envs/mc_base.yaml"
     script:
         "../scripts/utils/detect_single_paired_end.py"
 
 
-# TODO : replace by clean config file if possible or by temporary removed file
 rule prepare_strandphaser_config_per_chrom:
-    """
-    rule fct: prepare config file used by strandphaser
-    input: input used only for wildcards : sample, window & bpdens
-    output: config file used by strandphaser
-    """
     input:
-        seg_initial_str_state="{output_folder}/segmentation/{sample}/Selection_initial_strand_state",
-        single_paired_end_detect="{output_folder}/config/{sample}/single_paired_end_detection.txt",
+        seg_initial_str_state="{folder}/{sample}/segmentation/Selection_initial_strand_state",
+        single_paired_end_detect="{folder}/{sample}/config/single_paired_end_detection.txt",
     output:
-        "{output_folder}/strandphaser/{sample}/StrandPhaseR.{chrom}.config",
+        "{folder}/{sample}/strandphaser/StrandPhaseR.{chrom}.config",
     log:
-        "{output_folder}/log/strandphaser/{sample}/StrandPhaseR.{chrom}.log",
+        "{folder}/log/strandphaser/{sample}/StrandPhaseR.{chrom}.log",
     conda:
         "../envs/mc_base.yaml"
     script:
@@ -93,29 +45,26 @@ rule prepare_strandphaser_config_per_chrom:
 
 
 rule run_strandphaser_per_chrom:
-    """
-    rule fct: run strandphaser for each chromosome 
-    input: strandphaser_input.txt from rule convert_strandphaser_input ; genotyped snv for each chrom by freebayes ; configfile created by rule prepare_strandphaser_config_per_chrom ; bam folder
-    output:
-    """
     input:
-        install_strandphaser=rules.install_rlib_strandphaser.output,
-        wcregions="{output_folder}/strandphaser/{sample}/strandphaser_input.txt",
+        # install_strandphaser=rules.install_rlib_strandphaser.output,
+        wcregions="{folder}/{sample}/strandphaser/strandphaser_input.txt",
         snppositions=locate_snv_vcf,
-        configfile="{output_folder}/strandphaser/{sample}/StrandPhaseR.{chrom}.config",
+        configfile="{folder}/{sample}/strandphaser/StrandPhaseR.{chrom}.config",
+        bsgenome=bsgenome_install,
     output:
-        "{output_folder}/strandphaser/{sample}/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt",
-        "{output_folder}/strandphaser/{sample}/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf",
+        "{folder}/{sample}/strandphaser/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt",
+        "{folder}/{sample}/strandphaser/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf",
     log:
-        "{output_folder}/log/run_strandphaser_per_chrom/{sample}/{chrom}.log",
+        "{folder}/log/run_strandphaser_per_chrom/{sample}/{chrom}.log",
     conda:
         "../envs/rtools.yaml"
+        # "../envs/strandphaser.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
     params:
-        input_bam=lambda wc: "{}/{}/all".format(config["input_bam_location"], wc.sample),
-        output=lambda wc: "{}/strandphaser/{}/StrandPhaseR_analysis.{}".format(
-            config["output_location"], wc.sample, wc.chrom
+        input_bam=lambda wc: "{}/{}/bam".format(config["data_location"], wc.sample),
+        output=lambda wc: "{}/{}/strandphaser/StrandPhaseR_analysis.{}".format(
+            config["data_location"], wc.sample, wc.chrom
         ),
     shell:
         """
@@ -134,9 +83,9 @@ rule merge_strandphaser_vcfs:
         vcfs=ancient(aggregate_vcf_gz),
         tbis=ancient(aggregate_vcf_gz_tbi),
     output:
-        vcfgz="{output_folder}/strandphaser/phased-snvs/{sample}.vcf.gz",
+        vcfgz="{folder}/{sample}/strandphaser/phased-snvs/{sample}.vcf.gz",
     log:
-        "{output_folder}/log/merge_strandphaser_vcfs/{sample}.log",
+        "{folder}/log/merge_strandphaser_vcfs/{sample}.log",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     resources:
@@ -151,9 +100,9 @@ rule combine_strandphaser_output:
     input:
         files=aggregate_phased_haps,
     output:
-        "{output_folder}/strandphaser/{sample}/strandphaser_phased_haps_merged.txt",
+        "{folder}/{sample}/strandphaser/strandphaser_phased_haps_merged.txt",
     log:
-        "{output_folder}/log/combine_strandphaser_output/{sample}.log",
+        "{folder}/log/combine_strandphaser_output/{sample}.log",
     resources:
         mem_mb=get_mem_mb,
     conda:
@@ -164,13 +113,13 @@ rule combine_strandphaser_output:
 
 rule convert_strandphaser_output:
     input:
-        phased_states="{output_folder}/strandphaser/{sample}/strandphaser_phased_haps_merged.txt",
-        initial_states="{output_folder}/segmentation/{sample}/Selection_initial_strand_state",
-        info="{output_folder}/counts/{sample}/{sample}.info",
+        phased_states="{folder}/{sample}/strandphaser/strandphaser_phased_haps_merged.txt",
+        initial_states="{folder}/{sample}/segmentation/Selection_initial_strand_state",
+        info="{folder}/{sample}/counts/{sample}.info",
     output:
-        "{output_folder}/strandphaser/{sample}/StrandPhaseR_final_output.txt",
+        "{folder}/{sample}/strandphaser/StrandPhaseR_final_output.txt",
     log:
-        "{output_folder}/log/convert_strandphaser_output/{sample}.log",
+        "{folder}/log/convert_strandphaser_output/{sample}.log",
     conda:
         "../envs/rtools.yaml"
     resources:

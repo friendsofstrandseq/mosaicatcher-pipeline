@@ -1,4 +1,4 @@
-version: 1.7.0
+version: 1.8.1
 #######################################
 #   MOSAICATCHER CONFIGURATION FILE   #
 #######################################
@@ -6,11 +6,13 @@ version: 1.7.0
 # To be informed of pipeline status
 email: ""
 # Input BAM location
-input_bam_location: ".tests/data_CHR17"
-# Output location
-output_location: ".tests/output_CHR17"
+data_location: ".tests/data_CHR17"
 # Reference assembly selected
 reference: "hg38"
+# Enable / Disable GC analysis
+GC_analysis: False
+# Normalize or not mosaic counts
+normalized_counts: True
 # Mutually exclusive with ashleys_pipeline
 input_old_behavior: False
 # Enable/Disable ashleys-qc-pipeline module loading to start pipeline from FASTQ files
@@ -50,6 +52,11 @@ chromosomes:
 ##############################
 # Advanced configuration.    #
 ##############################
+alfred_plots:
+  - "dist"
+  - "devi"
+
+plate_orientation: landscape
 
 ## Reference assembly data
 references_data:
@@ -81,10 +88,7 @@ git_commit_strandphaser: "69c9fb4"
 git_repo_strandphaser: "https://github.com/daewoooo/StrandPhaseR"
 
 ## Mosaic bin window size
-window: 100000
-
-# Normalize or not mosaic counts
-normalized_counts: True
+window: 200000
 
 ## Methods dictionnary
 methods:
@@ -105,6 +109,10 @@ methods:
     gtcutoff: 0.05
     regfactor: 6
     filter: "TRUE"
+
+plottype_counts:
+  - "classic"
+  - "GC_corrected"
 
 plottype_consistency:
   - "byaf"

@@ -5,28 +5,17 @@ HTTP = HTTPRemoteProvider()
 
 
 rule dl_example_data:
-    """
-    rule fct: Download BAM example data as input for MosaiCatcher pipeline
-    input: zip file stored on Zenodo
-    output: input_bam_location given by the user
-    """
     input:
         HTTP.remote(
             "https://sandbox.zenodo.org/record/1074721/files/TEST_EXAMPLE_DATA.zip",
             keep_local=True,
         ),
     output:
-        touch("config_output/dl_example_data.ok"),
+        touch("config/dl_example_data.ok"),
     log:
-        touch("log/config_output/dl_example_data.ok"),
+        touch("log/config/dl_example_data.ok"),
     run:
         shell("unzip {input} -d .")
-        # directory = ".tests/data_example/"
-        # if not os.path.exists(directory):
-        #     os.makedirs(directory)
-        # shell("mv {input} .tests/data_example/TEST_EXAMPLE_DATA.zip")
-        # shell("unzip .tests/data_example/TEST_EXAMPLE_DATA.zip")
-
 
 
 rule download_hg19_reference:
@@ -109,10 +98,18 @@ rule install_T2T_BSgenome_tarball:
         "workflow/data/ref_genomes/log/T2T_R_tarball_install.log",
     conda:
         "../envs/rtools.yaml"
+        # "../envs/strandphaser.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
     script:
         "../scripts/utils/install_R_tarball.R"
+
+
+rule empty_install:
+    output:
+        touch("workflow/data/ref_genomes/config/fake_install.ok"),
+    log:
+        "workflow/data/ref_genomes/config/fake_install.log",
 
 
 rule samtools_faindex:
