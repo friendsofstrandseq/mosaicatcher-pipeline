@@ -1,15 +1,15 @@
 name: Build container
 
-# on:
-#   pull_request:
-#     types: [closed]
-#     branches:
-#       - main
-
 on:
-  push:
+  pull_request:
+    types: [closed]
     branches:
-      - dev
+      - main
+
+# on:
+#   push:
+#     branches:
+#       - dev
 
 env:
   IMAGE_NAME: mosaicatcher-pipeline
