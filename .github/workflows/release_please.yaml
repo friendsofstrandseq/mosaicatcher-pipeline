@@ -1,10 +1,9 @@
----
 name: "tagged-release"
 
 on:
   push:
-    tags:
-      - "*"
+    branches:
+      - main
 
 jobs:
   tagged-release:
@@ -12,10 +11,26 @@ jobs:
     runs-on: "ubuntu-latest"
 
     steps:
-      - name: "Build & test"
-        run: |
-          echo "done!"
+      - uses: actions/checkout@v3.1.0
+
+      - name: Run read-yaml action
+        id: yaml-data
+        uses: jbutcher5/read-yaml@main # You may wish to replace main with a version tag such as '1.6' etc.
+        with:
+          file: "./config/config.yaml"
+          key-path: '["version"]' # Access the runs key then the using key and retuns the value.
+
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          custom_tag: ${{ steps.yaml-data.outputs.data }}
+          default_prerelease_bump: false
+          tag_prefix: ""
+
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: false
+          automatic_release_tag: ${{ steps.yaml-data.outputs.data }}
