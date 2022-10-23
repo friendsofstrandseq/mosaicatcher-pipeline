@@ -4,11 +4,19 @@
 
 0. [Optional] Install [Singularity](https://www.sylabs.io/guides/3.0/user-guide/)
 
-1. Create a dedicated conda environment
+1. A. Create a dedicated conda environment
 
 ```bash
-conda create -n snakemake -c bioconda snakemake=7.5.0 && conda activate snakemake
+conda create -n snakemake -c bioconda -c conda-forge -c defaults -c anaconda snakemake=7.5.0
 ```
+
+1. B. Activate the dedicated conda environment
+
+```bash
+conda activate snakemake
+```
+
+**Reminder:** You will need to verify that this conda environment is activated and provide the right snakemake before each execution (`which snakemake` command should output like <FOLDER>/<USER>/[ana|mini]conda3/envs/snakemake/bin/snakemake)
 
 2. Clone the repository
 
@@ -21,7 +29,7 @@ git clone https://github.com/friendsofstrandseq/mosaicatcher-pipeline.git && cd 
 ```bash
 # Snakemake Profile: if singularity installed: workflow/profiles/local/conda_singularity/
 # Snakemake Profile: if singularity NOT installed: workflow/profiles/local/conda/
-snakemake --cores 6 --configfile .tests/config/simple_config.yaml --profile workflow/profiles/local/conda/
+snakemake --cores 6 --configfile .tests/config/simple_config.yaml --profile workflow/profiles/local/conda_singularity/
 ```
 
 4. Generate report on example data
@@ -30,32 +38,35 @@ snakemake --cores 6 --configfile .tests/config/simple_config.yaml --profile work
 snakemake --cores 6 --configfile .tests/config/simple_config.yaml --profile workflow/profiles/local/conda_singularity/ --report report.zip
 ```
 
+---
+
+**ℹ️ Note**
+
+- Steps 0 - 2 are required only during first execution
+- After the first execution, do not forget to go in the git repository and to activate the snakemake environment
+
+---
+
 ## 🔬​ Start running your own analysis
 
 Following commands show you an example using local execution (not HPC or cloud)
 
-1. Chose your reference (hg38, hg19 or T2T) and download related data
-
-```bash
-snakemake -c1 --config dl_external_files=True reference=hg38
-```
-
-2. Start running your own Strand-Seq analysis
+1. Start running your own Strand-Seq analysis
 
 ```bash
 snakemake \
-    --cores <N> --config input_bam_location=<INPUT_DATA_FOLDER> output_location=<OUTPUT_DATA_FOLDER> \
-    --profile workflow/profiles/local/conda/
+    --cores <N> --config data_location=<INPUT_DATA_FOLDER> \
+    --profile workflow/profiles/local/conda_singularity/
 
 ```
 
-3. Generate report
+2. Generate report
 
 ```bash
 snakemake \
-    --cores <N> --config input_bam_location=<INPUT_DATA_FOLDER> output_location=<OUTPUT_DATA_FOLDER> \
-    --profile workflow/profiles/local/conda/ \
-    --report <REPORT.zip>
+    --cores <N> --config data_location=<INPUT_DATA_FOLDER> \
+    --profile workflow/profiles/local/conda_singularity/ \
+    --report <INPUT_DATA_FOLDER>/<REPORT.zip>
 ```
 
 ## System requirements
@@ -77,7 +88,7 @@ If possible, it is also highly recommended to install and use `mamba` package ma
 
 ```bash
 conda install -c conda-forge mamba
-mamba create -n snakemake -c bioconda snakemake=7.5.0
+mamba create -n snakemake -c bioconda -c conda-forge -c defaults -c anaconda snakemake=7.5.0
 conda activate mosaicatcher_env
 ```
 
@@ -92,27 +103,18 @@ cd mosaicatcher-pipeline/workflow/
 
 ### ⚙️ 3. MosaiCatcher execution (without preprocessing)
 
-#### 3A. Download external data automatically with snakemake [Optional]
-
-```bash
-snakemake -c1 --config dl_external_files=True reference=[hg38|hg19|T2T] # mm10 soon
-```
-
-#### 3B. Strand-Seq BAM input data
-
 #### (i) Download & use example data automatically with snakemake [Optional]
 
 In a first step, `dl_bam_example=True` will allow to retrieve data stored on Zenodo registry.
 
 ```bash
-snakemake -c1 --config dl_bam_example=True input_bam_location=TEST_EXAMPLE_DATA/
+snakemake -c1 --config dl_bam_example=True data_location=TEST_EXAMPLE_DATA/
 ```
 
 Then, the following command will process the 18 cells (full BAM with all chromosomes) present in this example.
 
 ```bash
-snakemake -c6 --config input_bam_location=TEST_EXAMPLE_DATA output_location=TEST_OUTPUT \
-    --profile workflow/profiles/local/conda/
+snakemake -c6 --config data_location=TEST_EXAMPLE_DATA --profile workflow/profiles/local/conda_singularity/
 ```
 
 **Warning:** Download example data currently requires 3GB of free space disk.
@@ -145,14 +147,14 @@ In its current flavour, MosaiCatcher requires that input data must be formatted 
 ```bash
 Parent_folder
 |-- Sample_1
-|   `-- all
+|   `-- bam
 |       |-- Cell_01.sort.mdup.bam
 |       |-- Cell_02.sort.mdup.bam
 |       |-- Cell_03.sort.mdup.bam
 |       `-- Cell_04.sort.mdup.bam
 |
 `-- Sample_2
-    `-- all
+    `-- bam
         |-- Cell_21.sort.mdup.bam
         |-- Cell_22.sort.mdup.bam
         |-- Cell_23.sort.mdup.bam
@@ -161,13 +163,13 @@ Parent_folder
 
 In a `Parent_Folder`, create a subdirectory `Parent_Folder/sampleName/` for each `sample`. Your Strand-seq BAM files of this sample go into the following folder:
 
-- `all` for the total set of BAM files
+- `bam` for the total set of BAM files
 
 > Using the classic behavior, cells flagged as low-quality will only be determined based on coverage [see Note here](#note:-filtering-of-low-quality-cells-impossible-to-process).
 
 #### Old behavior
 
-Previous version of MosaiCatcher (version ≤ 1.5) needed not only a `all` directory as described above, but also a `selected` folder, presenting only high-quality selected libraries wished to be processed for the rest of the analysis.
+Previous version of MosaiCatcher (version ≤ 1.5) needed not only a `all` directory as described above, but also a `selected` folder (now renamed `bam`), presenting only high-quality selected libraries wished to be processed for the rest of the analysis.
 
 You can still use this behavior by enabling the config parameter either by the command line: `input_old_behavior=True` or by modifying the corresponding entry in the config/config.yaml file.
 
@@ -181,18 +183,28 @@ Your `<INPUT>` directory should look like this:
 ```bash
 Parent_folder
 |-- Sample_1
-|   `-- all
+|   |-- bam
+|   |   |-- Cell_01.sort.mdup.bam
+|   |   |-- Cell_02.sort.mdup.bam
+|   |   |-- Cell_03.sort.mdup.bam
+|   |   `-- Cell_04.sort.mdup.bam
+|   `-- selected
 |       |-- Cell_01.sort.mdup.bam
-|       |-- Cell_02.sort.mdup.bam
-|       |-- Cell_03.sort.mdup.bam
 |       `-- Cell_04.sort.mdup.bam
 |
 `-- Sample_2
-    `-- all
-        |-- Cell_21.sort.mdup.bam
-        |-- Cell_22.sort.mdup.bam
-        |-- Cell_23.sort.mdup.bam
-        `-- Cell_24.sort.mdup.bam
+    |-- bam
+    |   |-- Cell_01.sort.mdup.bam
+    |   |-- Cell_02.sort.mdup.bam
+    |   |-- Cell_03.sort.mdup.bam
+    |   `-- Cell_04.sort.mdup.bam
+    `-- selected
+        |-- Cell_03.sort.mdup.bam
+        `-- Cell_04.sort.mdup.bam
+
+
+
+
 ```
 
 > Using the `old behavior`, cells flagged as low-quality will be determined both based on their presence in the `selected` folder presented above and on coverage [see Note here](#note:-filtering-of-low-quality-cells-impossible-to-process).
@@ -212,7 +224,7 @@ From Mosaicatcher version ≥ 1.6.1, it is possible to use [ashleys-qc-pipeline 
 ```bash
 Parent_folder
 |-- Sample_1
-|   `-- all
+|   `-- fastq
 |       |-- Cell_01.1.fastq.gz
 |       |-- Cell_01.2.fastq.gz
 |       |-- Cell_02.1.fastq.gz
@@ -223,7 +235,7 @@ Parent_folder
 |       `-- Cell_04.2.fastq.gz
 |
 `-- Sample_2
-    `-- all
+    `-- fastq
         |-- Cell_21.1.fastq.gz
         |-- Cell_21.2.fastq.gz
         |-- Cell_22.1.fastq.gz
@@ -249,26 +261,38 @@ Informations and modes of execution can be found on the [ashleys-qc-pipeline doc
 
 ### ⚡️ 4. Run the pipeline
 
-#### Local execution (without batch scheduler)
+#### Local execution (without batch scheduler) using conda only
 
-After defining your configuration, you can launch the pipeline the following way if you downloaded BAM example data using 3A:
-
-```bash
-snakemake \
-    --cores <N> \
-    --profile workflow/profiles/local/conda/
-```
-
-Otherwise, you must specify your input and output folder like the following:
+After defining your configuration, you can launch the pipeline the following way:
 
 ```bash
 snakemake \
     --cores <N> \
     --config \
-        input_bam_location=<INPUT_FOLDER> \
-        output_location=<OUTPUT_FOLDER> \
-    --profile workflow/profiles/local/conda/ --singularity-args "-B /<mounting_point>:/<mounting_point>"
+        data_location=<INPUT_FOLDER> \
+    --profile workflow/profiles/local/conda/
 ```
+
+#### Local execution (without batch scheduler) using singularity X conda (recommanded)
+
+After defining your configuration, you can launch the pipeline the following way:
+
+```bash
+snakemake \
+    --cores <N> \
+    --config \
+        data_location=<INPUT_FOLDER> \
+    --profile workflow/profiles/local/conda_singularity/ --singularity-args "-B /<mouting_point>:/<mounting_point>"
+```
+
+---
+
+**ℹ️ Note**
+
+It is possible to provide multiple mouting points between system and cointainer using as many `-B` as needed in the `singularity-args` command like the following: "-B /<mouting_point1>:/<mounting_point1> -B /<mouting_point2>:/<mounting_point2>"
+For EMBL users, this can be for example "-B /g:/g -B /scratch:/scratch"
+
+---
 
 ---
 
@@ -301,8 +325,7 @@ To execute MosaiCatcher on HPC, use the following command.
 ```bash
 snakemake \
     --config \
-        input_bam_location=<INPUT_FOLDER> \
-        output_location=<OUTPUT_FOLDER> \
+        data_location=<INPUT_FOLDER> \
     --singularity-args "-B /<mounting_point>:/<mounting_point>" \
     --profile workflow/profiles/slurm/
 ```
@@ -316,8 +339,7 @@ Optionally, you can also MosaiCatcher rules that produce plots
 ```bash
 snakemake \
     --config \
-        input_bam_location=<INPUT_FOLDER> \
-        output_location=<OUTPUT_FOLDER> \
+        data_location=<INPUT_FOLDER> \
     --singularity-args "-B /<mounting_point>:/<mounting_point>" \
     --profile workflow/profiles/slurm/ \
     --report <report>.zip

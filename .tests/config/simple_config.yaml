@@ -1,3 +1,4 @@
+version: 1.8.1
 #######################################
 #   MOSAICATCHER CONFIGURATION FILE.  #
 #######################################
@@ -13,6 +14,7 @@ mosaicatcher_pipeline: True
 ashleys_pipeline: False
 hand_selection: False
 use_light_data: False
+GC_analysis: False
 
 input_old_behavior: False
 
@@ -27,12 +29,12 @@ dl_bam_example: False
 ### Enable / Disable download of external files (1000G SNV & Fasta ref genome)
 dl_external_files: False
 
-normalized_counts: False
+normalized_counts: True
 
 ## Input BAM location
-input_bam_location: ".tests/data_CHR17"
+data_location: ".tests/data_CHR17"
 ## Output location
-output_location: ".tests/output_CHR17"
+# output_location: ".tests/output_CHR17"
 
 reference: "hg38"
 
@@ -85,7 +87,7 @@ paired_end: True
 # PARAMETERS
 
 ## WINDOW
-window: 100000
+window: 200000
 
 ## METHODS
 # methods:

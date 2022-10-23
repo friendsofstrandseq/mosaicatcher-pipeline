@@ -1,0 +1,13 @@
+name: rtools
+channels:
+  - conda-forge
+  - bioconda
+  - r
+  - anaconda
+dependencies:
+  - r-ggplot2
+  - bioconductor-edger
+  - r-data.table
+  - bioconductor-genomicranges
+  - r-r.utils
+  - r-reshape2
