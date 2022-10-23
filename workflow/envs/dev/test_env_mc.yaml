@@ -1,0 +1,57 @@
+name: test_env_mc
+channels:
+  - conda-forge
+  - bioconda
+  - r
+  - anaconda
+dependencies:
+  - alfred
+  - bcftools
+  - bioconductor-biocparallel
+  - bioconductor-bsgenome
+  - bioconductor-bsgenome.hsapiens.ucsc.hg19
+  - bioconductor-bsgenome.hsapiens.ucsc.hg38
+  - bioconductor-complexheatmap
+  - bioconductor-genomicalignments
+  - bioconductor-genomicranges
+  - bioconductor-rsamtools
+  - fonts-anaconda
+  - freebayes
+  - intervaltree
+  - matplotlib
+  - mosaicatcher
+  - numpy
+  - pandas
+  - parmap
+  - perl
+  - pypdf2
+  - pysam
+  - r-assertthat
+  - r-base
+  - r-biocmanager
+  - r-cairo
+  - r-cowplot
+  - r-data.table
+  - r-devtools
+  - r-doparallel
+  - r-dplyr
+  - r-foreach
+  - r-ggplot2
+  - r-gplots
+  - r-gtools
+  - r-mc2d
+  - r-rcolorbrewer
+  - r-reshape2
+  - r-scales
+  - r-stringr
+  - samtools
+  - scipy
+  - seaborn
+  - strandphaser
+  - tabix
+  - tqdm
+  - whatshap
+  # - bioconductor-fastseg
+  # - bioconductor-s4vectors
+  # - r-pheatmap
+  # ###############
