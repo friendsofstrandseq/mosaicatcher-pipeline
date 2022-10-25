@@ -15,7 +15,7 @@ ashleys_pipeline: False
 hand_selection: False
 use_light_data: False
 GC_analysis: False
-
+arbigent: False
 input_old_behavior: False
 
 ### Modes ["count", "segmentation", "mosaiclassifier"]

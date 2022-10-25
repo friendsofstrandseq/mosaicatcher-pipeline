@@ -172,3 +172,5 @@ TMP/
 # .tests/external_data/chr17.fa.gz.amb
 .tests/external_data/chr17.fa.gz.*
 log.txt
+workflow/data/arbigent/mapping*
+workflow/data/arbigent/mapping_counts_allchrs_hg38.h5
