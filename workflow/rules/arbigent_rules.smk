@@ -115,22 +115,3 @@ if config["arbigent"] is True:
         script:
             "../scripts/arbigent_utils/mosaiclassifier_scripts/mosaiClassifier_CN_call.snakemake.R"
             
-
-rule run_regenotypeR_samplewise_singlecell:
-    input:
-        probabilities_table = "sv_probabilities/{sample}/100000_fixed_norm.selected_j0.1_s0.1/probabilities.Rdata",
-        msc = "sv_calls/{sample}/msc.debug"
-    output:
-        sv_calls_bulk =  'sv_calls/{sample}/sv_calls.txt'
-    params:
-        outputfolder =  'sv_calls/{sample}/',
-        mode = 'single-cell'
-    shell:
-        """
-        Rscript utils/regenotyper/regenotype.R \
-                        -f ../../{input.probabilities_table} \
-                        -c ../../{input.msc} \
-                        -o ../../{params.outputfolder} \
-                        -p $(pwd)/utils/regenotyper \
-                        -m {params.mode}
-        """
