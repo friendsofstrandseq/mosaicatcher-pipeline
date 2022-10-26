@@ -33,7 +33,11 @@ rule config_run_summary:
         ploidy_summary="{folder}/{sample}/ploidy/ploidy_summary.txt",
         single_paired_end_detect="{folder}/{sample}/config/single_paired_end_detection.txt",
     output:
-        summary="{folder}/config/{sample}/run_summary.txt",
+        summary=report(
+            "{folder}/config/{sample}/run_summary.txt",
+            category="Run summary",
+            labels={"Sample" : "{sample}"}
+            )
     log:
         "{folder}/log/config/{sample}/config_run_summary.txt",
     conda:
