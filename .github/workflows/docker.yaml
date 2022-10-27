@@ -76,7 +76,7 @@ jobs:
         uses: redhat-actions/buildah-build@v2
         with:
           image: ${{ env.IMAGE_NAME }}
-          tags: "${{ steps.yaml-data.outputs.data }}" dev
+          tags: "${{ steps.yaml-data.outputs.data }}"
           dockerfiles: |
             ./Dockerfile_artifact/Dockerfile
 
