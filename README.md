@@ -32,6 +32,7 @@ the workflow goes through the following steps:
 - [Parameters & input](docs/parameters.md)
 - [Output](docs/output.md)
 - [Configuration file](config/README.md)
+- [Update the pipeline](docs/update.md)
 
 # 📆 Roadmap
 
