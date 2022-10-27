@@ -1,4 +1,5 @@
 if config["arbigent"] is False:
+
     rule mosaiClassifier_calc_probs:
         input:
             counts="{folder}/{sample}/counts/{sample}.txt.gz",
@@ -16,7 +17,6 @@ if config["arbigent"] is False:
         script:
             "../scripts/mosaiclassifier_scripts/mosaiClassifier.snakemake.R"
 
-
     rule create_haplotag_likelihoods:
         input:
             haplotag_table="{folder}/{sample}/haplotag/table/haplotag_counts_merged.tsv",
@@ -31,7 +31,6 @@ if config["arbigent"] is False:
             mem_mb=get_mem_mb_heavy,
         script:
             "../scripts/mosaiclassifier_scripts/haplotagProbs.snakemake.R"
-
 
     rule mosaiClassifier_make_call:
         input:
@@ -56,7 +55,6 @@ if config["arbigent"] is False:
         script:
             "../scripts/mosaiclassifier_scripts/mosaiClassifier_call.snakemake.R"
 
-
     rule mosaiClassifier_make_call_biallelic:
         input:
             probs="{folder}/{sample}/sv_probabilities/*probabilities.Rdata",
@@ -70,7 +68,6 @@ if config["arbigent"] is False:
             mem_mb=get_mem_mb_heavy,
         script:
             "../scripts/mosaiclassifier_scripts/mosaiClassifier_call_biallelic.snakemake.R"
-
 
     rule call_complex_regions:
         input:

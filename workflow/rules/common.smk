@@ -1,4 +1,5 @@
 import pandas as pd
+
 # from scripts.utils import handle_input, make_log_useful, pipeline_aesthetic_start
 from scripts.utils import make_log_useful, pipeline_aesthetic_start
 import os
@@ -49,7 +50,9 @@ class HandleInput:
         if genecore is False:
             df_config_files = self.handle_input_data(thisdir=input_path, bam=bam)
         elif genecore is True:
-            df_config_files, d_master = self.handle_input_data_genecore(thisdir=genecore_path)
+            df_config_files, d_master = self.handle_input_data_genecore(
+                thisdir=genecore_path
+            )
             self.d_master = d_master
 
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
@@ -102,7 +105,11 @@ class HandleInput:
                 d_master[sample]["pe_index"] = pe_index
                 d_master[sample]["common_element"] = common_element
 
-        samples_to_process = config["samples_to_process"] if len(config["samples_to_process"]) > 0 else list(d_master.keys())
+        samples_to_process = (
+            config["samples_to_process"]
+            if len(config["samples_to_process"]) > 0
+            else list(d_master.keys())
+        )
 
         config["data_location"] = "{data_location}/{genecore_date_folder}".format(
             data_location=config["data_location"],
@@ -131,33 +138,39 @@ class HandleInput:
         complete_df_list = list()
 
         for sample in d_master:
-            df = pd.DataFrame([{"File": os.path.basename(f), "Folder": os.path.dirname(f)} for f in genecore_list if sample in f])
-            if df.shape[0]>0:
-
+            df = pd.DataFrame(
+                [
+                    {"File": os.path.basename(f), "Folder": os.path.dirname(f)}
+                    for f in genecore_list
+                    if sample in f
+                ]
+            )
+            if df.shape[0] > 0:
                 df["File"] = df["File"].str.replace(".fastq.gz", "", regex=True)
                 df["Sample"] = sample
                 df["Pair"] = df["File"].apply(lambda r: r.split(".")[1])
                 df["Cell"] = df["File"].apply(lambda r: r.split(".")[0])
-                df["Full_path"] = df["Folder"] + "/" + df["File"] + ".fastq.gz"
-                df["Genecore_path"] = (
-                    config["genecore_prefix"]
-                    + "/"
-                    + config["genecore_date_folder"]
-                    + "/"
-                    + d_master[sample]["prefix"]
-                    + "lane1"
-                    + df["File"].str.replace(".", "_", regex=True)
-                    + "_sequence.txt.gz"
+                df["Full_path"] = df[["Folder", "File"]].apply(
+                    lambda r: f"{r['Folder']}/{r['File']}.fastq.gz", axis=1
                 )
-                df["Genecore_file"] = d_master[sample]["prefix"] + "lane1" + df["File"].str.replace(".", "_", regex=True)
-                df["Genecore_file"] = df["Genecore_file"].apply(lambda r: "_".join(r.split("_")[:-1]))
+                df["Genecore_path"] = df["File"].apply(
+                    lambda r: f"{config['genecore_prefix']}/{config['genecore_date_folder']}/{d_master[sample]['prefix']}lane1/{r.replace('.', '_')}_sequence.txt.gz"
+                )
+                df["Genecore_file"] = df["File"].apply(
+                    lambda r: f"{d_master[sample]['prefix']}lane1{r.replace('.', '_')}"
+                )
+                df["Genecore_file"] = df["Genecore_file"].apply(
+                    lambda r: "_".join(r.split("_")[:-1])
+                )
 
                 # Concat dataframes for each sample & output
                 complete_df_list.append(df)
 
         complete_df = pd.concat(complete_df_list)
 
-        complete_df = complete_df.sort_values(by=["Cell", "File"]).reset_index(drop=True)
+        complete_df = complete_df.sort_values(by=["Cell", "File"]).reset_index(
+            drop=True
+        )
         pd.options.display.max_colwidth = 200
         print(complete_df)
         # exit()
@@ -208,7 +221,11 @@ class HandleInput:
             # Create a list of  files to process for each sample
             l_files_all = [
                 f
-                for f in os.listdir("{thisdir}/{sample}/{folder}/".format(thisdir=thisdir, sample=sample, folder=folder))
+                for f in os.listdir(
+                    "{thisdir}/{sample}/{folder}/".format(
+                        thisdir=thisdir, sample=sample, folder=folder
+                    )
+                )
                 if f.endswith(ext)
             ]
 
@@ -218,14 +235,18 @@ class HandleInput:
             df["Folder"] = thisdir
             df["Sample"] = sample
             df["Cell"] = df["File"].apply(lambda r: r.split(".")[0])
-            df["Full_path"] = "{thisdir}/{sample}/{folder}/".format(thisdir=thisdir, sample=sample, folder=folder)
+            df["Full_path"] = "{thisdir}/{sample}/{folder}/".format(
+                thisdir=thisdir, sample=sample, folder=folder
+            )
             df["Full_path"] = df["Full_path"] + df["File"] + ext
 
             complete_df_list.append(df)
 
         # Concat dataframes for each sample & output
         complete_df = pd.concat(complete_df_list)
-        complete_df = complete_df.sort_values(by=["Cell", "File"]).reset_index(drop=True)
+        complete_df = complete_df.sort_values(by=["Cell", "File"]).reset_index(
+            drop=True
+        )
         return complete_df
 
 
@@ -265,7 +286,6 @@ def findstem(arr):
                 res = stem
 
     return res
-
 
 
 # Create configuration file with samples
@@ -352,8 +372,6 @@ plottype_counts = (
     if config["GC_analysis"] is True
     else config["plottype_counts"][0]
 )
-
-
 
 
 def get_final_output():

@@ -121,10 +121,10 @@ checkpoint filter_bad_cells_from_mosaic_count:
         "../scripts/utils/filter_bad_cells.py"
 
 
-if ((config["window"] in [50000, 100000, 200000])
+if (config["window"] in [50000, 100000, 200000])
     and (config["reference"] == "hg38")
     and (config["normalized_counts"] is True)
-    and (config["arbigent"] is False)):
+    and (config["arbigent"] is False):
 
     rule merge_blacklist_bins:
         input:
@@ -133,7 +133,7 @@ if ((config["window"] in [50000, 100000, 200000])
         output:
             merged="{folder}/{sample}/normalizations/HGSVC.{window}.merged.tsv",
         log:
-            "{folder}/log/normalizations/{sample}/HGSVC.{window}.merged.tsv"
+            "{folder}/log/normalizations/{sample}/HGSVC.{window}.merged.tsv",
         conda:
             "../envs/mc_base.yaml"
         shell:
@@ -161,78 +161,24 @@ if ((config["window"] in [50000, 100000, 200000])
             Rscript workflow/scripts/normalization/normalize.R {input.counts} {input.norm} {output} 2>&1 > {log}
             """
 
+
 elif config["arbigent"] is True:
 
     rule merge_blacklist_bins:
         input:
-            norm = "utils/normalization_hg38_wmap/HGSVC.{bin_size}.txt"
+            norm="utils/normalization_hg38_wmap/HGSVC.{bin_size}.txt",
         output:
-            merged = "normalizations/HGSVC.{bin_size}.merged.tsv"
+            merged="normalizations/HGSVC.{bin_size}.merged.tsv",
         log:
-            "log/merge_blacklist_bins/{bin_size}.log"
+            "log/merge_blacklist_bins/{bin_size}.log",
         shell:
             """
             utils/merge-blacklist.py --merge_distance 500000 {input.norm} > {output.merged} 2> {log}
             """
 
-    # rule mosaic_count_variable:
-    #     input:
-    #         bam=lambda wc: expand(
-    #             "{folder}/{sample}/bam/{cell}.sort.mdup.bam",
-    #             folder=config["data_location"],
-    #             sample=wc.sample,
-    #             cell=bam_per_sample_local[str(wc.sample)],
-    #         ),
-    #         bai=lambda wc: expand(
-    #             "{folder}/{sample}/bam/{cell}.sort.mdup.bam.bai",
-    #             folder=config["data_location"],
-    #             sample=wc.sample,
-    #             cell=bam_per_sample_local[str(wc.sample)],
-    #         ),
-    #         excl="{folder}/{sample}/config/chroms_to_exclude.txt",
-    #         bed = lambda wc: config["variable_bins"][str(wc.bin_size)],
-    #     output:
-    #         counts="{folder}/{sample}/counts/{sample}.txt.gz",
-    #         info="{folder}/{sample}/counts/{sample}.info",
-    #     log:
-    #         "{folder}/log/counts/{sample}/mosaic_count.log",
-    #     conda:
-    #         "../envs/mc_bioinfo_tools.yaml"
-    #     params:
-    #         window=config["window"],
-    #     resources:
-    #         mem_mb=get_mem_mb,
-    #     # input:
-    #     #     bam = lambda wc: expand("bam/" + wc.sample + "/selected/{bam}.bam", bam = BAM_PER_SAMPLE[wc.sample]),
-    #     #     bai = lambda wc: expand("bam/" + wc.sample + "/selected/{bam}.bam.bai", bam = BAM_PER_SAMPLE[wc.sample]),
-    #     #     bed = lambda wc: config["variable_bins"][str(wc.bin_size)],
-    #     #     excl = "log/exclude_file_{sample}"
-    #     # output:
-    #     #     counts = "counts/{sample}/{bin_size}_variable.txt.gz",
-    #     #     info   = "counts/{sample}/{bin_size}_variable.info"
-    #     shell:
-    #         """
-    #         mosaicatcher count \
-    #             --verbose \
-    #             -o {output.counts} \
-    #             -i {output.info} \
-    #             -b {input.bed} \
-    #             {input.bam} \
-    #         > {log} 2>&1
-    #         """
-    #         # """
-    #         # mosaicatcher count \
-    #         #     --verbose \
-    #         #     --do-not-blacklist-hmm \
-    #         #     -o {output.counts} \
-    #         #     -i {output.info} \
-    #         #     -x {input.excl} \
-    #         #     -w {params.window} \
-    #         #     {input.bam} \
-    #         # > {log} 2>&1
-    #         # """
 
 else:
+
     rule cp_mosaic_count:
         input:
             "{folder}/{sample}/counts/{sample}.txt.filter.gz",
@@ -244,6 +190,8 @@ else:
             "../envs/mc_base.yaml"
         shell:
             "cp {input} {output}"
+
+
 rule sort_counts:
     input:
         "{folder}/{sample}/counts/{sample}.txt.gz",
@@ -255,6 +203,8 @@ rule sort_counts:
         "../envs/mc_base.yaml"
     script:
         "../scripts/utils/sort_counts.py"
+
+
 rule extract_single_cell_counts:
     input:
         info="{folder}/{sample}/counts/{sample}.info",
