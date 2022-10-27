@@ -26,13 +26,14 @@ def pipeline_aesthetic_start(config):
     print(Style.RESET_ALL)
     print(sep)
 
-
     # Input / Output
     print("\033[1m{}\033[0m".format("Input/Output options:"))
     l = [
         f"{Fore.BLUE}  {{:<50}}{Fore.GREEN}{{:<50}}".format("Folder to processed", ": " + str(config["data_location"])),
         # f"{Fore.BLUE}  {{:<50}}{Fore.GREEN}{{:<50}}".format("Output folder selected", ": " + str(config["data_location"])),
     ]
+    if config["genecore"] is True:
+        l.append(f"{Fore.BLUE}  {{:<50}}{Fore.GREEN}{{:<50}}".format("Genecore Folder to processed", ": " + str(config["genecore_date_folder"])))
     [print(e) for e in l]
 
     print(Style.RESET_ALL)
@@ -49,6 +50,7 @@ def pipeline_aesthetic_start(config):
     # Behavior options
     print("\033[1m{}\033[0m".format("Behavior options:"))
     l = [
+        f"{Fore.BLUE}  {{:<50}}{Fore.GREEN}{{:<50}}".format("Genecore mode enabled", ": " + str(config["genecore"])),
         f"{Fore.BLUE}  {{:<50}}{Fore.GREEN}{{:<50}}".format("Ashleys-QC preprocessing pipeline", ": " + str(config["ashleys_pipeline"])),
         f"{Fore.BLUE}  {{:<50}}{Fore.GREEN}{{:<50}}".format(
             "BAM folder old format (all/selected)", ": " + str(config["input_old_behavior"])
@@ -65,6 +67,3 @@ def pipeline_aesthetic_start(config):
         # f"{Fore.BLUE}  {{:<50}}{Fore.GREEN}{{:<50}}".format("Reference FASTA file", ": " + str(config["references_data"][config["reference"]]["reference_file_location"])),
     ]
     [print(e) for e in l]
-
-
-    
