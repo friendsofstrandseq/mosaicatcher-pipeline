@@ -18,6 +18,35 @@ onstart:
     pipeline_aesthetic_start.pipeline_aesthetic_start(config)
 
 
+# List of assertions to verify
+if config["genecore"] is False:
+    l_samples = os.listdir(config["data_location"])
+    assert (
+        "fastq" not in l_samples
+    ), "fastq folder found in the {} data_location specified: please specify a parent folder".format(
+        config["data_location"]
+    )
+
+dl_bam_example_option_selected = config["dl_bam_example"]
+assert (
+    type(dl_bam_example_option_selected) is bool
+), "Wrong plot option selected : {}\nPlease enter a valid value (True / False)".format(
+    config["plot"]
+)
+
+dl_external_files_option_selected = config["dl_external_files"]
+assert (
+    type(dl_external_files_option_selected) is bool
+), "Wrong plot option selected : {}\nPlease enter a valid value (True / False)".format(
+    config["plot"]
+)
+
+if config["ashleys_pipeline"] is True:
+    assert (
+        config["ashleys_pipeline"] != config["input_old_behavior"]
+    ), "ashleys_pipeline and input_old_behavior parameters cannot both be set to True"
+
+
 # Configure if handle_input needs to be based on bam or fastq
 bam = True if config["ashleys_pipeline"] is False else False
 
@@ -296,25 +325,6 @@ df_config_files["Selected"] = True
 samples = list(sorted(list(df_config_files.Sample.unique().tolist())))
 
 
-# List of assertions to verify
-dl_bam_example_option_selected = config["dl_bam_example"]
-assert (
-    type(dl_bam_example_option_selected) is bool
-), "Wrong plot option selected : {}\nPlease enter a valid value (True / False)".format(
-    config["plot"]
-)
-
-dl_external_files_option_selected = config["dl_external_files"]
-assert (
-    type(dl_external_files_option_selected) is bool
-), "Wrong plot option selected : {}\nPlease enter a valid value (True / False)".format(
-    config["plot"]
-)
-
-if config["ashleys_pipeline"] is True:
-    assert (
-        config["ashleys_pipeline"] != config["input_old_behavior"]
-    ), "ashleys_pipeline and input_old_behavior parameters cannot both be set to True"
 
 
 # Creation of dicts to be used in the rules
