@@ -1,7 +1,13 @@
 name: "tagged-release"
 
+# on:
+#   push:
+#     branches:
+#       - master
+
 on:
-  push:
+  pull_request:
+    types: [closed]
     branches:
       - master
 
