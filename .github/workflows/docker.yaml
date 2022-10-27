@@ -76,7 +76,7 @@ jobs:
         uses: redhat-actions/buildah-build@v2
         with:
           image: ${{ env.IMAGE_NAME }}
-          tags: "${{ steps.yaml-data.outputs.data }}"
+          tags: "${{ steps.yaml-data.outputs.data }}" dev
           dockerfiles: |
             ./Dockerfile_artifact/Dockerfile
 
@@ -117,7 +117,7 @@ jobs:
           channels: conda-forge,bioconda,defaults
           auto-activate-base: false
           activate-environment: snakemake_env
-          environment-file: ./env.yaml
+          environment-file: ./workflow/envs/snakemake.yaml
 
       - name: check solution
         run: |
