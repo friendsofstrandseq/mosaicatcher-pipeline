@@ -1,4 +1,3 @@
-
 # rule install_rlib_strandphaser:
 #     output:
 #         check=touch(
@@ -36,8 +35,8 @@ rule config_run_summary:
         summary=report(
             "{folder}/config/{sample}/run_summary.txt",
             category="Run summary",
-            labels={"Sample" : "{sample}"}
-            )
+            labels={"Sample": "{sample}"},
+        ),
     log:
         "{folder}/log/config/{sample}/config_run_summary.txt",
     conda:
