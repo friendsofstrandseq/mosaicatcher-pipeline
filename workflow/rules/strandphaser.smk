@@ -58,7 +58,6 @@ rule run_strandphaser_per_chrom:
         "{folder}/log/run_strandphaser_per_chrom/{sample}/{chrom}.log",
     conda:
         "../envs/rtools.yaml"
-        # "../envs/strandphaser.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
     params:
