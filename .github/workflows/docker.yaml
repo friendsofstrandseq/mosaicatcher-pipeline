@@ -1,15 +1,15 @@
-name: Build container
-
-on:
-  pull_request:
-    types: [closed]
-    branches:
-      - master
+name: Build container & Test it
 
 # on:
-#   push:
+#   pull_request:
+#     types: [closed]
 #     branches:
-#       - dev
+#       - master
+
+on:
+  push:
+    branches:
+      - dev
 
 env:
   IMAGE_NAME: mosaicatcher-pipeline
@@ -89,3 +89,45 @@ jobs:
           registry: docker.io/weber8thomas
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
+
+  Test_singularity:
+    name: Snakemake x Singularity
+    runs-on: ubuntu-latest
+
+    needs:
+      - create_dockerfile
+      - build_and_push_image
+
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v2
+
+      - uses: eWaterCycle/setup-singularity@v7
+        with:
+          singularity-version: 3.8.3
+
+      - name: create environment with mamba
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          mamba-version: "*"
+          channels: conda-forge,bioconda,defaults
+          auto-activate-base: false
+          activate-environment: snakemake_env
+          environment-file: ./env.yaml
+
+      - name: check solution
+        run: |
+          mamba env export
+
+      - name: test snakemake
+        run: |
+          which snakemake
+          snakemake --version
+
+      - name: Testing data
+        run: |
+          snakemake --cores 1 --use-singularity --use-conda --configfile .tests/config/simple_config.yaml --conda-frontend mamba -p --verbose --debug
