@@ -15,3 +15,5 @@ dependencies:
   - pyyaml
   - seaborn
   - matplotlib
+  # SOLVE se-pe detection
+  - samtools
