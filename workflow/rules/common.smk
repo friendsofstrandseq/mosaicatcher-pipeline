@@ -14,8 +14,8 @@ envvars:
 
 
 # Start with aesthetic pipeline config presentation
-onstart:
-    pipeline_aesthetic_start.pipeline_aesthetic_start(config)
+# onstart:
+#     pipeline_aesthetic_start.pipeline_aesthetic_start(config)
 
 
 # Configure if handle_input needs to be based on bam or fastq
