@@ -121,10 +121,7 @@ checkpoint filter_bad_cells_from_mosaic_count:
         "../scripts/utils/filter_bad_cells.py"
 
 
-if (config["window"] in [50000, 100000, 200000])
-    and (config["reference"] == "hg38")
-    and (config["normalized_counts"] is True)
-    and (config["arbigent"] is False):
+if config["window"] in [50000, 100000, 200000] and (config["reference"] == "hg38") and (config["normalized_counts"] is True) and (config["arbigent"] is False):
 
     rule merge_blacklist_bins:
         input:
