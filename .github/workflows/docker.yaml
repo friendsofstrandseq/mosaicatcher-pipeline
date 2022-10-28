@@ -15,88 +15,88 @@ env:
   IMAGE_NAME: mosaicatcher-pipeline
 
 jobs:
-  create_dockerfile:
-    name: Run pipeline & Create Dockerfile
-    runs-on: ubuntu-20.04
+  # create_dockerfile:
+  #   name: Run pipeline & Create Dockerfile
+  #   runs-on: ubuntu-20.04
 
-    steps:
-      - uses: actions/checkout@v3.1.0
-      - name: Testing data
-        uses: snakemake/snakemake-github-action@v1.24.0
-        with:
-          directory: .
-          snakefile: ./workflow/Snakefile
-          stagein: "conda config --set channel_priority flexible"
-          args: "--cores 1 --use-conda --config chromosomes=[chr17] ashleys_pipeline=True normalized_counts=True GC_analysis=True use_light_data=True  --conda-frontend mamba -p --verbose --debug"
-      - name: Create container file
-        uses: snakemake/snakemake-github-action@v1.24.0
-        with:
-          snakefile: ./workflow/Snakefile
-          directory: .
-          task: "containerize"
-          args: "--cores 1 --use-conda --config chromosomes=[chr17] ashleys_pipeline=True normalized_counts=True GC_analysis=True use_light_data=True  --conda-frontend mamba -p --verbose --debug"
-      - name: Print Dockerfile
-        run: |
-          cat Dockerfile
+  #   steps:
+  #     - uses: actions/checkout@v3.1.0
+  #     - name: Testing data
+  #       uses: snakemake/snakemake-github-action@v1.24.0
+  #       with:
+  #         directory: .
+  #         snakefile: ./workflow/Snakefile
+  #         stagein: "conda config --set channel_priority flexible"
+  #         args: "--cores 1 --use-conda --config chromosomes=[chr17] ashleys_pipeline=True normalized_counts=True GC_analysis=True use_light_data=True  --conda-frontend mamba -p --verbose --debug"
+  #     - name: Create container file
+  #       uses: snakemake/snakemake-github-action@v1.24.0
+  #       with:
+  #         snakefile: ./workflow/Snakefile
+  #         directory: .
+  #         task: "containerize"
+  #         args: "--cores 1 --use-conda --config chromosomes=[chr17] ashleys_pipeline=True normalized_counts=True GC_analysis=True use_light_data=True  --conda-frontend mamba -p --verbose --debug"
+  #     - name: Print Dockerfile
+  #       run: |
+  #         cat Dockerfile
 
-      - uses: actions/upload-artifact@master
-        with:
-          name: Dockerfile_artifact
-          path: ./Dockerfile
+  #     - uses: actions/upload-artifact@master
+  #       with:
+  #         name: Dockerfile_artifact
+  #         path: ./Dockerfile
 
-  build_and_push_image:
-    name: Build and push image
-    runs-on: ubuntu-20.04
-    needs:
-      - create_dockerfile
-    steps:
-      - uses: actions/checkout@v3.1.0
+  # build_and_push_image:
+  #   name: Build and push image
+  #   runs-on: ubuntu-20.04
+  #   needs:
+  #     - create_dockerfile
+  #   steps:
+  #     - uses: actions/checkout@v3.1.0
 
-      - uses: actions/download-artifact@master
-        with:
-          name: Dockerfile_artifact
-          path: ./Dockerfile_artifact
+  #     - uses: actions/download-artifact@master
+  #       with:
+  #         name: Dockerfile_artifact
+  #         path: ./Dockerfile_artifact
 
-      - name: Print Dockerfile
-        run: |
-          ls -lh . && tree -h . && cat ./Dockerfile_artifact/Dockerfile
+  #     - name: Print Dockerfile
+  #       run: |
+  #         ls -lh . && tree -h . && cat ./Dockerfile_artifact/Dockerfile
 
-      - name: Run read-yaml action
-        id: yaml-data
-        uses: jbutcher5/read-yaml@main # You may wish to replace main with a version tag such as '1.6' etc.
-        with:
-          file: "./config/config.yaml"
-          key-path: '["version"]' # Access the runs key then the using key and retuns the value.
+  #     - name: Run read-yaml action
+  #       id: yaml-data
+  #       uses: jbutcher5/read-yaml@main # You may wish to replace main with a version tag such as '1.6' etc.
+  #       with:
+  #         file: "./config/config.yaml"
+  #         key-path: '["version"]' # Access the runs key then the using key and retuns the value.
 
-      - name: Display read-yaml output
-        run: echo "${{ steps.yaml-data.outputs.data }}"
+  #     - name: Display read-yaml output
+  #       run: echo "${{ steps.yaml-data.outputs.data }}"
 
-      - name: Build Image
-        id: build-image
-        uses: redhat-actions/buildah-build@v2
-        with:
-          image: ${{ env.IMAGE_NAME }}
-          tags: "${{ steps.yaml-data.outputs.data }}"
-          dockerfiles: |
-            ./Dockerfile_artifact/Dockerfile
+  #     - name: Build Image
+  #       id: build-image
+  #       uses: redhat-actions/buildah-build@v2
+  #       with:
+  #         image: ${{ env.IMAGE_NAME }}
+  #         tags: "${{ steps.yaml-data.outputs.data }}"
+  #         dockerfiles: |
+  #           ./Dockerfile_artifact/Dockerfile
 
-      - name: Push To DockerHub
-        id: push-to-dockerhub
-        uses: redhat-actions/push-to-registry@v2
-        with:
-          image: ${{ steps.build-image.outputs.image }}
-          tags: ${{ steps.build-image.outputs.tags }}
-          registry: docker.io/weber8thomas
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_TOKEN }}
+  #     - name: Push To DockerHub
+  #       id: push-to-dockerhub
+  #       uses: redhat-actions/push-to-registry@v2
+  #       with:
+  #         image: ${{ steps.build-image.outputs.image }}
+  #         tags: ${{ steps.build-image.outputs.tags }}
+  #         registry: docker.io/weber8thomas
+  #         username: ${{ secrets.DOCKER_USERNAME }}
+  #         password: ${{ secrets.DOCKER_TOKEN }}
 
   Test_singularity:
     name: Snakemake x Singularity
     runs-on: ubuntu-latest
 
-    needs:
-      - create_dockerfile
-      - build_and_push_image
+    # needs:
+    #   - create_dockerfile
+    #   - build_and_push_image
 
     defaults:
       run:
@@ -119,9 +119,9 @@ jobs:
           activate-environment: snakemake_env
           environment-file: ./workflow/envs/snakemake.yaml
 
-      - name: check solution
-        run: |
-          mamba env export
+      # - name: check solution
+      #   run: |
+      #     mamba env export
 
       - name: test snakemake
         run: |
@@ -130,4 +130,4 @@ jobs:
 
       - name: Testing data
         run: |
-          snakemake --cores 1 --use-singularity --use-conda --configfile .tests/config/simple_config.yaml --conda-frontend mamba -p --verbose --debug
+          snakemake --cores 1 --use-singularity --singularity-args '-B /etc:/etc -B /home:/home -B /conda-envs:/conda-envs -B /usr:/usr' --use-conda --configfile .tests/config/simple_config.yaml --conda-frontend mamba -p --verbose --debug
