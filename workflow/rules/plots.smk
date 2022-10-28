@@ -172,7 +172,7 @@ rule plot_ploidy:
     log:
         "{folder}/log/plot_ploidy/{sample}.log",
     conda:
-        "../envs/python_plots.yaml"
+        "../envs/mc_base.yaml"
     resources:
         mem_mb=get_mem_mb,
     script:
