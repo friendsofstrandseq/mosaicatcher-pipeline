@@ -130,4 +130,4 @@ jobs:
 
       - name: Testing data
         run: |
-          snakemake --cores 1 --use-singularity --singularity-args '-B /etc:/etc -B /home:/home -B /conda-envs:/conda-envs -B /usr:/usr' --use-conda --configfile .tests/config/simple_config.yaml --conda-frontend mamba -p --verbose --debug
+          snakemake --cores 1 --use-singularity --singularity-args '-B /etc:/etc -B /home:/home' --use-conda --configfile .tests/config/simple_config.yaml --conda-frontend mamba -p --verbose --debug
