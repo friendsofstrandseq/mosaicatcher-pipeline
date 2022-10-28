@@ -85,6 +85,9 @@ include: "rules/examples.smk"
 include: "rules/arbigent_rules.smk"
 
 
+include: "rules/arbigent.smk"
+
+
 if config["ashleys_pipeline"] is True:
 
     rule all:

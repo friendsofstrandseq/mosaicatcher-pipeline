@@ -22,19 +22,37 @@ envvars:
 # Configure if handle_input needs to be based on bam or fastq
 bam = True if config["ashleys_pipeline"] is False else False
 
+# List of assertions to verify
+if config["genecore"] is False:
+    l_samples = os.listdir(config["data_location"])
+    assert (
+        "fastq" not in l_samples
+    ), "fastq folder found in the {} data_location specified: please specify a parent folder".format(
+        config["data_location"]
+    )
 
-# # Create configuration file with samples
-# c = handle_input.HandleInput(
-#     input_path=config["data_location"],
-#     output_path="{data_location}/config/config_df.tsv".format(
-#         data_location=config["data_location"]
-#     ),
-#     check_sm_tag=False,
-#     bam=bam,
-# )
+dl_bam_example_option_selected = config["dl_bam_example"]
+assert (
+    type(dl_bam_example_option_selected) is bool
+), "Wrong plot option selected : {}\nPlease enter a valid value (True / False)".format(
+    config["plot"]
+)
 
-import pandas as pd
-import os, sys
+dl_external_files_option_selected = config["dl_external_files"]
+assert (
+    type(dl_external_files_option_selected) is bool
+), "Wrong plot option selected : {}\nPlease enter a valid value (True / False)".format(
+    config["plot"]
+)
+
+if config["ashleys_pipeline"] is True:
+    assert (
+        config["ashleys_pipeline"] != config["input_old_behavior"]
+    ), "ashleys_pipeline and input_old_behavior parameters cannot both be set to True"
+
+
+# Configure if handle_input needs to be based on bam or fastq
+bam = True if config["ashleys_pipeline"] is False else False
 
 # Simple class to retrieve automatically files in the fastq/bam folder and create a config dataframe
 class HandleInput:
@@ -62,11 +80,9 @@ class HandleInput:
     @staticmethod
     def handle_input_data_genecore(thisdir):
         """_summary_
-
         Args:
             thisdir (_type_): _description_
             exclude_list (_type_, optional): _description_. Defaults to list.
-
         Returns:
             _type_: _description_
         """
@@ -179,11 +195,9 @@ class HandleInput:
     @staticmethod
     def handle_input_data(thisdir, exclude_list=list, bam=bool):
         """_summary_
-
         Args:
             thisdir (_type_): _description_
             exclude_list (_type_, optional): _description_. Defaults to list.
-
         Returns:
             _type_: _description_
         """
@@ -300,9 +314,10 @@ c = HandleInput(
         data_location=config["data_location"]
     ),
     check_sm_tag=False,
-    bam=False,
+    bam=bam,
     genecore=config["genecore"],
 )
+
 # df_config_files = c.df_config_files
 if config["genecore"] is True:
     d_master = c.d_master
@@ -460,113 +475,125 @@ def get_all_plots(wildcards):
         for i in range(dict_cells_nb_per_sample[sample] + 1)
     ]
 
-    l_outputs.extend([sub_e for e in tmp_l_divide for sub_e in e])
+    # l_outputs.extend([sub_e for e in tmp_l_divide for sub_e in e])
 
-    # SV_calls section
+    # # SV_calls section
 
-    l_outputs.extend(
-        [
-            sub_e
-            for e in [
-                expand(
-                    "{folder}/{sample}/plots/sv_calls/{method}_filter{filter}/{chrom}.pdf",
-                    folder=config["data_location"],
-                    sample=samples,
-                    method=method,
-                    chrom=config["chromosomes"],
-                    filter=config["methods"][method]["filter"],
-                )
-                for method in config["methods"]
-            ]
-            for sub_e in e
-        ]
-    )
+    # l_outputs.extend(
+    #     [
+    #         sub_e
+    #         for e in [
+    #             expand(
+    #                 "{folder}/{sample}/plots/sv_calls/{method}_filter{filter}/{chrom}.pdf",
+    #                 folder=config["data_location"],
+    #                 sample=samples,
+    #                 method=method,
+    #                 chrom=config["chromosomes"],
+    #                 filter=config["methods"][method]["filter"],
+    #             )
+    #             for method in config["methods"]
+    #         ]
+    #         for sub_e in e
+    #     ]
+    # )
 
-    # SV_consistency section
+    # # SV_consistency section
 
-    l_outputs.extend(
-        [
-            sub_e
-            for e in [
-                expand(
-                    "{folder}/{sample}/plots/sv_consistency/{method}_filter{filter}.consistency-barplot-{plottype}.pdf",
-                    folder=config["data_location"],
-                    sample=samples,
-                    method=method,
-                    plottype=config["plottype_consistency"],
-                    filter=config["methods"][method]["filter"],
-                )
-                for method in config["methods"]
-            ]
-            for sub_e in e
-        ]
-    )
+    # l_outputs.extend(
+    #     [
+    #         sub_e
+    #         for e in [
+    #             expand(
+    #                 "{folder}/{sample}/plots/sv_consistency/{method}_filter{filter}.consistency-barplot-{plottype}.pdf",
+    #                 folder=config["data_location"],
+    #                 sample=samples,
+    #                 method=method,
+    #                 plottype=config["plottype_consistency"],
+    #                 filter=config["methods"][method]["filter"],
+    #             )
+    #             for method in config["methods"]
+    #         ]
+    #         for sub_e in e
+    #     ]
+    # )
 
-    # SV_clustering section
+    # # SV_clustering section
 
-    l_outputs.extend(
-        [
-            sub_e
-            for e in [
-                expand(
-                    "{folder}/{sample}/plots/sv_clustering/{method}-filter{filter}-{plottype}.pdf",
-                    folder=config["data_location"],
-                    sample=samples,
-                    method=method,
-                    plottype=config["plottype_clustering"],
-                    filter=config["methods"][method]["filter"],
-                )
-                for method in config["methods"]
-            ]
-            for sub_e in e
-        ]
-    )
+    # l_outputs.extend(
+    #     [
+    #         sub_e
+    #         for e in [
+    #             expand(
+    #                 "{folder}/{sample}/plots/sv_clustering/{method}-filter{filter}-{plottype}.pdf",
+    #                 folder=config["data_location"],
+    #                 sample=samples,
+    #                 method=method,
+    #                 plottype=config["plottype_clustering"],
+    #                 filter=config["methods"][method]["filter"],
+    #             )
+    #             for method in config["methods"]
+    #         ]
+    #         for sub_e in e
+    #     ]
+    # )
 
-    # Complex section
+    # # Complex section
 
-    l_outputs.extend(
-        [
-            sub_e
-            for e in [
-                expand(
-                    "{folder}/{sample}/mosaiclassifier/complex/{method}_filter{filter}.tsv",
-                    folder=config["data_location"],
-                    sample=samples,
-                    method=method,
-                    filter=config["methods"][method]["filter"],
-                )
-                for method in config["methods"]
-            ]
-            for sub_e in e
-        ]
-    ),
+    # l_outputs.extend(
+    #     [
+    #         sub_e
+    #         for e in [
+    #             expand(
+    #                 "{folder}/{sample}/mosaiclassifier/complex/{method}_filter{filter}.tsv",
+    #                 folder=config["data_location"],
+    #                 sample=samples,
+    #                 method=method,
+    #                 filter=config["methods"][method]["filter"],
+    #             )
+    #             for method in config["methods"]
+    #         ]
+    #         for sub_e in e
+    #     ]
+    # ),
 
-    # Ploidy section
-    l_outputs.extend(
-        expand(
-            "{folder}/{sample}/plots/ploidy/{sample}.pdf",
-            folder=config["data_location"],
-            sample=samples,
-        ),
-    )
+    # # Ploidy section
+    # l_outputs.extend(
+    #     expand(
+    #         "{folder}/{sample}/plots/ploidy/{sample}.pdf",
+    #         folder=config["data_location"],
+    #         sample=samples,
+    #     ),
+    # )
 
-    # Stats section
+    # # Stats section
 
-    l_outputs.extend(
-        expand(
-            "{folder}/{sample}/stats/stats-merged.tsv",
-            folder=config["data_location"],
-            sample=samples,
-        ),
-    )
+    # l_outputs.extend(
+    #     expand(
+    #         "{folder}/{sample}/stats/stats-merged.tsv",
+    #         folder=config["data_location"],
+    #         sample=samples,
+    #     ),
+    # )
 
-    # Run summary section
+    # # Run summary section
 
-    l_outputs.extend(
-        expand(
-            "{folder}/config/{sample}/run_summary.txt",
-            folder=config["data_location"],
-            sample=samples,
-        ),
-    )
+    # l_outputs.extend(
+    #     expand(
+    #         "{folder}/config/{sample}/run_summary.txt",
+    #         folder=config["data_location"],
+    #         sample=samples,
+    #     ),
+    # )
+
+    # ARBIGENT
+
+    if config["arbigent"] is True:
+        l_outputs.extend(
+            expand(
+                "{folder}/{sample}/arbigent/regenotyper_allsamples_bulk/qc/lineplot_gts.pdf",
+                folder=config["data_location"],
+                sample=samples,
+            )
+        )
+
     return l_outputs
