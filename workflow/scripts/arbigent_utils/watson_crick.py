@@ -172,15 +172,19 @@ def aggregate_segment_read_counts(process_args):
                         continue
 
                 # select only bins where the number of correct reads (simulation data) is above threshold
-                select_correct_threshold = np.array(counts.loc["correct", :] >= min_correct_reads, dtype=np.bool)
+                # select_correct_threshold = np.array(counts.loc["correct", :] >= min_correct_reads, dtype=np.bool)
+                select_correct_threshold = np.array(counts.loc["correct", :] >= min_correct_reads, dtype=bool)
 
                 # select only bins where the number of incorrect reads (simulation data) is lower than 10% relative to correct reads
-                select_low_incorrect = ~np.array(counts.loc["incorrect", :] >= (0.1 * counts.loc["correct", :]), dtype=np.bool)
+                # select_low_incorrect = ~np.array(counts.loc["incorrect", :] >= (0.1 * counts.loc["correct", :]), dtype=np.bool)
+                select_low_incorrect = ~np.array(counts.loc["incorrect", :] >= (0.1 * counts.loc["correct", :]), dtype=bool)
 
                 # combine selection: only bins for which both of the above is true
                 select_bins = select_correct_threshold & select_low_incorrect
-                select_has_watson = np.array(counts.loc["watson", :] > 0, dtype=np.bool)
-                select_has_crick = np.array(counts.loc["crick", :] > 0, dtype=np.bool)
+                # select_has_watson = np.array(counts.loc["watson", :] > 0, dtype=np.bool)
+                select_has_watson = np.array(counts.loc["watson", :] > 0, dtype=bool)
+                # select_has_crick = np.array(counts.loc["crick", :] > 0, dtype=np.bool)
+                select_has_crick = np.array(counts.loc["crick", :] > 0, dtype=bool)
 
                 valid_bins = select_bins.sum()
 
@@ -515,7 +519,8 @@ def main():
     bin_size = 100
     min_mapp = 75
     lengthcorr_bool = False
-    jobs = 1
+    # jobs = 1
+    jobs = snakemake.threads
 
     sample = snakemake.wildcards.sample
     input_bam = snakemake.input.bam_folder

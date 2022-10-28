@@ -36,13 +36,15 @@ if config["arbigent"] is True:
             mapping=config["arbigent_data"]["arbigent_mapability_track"],
             mapping_h5=config["arbigent_data"]["arbigent_mapability_track_h5"],
         output:
-            processing_counts="{folder}/{sample}/counts/manual_segments_counts.txt.raw",
-            norm_plot_output="{folder}/{sample}/arbigent/blub.txt",
+            processing_counts="{folder}/{sample}/arbigent/counts/manual_segments_counts.txt.raw",
+            debug="{folder}/{sample}/arbigent/counts/manual_segments_counts.txt.raw.debug",
+            norm_plot_output="{folder}/{sample}/arbigent/counts/blub.txt",
             #plotting_counts="counts/{sample}/manual_segments_counts_for_plots.txt",
         log:
-            "{folder}/log/watson_crick_counts/{sample}/watson_crick_counts.log",
+            "{folder}/log/arbigent/watson_crick_counts/{sample}/watson_crick_counts.log",
         conda:
             "../envs/dev/arbigent/mc_base.yaml"
+        threads: 16
         script:
             "../scripts/arbigent_utils/watson_crick.py"
 # shell:
@@ -56,11 +58,11 @@ if config["arbigent"] is True:
 
 rule correct_watson_crick_counts:
     input:
-        "{folder}/{sample}/counts/manual_segments_counts.txt.raw",
+        "{folder}/{sample}/arbigent/counts/manual_segments_counts.txt.raw",
     output:
-        "{folder}/{sample}/counts/manual_segments_counts.txt",
+        "{folder}/{sample}/arbigent/counts/manual_segments_counts.txt",
     log:
-        "{folder}/log/correct_watson_crick_counts/{sample}/watson_crick_counts.log",
+        "{folder}/log/arbigent/correct_watson_crick_counts/{sample}/watson_crick_counts.log",
     conda:
         "../envs/dev/arbigent/mc_base.yaml"
     shell:
@@ -69,16 +71,16 @@ rule correct_watson_crick_counts:
 
 rule prepare_manual_segments_counts_debug:
     input:
-        counts_file="{folder}/{sample}/counts/manual_segments_counts.txt",
+        counts_file="{folder}/{sample}/arbigent/counts/manual_segments_counts.txt.raw.debug",
     output:
-        msc="{folder}/{sample}/sv_calls/msc.debug",
+        msc="{folder}/{sample}/arbigent/sv_calls/msc.debug",
     log:
-        "{folder}/log/sv_calls/{sample}/watson_crick_counts.log",
+        "{folder}/log/arbigent/sv_calls/{sample}/watson_crick_counts.log",
     conda:
         "../envs/dev/arbigent/mc_base.yaml"
     shell:
         """
-        awk '!seen[$1,$2,$3]++' {input.counts_file}.debug > {output.msc}
+        awk '!seen[$1,$2,$3]++' {input.counts_file} > {output.msc}
         """
 
 
@@ -94,26 +96,26 @@ rule mosaiClassifier_calc_probs_arbigent:
         # bp = "counts/{sample}/manual_segments_counts.txt"
         bp="{folder}/{sample}/counts/manual_segments_counts.txt",
     output:
-        output="{folder}/{sample}/mosaiclassifier/sv_probabilities/probabilities.Rdata",
+        output="{folder}/{sample}/arbigent/mosaiclassifier/sv_probabilities/probabilities.Rdata",
     log:
-        "{folder}/log/mosaiClassifier_calc_probs_arbigent/{sample}.log",
+        "{folder}/log/arbigent/mosaiClassifier_calc_probs_arbigent/{sample}.log",
     conda:
         "../envs/rtools.yaml"
     script:
         "../scripts/arbigent_utils/mosaiclassifier_scripts/mosaiClassifier.snakemake.R"
 
 
-rule mosaiClassifier_make_CN_call_manual_segs:
-    input:
-        #probs = "manual_segmentation/{sample}/{window_specs}.{bpdens}/sv_probabilities.Rdata"
-        # probs = "sv_probabilities/{sample}/{window_specs}.{bpdens}/probabilities.Rdata"
-        probs="{folder}/{sample}/mosaiclassifier/sv_probabilities/probabilities.Rdata",
-    output:
-        # calls = "manual_segmentation/{sample}/{window_specs}.{bpdens}/CN_calls.txt"
-        calls="{folder}/{sample}/arbigent/CN_calls.txt",
-    log:
-        "{folder}/log/mosaiClassifier_make_CN_call_manual_segs/{sample}.log",
-    conda:
-        "../envs/rtools.yaml"
-    script:
-        "../scripts/arbigent_utils/mosaiclassifier_scripts/mosaiClassifier_CN_call.snakemake.R"
+# rule mosaiClassifier_make_CN_call_manual_segs:
+#     input:
+#         #probs = "manual_segmentation/{sample}/{window_specs}.{bpdens}/sv_probabilities.Rdata"
+#         # probs = "sv_probabilities/{sample}/{window_specs}.{bpdens}/probabilities.Rdata"
+#         probs="{folder}/{sample}/arbigent/mosaiclassifier/sv_probabilities/probabilities.Rdata",
+#     output:
+#         # calls = "manual_segmentation/{sample}/{window_specs}.{bpdens}/CN_calls.txt"
+#         calls="{folder}/{sample}/arbigent/mosaiclassifier/CN_calls.txt",
+#     log:
+#         "{folder}/log/arbigent/mosaiClassifier_make_CN_call_manual_segs/{sample}.log",
+#     conda:
+#         "../envs/rtools.yaml"
+#     script:
+#         "../scripts/arbigent_utils/mosaiclassifier_scripts/mosaiClassifier_CN_call.snakemake.R"
