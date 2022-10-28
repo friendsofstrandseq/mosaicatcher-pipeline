@@ -1,4 +1,4 @@
-version: 1.8.1
+version: 1.8.2
 #######################################
 #   MOSAICATCHER CONFIGURATION FILE   #
 #######################################
@@ -57,6 +57,13 @@ alfred_plots:
   - "devi"
 
 plate_orientation: landscape
+
+# GENECORE
+genecore: False
+samples_to_process: []
+genecore_date_folder: ""
+genecore_prefix: "/g/korbel/shared/genecore"
+
 
 ## Reference assembly data
 references_data:
