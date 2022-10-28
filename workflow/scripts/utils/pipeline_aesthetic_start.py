@@ -1,5 +1,18 @@
+class fg:
+    BLACK = "\u001b[30m"
+    RED = "\u001b[31m"
+    GREEN = "\u001b[32m"
+    YELLOW = "\u001b[33m"
+    BLUE = "\u001b[34m"
+    MAGENTA = "\u001b[35m"
+    CYAN = "\u001b[36m"
+    WHITE = "\u001b[37m"
+    ENDC = "\033[0m"
+    BOLD = "\033[1m"
+    UNDERLINE = "\033[4m"
+
+
 def pipeline_aesthetic_start(config):
-    from colorama import Fore, Back, Style
 
     sep = """------------------------------------------------------"""
 
@@ -18,53 +31,52 @@ def pipeline_aesthetic_start(config):
     |_|  |_\___/__/\__,_|_|\___\__,_|\__\__|_||_\___|_|  
     """
     wf_info = "smk-wf-catalog/mosacaitcher-pipeline v{version}".format(version=str(config["version"]))
-    print(sep + Fore.GREEN + smk)
-    print(Style.RESET_ALL)
-    print(Fore.YELLOW + wf_name)
-    print(Style.RESET_ALL)
-    print(Fore.MAGENTA + wf_info)
-    print(Style.RESET_ALL)
+    print(sep + fg.GREEN + smk)
+    print(fg.ENDC)
+    print(fg.YELLOW + wf_name)
+    print(fg.ENDC)
+    print(fg.MAGENTA + wf_info)
+    print(fg.ENDC)
     print(sep)
-
 
     # Input / Output
     print("\033[1m{}\033[0m".format("Input/Output options:"))
     l = [
-        f"{Fore.BLUE}  {{:<50}}{Fore.GREEN}{{:<50}}".format("Folder to processed", ": " + str(config["data_location"])),
-        # f"{Fore.BLUE}  {{:<50}}{Fore.GREEN}{{:<50}}".format("Output folder selected", ": " + str(config["data_location"])),
+        f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format("Folder to processed", ": " + str(config["data_location"])),
+        # f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format("Output folder selected", ": " + str(config["data_location"])),
     ]
+    if config["genecore"] is True:
+        l.append(
+            f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format("Genecore Folder to processed", ": " + str(config["genecore_date_folder"]))
+        )
     [print(e) for e in l]
 
-    print(Style.RESET_ALL)
+    print(fg.ENDC)
     # Main options
     print("\033[1m{}\033[0m".format("Main options:"))
     l = [
-        f"{Fore.BLUE}  {{:<50}}{Fore.GREEN}{{:<50}}".format("GC analysis", ": " + str(config["GC_analysis"])),
-        f"{Fore.BLUE}  {{:<50}}{Fore.GREEN}{{:<50}}".format("Read Counts normalization", ": " + str(config["normalized_counts"])),
-        f"{Fore.BLUE}  {{:<50}}{Fore.GREEN}{{:<50}}".format("Binning window size", ": " + str(config["window"])),
+        f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format("GC analysis", ": " + str(config["GC_analysis"])),
+        f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format("Read Counts normalization", ": " + str(config["normalized_counts"])),
+        f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format("Binning window size", ": " + str(config["window"])),
     ]
     [print(e) for e in l]
 
-    print(Style.RESET_ALL)
+    print(fg.ENDC)
     # Behavior options
     print("\033[1m{}\033[0m".format("Behavior options:"))
     l = [
-        f"{Fore.BLUE}  {{:<50}}{Fore.GREEN}{{:<50}}".format("Ashleys-QC preprocessing pipeline", ": " + str(config["ashleys_pipeline"])),
-        f"{Fore.BLUE}  {{:<50}}{Fore.GREEN}{{:<50}}".format(
-            "BAM folder old format (all/selected)", ": " + str(config["input_old_behavior"])
-        ),
+        f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format("Genecore mode enabled", ": " + str(config["genecore"])),
+        f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format("Ashleys-QC preprocessing pipeline", ": " + str(config["ashleys_pipeline"])),
+        f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format("BAM folder old format (all/selected)", ": " + str(config["input_old_behavior"])),
     ]
     [print(e) for e in l]
 
-    print(Style.RESET_ALL)
+    print(fg.ENDC)
     # Genome & chrom
     print("\033[1m{}\033[0m".format("Reference genome & Chromosomes options:"))
     l = [
-        f"{Fore.BLUE}  {{:<50}}{Fore.GREEN}{{:<50}}".format("List of chromosomes processed", ": " + ",".join(config["chromosomes"])),
-        f"{Fore.BLUE}  {{:<50}}{Fore.GREEN}{{:<50}}".format("Reference genome selected", ": " + str(config["reference"])),
-        # f"{Fore.BLUE}  {{:<50}}{Fore.GREEN}{{:<50}}".format("Reference FASTA file", ": " + str(config["references_data"][config["reference"]]["reference_file_location"])),
+        f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format("List of chromosomes processed", ": " + ",".join(config["chromosomes"])),
+        f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format("Reference genome selected", ": " + str(config["reference"])),
+        # f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format("Reference FASTA file", ": " + str(config["references_data"][config["reference"]]["reference_file_location"])),
     ]
     [print(e) for e in l]
-
-
-    
