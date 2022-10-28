@@ -1,4 +1,4 @@
-name: mosaicatcher-pipeline workflow checks
+name: MosaiCatcher basic checks
 
 on:
   push:
