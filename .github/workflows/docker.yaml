@@ -1,15 +1,15 @@
 name: Build & Push docker container
 
-on:
-  pull_request:
-    types: [closed]
-#     branches:
-#       - master
-
 # on:
-#   push:
-#     branches:
-#       - dev
+#   pull_request:
+#     types: [closed]
+# #     branches:
+# #       - master
+
+on:
+  push:
+    branches:
+      - dev
 
 env:
   IMAGE_NAME: mosaicatcher-pipeline
