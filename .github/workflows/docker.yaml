@@ -57,10 +57,6 @@ jobs:
       #     name: Dockerfile_artifact
       #     path: ./Dockerfile_artifact
 
-      - name: Print Dockerfile
-        run: |
-          cat ./github-actions-runners/Dockerfile-${{ steps.yaml-data.outputs.data }}.dockerfile
-
       - name: Run read-yaml action
         id: yaml-data
         uses: jbutcher5/read-yaml@main # You may wish to replace main with a version tag such as '1.6' etc.
@@ -70,6 +66,10 @@ jobs:
 
       - name: Display read-yaml output
         run: echo "${{ steps.yaml-data.outputs.data }}"
+
+      - name: Print Dockerfile
+        run: |
+          cat ./github-actions-runners/Dockerfile-${{ steps.yaml-data.outputs.data }}.dockerfile
 
       - name: Build Image
         id: build-image
