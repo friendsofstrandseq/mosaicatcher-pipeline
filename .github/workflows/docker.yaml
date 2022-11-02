@@ -69,7 +69,7 @@ jobs:
 
       - name: Print Dockerfile
         run: |
-          cat ./github-actions-runners/Dockerfile-${{ steps.yaml-data.outputs.data }}.dockerfile
+          cat ./github-actions-runner/Dockerfile-${{ steps.yaml-data.outputs.data }}.dockerfile
 
       - name: Build Image
         id: build-image
@@ -78,7 +78,7 @@ jobs:
           image: ${{ env.IMAGE_NAME }}
           tags: ${{ steps.yaml-data.outputs.data }} dev
           dockerfiles: |
-            ./github-actions-runners/Dockerfile-${{ steps.yaml-data.outputs.data }}.dockerfile
+            ./github-actions-runner/Dockerfile-${{ steps.yaml-data.outputs.data }}.dockerfile
 
       - name: Push To DockerHub
         id: push-to-dockerhub
