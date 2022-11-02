@@ -112,7 +112,8 @@ rule plot_clustering:
     log:
         "{folder}/log/plot_clustering/{sample}/{method}_filter{filter}.log",
     conda:
-        "../envs/rtools.yaml"
+        # "../envs/rtools.yaml"
+        "../envs/dev/sv_heatmap.yaml"
     resources:
         mem_mb=get_mem_mb,
     script:
