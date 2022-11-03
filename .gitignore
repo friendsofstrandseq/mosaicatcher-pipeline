@@ -174,3 +174,4 @@ TMP/
 log.txt
 workflow/data/arbigent/mapping*
 workflow/data/arbigent/mapping_counts_allchrs_hg38.h5
+.tests/data_CHR17/RPE-BM510/ploidy/
