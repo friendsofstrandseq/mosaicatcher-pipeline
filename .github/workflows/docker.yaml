@@ -4,6 +4,7 @@ name: Build & Push docker container
 #   pull_request:
 #     types: [closed]
 # #     branches:
+# #     branches:
 # #       - master
 
 on:
@@ -66,6 +67,21 @@ jobs:
 
       - name: Display read-yaml output
         run: echo "${{ steps.yaml-data.outputs.data }}"
+
+      - name: Print Dockerfile
+        run: |
+          cat ./github-actions-runner/Dockerfile-${{ steps.yaml-data.outputs.data }}.dockerfile
+
+      - name: Edit Dockerfile
+        run: |
+          dockerfile=./github-actions-runner/Dockerfile-${{ steps.yaml-data.outputs.data }}.dockerfile && \
+          rtools_env=$(grep "envs/rtools.yaml /conda-envs" "$dockerfile" | \
+            grep -o "conda-envs/.*\/" | sed 's/conda-envs\///g;s/\/$//g') && \
+            wget https://sandbox.zenodo.org/record/1097504/files/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz && \
+            mkdir -p workflow/data/ref_genomes/ && \
+            mv BSgenome.T2T.CHM13.V2_1.0.0.tar.gz workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz && \
+          echo "\n\n#CUSTOM PART\nchmod -R 0777 /conda-envs/"$rtools_env"/lib/R/library &&  \
+          /conda-envs/"$rtools_env"/bin/Rscript /mosaicatcher-pipeline/workflow/scripts/utils/install_R_tarball.R workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz" >> "$dockerfile"
 
       - name: Print Dockerfile
         run: |
