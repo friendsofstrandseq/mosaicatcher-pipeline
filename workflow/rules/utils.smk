@@ -18,7 +18,7 @@ rule index_haplotag_bam:
     input:
         "{folder}/{sample}/haplotag/bam/{cell}.bam.htg",
     output:
-        temp("{folder}/{sample}/haplotag/bam/{cell}.bam.htg.bai"),
+        "{folder}/{sample}/haplotag/bam/{cell}.bam.htg.bai",
     log:
         "{folder}/log/index_haplotag_bam/{sample}/{cell}.log",
     conda:

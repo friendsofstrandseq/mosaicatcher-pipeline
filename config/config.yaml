@@ -1,4 +1,5 @@
-version: 1.8.2
+version: 1.8.3
+ashleys_pipeline_version: 1.3.3
 #######################################
 #   MOSAICATCHER CONFIGURATION FILE   #
 #######################################
@@ -63,7 +64,6 @@ genecore: False
 samples_to_process: []
 genecore_date_folder: ""
 genecore_prefix: "/g/korbel/shared/genecore"
-
 
 ## Reference assembly data
 references_data:
