@@ -64,7 +64,7 @@ plot.clustering <- function(inputfile, bin.bed.filename, position.outputfile, ch
     data1_pos_uniq_sort[data1_pos_uniq_sort$chr == "chrY", 5] <- "purple"
 
 
-    # library(pheatmap)
+    library(pheatmap)
     library(gplots)
     library(ComplexHeatmap)
 
@@ -101,16 +101,17 @@ plot.clustering <- function(inputfile, bin.bed.filename, position.outputfile, ch
     }
     sv_list_sub <- sv_list[sv_tmp > 0]
 
-    # print(result_sv)
-    # mat <- as.data.frame(result_sv[res$tree_row$order, ])
+    print(result_sv)
+    mat <- as.data.frame    (result_sv[res$tree_row$order, ])
 
-    # ha_column <- HeatmapAnnotation(
-    #     df = data.frame(type1 = data1_pos_uniq_sort$color),
-    #     col = list(type1 = c("magenta" = "magenta", "purple" = "purple"))
-    # )
+    ha_column <- HeatmapAnnotation(
+        df = data.frame(type1 = data1_pos_uniq_sort$color),
+        col = list(type1 = c("magenta" = "magenta", "purple" = "purple"))
+    )
 
-    # ht1 <- Heatmap(mat, name = "TEST", col = colors, heatmap_legend_param = list(labels = sv_list_sub), cluster_rows = FALSE, cluster_columns = FALSE, column_title = inputfile, row_names_gp = gpar(fontsize = 5), column_names_gp = gpar(fontsize = 1), column_title_gp = gpar(fontsize = 7, fontface = "bold"), top_annotation = ha_column)
-    draw(res, show_annotation_legend = FALSE)
+    ht1 <- Heatmap(mat, name = "TEST", col = colors, heatmap_legend_param = list(labels = sv_list_sub), cluster_rows = FALSE, cluster_columns = FALSE, column_title = inputfile, row_names_gp = gpar(fontsize = 5), column_names_gp = gpar(fontsize = 1), column_title_gp = gpar(fontsize = 7, fontface = "bold"), top_annotation = ha_column)
+    # draw(res, show_annotation_legend = FALSE)
+    draw(ht1, show_annotation_legend = FALSE)
 
 
 }

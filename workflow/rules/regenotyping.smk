@@ -9,7 +9,7 @@ if config["GC_analysis"] == False or config["ashleys_pipeline"] == False:
                 bam=allbams_per_sample[wc.sample],
             ),
         output:
-            temp("{folder}/{sample}/merged_bam/merged.raw.bam"),
+            "{folder}/{sample}/merged_bam/merged.raw.bam",
         log:
             "{folder}/log/mergeBams/{sample}.log",
         resources:
@@ -25,7 +25,7 @@ if config["GC_analysis"] == False or config["ashleys_pipeline"] == False:
         input:
             "{folder}/{sample}/merged_bam/merged.raw.bam",
         output:
-            temp("{folder}/{sample}/merged_bam/merged.bam"),
+            "{folder}/{sample}/merged_bam/merged.bam",
         log:
             "{folder}/log/mergeBams/{sample}.log",
         resources:
@@ -41,7 +41,7 @@ if config["GC_analysis"] == False or config["ashleys_pipeline"] == False:
         input:
             "{folder}/{sample}/merged_bam/merged.bam",
         output:
-            temp("{folder}/{sample}/merged_bam/merged.bam.bai"),
+            "{folder}/{sample}/merged_bam/merged.bam.bai",
         log:
             "{folder}/log/merged_bam/{sample}/merged.log",
         conda:
