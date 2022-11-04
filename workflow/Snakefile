@@ -21,10 +21,11 @@ if config["ashleys_pipeline"] is True:
 
     module ashleys_qc:
         snakefile:
+            # "../../ashleys-qc-pipeline/workflow/Snakefile"
             github(
                 "friendsofstrandseq/ashleys-qc-pipeline",
                 path="workflow/Snakefile",
-                tag="1.3.2"
+                tag=str(config["ashleys_pipeline_version"])
                 # branch="main",
                 # branch="dev",
             )
