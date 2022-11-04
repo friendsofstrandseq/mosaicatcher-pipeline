@@ -1,16 +1,16 @@
 name: Build & Push docker container
 
-# on:
-#   pull_request:
-#     types: [closed]
+on:
+  pull_request:
+    types: [closed]
 # #     branches:
 # #     branches:
 # #       - master
 
-on:
-  push:
-    branches:
-      - dev
+# on:
+#   push:
+#     branches:
+#       - dev
 
 env:
   IMAGE_NAME: mosaicatcher-pipeline
@@ -72,20 +72,20 @@ jobs:
         run: |
           cat ./github-actions-runner/Dockerfile-${{ steps.yaml-data.outputs.data }}.dockerfile
 
-      - name: Edit Dockerfile
-        run: |
-          dockerfile=./github-actions-runner/Dockerfile-${{ steps.yaml-data.outputs.data }}.dockerfile && \
-          rtools_env=$(grep "envs/rtools.yaml /conda-envs" "$dockerfile" | \
-            grep -o "conda-envs/.*\/" | sed 's/conda-envs\///g;s/\/$//g') && \
-          echo "RUN wget https://sandbox.zenodo.org/record/1097504/files/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz" >> "$dockerfile" && \
-          echo "RUN mkdir -p /mosaicatcher-pipeline/workflow/data/ref_genomes" >> "$dockerfile" && \
-          echo "RUN mv BSgenome.T2T.CHM13.V2_1.0.0.tar.gz /mosaicatcher-pipeline/workflow/workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz" >> "$dockerfile" && \
-          echo "RUN chmod -R 0777 /conda-envs/"$rtools_env"/lib/R/library" >> "$dockerfile" &&  \
-          echo "RUN /conda-envs/"$rtools_env"/bin/Rscript /mosaicatcher-pipeline/workflow/scripts/utils/install_R_tarball.R /mosaicatcher-pipeline/workflow/workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz" >> "$dockerfile"
+      # - name: Edit Dockerfile
+      #   run: |
+      #     dockerfile=./github-actions-runner/Dockerfile-${{ steps.yaml-data.outputs.data }}.dockerfile && \
+      #     rtools_env=$(grep "envs/rtools.yaml /conda-envs" "$dockerfile" | \
+      #       grep -o "conda-envs/.*\/" | sed 's/conda-envs\///g;s/\/$//g') && \
+      #     echo "RUN wget https://sandbox.zenodo.org/record/1097504/files/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz" >> "$dockerfile" && \
+      #     echo "RUN mkdir -p /mosaicatcher-pipeline/workflow/data/ref_genomes" >> "$dockerfile" && \
+      #     echo "RUN mv BSgenome.T2T.CHM13.V2_1.0.0.tar.gz /mosaicatcher-pipeline/workflow/workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz" >> "$dockerfile" && \
+      #     echo "RUN chmod -R 0777 /conda-envs/"$rtools_env"/lib/R/library" >> "$dockerfile" &&  \
+      #     echo "RUN /conda-envs/"$rtools_env"/bin/Rscript /mosaicatcher-pipeline/workflow/scripts/utils/install_R_tarball.R /mosaicatcher-pipeline/workflow/workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz" >> "$dockerfile"
 
-      - name: Print Dockerfile
-        run: |
-          cat ./github-actions-runner/Dockerfile-${{ steps.yaml-data.outputs.data }}.dockerfile
+      # - name: Print Dockerfile
+      #   run: |
+      #     cat ./github-actions-runner/Dockerfile-${{ steps.yaml-data.outputs.data }}.dockerfile
 
       - name: Build Image
         id: build-image
