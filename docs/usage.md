@@ -180,7 +180,7 @@ In a `Parent_Folder`, create a subdirectory `Parent_Folder/sampleName/` for each
 
 Previous version of MosaiCatcher (version ≤ 1.5) needed not only a `all` directory as described above, but also a `selected` folder (now renamed `bam`), presenting only high-quality selected libraries wished to be processed for the rest of the analysis.
 
-You can still use this behavior by enabling the config parameter either by the command line: `input_old_behavior=True` or by modifying the corresponding entry in the config/config.yaml file.
+You can still use this behavior by enabling the config parameter either by the command line: `=True` or by modifying the corresponding entry in the config/config.yaml file.
 
 Thus, in a `Parent_Folder`, create a subdirectory `Parent_Folder/sampleName/` for each `sample`. Your Strand-seq BAM files of this sample go into the following folder:
 
@@ -264,7 +264,7 @@ Informations and modes of execution can be found on the [ashleys-qc-pipeline doc
 **⚠️ Warnings**
 
 1. When using ashleyq-qc-pipeline preprocessing module, Singularity execution is not possible at the moment (will be fixed soon).
-2. `ashleys_pipeline=True` and `input_old_behavior=True` are mutually exclusive
+2. `ashleys_pipeline=True` and `input_bam_legacy=True` are mutually exclusive
 
 ---
 
