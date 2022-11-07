@@ -29,22 +29,19 @@ All these arguments can be specified in two ways:
 
 ### Execution boolean parameters
 
-| Parameter           | Comment                                                                                                                                  | Default |
-| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| `plot`              | _Enable_ or _disable_ the plots generation                                                                                               | True    |
-| `check_sm_tag`      | Based on pysam, will compare for each BAM file, if the header SM tag is identical to the folder name in order to prevent further issues. | False   |
-| `dl_bam_example`    | Allow to retrieve automatically BAM fullsize example data.                                                                               | False   |
-| `dl_external_files` | Allow to retrieve automatically external files (GRCh38 reference genome + 1000G SNV VCF file) required to run the pipeline.              | False   |
-| `GC_analysis`       | Allow to perform GC analysis using Alfred and GC correction for visualization (Marco Cosenza).                                           | False   |
+| Parameter     | Comment                                                                                        | Default | Experimental |
+| ------------- | ---------------------------------------------------------------------------------------------- | ------- | ------------ |
+| `GC_analysis` | Allow to perform GC analysis using Alfred and GC correction for visualization (Marco Cosenza). | False   | False        |
+| `arbigent`    | Enable ArbiGent mode of execution to genotype SV based on arbitrary segments                   | False   | True         |
 
 ### External files
 
-| Parameter               | Comment                                                                       | Required                                                        |
-| ----------------------- | ----------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| `snv_sites_to_genotype` | 1000G SNV sites to genotype file location to allow phasing after regenotyping | (If not present, calls het SNPs directly without reference VCF) |
-| `reference`             | Reference genome                                                              | X                                                               |
-| `R_reference`           | Reference genome used by R scripts                                            | X                                                               |
-| `segdups`               | Segmental duplication file defined for hg38 reference genome                  | X                                                               |
+| Parameter               | Comment                                                                       | Required                                                                   |
+| ----------------------- | ----------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `snv_sites_to_genotype` | 1000G SNV sites to genotype file location to allow phasing after regenotyping | No. Default behavior is to call directly _de novo_ het SNPs using bcftools |
+| `reference`             | Reference genome                                                              | X                                                                          |
+| `R_reference`           | Reference genome used by R scripts                                            | X                                                                          |
+| `segdups`               | Segmental duplication file defined for hg38 reference genome                  | X                                                                          |
 
 ### Processing options
 
@@ -62,15 +59,27 @@ All these arguments can be specified in two ways:
 | `regfactor`             |                                                                                                            |               |
 | `filter`                |                                                                                                            |               |
 | `chromosomes`           | List of chromosomes to be processed in the pipeline                                                        | chr1..22,chrX |
-| `plate_orientation`           | List of chromosomes to be processed in the pipeline                                                        | chr1..22,chrX |
+| `plate_orientation`     | List of chromosomes to be processed in the pipeline                                                        | chr1..22,chrX |
+
+### EMBL specific options
+
+| Parameter              | Comment                                                                                               | Default |
+| ---------------------- | ----------------------------------------------------------------------------------------------------- | ------- |
+| `genecore`             | Enable/disable genecore mode to give as input the genecore shared folder in /g/korbel/shared/genecore | False   |
+| `genecore_date_folder` | Specify folder to be processed                                                                        |         |
+
+If `genecore` and `genecore_date_folder` are correctly specified, each plate will be processed independently by creating a specific folder in the `data_location` folder.
 
 ### Execution profile
 
-| Parameter                      | Comment | Conda | Singularity | HPC | Local |
-| ------------------------------ | ------- | ----- | ----------- | --- | ----- |
-| local/conda                    | /       | X     |             |     | X     |
-| local/conda_singularity        | /       | X     | X           |     | X     |
-| slurm (optimised for EMBL HPC) | /       | X     |             | X   |       |
+_Location_: workflow/snakemake_profiles/
+
+| Parameter                               | Comment | Conda | Singularity | HPC | Local |
+| --------------------------------------- | ------- | ----- | ----------- | --- | ----- |
+| local/conda                             | /       | X     |             |     | X     |
+| local/conda_singularity                 | /       | X     | X           |     | X     |
+| HPC/slurm_generic (to modify)           | /       | X     |             | X   |       |
+| HPC/slurm_EMBL (optimised for EMBL HPC) | /       | X     |             | X   |       |
 
 ## Snakemake arguments
 
