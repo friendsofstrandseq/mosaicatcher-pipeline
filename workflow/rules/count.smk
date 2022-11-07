@@ -59,7 +59,7 @@ if config["ashleys_pipeline"] is False:
             """
 
 
-    if config["input_old_behavior"] is True:
+    if config["input_bam_legacy"] is True:
 
         rule selected_cells:
             input:

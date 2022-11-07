@@ -27,12 +27,12 @@ labels = pd.read_csv(labels_path, sep="\t")
 # snakemake_log.write(labels.to_str())
 
 # b_ashleys = "ENABLED" if snakemake.config["ashleys_pipeline"] is True else "DISABLED"
-# b_old = "ENABLED" if snakemake.config["input_old_behavior"] is True else "DISABLED"
+# b_old = "ENABLED" if snakemake.config["input_bam_legacy"] is True else "DISABLED"
 
 b_old = "ENABLED"
 
 # snakemake_log.write("ASHLEYS preprocessing module: {}".format(b_ashleys))
-# snakemake_log.write("input_old_behavior parameter: {}".format(b_old))
+# snakemake_log.write("input_bam_legacy parameter: {}".format(b_old))
 # snakemake_log.write("Computing intersection between lists ...")
 
 # IF BOTH MOSAIC INFO FILE & LABELS DF ARE AVAILABLE + SAME SIZE
@@ -44,7 +44,7 @@ cells_to_keep = list(sorted(list(set(cells_to_keep_labels).intersection(cells_to
 
 # else:
 # CATCH ERROR IF DIFFERENT SIZES AND CONFIG ENABLED
-# if (snakemake.config["ashleys_pipeline"] is True) or (snakemake.config["input_old_behavior"] is True):
+# if (snakemake.config["ashleys_pipeline"] is True) or (snakemake.config["input_bam_legacy"] is True):
 #     os.exit("Dataframes do not have the same dimensions:")
 #     os.exit("mosaic info: {} ; labels: {}".format(str(df.shape[0]), str(labels.shape[0])))
 
