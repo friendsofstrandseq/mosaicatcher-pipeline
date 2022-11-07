@@ -43,8 +43,8 @@ assert (
 
 if config["ashleys_pipeline"] is True:
     assert (
-        config["ashleys_pipeline"] != config["input_old_behavior"]
-    ), "ashleys_pipeline and input_old_behavior parameters cannot both be set to True"
+        config["ashleys_pipeline"] != config["input_bam_legacy"]
+    ), "ashleys_pipeline and input_bam_legacy parameters cannot both be set to True"
 
 
 # Configure if handle_input needs to be based on bam or fastq
@@ -310,7 +310,7 @@ c = HandleInput(
         data_location=config["data_location"]
     ),
     check_sm_tag=False,
-    bam=False,
+    bam=bam,
     genecore=config["genecore"],
 )
 # df_config_files = c.df_config_files
@@ -383,7 +383,7 @@ def get_final_output():
 
 
 def get_mem_mb(wildcards, attempt):
-    mem_avail = [2, 4, 8, 16, 64, 128, 256]
+    mem_avail = [2, 4, 8, 16, 64]
     return mem_avail[attempt - 1] * 1000
 
 
