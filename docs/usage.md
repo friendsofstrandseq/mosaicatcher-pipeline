@@ -7,7 +7,7 @@
 1. A. Create a dedicated conda environment
 
 ```bash
-conda create -n snakemake -c bioconda -c conda-forge -c defaults -c anaconda snakemake=7.14.0
+conda create -n snakemake -c bioconda -c conda-forge -c defaults -c anaconda snakemake=7.12.0
 ```
 
 1. B. Activate the dedicated conda environment
@@ -321,11 +321,11 @@ If you are experiencing any issues with conda-frontend snakemake option, please 
 
 #### HPC execution
 
-MosaiCatcher can be executed on HPC using [Slurm](https://slurm.schedmd.com/documentation.html) by leveraging snakemake profile feature. Current Slurm profile [`workflow/snakemake_profiles/slurm/config.yaml`] was defined and tested on EMBL HPC cluster but can be modified, especially regarding **partition** setting.
+MosaiCatcher can be executed on HPC using [Slurm](https://slurm.schedmd.com/documentation.html) by leveraging snakemake profile feature. Current Slurm profile [`workflow/snakemake_profiles/slurm_EMBL/config.yaml`] was defined and tested on EMBL HPC cluster but can be modified, especially regarding **partition** setting.
 
 ##### Current strategy to solve HPC job OOM
 
-Workflow HPC execution usually needs to deal with out of memory (OOM) errors, out of disk space, abnormal paths or missing parameters for the scheduler. To deal with OOM, we are currently using snakemake restart feature (thanks [@Pablo Moreno](https://github.com/pcm32)) in order to automatically double allocated memory to the job at each attempt (limited to 8 for the moment). Then, if a job fails to run with the default 1GB of memory allocated, it will be automatically restarted tith 2GB at the 2nd attempt, 4GB at the 3rd, etc.
+Workflow HPC execution usually needs to deal with out of memory (OOM) errors, out of disk space, abnormal paths or missing parameters for the scheduler. To deal with OOM, we are currently using snakemake restart feature that allows to automatically double allocated memory to the job at each attempt (limited to 6 for the moment). Then, if a job fails to run with the default 1GB of memory allocated, it will be automatically restarted tith 2GB at the 2nd attempt, 4GB at the 3rd, etc.
 
 To execute MosaiCatcher on HPC, use the following command.
 
@@ -336,7 +336,7 @@ snakemake \
     --config \
         data_location=<INPUT_FOLDER> \
     --singularity-args "-B /<mounting_point>:/<mounting_point>" \
-    --profile workflow/snakemake_profiles/slurm/
+    --profile workflow/snakemake_profiles/slurm_generic/
 ```
 
 The `logs` and `errors` directory will be automatically created in the current directory, corresponding respectively to the `output` and `error` parameter of the `sbatch` command.
@@ -350,7 +350,7 @@ snakemake \
     --config \
         data_location=<INPUT_FOLDER> \
     --singularity-args "-B /<mounting_point>:/<mounting_point>" \
-    --profile workflow/snakemake_profiles/slurm/ \
+    --profile workflow/snakemake_profiles/slurm_generic/ \
     --report <report>.zip
 ```
 

@@ -7,13 +7,28 @@ The files listed below will be created in the selected results directory (`outpu
 ## Directory structure (example for `<SAMPLE>`=_RPE-BM510_)
 
 ```bash
-<OUTPUT>
+<DATA_LOCATION>/<SAMPLE>
+|-- alfred
+|   |-- Celln.tsv.gz
+|   `-- Celln.json.gz
+|-- bam
+|   |-- Cell1.sort.mdup.bam
+|   |-- Cell2.sort.mdup.bam
+|   `-- Celln.sort.mdup.bam
+|-- cell_selection
+|   |-- labels_raw.tsv
+|   `-- labels.tsv
 |-- config
-|   |-- ref_genomes
-|   `-- RPE-BM510
+|   |-- chroms_to_exclude.txt
+|   `-- single_paired_end_detection.txt
 |-- counts
 |   `-- RPE-BM510
 |       `-- counts-per-cell
+|-- fastq
+|   |-- Cell1.1.fastq.gz
+|   |-- Cell1.2.fastq.gz
+|   |-- Cell2.1.fastq.gz
+|   `-- Cell2.2.fastq.gz
 |-- haplotag
 |   |-- bam
 |   |   `-- RPE-BM510
@@ -25,7 +40,7 @@ The files listed below will be created in the selected results directory (`outpu
 |   |-- ...
 |   `-- ...
 |-- merged_bam
-|   `-- RPE-BM510
+|   `-- merged_bam.bam
 |-- mosaiclassifier
 |   |-- haplotag_likelihoods
 |   |-- postprocessing
@@ -71,7 +86,7 @@ The files listed below will be created in the selected results directory (`outpu
 
 ---
 
-File path: `<OUTPUT_FOLDER>/plots/<SAMPLE>/counts/CountComplete.pdf`
+File path: `<OUTPUT_FOLDER>/<SAMPLE>/plots/counts/CountComplete.pdf`
 
 Report category: `Mosaic counts`
 
@@ -129,7 +144,7 @@ Description of the parameters used can be found in the [parameters section here]
 
 ---
 
-File path: `<OUTPUT_FOLDER>/plots/<SAMPLE>/sv_consistency/<METHOD>.consistency-barplot-<byaf|bypos>.pdf`
+File path: `<OUTPUT_FOLDER>/<SAMPLE>/plots/sv_consistency/<METHOD>.consistency-barplot-<byaf|bypos>.pdf`
 
 Report category: `SV Consistency`
 
@@ -160,7 +175,7 @@ Here are some important points to better analyse these plots:
 
 ---
 
-File path: `<OUTPUT_FOLDER>/plots/<SAMPLE>/sv_clustering/<CELL>.pdf`
+File path: `<OUTPUT_FOLDER>/<SAMPLE>/plots/sv_clustering/<CELL>.pdf`
 
 Report category: `SV Clustering`
 
@@ -193,7 +208,28 @@ By using these heatmaps, the user can easily identify subclones based on the SV 
 
 ---
 
-File path: `<OUTPUT_FOLDER>/stats/<SAMPLE>/stats-merged.tsv`
+File path: `<OUTPUT_FOLDER>/<SAMPLE>/plots/alfred/<CELL>_gc_[devi|dist].png`
+
+Report category: `GC analysis`
+
+---
+
+
+
+
+| ![summary](images/plots/alfred_devi.png) |
+| :--------------------------------------: |
+|    _1. Alfred GC deviation analysis_     |
+
+| ![summary](images/plots/alfred_dist.png) |
+| :--------------------------------------: |
+|   _2. Alfred GC distribution analysis_   |
+
+## Statistics
+
+---
+
+File path: `<OUTPUT_FOLDER>/<SAMPLE>/stats/stats-merged.tsv`
 
 Report category: `Stats`
 
@@ -231,7 +267,7 @@ Report category: `Stats`
 
 ---
 
-File path: `<OUTPUT_FOLDER>/mosaiclassifier/sv_calls/<SAMPLE>/<method>.pdf`
+File path: `<OUTPUT_FOLDER>/<SAMPLE>/mosaiclassifier/sv_calls/<method>.pdf`
 
 ---
 
