@@ -16,7 +16,7 @@ MosaiCatcher v2 is a `Snakemake <https://snakemake.github.io>`_ pipeline that ai
 * Ashleys-QC preprocessing pipeline enabled: {{ snakemake.config["ashleys_pipeline"] }}
 * Ashleys-QC preprocessing pipeline version used: {{ snakemake.config["ashleys_pipeline_version"] }}
 * GC analysis module enabled: {{ snakemake.config["GC_analysis"] }}
-* BAM folder legacy format (all/selected) enabled: {{ snakemake.config["input_old_behavior"] }}
+* BAM folder legacy format (all/selected) enabled: {{ snakemake.config["input_bam_legacy"] }}
 
 **Counts option:**
 
