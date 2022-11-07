@@ -30,7 +30,7 @@ def pipeline_aesthetic_start(config):
     | |\/| / _ (_-</ _` | | (__/ _` |  _/ _| ' \/ -_) '_|
     |_|  |_\___/__/\__,_|_|\___\__,_|\__\__|_||_\___|_|  
     """
-    wf_info = "smk-wf-catalog/mosacaitcher-pipeline v{version}".format(version=str(config["version"]))
+    wf_info = "smk-wf-catalog/mosaicatcher-pipeline v{version}".format(version=str(config["version"]))
     print(sep + fg.GREEN + smk)
     print(fg.ENDC)
     print(fg.YELLOW + wf_name)
@@ -67,7 +67,7 @@ def pipeline_aesthetic_start(config):
     l = [
         f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format("Genecore mode enabled", ": " + str(config["genecore"])),
         f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format("Ashleys-QC preprocessing pipeline", ": " + str(config["ashleys_pipeline"])),
-        f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format("BAM folder old format (all/selected)", ": " + str(config["input_old_behavior"])),
+        f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format("BAM folder legacy format (bam/selected)", ": " + str(config["input_bam_legacy"])),
     ]
     [print(e) for e in l]
 
@@ -80,3 +80,4 @@ def pipeline_aesthetic_start(config):
         # f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format("Reference FASTA file", ": " + str(config["references_data"][config["reference"]]["reference_file_location"])),
     ]
     [print(e) for e in l]
+    print("\n\n")

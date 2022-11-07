@@ -39,7 +39,7 @@
     .. l = [
     ..     f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format("Genecore mode enabled", ": " + str(config["genecore"])),
     ..     f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format("Ashleys-QC preprocessing pipeline", ": " + str(config["ashleys_pipeline"])),
-    ..     f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format("BAM folder old format (all/selected)", ": " + str(config["input_old_behavior"])),
+    ..     f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format("BAM folder old format (all/selected)", ": " + str(config["input_bam_legacy"])),
     .. ]
     .. [print(e) for e in l]
 
