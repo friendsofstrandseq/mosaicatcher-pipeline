@@ -134,6 +134,7 @@ rule plot_SV_calls:
             "{folder}/{sample}/plots/sv_calls/{method}_filter{filter}/{chrom}.pdf",
             category="SV Calls",
             subcategory="{sample}",
+            caption="../report/sv_calls.rst",
             labels={
                 "method": "{method}",
                 "filter": "{filter}",
