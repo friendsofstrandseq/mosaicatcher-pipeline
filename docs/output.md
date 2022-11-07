@@ -214,9 +214,6 @@ Report category: `GC analysis`
 
 ---
 
-
-
-
 | ![summary](images/plots/alfred_devi.png) |
 | :--------------------------------------: |
 |    _1. Alfred GC deviation analysis_     |
@@ -224,16 +221,6 @@ Report category: `GC analysis`
 | ![summary](images/plots/alfred_dist.png) |
 | :--------------------------------------: |
 |   _2. Alfred GC distribution analysis_   |
-
-## Statistics
-
----
-
-File path: `<OUTPUT_FOLDER>/<SAMPLE>/stats/stats-merged.tsv`
-
-Report category: `Stats`
-
----
 
 | Col nb | Col title                       | Comment                                                                                  |
 | ------ | ------------------------------- | ---------------------------------------------------------------------------------------- |
