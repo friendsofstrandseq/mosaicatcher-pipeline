@@ -19,7 +19,7 @@ All these arguments can be specified in two ways:
 | -------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------- | ------------------ |
 | `data_location`      | Path to parent folder containing samples                                                                          | String         | .tests/data_CHR17/ |
 | `ashleys_pipeline`   | Allow to load and use ashleys-qc-pipeline snakemake preprocessing module and to start from FASTQ inputs           | Boolean        | False              |
-| `input_old_behavior` | Mutualy exclusive with ashleys_pipeline. Will use `selected` folder to identify high-quality libraries to process | Boolean        | False              |
+| `input_bam_legacy` | Mutualy exclusive with ashleys_pipeline. Will use `selected` folder to identify high-quality libraries to process | Boolean        | False              |
 
 ### Other parameters
 
