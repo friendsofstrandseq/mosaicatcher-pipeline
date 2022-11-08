@@ -325,8 +325,6 @@ df_config_files["Selected"] = True
 samples = list(sorted(list(df_config_files.Sample.unique().tolist())))
 
 
-
-
 # Creation of dicts to be used in the rules
 dict_cells_nb_per_sample = (
     df_config_files.loc[df_config_files["Selected"] == True]

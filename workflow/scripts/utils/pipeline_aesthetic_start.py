@@ -43,7 +43,6 @@ def pipeline_aesthetic_start(config):
     print("\033[1m{}\033[0m".format("Input/Output options:"))
     l = [
         f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format("Folder to processed", ": " + str(config["data_location"])),
-        # f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format("Output folder selected", ": " + str(config["data_location"])),
     ]
     if config["genecore"] is True:
         l.append(
