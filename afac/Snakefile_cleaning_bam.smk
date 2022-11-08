@@ -24,10 +24,10 @@ from collections import defaultdict
 
 Testmode = False
 
-path_to_orig_samples = "/g/korbel2/weber/MosaiCatcher_files/POOLING/POOLING_POOL1"
+path_to_orig_samples = "/scratch/tweber/SCO_COURSE/HJ_MIXTURE"
 
 
-SAMPLE, BAM = glob_wildcards(path_to_orig_samples + "/{sm}/chm13/{id}.bam")
+SAMPLE, BAM = glob_wildcards(path_to_orig_samples + "/{sm}/raw/{id}.sort.mdup.bam")
 SAMPLES = sorted(set(SAMPLE))
 print(SAMPLE)
 print(BAM)
@@ -60,7 +60,7 @@ bais_select = []
 for s in SAMPLES:
     bams_all.extend(
         expand(
-            "{path}/{SM}/all/{ID}.sort.mdup.bam",
+            "{path}/{SM}/bam/{ID}.sort.mdup.bam",
             path=path_to_orig_samples,
             SM=s,
             ID=ALLBAMS_PER_SAMPLE[s],
@@ -96,23 +96,23 @@ for s in SAMPLES:
 rule all:
     input:
         bams_all,
-        bais_all,
-        bams_select,
-        bais_select,
+        # bais_all,
+        # bams_select,
+        # bais_select,
 
 
 rule change_id_and_sam:
     input:
         # bam_orig=expand(
-        #     "{path}/{SM}/chm13/{ID}.bam",
+        #     "{path}/{SM}/raw/{ID}.bam",
         #     zip,
         #     path=path_to_orig_samples,
         #     SM=SAMPLE,
         #     ID=BAM,
         # ),
-        bam_orig="{path}/{SM}/chm13/{ID}.bam",
+        bam_orig="{path}/{SM}/raw/{ID}.sort.mdup.bam",
     output:
-        bam_out="{path}/{SM}/all/{ID}.sort.mdup.bam",
+        bam_out="{path}/{SM}/bam/{ID}.sort.mdup.bam",
     shell:
         """
         # First, the 'ID' tag
@@ -128,12 +128,12 @@ rule change_id_and_sam:
         """
 
 
-rule add_idx:
-    input:
-        bam="{path}/{SM}/all/{ID}.sort.mdup.bam",
-    output:
-        bai="{path}/{SM}/all/{ID}.sort.mdup.bam.bai",
-    shell:
-        """
-        samtools index {input.bam}
-        """
+# rule add_idx:
+#     input:
+#         bam="{path}/{SM}/all/{ID}.sort.mdup.bam",
+#     output:
+#         bai="{path}/{SM}/all/{ID}.sort.mdup.bam.bai",
+#     shell:
+#         """
+#         samtools index {input.bam}
+#         """
