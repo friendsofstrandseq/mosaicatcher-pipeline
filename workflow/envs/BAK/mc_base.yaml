@@ -11,6 +11,5 @@ dependencies:
   - perl
   - pypdf2
   - parmap
-  - samtools
   # ARBIGENT
   - xopen

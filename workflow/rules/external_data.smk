@@ -122,3 +122,19 @@ rule samtools_faindex:
         "../envs/mc_bioinfo_tools.yaml"
     shell:
         "samtools faidx {input}"
+
+rule download_arbigent_mappability_track:
+    input:
+        HTTP.remote(
+            "https://sandbox.zenodo.org/record/1119112/files/mapping_counts_allchrs_hg38.txt",
+            keep_local=True,
+        ),
+    output:
+        config["arbigent_data"]["arbigent_mapability_track"]
+    log:
+        touch("log/config/dl_arbigent_mappability_track.ok"),
+    run:
+        directory = "workflow/data/arbigent/"
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        shell("mv {input} config["arbigent_data"]["arbigent_mapability_track"])

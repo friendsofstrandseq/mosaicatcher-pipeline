@@ -125,6 +125,8 @@ workflow/test.txt
 .tests/data_CHR17/RPE-BM510/config/
 .tests/data_CHR17/RPE-BM510/predictions/
 
+.tests/data_CHR17/RPE-BM510/
+
 .tests/data_CHR21/RPE-BM510/predictions/
 .tests/data_CHR21/RPE-BM510/cell_selection/
 
@@ -172,6 +174,5 @@ TMP/
 # .tests/external_data/chr17.fa.gz.amb
 .tests/external_data/chr17.fa.gz.*
 log.txt
-workflow/data/arbigent/mapping*
-workflow/data/arbigent/mapping_counts_allchrs_hg38.h5
-.tests/data_CHR17/RPE-BM510/ploidy/
+.nfs00000000002b143a000012cb
+workflow/data/arbigent/mapping_*

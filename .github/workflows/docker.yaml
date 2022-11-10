@@ -1,53 +1,62 @@
-name: Build container
+name: Build & Push docker container
 
 on:
   pull_request:
     types: [closed]
-    branches:
-      - main
+# #     branches:
+# #     branches:
+# #       - master
 
 # on:
 #   push:
 #     branches:
 #       - dev
 
+env:
+  IMAGE_NAME: mosaicatcher-pipeline
+
 jobs:
-  build_mc_container:
+  # create_dockerfile:
+  #   name: Run pipeline & Create Dockerfile
+  #   runs-on: ubuntu-20.04
+
+  #   steps:
+  #     - uses: actions/checkout@v3.1.0
+  #     - name: Testing data
+  #       uses: snakemake/snakemake-github-action@v1.24.0
+  #       with:
+  #         directory: .
+  #         snakefile: ./workflow/Snakefile
+  #         stagein: "conda config --set channel_priority flexible"
+  #         args: "--cores 1 --use-conda --config chromosomes=[chr17] ashleys_pipeline=True normalized_counts=True GC_analysis=True use_light_data=True  --conda-frontend mamba -p --verbose --debug"
+  #     - name: Create container file
+  #       uses: snakemake/snakemake-github-action@v1.24.0
+  #       with:
+  #         snakefile: ./workflow/Snakefile
+  #         directory: .
+  #         task: "containerize"
+  #         args: "--cores 1 --use-conda --config chromosomes=[chr17] ashleys_pipeline=True normalized_counts=True GC_analysis=True use_light_data=True  --conda-frontend mamba -p --verbose --debug"
+  #     - name: Print Dockerfile
+  #       run: |
+  #         cat Dockerfile
+
+  #     - uses: actions/upload-artifact@master
+  #       with:
+  #         name: Dockerfile_artifact
+  #         path: ./Dockerfile
+
+  build_and_push_image:
     name: Build and push image
     runs-on: ubuntu-20.04
-    env:
-      IMAGE_NAME: mosaicatcher-pipeline
+    # needs:
+    #   - create_dockerfile
     steps:
-      - uses: actions/checkout@v2
-      - name: Testing data
-        uses: snakemake/snakemake-github-action@v1.23.0
-        with:
-          directory: .
-          snakefile: ./workflow/Snakefile
-          stagein: "conda config --set channel_priority flexible"
-          args: "--cores 2 --use-conda --configfile ./config/config.yaml --config chromosomes=[chr17] ashleys_pipeline=True normalized_counts=True GC_analysis=True use_light_data=True  --conda-frontend mamba -p"
-      - name: Create container file
-        uses: snakemake/snakemake-github-action@v1
-        with:
-          snakefile: ./workflow/Snakefile
-          directory: .
-          task: "containerize"
-          args: "--cores 1 --use-conda --configfile ./config/config.yaml --config chromosomes=[chr17] ashleys_pipeline=True normalized_counts=True GC_analysis=True use_light_data=True"
-      # - name: Edit Dockerfile
-      #   run: |
-      #     dockerfile="Dockerfile" && \
-      #     rtools_env=$(grep "envs/rtools.yaml /conda-envs" "$dockerfile" | \
-      #       grep -o "conda-envs/.*\/" | sed 's/conda-envs\///g;s/\/$//g') && \
-      #     echo "\n\n#CUSTOM PART\n\nRUN mamba install -c conda-forge -c bioconda samtools && \
-      #     chmod -R 0777 /conda-envs/"$rtools_env"/lib/R/library &&  \
-      #     apt-get install git && \
-      #     git clone -b smk_workflow_catalog https://github.com/friendsofstrandseq/mosaicatcher-pipeline.git /mosaicatcher-pipeline && \
-      #     /conda-envs/"$rtools_env"/bin/Rscript /mosaicatcher-pipeline/workflow/scripts/strandphaser_scripts/install_strandphaser.R 69c9fb4 https://github.com/daewoooo/StrandPhaseR  && \
-      #     mamba clean --all -y" >> "$dockerfile"
+      - uses: actions/checkout@v3.1.0
 
-      - name: Print Dockerfile
-        run: |
-          cat Dockerfile
+      # - uses: actions/download-artifact@master
+      #   with:
+      #     name: Dockerfile_artifact
+      #     path: ./Dockerfile_artifact
 
       - name: Run read-yaml action
         id: yaml-data
@@ -59,32 +68,33 @@ jobs:
       - name: Display read-yaml output
         run: echo "${{ steps.yaml-data.outputs.data }}"
 
+      - name: Print Dockerfile
+        run: |
+          cat ./github-actions-runner/Dockerfile-${{ steps.yaml-data.outputs.data }}.dockerfile
+
+      # - name: Edit Dockerfile
+      #   run: |
+      #     dockerfile=./github-actions-runner/Dockerfile-${{ steps.yaml-data.outputs.data }}.dockerfile && \
+      #     rtools_env=$(grep "envs/rtools.yaml /conda-envs" "$dockerfile" | \
+      #       grep -o "conda-envs/.*\/" | sed 's/conda-envs\///g;s/\/$//g') && \
+      #     echo "RUN wget https://sandbox.zenodo.org/record/1097504/files/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz" >> "$dockerfile" && \
+      #     echo "RUN mkdir -p /mosaicatcher-pipeline/workflow/data/ref_genomes" >> "$dockerfile" && \
+      #     echo "RUN mv BSgenome.T2T.CHM13.V2_1.0.0.tar.gz /mosaicatcher-pipeline/workflow/workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz" >> "$dockerfile" && \
+      #     echo "RUN chmod -R 0777 /conda-envs/"$rtools_env"/lib/R/library" >> "$dockerfile" &&  \
+      #     echo "RUN /conda-envs/"$rtools_env"/bin/Rscript /mosaicatcher-pipeline/workflow/scripts/utils/install_R_tarball.R /mosaicatcher-pipeline/workflow/workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz" >> "$dockerfile"
+
+      # - name: Print Dockerfile
+      #   run: |
+      #     cat ./github-actions-runner/Dockerfile-${{ steps.yaml-data.outputs.data }}.dockerfile
+
       - name: Build Image
         id: build-image
         uses: redhat-actions/buildah-build@v2
         with:
           image: ${{ env.IMAGE_NAME }}
-          tags: "${{ steps.yaml-data.outputs.data }}"
+          tags: ${{ steps.yaml-data.outputs.data }} dev
           dockerfiles: |
-            ./Dockerfile
-
-      # - name: Run read-yaml action
-      #   id: yaml-data
-      #   uses: jbutcher5/read-yaml@main      # You may wish to replace main with a version tag such as '1.6' etc.
-      #   with:
-      #     file: './config/config.yaml'
-      #     key-path: '["version"]' # Access the runs key then the using key and retuns the value.
-
-      # - name: Display read-yaml output
-      #   run: echo "${{ steps.yaml-data.outputs.data }}"
-      # - name: Build Image
-      #   id: build-image
-      #   uses: redhat-actions/buildah-build@v2
-      #   with:
-      #     image: ${{ env.IMAGE_NAME }}
-      #     tags: "${{ steps.yaml-data.outputs.data }}"
-      #     dockerfiles: |
-      #       ./github-actions-runner/Dockerfile_complete.dockerfile
+            ./github-actions-runner/Dockerfile-${{ steps.yaml-data.outputs.data }}.dockerfile
 
       - name: Push To DockerHub
         id: push-to-dockerhub
@@ -96,26 +106,42 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
 
-      - name: Use the image
-        run: echo "New images has been pushed to ${{ steps.push-to-quay.outputs.registry-paths }}"
-  # build_full_container:
+  # build_and_push_image:
   #   name: Build and push image
   #   runs-on: ubuntu-20.04
-  #   env:
-  #     IMAGE_NAME: ashleys-mosaicatcher-pipeline
+  #   needs:
+  #     - create_dockerfile
   #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Set output
-  #       id: vars
-  #       run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+  #     - uses: actions/checkout@v3.1.0
+
+  #     - uses: actions/download-artifact@master
+  #       with:
+  #         name: Dockerfile_artifact
+  #         path: ./Dockerfile_artifact
+
+  #     - name: Print Dockerfile
+  #       run: |
+  #         ls -lh . && tree -h . && cat ./Dockerfile_artifact/Dockerfile
+
+  #     - name: Run read-yaml action
+  #       id: yaml-data
+  #       uses: jbutcher5/read-yaml@main # You may wish to replace main with a version tag such as '1.6' etc.
+  #       with:
+  #         file: "./config/config.yaml"
+  #         key-path: '["version"]' # Access the runs key then the using key and retuns the value.
+
+  #     - name: Display read-yaml output
+  #       run: echo "${{ steps.yaml-data.outputs.data }}"
+
   #     - name: Build Image
   #       id: build-image
   #       uses: redhat-actions/buildah-build@v2
   #       with:
   #         image: ${{ env.IMAGE_NAME }}
-  #         tags: ${{ steps.vars.outputs.tag }}
+  #         tags: "${{ steps.yaml-data.outputs.data }}"
   #         dockerfiles: |
-  #           ./github-actions-runner/Dockerfile_complete.dockerfile
+  #           ./Dockerfile_artifact/Dockerfile
+
   #     - name: Push To DockerHub
   #       id: push-to-dockerhub
   #       uses: redhat-actions/push-to-registry@v2
@@ -125,5 +151,45 @@ jobs:
   #         registry: docker.io/weber8thomas
   #         username: ${{ secrets.DOCKER_USERNAME }}
   #         password: ${{ secrets.DOCKER_TOKEN }}
-  #     - name: Use the image
-  #       run: echo "New images has been pushed to ${{ steps.push-to-quay.outputs.registry-paths }}"
+
+  # Test_singularity:
+  #   name: Snakemake x Singularity
+  #   runs-on: ubuntu-latest
+
+  #   # needs:
+  #   #   - create_dockerfile
+  #   #   - build_and_push_image
+
+  #   defaults:
+  #     run:
+  #       shell: bash -l {0}
+
+  #   steps:
+  #     - name: checkout repository
+  #       uses: actions/checkout@v2
+
+  #     - uses: eWaterCycle/setup-singularity@v7
+  #       with:
+  #         singularity-version: 3.8.3
+
+  #     - name: create environment with mamba
+  #       uses: conda-incubator/setup-miniconda@v2
+  #       with:
+  #         mamba-version: "*"
+  #         channels: conda-forge,bioconda,defaults
+  #         auto-activate-base: false
+  #         activate-environment: snakemake_env
+  #         environment-file: ./workflow/envs/snakemake.yaml
+
+  #     # - name: check solution
+  #     #   run: |
+  #     #     mamba env export
+
+  #     - name: test snakemake
+  #       run: |
+  #         which snakemake
+  #         snakemake --version
+
+  #     - name: Testing data
+  #       run: |
+  #         snakemake --cores 1 --use-singularity --singularity-args '-B /etc:/etc -B /home:/home' --use-conda --configfile .tests/config/simple_config.yaml --conda-frontend mamba -p --verbose --debug

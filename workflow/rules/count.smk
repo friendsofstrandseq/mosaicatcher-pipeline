@@ -59,7 +59,7 @@ if config["ashleys_pipeline"] is False:
             """
 
 
-    if config["input_old_behavior"] is True:
+    if config["input_bam_legacy"] is True:
 
         rule selected_cells:
             input:
@@ -141,10 +141,10 @@ if config["window"] in [50000, 100000, 200000] and (config["reference"] == "hg38
     rule normalize_counts:
         input:
             counts="{folder}/{sample}/counts/{sample}.txt.filter.gz",
-            norm=expand(
+            norm=lambda wc: expand(
                 "{folder}/{sample}/normalizations/HGSVC.{window}.merged.tsv",
                 folder=config["data_location"],
-                sample=samples,
+                sample=wc.sample,
                 window=config["window"],
             ),
         output:
@@ -176,6 +176,7 @@ elif config["arbigent"] is True:
 
 else:
 
+
     rule cp_mosaic_count:
         input:
             "{folder}/{sample}/counts/{sample}.txt.filter.gz",
@@ -189,6 +190,8 @@ else:
             "cp {input} {output}"
 
 
+
+
 rule sort_counts:
     input:
         "{folder}/{sample}/counts/{sample}.txt.gz",
@@ -200,6 +203,8 @@ rule sort_counts:
         "../envs/mc_base.yaml"
     script:
         "../scripts/utils/sort_counts.py"
+
+
 
 
 rule extract_single_cell_counts:

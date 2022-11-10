@@ -7,7 +7,7 @@
 1. A. Create a dedicated conda environment
 
 ```bash
-conda create -n snakemake -c bioconda -c conda-forge -c defaults -c anaconda snakemake=7.5.0
+conda create -n snakemake -c bioconda -c conda-forge -c defaults -c anaconda snakemake=7.12.0
 ```
 
 1. B. Activate the dedicated conda environment
@@ -21,21 +21,21 @@ conda activate snakemake
 2. Clone the repository
 
 ```bash
-git clone https://github.com/friendsofstrandseq/mosaicatcher-pipeline.git && cd mosaicatcher-pipeline
+git clone --recurse-submodules https://github.com/friendsofstrandseq/mosaicatcher-pipeline.git && cd mosaicatcher-pipeline
 ```
 
-3. Run on example data on only one small chromosome (`<disk>` must be replaced by your disk letter/name, `/g` or `/scratch` at EMBL for example)
+3. Run on example data on only one small chromosome (`<disk>` must be replaced by your disk letter/name)
 
 ```bash
-# Snakemake Profile: if singularity installed: workflow/profiles/local/conda_singularity/
-# Snakemake Profile: if singularity NOT installed: workflow/profiles/local/conda/
-snakemake --cores 6 --configfile .tests/config/simple_config.yaml --profile workflow/profiles/local/conda_singularity/
+# Snakemake Profile: if singularity installed: workflow/snakemake_profiles/local/conda_singularity/
+# Snakemake Profile: if singularity NOT installed: workflow/snakemake_profiles/local/conda/
+snakemake --cores 6 --configfile .tests/config/simple_config.yaml --profile workflow/snakemake_profiles/local/conda_singularity/ --singularity-args "-B /disk:/disk"
 ```
 
 4. Generate report on example data
 
 ```bash
-snakemake --cores 6 --configfile .tests/config/simple_config.yaml --profile workflow/profiles/local/conda_singularity/ --report report.zip
+snakemake --cores 6 --configfile .tests/config/simple_config.yaml --profile workflow/snakemake_profiles/local/conda_singularity/ --singularity-args "-B /disk:/disk" --report report.zip
 ```
 
 ---
@@ -44,6 +44,15 @@ snakemake --cores 6 --configfile .tests/config/simple_config.yaml --profile work
 
 - Steps 0 - 2 are required only during first execution
 - After the first execution, do not forget to go in the git repository and to activate the snakemake environment
+
+---
+
+---
+
+**ℹ️ Note for 🇪🇺 EMBL users**
+
+- You can load already installed snakemake modusl on the HPC (by connecting to login01 & login02) using the following `module load snakemake/7.14.0-foss-2022a`
+- Use the following command for singularity-args parameter: `--singularity-args "-B /g:/g -B /scratch:/scratch"`
 
 ---
 
@@ -56,7 +65,7 @@ Following commands show you an example using local execution (not HPC or cloud)
 ```bash
 snakemake \
     --cores <N> --config data_location=<INPUT_DATA_FOLDER> \
-    --profile workflow/profiles/local/conda_singularity/
+    --profile workflow/snakemake_profiles/local/conda_singularity/
 
 ```
 
@@ -65,7 +74,7 @@ snakemake \
 ```bash
 snakemake \
     --cores <N> --config data_location=<INPUT_DATA_FOLDER> \
-    --profile workflow/profiles/local/conda_singularity/ \
+    --profile workflow/snakemake_profiles/local/conda_singularity/ \
     --report <INPUT_DATA_FOLDER>/<REPORT.zip>
 ```
 
@@ -88,7 +97,7 @@ If possible, it is also highly recommended to install and use `mamba` package ma
 
 ```bash
 conda install -c conda-forge mamba
-mamba create -n snakemake -c bioconda -c conda-forge -c defaults -c anaconda snakemake=7.5.0
+mamba create -n snakemake -c bioconda -c conda-forge -c defaults -c anaconda snakemake=7.14.0
 conda activate mosaicatcher_env
 ```
 
@@ -97,8 +106,8 @@ conda activate mosaicatcher_env
 After cloning the repo, go into the `workflow` directory which correspond to the pipeline entry point.
 
 ```bash
-git clone https://github.com/friendsofstrandseq/mosaicatcher-pipeline.git
-cd mosaicatcher-pipeline/workflow/
+git clone --recurse-submodules https://github.com/friendsofstrandseq/mosaicatcher-pipeline.git
+cd mosaicatcher-pipeline
 ```
 
 ### ⚙️ 3. MosaiCatcher execution (without preprocessing)
@@ -114,7 +123,7 @@ snakemake -c1 --config dl_bam_example=True data_location=TEST_EXAMPLE_DATA/
 Then, the following command will process the 18 cells (full BAM with all chromosomes) present in this example.
 
 ```bash
-snakemake -c6 --config data_location=TEST_EXAMPLE_DATA --profile workflow/profiles/local/conda_singularity/
+snakemake -c6 --config data_location=TEST_EXAMPLE_DATA --profile workflow/snakemake_profiles/local/conda_singularity/ --singularity-args "-B /disk:/disk"
 ```
 
 **Warning:** Download example data currently requires 3GB of free space disk.
@@ -171,7 +180,7 @@ In a `Parent_Folder`, create a subdirectory `Parent_Folder/sampleName/` for each
 
 Previous version of MosaiCatcher (version ≤ 1.5) needed not only a `all` directory as described above, but also a `selected` folder (now renamed `bam`), presenting only high-quality selected libraries wished to be processed for the rest of the analysis.
 
-You can still use this behavior by enabling the config parameter either by the command line: `input_old_behavior=True` or by modifying the corresponding entry in the config/config.yaml file.
+You can still use this behavior by enabling the config parameter either by the command line: `=True` or by modifying the corresponding entry in the config/config.yaml file.
 
 Thus, in a `Parent_Folder`, create a subdirectory `Parent_Folder/sampleName/` for each `sample`. Your Strand-seq BAM files of this sample go into the following folder:
 
@@ -255,7 +264,7 @@ Informations and modes of execution can be found on the [ashleys-qc-pipeline doc
 **⚠️ Warnings**
 
 1. When using ashleyq-qc-pipeline preprocessing module, Singularity execution is not possible at the moment (will be fixed soon).
-2. `ashleys_pipeline=True` and `input_old_behavior=True` are mutually exclusive
+2. `ashleys_pipeline=True` and `input_bam_legacy=True` are mutually exclusive
 
 ---
 
@@ -270,7 +279,7 @@ snakemake \
     --cores <N> \
     --config \
         data_location=<INPUT_FOLDER> \
-    --profile workflow/profiles/local/conda/
+    --profile workflow/snakemake_profiles/local/conda/
 ```
 
 #### Local execution (without batch scheduler) using singularity X conda (recommanded)
@@ -282,7 +291,7 @@ snakemake \
     --cores <N> \
     --config \
         data_location=<INPUT_FOLDER> \
-    --profile workflow/profiles/local/conda_singularity/ --singularity-args "-B /<mouting_point>:/<mounting_point>"
+    --profile workflow/snakemake_profiles/local/conda_singularity/ --singularity-args "-B /<mouting_point>:/<mounting_point>"
 ```
 
 ---
@@ -312,11 +321,11 @@ If you are experiencing any issues with conda-frontend snakemake option, please 
 
 #### HPC execution
 
-MosaiCatcher can be executed on HPC using [Slurm](https://slurm.schedmd.com/documentation.html) by leveraging snakemake profile feature. Current Slurm profile [`workflow/profiles/slurm/config.yaml`] was defined and tested on EMBL HPC cluster but can be modified, especially regarding **partition** setting.
+MosaiCatcher can be executed on HPC using [Slurm](https://slurm.schedmd.com/documentation.html) by leveraging snakemake profile feature. Current Slurm profile [`workflow/snakemake_profiles/slurm_EMBL/config.yaml`] was defined and tested on EMBL HPC cluster but can be modified, especially regarding **partition** setting.
 
 ##### Current strategy to solve HPC job OOM
 
-Workflow HPC execution usually needs to deal with out of memory (OOM) errors, out of disk space, abnormal paths or missing parameters for the scheduler. To deal with OOM, we are currently using snakemake restart feature (thanks [@Pablo Moreno](https://github.com/pcm32)) in order to automatically double allocated memory to the job at each attempt (limited to 8 for the moment). Then, if a job fails to run with the default 1GB of memory allocated, it will be automatically restarted tith 2GB at the 2nd attempt, 4GB at the 3rd, etc.
+Workflow HPC execution usually needs to deal with out of memory (OOM) errors, out of disk space, abnormal paths or missing parameters for the scheduler. To deal with OOM, we are currently using snakemake restart feature that allows to automatically double allocated memory to the job at each attempt (limited to 6 for the moment). Then, if a job fails to run with the default 1GB of memory allocated, it will be automatically restarted tith 2GB at the 2nd attempt, 4GB at the 3rd, etc.
 
 To execute MosaiCatcher on HPC, use the following command.
 
@@ -327,7 +336,7 @@ snakemake \
     --config \
         data_location=<INPUT_FOLDER> \
     --singularity-args "-B /<mounting_point>:/<mounting_point>" \
-    --profile workflow/profiles/slurm/
+    --profile workflow/snakemake_profiles/slurm_generic/
 ```
 
 The `logs` and `errors` directory will be automatically created in the current directory, corresponding respectively to the `output` and `error` parameter of the `sbatch` command.
@@ -341,7 +350,7 @@ snakemake \
     --config \
         data_location=<INPUT_FOLDER> \
     --singularity-args "-B /<mounting_point>:/<mounting_point>" \
-    --profile workflow/profiles/slurm/ \
+    --profile workflow/snakemake_profiles/slurm_generic/ \
     --report <report>.zip
 ```
 
@@ -352,3 +361,25 @@ snakemake \
 The zip file produced can be heavy (~1GB for 24 HGSVC samples ; 2000 cells) if multiple samples are processed in parallel in the same output folder.
 
 ---
+
+## Update procedure
+
+If you already use a previous version of mosaicatcher-pipeline, here is a short procedure to update it:
+
+- First, update all origin/<branch> refs to latest:
+
+`git fetch --all`
+
+- Jump to the latest commit on origin/master and checkout those files:
+
+`git reset --hard origin/master`
+
+Then, to initiate or update git snakemake_profiles submodule:
+
+For mosaicatcher-pipeline ≤ 1.7.0:
+
+`git submodule update --init --recursive`
+
+For mosaicatcher-pipeline > 1.7.0:
+
+`git submodule update --recursive`
