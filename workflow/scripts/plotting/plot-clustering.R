@@ -35,9 +35,14 @@ plot.clustering <- function(inputfile, bin.bed.filename, position.outputfile, ch
     result <- matrix(0, nrow(data1_cell_uniq_sort), nrow(data1_pos_uniq))
     result_sv <- matrix(0, nrow(data1_cell_uniq_sort), nrow(data1_pos_uniq))
 
+    print(result)
+    print(result_sv)
+    print(data1)
+
     for (i in 1:nrow(data1)) {
         pos_ind <- which(data1_pos_uniq_sort[, 1] == data1[i, 1] & data1_pos_uniq_sort[, 2] == data1[i, 2] & data1_pos_uniq_sort[, 3] == data1[i, 3])
         cell_ind <- which(data1_cell_uniq_sort[, 1] == data1[i, 5])
+
         result[cell_ind, pos_ind] <- data1[i, 13]
         result_sv[cell_ind, pos_ind] <- data1[i, 15]
     }
@@ -109,7 +114,11 @@ plot.clustering <- function(inputfile, bin.bed.filename, position.outputfile, ch
         col = list(type1 = c("magenta" = "magenta", "purple" = "purple"))
     )
 
-    ht1 <- Heatmap(mat, name = "TEST", col = colors, heatmap_legend_param = list(labels = sv_list_sub), cluster_rows = FALSE, cluster_columns = FALSE, column_title = inputfile, row_names_gp = gpar(fontsize = 5), column_names_gp = gpar(fontsize = 1), column_title_gp = gpar(fontsize = 7, fontface = "bold"), top_annotation = ha_column)
+    ht1 <- Heatmap(mat, name = "TEST", col = colors, 
+    heatmap_legend_param = list(labels = sv_list_sub), cluster_rows = FALSE, 
+    cluster_columns = FALSE, column_title = inputfile, row_names_gp = gpar(fontsize = 5), 
+    column_names_gp = gpar(fontsize = 1), column_title_gp = gpar(fontsize = 7, fontface = "bold"), 
+    top_annotation = ha_column)
     # draw(res, show_annotation_legend = FALSE)
     draw(ht1, show_annotation_legend = FALSE)
 

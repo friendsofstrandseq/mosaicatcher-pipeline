@@ -38,10 +38,10 @@ dependencies:
   - r-reshape2
   - r-scales
   - r-stringr
-#
-# - r-zoo
-# - r-r.utils
-# - r-ggnewscale
+  # SV_CALLS_DEV
+  # - r-zoo
+  - r-r.utils
+  - r-ggnewscale
 #   ######################
 #   # BAK WITH VERSIONS
 #   - bioconductor-biocparallel=1.16.6

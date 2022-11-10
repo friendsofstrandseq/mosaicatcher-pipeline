@@ -127,20 +127,6 @@ if (
     and config["normalized_counts"] == True
 ):
 
-    rule merge_blacklist_bins:
-        input:
-            norm="workflow/data/normalization/HGSVC.{window}.txt",
-            whitelist="workflow/data/normalization/inversion-whitelist.tsv",
-        output:
-            merged="{folder}/{sample}/normalizations/HGSVC.{window}.merged.tsv",
-        log:
-            "{folder}/log/normalizations/{sample}/HGSVC.{window}.merged.tsv",
-        conda:
-            "../envs/mc_base.yaml"
-        shell:
-            """
-            workflow/scripts/normalization/merge-blacklist.py --merge_distance 500000 {input.norm} --whitelist {input.whitelist} --min_whitelist_interval_size 100000 > {output.merged} 2>> {log}
-            """
 
     rule normalize_counts:
         input:
