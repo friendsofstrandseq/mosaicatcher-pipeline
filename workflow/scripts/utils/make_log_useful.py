@@ -48,7 +48,7 @@ def make_log_useful(log_path, status, config):
         _ = logfile.write("Read Counts normalization : {}\n".format(str(config["normalized_counts"])))
         _ = logfile.write("Binning window size : {}\n".format(str(config["window"])))
         _ = logfile.write("Ashleys-QC preprocessing pipeline : {}\n".format(str(config["ashleys_pipeline"])))
-        _ = logfile.write("BAM folder old format (all/selected) : {}\n".format(str(config["input_old_behavior"])))
+        _ = logfile.write("BAM folder old format (all/selected) : {}\n".format(str(config["input_bam_legacy"])))
         _ = logfile.write("List of chromosomes processed : {}\n".format(str(config["chromosomes"])))
         _ = logfile.write("Reference genome selected : {}\n".format(config["reference"]))
         _ = logfile.write("\n")
