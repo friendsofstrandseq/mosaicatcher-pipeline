@@ -135,7 +135,14 @@ workflow/test.txt
 !.tests/data_CHR17/RPE-BM510/all/BM*.sort.mdup.bam
 !.tests/data_CHR17/RPE-BM510/bam/BM*.sort.mdup.bam
 !.tests/external_data/chr17.fa.gz
-
+!.tests/external_data/chr17.fa.gz.fai
+.tests/external_data/chr17.fa.gz.amb
+.tests/external_data/chr17.fa.gz.ann
+.tests/external_data/chr17.fa.gz.bwt
+.tests/external_data/chr17.fa.gz.gzi
+.tests/external_data/chr17.fa.gz.log
+.tests/external_data/chr17.fa.gz.pac
+.tests/external_data/chr17.fa.gz.sa
 # Dev
 discover_big_files_git.sh
 builds/
@@ -172,7 +179,6 @@ TMP/
 
 .java/
 # .tests/external_data/chr17.fa.gz.amb
-.tests/external_data/chr17.fa.gz.*
 log.txt
 .nfs00000000002b143a000012cb
 workflow/data/arbigent/mapping_*
