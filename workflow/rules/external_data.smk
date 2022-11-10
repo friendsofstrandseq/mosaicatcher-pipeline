@@ -137,4 +137,4 @@ rule download_arbigent_mappability_track:
         directory = "workflow/data/arbigent/"
         if not os.path.exists(directory):
             os.makedirs(directory)
-        shell("mv {input} config["arbigent_data"]["arbigent_mapability_track"])
+        shell("mv {input} {output}")
