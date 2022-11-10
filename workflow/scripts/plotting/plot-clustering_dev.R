@@ -1,8 +1,9 @@
 
 
 
-plot.clustering <- function(inputfile, bin.bed.filename, position.outputfile, chromosome.outputfile) {
-# plot.clustering <- function(inputfile, bin.bed.filename, position.outputfile) {
+# plot.clustering <- function(inputfile, bin.bed.filename, position.outputfile, chromosome.outputfile,) {
+# plot.clustering <- function(inputfile, bin.bed.filename, position.outputfile, chromosome.outputfile, chromosomes) {
+plot.clustering <- function(inputfile, bin.bed.filename, position.outputfile, chromosomes) {
  
 
     library(pheatmap)
@@ -69,6 +70,10 @@ plot.clustering <- function(inputfile, bin.bed.filename, position.outputfile, ch
         "chr22",
         "chrX"
       )
+    
+    chrom <- chromosomes
+    print(chrom)
+    # stop()
     
     # Genome bins loading
     ## Correspond to 200kb size bins for each of the chroms
@@ -139,6 +144,9 @@ plot.clustering <- function(inputfile, bin.bed.filename, position.outputfile, ch
     result_sv <-
       matrix(0, nrow(data1_cell_uniq_sort), nrow(data1_pos_uniq))
     
+    print(result)
+    print(result_sv)
+    print(data1)
     
     # FOR loop: for each SV
     for (i in 1:nrow(data1)) {
@@ -152,6 +160,7 @@ plot.clustering <- function(inputfile, bin.bed.filename, position.outputfile, ch
       # Get cell index in data1_pos_uniq_sort
       cell_ind <- which(data1_cell_uniq_sort[, 1] == data1[i, 5])
       
+
       # Fill the matrix at corresponding indexes with llr_to_ref & af (SV type) columns
       result[cell_ind, pos_ind] <- data1[i, 13]
       result_sv[cell_ind, pos_ind] <- data1[i, 15]
@@ -337,14 +346,16 @@ plot.clustering <- function(inputfile, bin.bed.filename, position.outputfile, ch
       ComplexHeatmap::HeatmapAnnotation(df = col_annotation,
                                         col = anno_colors)
     print(mat)
-    print(sv_list)
+    print(length(sv_list))
+    print(0:(length(sv_list)-1))
+
     # Draw Heatmap based on SV type
     ht1 <-
       ComplexHeatmap::Heatmap(
         data.matrix(mat),
         name = "SV type",
         col = colors,
-        heatmap_legend_param = list(at = 0:length(sv_list), labels = sv_list),
+        heatmap_legend_param = list(at = 0:(length(sv_list)-1), labels = sv_list),
         cluster_rows = FALSE,
         cluster_columns = FALSE,
         column_title = tools::file_path_sans_ext(basename(inputfile)),
@@ -378,7 +389,7 @@ plot.clustering <- function(inputfile, bin.bed.filename, position.outputfile, ch
     # data1_pos <- data1[, 1:3]
     # data1_pos_uniq <- unique(data1_pos)
     # data1_pos_uniq_sort <- data1_pos_uniq[data1_pos_uniq$chrom == "chr1", ]
-    # chrom <- c("chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9", "chr10", "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17", "chr18", "chr19", "chr20", "chr21", "chr22", "chrX")
+    # # chrom <- c("chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9", "chr10", "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17", "chr18", "chr19", "chr20", "chr21", "chr22", "chrX")
 
     # for (i in 2:length(chrom)) {
     #     data1_pos_uniq_sort <- rbind(data1_pos_uniq_sort, data1_pos_uniq[data1_pos_uniq$chrom == chrom[i], ])

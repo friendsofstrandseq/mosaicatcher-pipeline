@@ -1,3 +1,4 @@
+import collections
 import pandas as pd
 
 # from scripts.utils import handle_input, make_log_useful, pipeline_aesthetic_start
@@ -12,6 +13,9 @@ os.environ["LC_CTYPE"] = "C"
 envvars:
     "LC_CTYPE",
 
+
+# wildcard_constraints:
+#     cell="^((?!mdup).)*$"
 
 # Start with aesthetic pipeline config presentation
 onstart:
@@ -166,7 +170,7 @@ class HandleInput:
                     lambda r: f"{r['Folder']}/{r['File']}.fastq.gz", axis=1
                 )
                 df["Genecore_path"] = df["File"].apply(
-                    lambda r: f"{config['genecore_prefix']}/{config['genecore_date_folder']}/{d_master[sample]['prefix']}lane1/{r.replace('.', '_')}_sequence.txt.gz"
+                    lambda r: f"{config['genecore_prefix']}/{config['genecore_date_folder']}/{d_master[sample]['prefix']}lane1{r.replace('.', '_')}_sequence.txt.gz"
                 )
                 df["Genecore_file"] = df["File"].apply(
                     lambda r: f"{d_master[sample]['prefix']}lane1{r.replace('.', '_')}"
@@ -184,7 +188,7 @@ class HandleInput:
             drop=True
         )
         pd.options.display.max_colwidth = 200
-        print(complete_df)
+        # print(complete_df)
         # exit()
         return complete_df, d_master
 
@@ -510,6 +514,48 @@ def get_all_plots(wildcards):
             for sub_e in e
         ]
     )
+
+    # TMP FIX - TO PREVENT ISSUES WHEN USING ONLY SUBSET OF CHROMS
+    if len(config["chromosomes"]) == 23:
+
+
+        l_outputs.extend(
+            [
+                sub_e
+                for e in [
+                    expand(
+                        "{folder}/{sample}/plots/sv_clustering_dev/{method}-filter{filter}-{plottype}.pdf",
+                        folder=config["data_location"],
+                        sample=samples,
+                        method=method,
+                        plottype=config["plottype_clustering"],
+                        filter=config["methods"][method]["filter"],
+                    )
+                    for method in config["methods"]
+                ]
+                for sub_e in e
+            ]
+        )
+
+
+    l_outputs.extend(
+        [
+            sub_e
+            for e in [
+                expand(
+                    "{folder}/{sample}/plots/sv_calls_dev/{method}_filter{filter}/{chrom}.pdf",
+                    folder=config["data_location"],
+                    sample=samples,
+                    method=method,
+                    chrom=config["chromosomes"],
+                    filter=config["methods"][method]["filter"],
+                )
+                for method in config["methods"]
+            ]
+            for sub_e in e
+        ]
+    )
+
 
     # Complex section
 
