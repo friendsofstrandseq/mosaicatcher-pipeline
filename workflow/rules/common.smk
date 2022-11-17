@@ -384,6 +384,51 @@ def get_final_output():
     return final_list
 
 
+
+def write_to_html_file(df, title):
+    inp = """
+        <html>
+        <head>
+        <style>
+            h2 {
+                text-align: center;
+                font-family: Helvetica, Arial, sans-serif;
+            }
+            table { 
+                margin-left: auto;
+                margin-right: auto;
+            }
+            table, th, td {
+                border: 1px solid black;
+                border-collapse: collapse;
+            }
+            th, td {
+                padding: 5px;
+                text-align: center;
+                font-family: Helvetica, Arial, sans-serif;
+                font-size: 90%;
+            }
+            table tbody tr:hover {
+                background-color: #dddddd;
+            }
+            .wide {
+                width: 90%; 
+            }
+        </style>
+        </head>
+        <body>
+        """
+    out = """
+            </body>
+            </html>
+            """
+    result = inp
+    result += "<h2> {} statistics summary </h2>\n".format(str(title))
+    result += df.to_html(classes="wide", escape=False, index=False)
+    result += out
+    return result
+
+
 def get_mem_mb(wildcards, attempt):
     mem_avail = [2, 4, 8, 16, 64]
     return mem_avail[attempt - 1] * 1000
@@ -438,6 +483,9 @@ def get_all_plots(wildcards):
     for s in tmp_dict.keys():
         tmp_dict[s][0] = "SummaryPage"
 
+    # from pprint import pprint
+    # pprint(tmp_dict)
+
     l_outputs = list()
 
     tmp_l_divide = [
@@ -454,26 +502,29 @@ def get_all_plots(wildcards):
     ]
 
     l_outputs.extend([sub_e for e in tmp_l_divide for sub_e in e])
+    # pprint(l_outputs)
 
     # SV_calls section
 
-    l_outputs.extend(
-        [
-            sub_e
-            for e in [
-                expand(
-                    "{folder}/{sample}/plots/sv_calls/{method}_filter{filter}/{chrom}.pdf",
-                    folder=config["data_location"],
-                    sample=samples,
-                    method=method,
-                    chrom=config["chromosomes"],
-                    filter=config["methods"][method]["filter"],
-                )
-                for method in config["methods"]
-            ]
-            for sub_e in e
-        ]
-    )
+    # l_outputs.extend(
+    #     [
+    #         sub_e
+    #         for e in [
+    #             expand(
+    #                 "{folder}/{sample}/plots/sv_calls/{method}_filter{filter}/{chrom}.pdf",
+    #                 folder=config["data_location"],
+    #                 sample=samples,
+    #                 method=method,
+    #                 chrom=config["chromosomes"],
+    #                 filter=config["methods"][method]["filter"],
+    #             )
+    #             for method in config["methods"]
+    #         ]
+    #         for sub_e in e
+    #     ]
+    # )
+
+
 
     # SV_consistency section
 
@@ -516,26 +567,26 @@ def get_all_plots(wildcards):
     )
 
     # TMP FIX - TO PREVENT ISSUES WHEN USING ONLY SUBSET OF CHROMS
-    if len(config["chromosomes"]) == 23:
+    # if len(config["chromosomes"]) == 23:
 
 
-        l_outputs.extend(
-            [
-                sub_e
-                for e in [
-                    expand(
-                        "{folder}/{sample}/plots/sv_clustering_dev/{method}-filter{filter}-{plottype}.pdf",
-                        folder=config["data_location"],
-                        sample=samples,
-                        method=method,
-                        plottype=config["plottype_clustering"],
-                        filter=config["methods"][method]["filter"],
-                    )
-                    for method in config["methods"]
-                ]
-                for sub_e in e
-            ]
-        )
+    #     l_outputs.extend(
+    #         [
+    #             sub_e
+    #             for e in [
+    #                 expand(
+    #                     "{folder}/{sample}/plots/sv_clustering_dev/{method}-filter{filter}-{plottype}.pdf",
+    #                     folder=config["data_location"],
+    #                     sample=samples,
+    #                     method=method,
+    #                     plottype=config["plottype_clustering"],
+    #                     filter=config["methods"][method]["filter"],
+    #                 )
+    #                 for method in config["methods"]
+    #             ]
+    #             for sub_e in e
+    #         ]
+    #     )
 
 
     l_outputs.extend(
@@ -589,7 +640,7 @@ def get_all_plots(wildcards):
 
     l_outputs.extend(
         expand(
-            "{folder}/{sample}/stats/stats-merged.tsv",
+            "{folder}/{sample}/stats/stats-merged.html",
             folder=config["data_location"],
             sample=samples,
         ),
@@ -600,6 +651,14 @@ def get_all_plots(wildcards):
     l_outputs.extend(
         expand(
             "{folder}/config/{sample}/run_summary.txt",
+            folder=config["data_location"],
+            sample=samples,
+        ),
+    )
+
+    l_outputs.extend(
+        expand(
+            "{folder}/{sample}/config/remove_unselected_bam.ok",
             folder=config["data_location"],
             sample=samples,
         ),

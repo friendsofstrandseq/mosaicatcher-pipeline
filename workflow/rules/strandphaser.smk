@@ -14,12 +14,13 @@ rule convert_strandphaser_input:
 
 rule check_single_paired_end:
     input:
-        bam=lambda wc: expand(
-            "{folder}/{sample}/bam/{cell}.sort.mdup.bam",
-            folder=config["data_location"],
-            sample=wc.sample,
-            cell=bam_per_sample_local[str(wc.sample)],
-        ),
+        # bam=lambda wc: expand(
+        #     "{folder}/{sample}/bam/{cell}.sort.mdup.bam",
+        #     folder=config["data_location"],
+        #     sample=wc.sample,
+        #     cell=bam_per_sample_local[str(wc.sample)],
+        # ),
+        bam=selected_input_bam
     output:
         single_paired_end_detect="{folder}/{sample}/config/single_paired_end_detection.txt",
     log:
@@ -61,7 +62,8 @@ rule run_strandphaser_per_chrom:
     resources:
         mem_mb=get_mem_mb_heavy,
     params:
-        input_bam=lambda wc: "{}/{}/bam".format(config["data_location"], wc.sample),
+        # input_bam=lambda wc: "{}/{}/bam".format(config["data_location"], wc.sample),
+        input_bam=lambda wc: "{}/{}/selected".format(config["data_location"], wc.sample),
         output=lambda wc: "{}/{}/strandphaser/StrandPhaseR_analysis.{}".format(
             config["data_location"], wc.sample, wc.chrom
         ),

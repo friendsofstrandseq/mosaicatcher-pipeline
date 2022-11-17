@@ -58,7 +58,7 @@ rule mosaiClassifier_make_call:
 
 rule mosaiClassifier_make_call_biallelic:
     input:
-        probs="{folder}/{sample}/sv_probabilities/*probabilities.Rdata",
+        probs="{folder}/{sample}/sv_probabilities/probabilities.Rdata",
     output:
         "{folder}/{sample}/sv_calls/biAllelic_llr{llr}.txt",
     log:
