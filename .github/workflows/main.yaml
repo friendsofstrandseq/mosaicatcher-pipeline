@@ -46,15 +46,16 @@ jobs:
       - uses: actions/checkout@v2
       - name: Test ls
         run: |
+          echo $pwd
           ls -lha $pwd
-          ls -lha $pwd/.tests/data_CHR17
+          ls -lha $pwd.tests/data_CHR17
       - name: Testing data
         uses: snakemake/snakemake-github-action@v1.23.0
         with:
           directory: .
           snakefile: ./workflow/Snakefile
           stagein: "conda config --set channel_priority flexible"
-          args: "--cores 1 --use-conda --configfile .tests/config/simple_config_github.yaml --config $pwd/.tests/data_CHR17 --conda-frontend mamba -p --verbose --debug"
+          args: "--cores 1 --use-conda --configfile .tests/config/simple_config_github.yaml --config $pwd.tests/data_CHR17 --conda-frontend mamba -p --verbose --debug"
       - name: Testing report
         uses: snakemake/snakemake-github-action@v1.23.0
         with:
