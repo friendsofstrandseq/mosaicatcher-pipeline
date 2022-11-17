@@ -33,7 +33,6 @@ rule aggregate_summary_statistics:
             for sub_e in e
         ],
     output:
-        # tsv=report("stats/{sample}/stats-merged.tsv", category="Stats", labels={"Type" : "Complete stats"})
         tsv="{folder}/{sample}/stats/stats-merged.tsv",
     log:
         tsv="{folder}/log/stats/{sample}/stats-merged.tsv",
@@ -41,3 +40,29 @@ rule aggregate_summary_statistics:
         "../envs/mc_base.yaml"
     shell:
         "(head -n1 {input.tsv[0]} && (tail -n1 -q {input.tsv} | sort -k1) ) > {output}"
+
+
+rule transpose_table:
+    input:
+        "{folder}/{sample}/stats/stats-merged.tsv",
+    output:
+        html=report(
+            "{folder}/{sample}/stats/stats-merged.html",
+            category="Stats",
+            subcategory="{sample}",
+            labels={
+                "Sample": "{sample}",
+            }
+        )   
+
+    run:
+        import pandas as pd
+        import os
+        df = pd.read_csv(input[0], sep="\t")
+        df["callset"] = df["callset"].apply(lambda r: os.path.basename(r).replace(".tsv", ""))
+        df = df.set_index("callset")
+        df = df.fillna(0).T.reset_index()
+        pd.options.display.float_format = '{:,.1f}'.format
+        df_out = write_to_html_file(df, wildcards.sample)
+        with open(output.html, 'w') as o:
+            o.write(df_out)

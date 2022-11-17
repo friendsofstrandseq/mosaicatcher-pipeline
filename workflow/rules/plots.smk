@@ -69,6 +69,7 @@ rule plot_SV_consistency_barplot:
             "{folder}/{sample}/plots/sv_consistency/{method}_filter{filter}.consistency-barplot-bypos.pdf",
             category="SV Consistency",
             subcategory="{sample}",
+            caption="../report/sv_consistency.rst",
             labels={
                 "Barplot type": "By position",
                 "method": "{method}",
@@ -79,6 +80,7 @@ rule plot_SV_consistency_barplot:
             "{folder}/{sample}/plots/sv_consistency/{method}_filter{filter}.consistency-barplot-byaf.pdf",
             category="SV Consistency",
             subcategory="{sample}",
+            caption="../report/sv_consistency.rst",
             labels={
                 "Barplot type": "By AF",
                 "method": "{method}",
@@ -104,6 +106,7 @@ rule plot_clustering:
             "{folder}/{sample}/plots/sv_clustering/{method}-filter{filter}-position.pdf",
             category="SV Clustering",
             subcategory="{sample}",
+            caption="../report/sv_clustering.rst",
             labels={
                 "method": "{method}",
                 "filter": "{filter}",
@@ -197,7 +200,7 @@ rule plot_SV_calls_dev:
     output:
         report(
             "{folder}/{sample}/plots/sv_calls_dev/{method}_filter{filter}/{chrom}.pdf",
-            category="SV Calls (dev)",
+            category="SV Calls",
             subcategory="{sample}",
             caption="../report/sv_calls.rst",
             labels={

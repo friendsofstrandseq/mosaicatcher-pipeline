@@ -15,6 +15,8 @@ df["pass1"] = df["pass1"].astype(int)
 labels_path = snakemake.input.labels
 labels = pd.read_csv(labels_path, sep="\t")
 
+print(df)
+print(labels)
 
 # snakemake_log.write(labels.to_str())
 
@@ -27,7 +29,7 @@ b_old = "ENABLED" if snakemake.config["input_bam_legacy"] is True else "DISABLED
 
 # IF BOTH MOSAIC INFO FILE & LABELS DF ARE AVAILABLE + SAME SIZE
 if labels.shape[0] == df.shape[0]:
-
+    print("labels.shape[0] == df.shape[0]")
     cells_to_keep_labels = labels.loc[labels["prediction"] == 1]["cell"].str.replace(".sort.mdup.bam", "").sort_values().tolist()
     cells_to_keep_mosaic = df.loc[df["pass1"] == 1]["cell"].unique().tolist()
     cells_to_keep = list(sorted(list(set(cells_to_keep_labels).intersection(cells_to_keep_mosaic))))
@@ -40,6 +42,7 @@ else:
 
     # ELSE NORMAL MODE
     else:
+        print("df.shape[0] only")
         # snakemake_log.write("Standard mode using only 'mosaic count info' file")
         cells_to_keep = df.loc[df["pass1"] == 1]["cell"].unique().tolist()
 

@@ -2,12 +2,20 @@ if config["GC_analysis"] == False or config["ashleys_pipeline"] == False:
 
     rule mergeBams:
         input:
-            lambda wc: expand(
-                "{folder}/{sample}/bam/{bam}.sort.mdup.bam",
-                folder=config["data_location"],
-                sample=wc.sample,
-                bam=allbams_per_sample[wc.sample],
-            ),
+            # lambda wc: expand(
+            #     "{folder}/{sample}/selected/{bam}.sort.mdup.bam",
+            #     folder=config["data_location"],
+            #     sample=wc.sample,
+            #     bam=allbams_per_sample[wc.sample],
+            # ),
+            check="{folder}/{sample}/config/remove_unselected_bam.ok",
+            bam=selected_input_bam
+            # lambda wc: expand(
+            #     "{folder}/{sample}/bam/{bam}.sort.mdup.bam",
+            #     folder=config["data_location"],
+            #     sample=wc.sample,
+            #     bam=allbams_per_sample[wc.sample],
+            # ),
         output:
             "{folder}/{sample}/merged_bam/merged.raw.bam",
         log:
@@ -19,7 +27,7 @@ if config["GC_analysis"] == False or config["ashleys_pipeline"] == False:
         conda:
             "../envs/mc_bioinfo_tools.yaml"
         shell:
-            "samtools merge -@ {threads} {output} {input} 2>&1 > {log}"
+            "samtools merge -@ {threads} {output} {input.bam} 2>&1 > {log}"
 
     rule mergeSortBams:
         input:

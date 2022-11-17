@@ -63,7 +63,7 @@ if config["ashleys_pipeline"] is False:
 
         rule selected_cells:
             input:
-                path="{folder}/{sample}",
+                path=ancient("{folder}/{sample}"),
             output:
                 "{folder}/{sample}/cell_selection/labels.tsv",
             log:
@@ -87,6 +87,7 @@ if config["ashleys_pipeline"] is False:
                 "echo 'cell\tprobability\tprediction' > {output}"
 
 
+
 rule copy_labels:
     input:
         lambda wc: expand(
@@ -103,6 +104,37 @@ rule copy_labels:
     shell:
         "cp {input} {output}"
 
+rule symlink_selected_bam:
+    input:  
+        bam = "{folder}/{sample}/bam/{cell}.sort.mdup.bam",
+        bai = "{folder}/{sample}/bam/{cell}.sort.mdup.bam.bai",
+    output:  
+        bam = "{folder}/{sample}/selected/{cell}.sort.mdup.bam",
+        bai = "{folder}/{sample}/selected/{cell}.sort.mdup.bam.bai",
+    log:
+        "{folder}/log/symlink_selected_bam/{sample}/{cell}.log",
+    conda:
+        "../envs/mc_base.yaml"
+    shell:
+        """
+        ln -s {input.bam} {output.bam}
+        ln -s {input.bai} {output.bai}
+        """
+    
+rule remove_unselected_bam:
+    input:
+        bam=unselected_input_bam,
+        bai=unselected_input_bai,
+    output:
+        touch("{folder}/{sample}/config/remove_unselected_bam.ok")
+    log:
+        "{folder}/{sample}/log/remove_unselected_bam.log"
+    conda:
+        "../envs/mc_base.yaml"
+    shell:
+        """
+        rm {input.bam} {input.bai}
+        """
 
 checkpoint filter_bad_cells_from_mosaic_count:
     input:

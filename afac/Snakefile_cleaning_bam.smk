@@ -24,7 +24,7 @@ from collections import defaultdict
 
 Testmode = False
 
-path_to_orig_samples = "/scratch/tweber/SCO_COURSE/HJ_MIXTURE"
+path_to_orig_samples = "/scratch/tweber/SCO_COURSE/HJ_MIXTURE_RPE1_Mix_renamed2"
 
 
 SAMPLE, BAM = glob_wildcards(path_to_orig_samples + "/{sm}/raw/{id}.sort.mdup.bam")
@@ -42,6 +42,7 @@ for sample, bam in zip(SAMPLE, BAM):
 
 ALLBAMS_PER_SAMPLE = BAM_PER_SAMPLE
 print(BAM_PER_SAMPLE)
+print(ALLBAMS_PER_SAMPLE)
 
 print("Detected {} samples:".format(len(SAMPLES)))
 for s in SAMPLES:
@@ -63,7 +64,7 @@ for s in SAMPLES:
             "{path}/{SM}/bam/{ID}.sort.mdup.bam",
             path=path_to_orig_samples,
             SM=s,
-            ID=ALLBAMS_PER_SAMPLE[s],
+            ID=sorted(ALLBAMS_PER_SAMPLE[s]),
         )
     )
 # bais_all.append(
@@ -91,7 +92,6 @@ for s in SAMPLES:
 #     )
 # )
 
-
 # bams_all = ['HG00513/all/HG00513_IV_045.bam']
 rule all:
     input:
@@ -113,18 +113,22 @@ rule change_id_and_sam:
         bam_orig="{path}/{SM}/raw/{ID}.sort.mdup.bam",
     output:
         bam_out="{path}/{SM}/bam/{ID}.sort.mdup.bam",
+    envmodules:
+        "SAMtools/1.14-GCC-11.2.0"
+    resources:
+        mem_mb="16000",
+        time="10:00:00",
     shell:
         """
+        # old_id=$(samtools view -H {input.bam_orig} | grep "^@RG" | grep -P -o "\tID:[A-Za-z0-9_\-]*" | sed 's/ID://g')
+        # old_sm=$(samtools view -H {input.bam_orig} | grep "^@RG" | grep -P -o "\tSM:[A-Za-z0-9_\-]*" | sed 's/SM://g')
+        # echo "{wildcards.ID} {wildcards.SM} $old_id $old_sm"
         # First, the 'ID' tag
-        samtools view -H {input.bam_orig} | sed "s/ID:.*\t/ID:{wildcards.ID}\t/" | samtools reheader - {input.bam_orig} > {output.bam_out}pre1
-        # next, 'SM' tag. We also have to make a new header
-        samtools view -H {output.bam_out}pre1 | sed "s/SM:.*$/SM:{wildcards.SM}/" | samtools reheader - {output.bam_out}pre1 > {output.bam_out}pre2
-        # then, RG:Z tag.
-        samtools view -h {output.bam_out}pre2 | sed "s/RG:Z:.*/RG:Z:{wildcards.ID}/" > {output.bam_out}.sam
-        # sam to bam
-        samtools view -Sb {output.bam_out}.sam > {output.bam_out}
+        samtools view -H {input.bam_orig} | sed "s/ID:[A-Za-z0-9_-]*/ID:{wildcards.ID}/g;s/SM:[A-Za-z0-9_-]*/SM:{wildcards.SM}/g;s/RG:Z:[A-Za-z0-9_-]*/RG:Z:{wildcards.ID}/g" > {output.bam_out}.header
+        samtools view -h {input.bam_orig} | sed "s/ID:[A-Za-z0-9_-]*/ID:{wildcards.ID}/g;s/SM:[A-Za-z0-9_-]*/SM:{wildcards.SM}/g;s/RG:Z:[A-Za-z0-9_-]*/RG:Z:{wildcards.ID}/g" | samtools view -bS > {output.bam_out}.core
+        samtools reheader -P {output.bam_out}.header {output.bam_out}.core > {output.bam_out}
         # Remove intermediate files
-        rm {output.bam_out}pre1 {output.bam_out}pre2 {output.bam_out}.sam
+        rm {output.bam_out}.header {output.bam_out}.core
         """
 
 
