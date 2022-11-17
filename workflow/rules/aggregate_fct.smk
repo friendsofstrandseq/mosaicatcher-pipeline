@@ -161,13 +161,37 @@ def unselected_input_bam(wildcards):
     cell_list = df.cell.tolist()
     # print(cell_list)
     
-    if len(cell_list)>0:
-        return expand("{folder}/{sample}/selected/{cell}.sort.mdup.bam",
-            folder=config["data_location"],
-            sample=wildcards.sample,
-            cell=cell_list)
-    else:
-        return ""
+    # if len(cell_list)>0:
+    return expand("{folder}/{sample}/selected/{cell}.sort.mdup.bam",
+        folder=config["data_location"],
+        sample=wildcards.sample,
+        cell=cell_list, 
+        )
+    # else:
+    #     return ""
+
+def unselected_input_bai(wildcards):
+    """
+    Function based on checkpoint filter_bad_cells_from_mosaic_count
+    to process the segmentation only on cells that were flagged as high-quality
+    Return {cell}.txt
+    """
+    df = pd.read_csv(
+        checkpoints.filter_bad_cells_from_mosaic_count.get(
+            sample=wildcards.sample, folder=config["data_location"]
+        ).output.info_removed,
+        skiprows=13,
+        sep="\t",
+    )
+    cell_list = df.cell.tolist()
+    
+    # if len(cell_list)>0:
+    return expand("{folder}/{sample}/selected/{cell}.sort.mdup.bam.bai",
+        folder=config["data_location"],
+        sample=wildcards.sample,
+        cell=cell_list)
+    # else:
+    #     return ""
 
 def selected_input_bam(wildcards):
     """
@@ -188,30 +212,9 @@ def selected_input_bam(wildcards):
     return expand("{folder}/{sample}/selected/{cell}.sort.mdup.bam",
         folder=config["data_location"],
         sample=wildcards.sample,
-        cell=cell_list)
+        cell=cell_list,
+        )
 
-def unselected_input_bai(wildcards):
-    """
-    Function based on checkpoint filter_bad_cells_from_mosaic_count
-    to process the segmentation only on cells that were flagged as high-quality
-    Return {cell}.txt
-    """
-    df = pd.read_csv(
-        checkpoints.filter_bad_cells_from_mosaic_count.get(
-            sample=wildcards.sample, folder=config["data_location"]
-        ).output.info_removed,
-        skiprows=13,
-        sep="\t",
-    )
-    cell_list = df.cell.tolist()
-    
-    if len(cell_list)>0:
-        return expand("{folder}/{sample}/selected/{cell}.sort.mdup.bam.bai",
-            folder=config["data_location"],
-            sample=wildcards.sample,
-            cell=cell_list)
-    else:
-        return ""
 
 def selected_input_bai(wildcards):
     """
@@ -232,6 +235,21 @@ def selected_input_bai(wildcards):
         folder=config["data_location"],
         sample=wildcards.sample,
         cell=cell_list)
+
+def remove_unselected_fct(wildcards):
+    df = pd.read_csv(
+        checkpoints.filter_bad_cells_from_mosaic_count.get(
+            sample=wildcards.sample, folder=config["data_location"]
+        ).output.info_removed,
+        skiprows=13,
+        sep="\t",
+    )
+    cell_list = df.cell.tolist()
+    print(cell_list)
+    if len(cell_list) == 0:
+        return "{folder}/{sample}/config/remove_unselected_bam_empty.ok"
+    else:
+        return "{folder}/{sample}/config/remove_unselected_bam.ok"
 
 
 def bsgenome_install(wildcards):

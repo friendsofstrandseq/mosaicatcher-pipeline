@@ -11,7 +11,8 @@ rule haplotag_bams:
             "{input_folder}/{{sample}}/selected/{{cell}}.sort.mdup.bam.bai",
             input_folder=config["data_location"],
         ),
-        check="{folder}/{sample}/config/remove_unselected_bam.ok",
+        # check="{folder}/{sample}/config/remove_unselected_bam.ok",
+        check=remove_unselected_fct,
         # bam=selected_input_bam,
         # bam=lambda wc: expand(
         #     "{input_folder}/{{sample}}/bam/{{cell}}.sort.mdup.bam",
