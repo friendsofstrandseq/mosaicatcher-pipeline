@@ -1,7 +1,7 @@
 .. role:: underline
     :class: underline
     
-MosaiCatcher v2 is a `Snakemake <https://snakemake.github.io>`_ pipeline that aims to detect Structural variants from single-cell Strand-seq data.
+MosaiCatcher v2 is a `Snakemake <https://snakemake.github.io>`__ pipeline that aims to detect Structural variants from single-cell Strand-seq data.
 
 **Versions used:** 
 
