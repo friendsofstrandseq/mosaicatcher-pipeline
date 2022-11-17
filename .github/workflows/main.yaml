@@ -6,6 +6,13 @@ on:
       - dev
 
 jobs:
+  Test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: TestTEST
+        run: |
+          ls /home/runner/work/mosaicatcher-pipeline/mosaicatcher-pipeline
   # WORK
   Formatting:
     runs-on: ubuntu-latest
