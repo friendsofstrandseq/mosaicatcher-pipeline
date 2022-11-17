@@ -135,6 +135,12 @@ rule remove_unselected_bam:
         """
         rm {input.bam} {input.bai}
         """
+    
+rule remove_unselected_bam_empty:
+    output:
+        touch("{folder}/{sample}/config/remove_unselected_bam_empty.ok")
+    log:
+        "{folder}/{sample}/log/remove_unselected_bam_empty.log"
 
 checkpoint filter_bad_cells_from_mosaic_count:
     input:
