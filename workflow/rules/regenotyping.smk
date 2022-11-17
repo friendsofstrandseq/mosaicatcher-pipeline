@@ -8,8 +8,10 @@ if config["GC_analysis"] == False or config["ashleys_pipeline"] == False:
             #     sample=wc.sample,
             #     bam=allbams_per_sample[wc.sample],
             # ),
-            check="{folder}/{sample}/config/remove_unselected_bam.ok",
-            bam=selected_input_bam
+            # check="{folder}/{sample}/config/remove_unselected_bam.ok",
+            check=remove_unselected_fct,
+            bam=selected_input_bam,
+            bai=selected_input_bai
             # lambda wc: expand(
             #     "{folder}/{sample}/bam/{bam}.sort.mdup.bam",
             #     folder=config["data_location"],
