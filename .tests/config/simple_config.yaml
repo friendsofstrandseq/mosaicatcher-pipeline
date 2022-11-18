@@ -40,7 +40,7 @@ dl_external_files: False
 normalized_counts: True
 
 ## Input BAM location
-data_location: ".tests/data_CHR17"
+data_location: "/home/runner/work/mosaicatcher-pipeline/mosaicatcher-pipeline/.tests/data_CHR17"
 ## Output location
 # output_location: ".tests/output_CHR17"
 
