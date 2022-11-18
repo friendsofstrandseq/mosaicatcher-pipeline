@@ -41,6 +41,9 @@ jobs:
         run: |
           ls -alh ${{ github.workspace }}
           ls -alh ${{ github.workspace }}/.tests/data_CHR17
+          ls -alh ${{ github.workspace }}/.tests/data_CHR17/RPE-BM510
+          ls -alh ${{ github.workspace }}/.tests/data_CHR17/RPE-BM510
+          ls -alh ${{ github.workspace }}/.tests/data_CHR17/RPE-BM510/bam
           echo ${{ github.workspace }}
       - name: Testing data
         uses: snakemake/snakemake-github-action@v1.23.0
