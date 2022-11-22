@@ -81,65 +81,68 @@ include: "rules/stats.smk"
 include: "rules/external_data.smk"
 
 
-if config["ashleys_pipeline"] is True:
+if config["list_commands"] is False:
 
-    rule all:
-        input:
-            rules.ashleys_all.input,
-            get_final_output(),
-        default_target: True
-
-
-else:
-    if config["dl_external_files"] is False and config["dl_bam_example"] is False:
+    if config["ashleys_pipeline"] is True :
 
         rule all:
             input:
+                rules.ashleys_all.input,
                 get_final_output(),
+            default_target: True
 
 
     else:
-
-        if config["dl_bam_example"] is True and config["dl_external_files"] is False:
+        if config["dl_external_files"] is False and config["dl_bam_example"] is False:
 
             rule all:
                 input:
-                    rules.dl_example_data.output,
+                    get_final_output(),
 
 
-        elif (
-            config["dl_bam_example"] is False
-            and config["dl_external_files"] is True
-            and config["reference"] in ["hg19", "hg38", "T2T"]
-        ):
-            if config["reference"] == "hg19":
+        else:
+
+            if config["dl_bam_example"] is True and config["dl_external_files"] is False:
 
                 rule all:
                     input:
-                        rules.download_hg19_reference.output,
+                        rules.dl_example_data.output,
 
 
-            elif config["reference"] == "hg38":
+            elif (
+                config["dl_bam_example"] is False
+                and config["dl_external_files"] is True
+                and config["reference"] in ["hg19", "hg38", "T2T"]
+            ):
+                if config["reference"] == "hg19":
 
-                rule all:
-                    input:
-                        rules.download_hg38_reference.output,
-
-
-            elif config["reference"] == "T2T":
-
-                rule all:
-                    input:
-                        [
-                            rules.download_T2T_reference.output,
-                            rules.install_T2T_BSgenome_tarball.output,
-                        ],
+                    rule all:
+                        input:
+                            rules.download_hg19_reference.output,
 
 
-if config["email"]:
+                elif config["reference"] == "hg38":
 
-    onsuccess:
-        onsuccess_fct(log)
+                    rule all:
+                        input:
+                            rules.download_hg38_reference.output,
 
-    onerror:
-        onerror_fct(log)
+
+                elif config["reference"] == "T2T":
+
+                    rule all:
+                        input:
+                            [
+                                rules.download_T2T_reference.output,
+                                rules.install_T2T_BSgenome_tarball.output,
+                            ],
+
+
+
+    if config["email"]:
+
+        onsuccess:
+            onsuccess_fct(log)
+
+        onerror:
+            onerror_fct(log)

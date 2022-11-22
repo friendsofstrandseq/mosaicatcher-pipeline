@@ -72,11 +72,38 @@ def pipeline_aesthetic_start(config):
 
     print(fg.ENDC)
     # Genome & chrom
+    chroms = ["chr{e}".format(e=str(e)) for e in range(1, 23)] + ["chrX"]
+    if config["chromosomes"] == chroms:
+        print_chroms = "chr1..22,chrX"
+    else:
+        print_chroms = ",".join(config["chromosomes"])
     print("\033[1m{}\033[0m".format("Reference genome & Chromosomes options:"))
     l = [
-        f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format("List of chromosomes processed", ": " + ",".join(config["chromosomes"])),
+        f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format("List of chromosomes processed", ": " + print_chroms),
         f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format("Reference genome selected", ": " + str(config["reference"])),
         # f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format("Reference FASTA file", ": " + str(config["references_data"][config["reference"]]["reference_file_location"])),
     ]
     [print(e) for e in l]
+    print("\n")
+    print(fg.ENDC)
+
+
+def argparse_help(config):
+    import argparse
+    import yaml
+    import sys, os
+
+    # config = yaml.safe_load(open("config/config.yaml", "r"))
+    # pipeline_aesthetic_start(config)
+
+    config_metadata = yaml.safe_load(open("config/config_metadata.yaml", "r"))
+    # parser = argparse.ArgumentParser(prog="mosaicatcher-pipeline", add_help=False)
+    # group = parser.add_argument_group("--config")
+    print(f"{fg.BLACK}\033[1mConfig options available:\033[0m\n\n--config:")
+    l = [f"{fg.BLACK}       {{:<30}}{fg.BLACK}{{:<30}}".format(e, ": " + config_metadata[e]["desc"]) for e in config_metadata]
+    [print(e) for e in l]
     print("\n\n")
+    # args = parser.parse_args()
+    # print(pipeline_aesthetic_start.fg.BOLD)
+    # parser.print_help()
+    # print(pipeline_aesthetic_start.fg.ENDC)

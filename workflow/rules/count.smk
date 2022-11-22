@@ -104,6 +104,8 @@ rule copy_labels:
     shell:
         "cp {input} {output}"
 
+
+
 rule symlink_selected_bam:
     input:  
         bam = "{folder}/{sample}/bam/{cell}.sort.mdup.bam",
@@ -113,13 +115,35 @@ rule symlink_selected_bam:
         bai = "{folder}/{sample}/selected/{cell}.sort.mdup.bam.bai",
     log:
         "{folder}/log/symlink_selected_bam/{sample}/{cell}.log",
-    conda:
-        "../envs/mc_base.yaml"
-    shell:
-        """
-        ln -s {input.bam} {output.bam}
-        ln -s {input.bai} {output.bai}
-        """
+    # conda:
+    #     "../envs/mc_base.yaml"
+    run:
+        if config["use_light_data"] is False:
+            shell("ln -s {input.bam} {output.bam}")
+            shell("ln -s {input.bai} {output.bai}")
+        else:
+            shell("cp {input.bam} {output.bam}")
+            shell("cp {input.bai} {output.bai}")
+
+# # SOLVE GH ACTIONS ISSUE
+# else:
+
+#     rule cp_selected_bam:
+#         input:  
+#             bam = "{folder}/{sample}/bam/{cell}.sort.mdup.bam",
+#             bai = "{folder}/{sample}/bam/{cell}.sort.mdup.bam.bai",
+#         output:  
+#             bam = "{folder}/{sample}/selected/{cell}.sort.mdup.bam",
+#             bai = "{folder}/{sample}/selected/{cell}.sort.mdup.bam.bai",
+#         log:
+#             "{folder}/log/cp_selected_bam/{sample}/{cell}.log",
+#         conda:
+#             "../envs/mc_base.yaml"
+#         shell:
+#             """
+#             cp {input.bam} {output.bam}
+#             cp {input.bai} {output.bai}
+#             """
     
 rule remove_unselected_bam:
     input:
