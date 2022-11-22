@@ -12,6 +12,8 @@ data_location: ".tests/data_CHR17"
 reference: "hg38"
 # Enable / Disable GC analysis
 GC_analysis: False
+# Plate orientation for GC analysis
+plate_orientation: landscape
 # Normalize or not mosaic counts
 normalized_counts: True
 # Mutually exclusive with ashleys_pipeline
@@ -50,20 +52,19 @@ chromosomes:
   - chr22
   - chrX
 
+# GENECORE
+genecore: False
+samples_to_process: []
+genecore_date_folder: ""
+genecore_prefix: "/g/korbel/shared/genecore"
+## Mosaic bin window size
+window: 200000
 ##############################
 # Advanced configuration.    #
 ##############################
 alfred_plots:
   - "dist"
   - "devi"
-
-plate_orientation: landscape
-
-# GENECORE
-genecore: False
-samples_to_process: []
-genecore_date_folder: ""
-genecore_prefix: "/g/korbel/shared/genecore"
 
 ## Reference assembly data
 references_data:
@@ -91,13 +92,6 @@ references_data:
     snv_sites_to_genotype: ""
     reference_file_location: https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/CHM13/assemblies/analysis_set/chm13v2.0.fa.gz
     # snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/ALL.chr1-22plusXY_T2T_sites.20170504.renamedCHR.vcf.gz"
-
-# Strandphaser repo info
-git_commit_strandphaser: "69c9fb4"
-git_repo_strandphaser: "https://github.com/daewoooo/StrandPhaseR"
-
-## Mosaic bin window size
-window: 200000
 
 ## Methods dictionnary
 methods:
@@ -155,3 +149,5 @@ abs_path: "/"
 # mode: "mosaiclassifier"
 ### Plot enabled [True] or disabled [False]
 # plot: False [CURRENTLY DISABLED]
+
+list_commands: False
