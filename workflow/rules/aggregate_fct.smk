@@ -246,6 +246,7 @@ def remove_unselected_fct(wildcards):
     )
     cell_list = df.cell.tolist()
     print(cell_list)
+    print(len(cell_list))
     if len(cell_list) == 0:
         return "{folder}/{sample}/config/remove_unselected_bam_empty.ok"
     else:
