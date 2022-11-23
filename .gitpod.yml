@@ -1,4 +1,4 @@
-image: docker://condaforge/mambaforge:latest
+image: condaforge/mambaforge:latest
 tasks:
   - name: Create snakemake env
     command: mamba create -n snakemake -c bioconda -c conda-forge snakemake=7.12.0
