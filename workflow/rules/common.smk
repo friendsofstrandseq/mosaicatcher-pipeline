@@ -617,11 +617,4 @@ def get_all_plots(wildcards):
         ),
     )
 
-    l_outputs.extend(
-        expand(
-            "{folder}/{sample}/config/remove_unselected_bam.ok",
-            folder=config["data_location"],
-            sample=samples,
-        ),
-    )
     return l_outputs
