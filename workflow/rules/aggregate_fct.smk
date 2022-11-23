@@ -137,7 +137,13 @@ def aggregate_cells_haplotag_tables(wildcards):
         sep="\t",
     )
     cell_list = df.cell.tolist()
-
+    print(cell_list)
+    print(expand(
+        "{folder}/{sample}/haplotag/table/by-cell/{cell}.tsv",
+        folder=config["data_location"],
+        sample=wildcards.sample,
+        cell=cell_list,
+    ))
     return expand(
         "{folder}/{sample}/haplotag/table/by-cell/{cell}.tsv",
         folder=config["data_location"],
