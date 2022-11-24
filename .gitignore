@@ -111,6 +111,7 @@ workflow/test.txt
 
 ## DATA CHR21
 .tests/data_CHR17_NEW/
+.tests/data_CHR17_POSITIVE_CONTROL/
 .tests/data_CHR17_*/
 .tests/data_CHR17/RPE-BM510/all/*.bai
 .tests/data_CHR17/RPE-BM510/bam/*.bai

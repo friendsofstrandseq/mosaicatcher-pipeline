@@ -1,11 +1,11 @@
 FROM condaforge/mambaforge:latest
 LABEL io.github.snakemake.containerized="true"
-LABEL io.github.snakemake.conda_env_hash="3a3525cd076cdcc6a07ba0a1adf69c564a6bd9c547bff0c3fdfd3b6168eab418"
+LABEL io.github.snakemake.conda_env_hash="f92af081340e90fd97f042492c8cc2f758acb33e7221e06f5f0b02866f0ae21d"
 
 # Step 1: Retrieve conda environments
 
 # Conda environment:
-#   source: ../ashleys-qc-pipeline/workflow/envs/ashleys_base.yaml
+#   source: https://github.com/friendsofstrandseq/ashleys-qc-pipeline/raw/1.3.5/workflow/envs/ashleys_base.yaml
 #   prefix: /conda-envs/eaec0caeb9cd1c6528bcf6100a284dfc
 #   name: ashleys_base
 #   channels:
@@ -24,11 +24,11 @@ LABEL io.github.snakemake.conda_env_hash="3a3525cd076cdcc6a07ba0a1adf69c564a6bd9
 #     - pandas
 #     # - pysam
 RUN mkdir -p /conda-envs/eaec0caeb9cd1c6528bcf6100a284dfc
-COPY ../ashleys-qc-pipeline/workflow/envs/ashleys_base.yaml /conda-envs/eaec0caeb9cd1c6528bcf6100a284dfc/environment.yaml
+ADD https://github.com/friendsofstrandseq/ashleys-qc-pipeline/raw/1.3.5/workflow/envs/ashleys_base.yaml /conda-envs/eaec0caeb9cd1c6528bcf6100a284dfc/environment.yaml
 
 # Conda environment:
-#   source: ../ashleys-qc-pipeline/workflow/envs/ashleys_rtools.yaml
-#   prefix: /conda-envs/257f364c2fc06b9bef48012f8e00427c
+#   source: https://github.com/friendsofstrandseq/ashleys-qc-pipeline/raw/1.3.5/workflow/envs/ashleys_rtools.yaml
+#   prefix: /conda-envs/4cda6d03454db08ca24e6d039a2ce789
 #   name: rtools
 #   channels:
 #     - conda-forge
@@ -70,8 +70,12 @@ COPY ../ashleys-qc-pipeline/workflow/envs/ashleys_base.yaml /conda-envs/eaec0cae
 #     # NEW
 #     - bioconductor-edger
 #     - r-r.utils
-RUN mkdir -p /conda-envs/257f364c2fc06b9bef48012f8e00427c
-COPY ../ashleys-qc-pipeline/workflow/envs/ashleys_rtools.yaml /conda-envs/257f364c2fc06b9bef48012f8e00427c/environment.yaml
+#     # PLATE PLOT
+#     - r-dplyr
+#     - r-platetools
+#     - r-viridis
+RUN mkdir -p /conda-envs/4cda6d03454db08ca24e6d039a2ce789
+ADD https://github.com/friendsofstrandseq/ashleys-qc-pipeline/raw/1.3.5/workflow/envs/ashleys_rtools.yaml /conda-envs/4cda6d03454db08ca24e6d039a2ce789/environment.yaml
 
 # Conda environment:
 #   source: https://github.com/snakemake/snakemake-wrappers/raw/v1.7.0/bio/bwa/index/environment.yaml
@@ -247,7 +251,7 @@ COPY workflow/envs/sv_heatmap.yaml /conda-envs/289c96e6aba033663af92cfcaeda46d6/
 # Step 2: Generate conda environments
 
 RUN mamba env create --prefix /conda-envs/eaec0caeb9cd1c6528bcf6100a284dfc --file /conda-envs/eaec0caeb9cd1c6528bcf6100a284dfc/environment.yaml && \
-    mamba env create --prefix /conda-envs/257f364c2fc06b9bef48012f8e00427c --file /conda-envs/257f364c2fc06b9bef48012f8e00427c/environment.yaml && \
+    mamba env create --prefix /conda-envs/4cda6d03454db08ca24e6d039a2ce789 --file /conda-envs/4cda6d03454db08ca24e6d039a2ce789/environment.yaml && \
     mamba env create --prefix /conda-envs/5681728a49bd83ceed09ba194330c858 --file /conda-envs/5681728a49bd83ceed09ba194330c858/environment.yaml && \
     mamba env create --prefix /conda-envs/08d4368302a4bdf7eda6b536495efe7d --file /conda-envs/08d4368302a4bdf7eda6b536495efe7d/environment.yaml && \
     mamba env create --prefix /conda-envs/02d721d968887d6d80a06bbd7ca09642 --file /conda-envs/02d721d968887d6d80a06bbd7ca09642/environment.yaml && \
