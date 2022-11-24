@@ -86,7 +86,7 @@ def locate_snv_vcf(wildcards):
                     wildcards.folder, wildcards.sample, wildcards.chrom
                 )
             else:
-                print("ISSUE")
+                # print("ISSUE")
 
                 return "{}/{}/snv_calls/{}.vcf".format(
                     wildcards.folder, wildcards.sample, wildcards.chrom
@@ -137,13 +137,13 @@ def aggregate_cells_haplotag_tables(wildcards):
         sep="\t",
     )
     cell_list = df.cell.tolist()
-    print(cell_list)
-    print(expand(
-        "{folder}/{sample}/haplotag/table/by-cell/{cell}.tsv",
-        folder=config["data_location"],
-        sample=wildcards.sample,
-        cell=cell_list,
-    ))
+    # print(cell_list)
+    # print(expand(
+    #     "{folder}/{sample}/haplotag/table/by-cell/{cell}.tsv",
+    #     folder=config["data_location"],
+    #     sample=wildcards.sample,
+    #     cell=cell_list,
+    # ))
     return expand(
         "{folder}/{sample}/haplotag/table/by-cell/{cell}.tsv",
         folder=config["data_location"],
@@ -165,7 +165,7 @@ def unselected_input_bam(wildcards):
         sep="\t",
     )
     cell_list = df.cell.tolist()
-    # print(cell_list)
+    # # print(cell_list)
     
     # if len(cell_list)>0:
     return expand("{folder}/{sample}/selected/{cell}.sort.mdup.bam",
@@ -213,7 +213,7 @@ def selected_input_bam(wildcards):
         sep="\t",
     )
     cell_list = df.cell.tolist()
-    # print(cell_list)
+    # # print(cell_list)
     
     return expand("{folder}/{sample}/selected/{cell}.sort.mdup.bam",
         folder=config["data_location"],
@@ -251,8 +251,8 @@ def remove_unselected_fct(wildcards):
         sep="\t",
     )
     cell_list = df.cell.tolist()
-    print(cell_list)
-    print(len(cell_list))
+    # print(cell_list)
+    # print(len(cell_list))
     if len(cell_list) == 0:
         return "{folder}/{sample}/config/remove_unselected_bam_empty.ok"
     else:
