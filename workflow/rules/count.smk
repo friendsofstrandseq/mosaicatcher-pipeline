@@ -168,26 +168,29 @@ if (
 
     rule merge_blacklist_bins:
         input:
-            norm="workflow/data/normalization/HGSVC.{window}.txt",
+            norm="workflow/data/normalization/{reference}/HGSVC.{window}.txt",
             whitelist="workflow/data/normalization/inversion-whitelist.tsv",
         output:
-            merged="{folder}/{sample}/normalizations/HGSVC.{window}.merged.tsv",
+            merged="{folder}/{sample}/normalizations/{reference}/HGSVC.{window}.merged.tsv",
         log:
             "{folder}/log/normalizations/{sample}/HGSVC.{window}.merged.tsv",
+        params:
+            window = config["window"]
         conda:
             "../envs/mc_base.yaml"
         shell:
             """
-            workflow/scripts/normalization/merge-blacklist.py --merge_distance 500000 {input.norm} --whitelist {input.whitelist} --min_whitelist_interval_size 100000 > {output.merged} 2>> {log}
+            workflow/scripts/normalization/merge-blacklist.py --merge_distance 500000 {input.norm} --whitelist {input.whitelist} --min_whitelist_interval_size {params.window} > {output.merged} 2>> {log}
             """
             
     rule normalize_counts:
         input:
             counts="{folder}/{sample}/counts/{sample}.txt.filter.gz",
             norm=lambda wc: expand(
-                "{folder}/{sample}/normalizations/HGSVC.{window}.merged.tsv",
+                "{folder}/{sample}/normalizations/{reference}/HGSVC.{window}.merged.tsv",
                 folder=config["data_location"],
                 sample=wc.sample,
+                reference=config["reference"],
                 window=config["window"],
             ),
         output:
