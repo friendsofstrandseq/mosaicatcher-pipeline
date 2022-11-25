@@ -173,7 +173,7 @@ if (
         output:
             merged="{folder}/{sample}/normalizations/{reference}/HGSVC.{window}.merged.tsv",
         log:
-            "{folder}/log/normalizations/{sample}/HGSVC.{window}.merged.tsv",
+            "{folder}/log/normalizations/{sample}/{reference}/HGSVC.{window}.merged.tsv",
         params:
             window = config["window"]
         conda:
