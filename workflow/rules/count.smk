@@ -63,7 +63,7 @@ if config["ashleys_pipeline"] is False:
 
         rule selected_cells:
             input:
-                path="{folder}/{sample}",
+                path=ancient("{folder}/{sample}"),
             output:
                 "{folder}/{sample}/cell_selection/labels.tsv",
             log:
@@ -104,6 +104,45 @@ rule copy_labels:
         "cp {input} {output}"
 
 
+rule symlink_selected_bam:
+    input:  
+        bam = "{folder}/{sample}/bam/{cell}.sort.mdup.bam",
+        bai = "{folder}/{sample}/bam/{cell}.sort.mdup.bam.bai",
+    output:  
+        bam = "{folder}/{sample}/selected/{cell}.sort.mdup.bam",
+        bai = "{folder}/{sample}/selected/{cell}.sort.mdup.bam.bai",
+    log:
+        "{folder}/log/symlink_selected_bam/{sample}/{cell}.log",
+    run:
+        if config["use_light_data"] is False:
+            shell("ln -s {input.bam} {output.bam}")
+            shell("ln -s {input.bai} {output.bai}")
+        else:
+            shell("cp {input.bam} {output.bam}")
+            shell("cp {input.bai} {output.bai}")
+
+    
+rule remove_unselected_bam:
+    input:
+        bam=unselected_input_bam,
+        bai=unselected_input_bai,
+    output:
+        touch("{folder}/{sample}/config/remove_unselected_bam.ok")
+    log:
+        "{folder}/{sample}/log/remove_unselected_bam.log"
+    conda:
+        "../envs/mc_base.yaml"
+    shell:
+        """
+        rm {input.bam} {input.bai}
+        """
+    
+rule remove_unselected_bam_empty:
+    output:
+        touch("{folder}/{sample}/config/remove_unselected_bam_empty.ok")
+    log:
+        "{folder}/{sample}/log/remove_unselected_bam_empty.log"
+
 checkpoint filter_bad_cells_from_mosaic_count:
     input:
         info_raw="{folder}/{sample}/counts/{sample}.info_raw",
@@ -129,26 +168,29 @@ if (
 
     rule merge_blacklist_bins:
         input:
-            norm="workflow/data/normalization/HGSVC.{window}.txt",
+            norm="workflow/data/normalization/{reference}/HGSVC.{window}.txt",
             whitelist="workflow/data/normalization/inversion-whitelist.tsv",
         output:
-            merged="{folder}/{sample}/normalizations/HGSVC.{window}.merged.tsv",
+            merged="{folder}/{sample}/normalizations/{reference}/HGSVC.{window}.merged.tsv",
         log:
-            "{folder}/log/normalizations/{sample}/HGSVC.{window}.merged.tsv",
+            "{folder}/log/normalizations/{sample}/{reference}/HGSVC.{window}.merged.tsv",
+        params:
+            window = config["window"]
         conda:
             "../envs/mc_base.yaml"
         shell:
             """
-            workflow/scripts/normalization/merge-blacklist.py --merge_distance 500000 {input.norm} --whitelist {input.whitelist} --min_whitelist_interval_size 100000 > {output.merged} 2>> {log}
+            workflow/scripts/normalization/merge-blacklist.py --merge_distance 500000 {input.norm} --whitelist {input.whitelist} --min_whitelist_interval_size {params.window} > {output.merged} 2>> {log}
             """
-
+            
     rule normalize_counts:
         input:
             counts="{folder}/{sample}/counts/{sample}.txt.filter.gz",
             norm=lambda wc: expand(
-                "{folder}/{sample}/normalizations/HGSVC.{window}.merged.tsv",
+                "{folder}/{sample}/normalizations/{reference}/HGSVC.{window}.merged.tsv",
                 folder=config["data_location"],
                 sample=wc.sample,
+                reference=config["reference"],
                 window=config["window"],
             ),
         output:

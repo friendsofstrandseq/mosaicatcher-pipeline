@@ -86,7 +86,7 @@ def locate_snv_vcf(wildcards):
                     wildcards.folder, wildcards.sample, wildcards.chrom
                 )
             else:
-                print("ISSUE")
+                # print("ISSUE")
 
                 return "{}/{}/snv_calls/{}.vcf".format(
                     wildcards.folder, wildcards.sample, wildcards.chrom
@@ -122,6 +122,141 @@ def aggregate_cells_segmentation(wildcards):
         sample=wildcards.sample,
         cell=cell_list,
     )
+
+def aggregate_cells_haplotag_tables(wildcards):
+    """
+    Function based on checkpoint filter_bad_cells_from_mosaic_count
+    to process the segmentation only on cells that were flagged as high-quality
+    Return {cell}.txt
+    """
+    df = pd.read_csv(
+        checkpoints.filter_bad_cells_from_mosaic_count.get(
+            sample=wildcards.sample, folder=config["data_location"]
+        ).output.info,
+        skiprows=13,
+        sep="\t",
+    )
+    cell_list = df.cell.tolist()
+    # print(cell_list)
+    # print(expand(
+    #     "{folder}/{sample}/haplotag/table/by-cell/{cell}.tsv",
+    #     folder=config["data_location"],
+    #     sample=wildcards.sample,
+    #     cell=cell_list,
+    # ))
+    return expand(
+        "{folder}/{sample}/haplotag/table/by-cell/{cell}.tsv",
+        folder=config["data_location"],
+        sample=wildcards.sample,
+        cell=cell_list,
+    )
+
+def unselected_input_bam(wildcards):
+    """
+    Function based on checkpoint filter_bad_cells_from_mosaic_count
+    to process the segmentation only on cells that were flagged as high-quality
+    Return {cell}.txt
+    """
+    df = pd.read_csv(
+        checkpoints.filter_bad_cells_from_mosaic_count.get(
+            sample=wildcards.sample, folder=config["data_location"]
+        ).output.info_removed,
+        skiprows=13,
+        sep="\t",
+    )
+    cell_list = df.cell.tolist()
+    # # print(cell_list)
+    
+    # if len(cell_list)>0:
+    return expand("{folder}/{sample}/selected/{cell}.sort.mdup.bam",
+        folder=config["data_location"],
+        sample=wildcards.sample,
+        cell=cell_list, 
+        )
+    # else:
+    #     return ""
+
+def unselected_input_bai(wildcards):
+    """
+    Function based on checkpoint filter_bad_cells_from_mosaic_count
+    to process the segmentation only on cells that were flagged as high-quality
+    Return {cell}.txt
+    """
+    df = pd.read_csv(
+        checkpoints.filter_bad_cells_from_mosaic_count.get(
+            sample=wildcards.sample, folder=config["data_location"]
+        ).output.info_removed,
+        skiprows=13,
+        sep="\t",
+    )
+    cell_list = df.cell.tolist()
+    
+    # if len(cell_list)>0:
+    return expand("{folder}/{sample}/selected/{cell}.sort.mdup.bam.bai",
+        folder=config["data_location"],
+        sample=wildcards.sample,
+        cell=cell_list)
+    # else:
+    #     return ""
+
+def selected_input_bam(wildcards):
+    """
+    Function based on checkpoint filter_bad_cells_from_mosaic_count
+    to process the segmentation only on cells that were flagged as high-quality
+    Return {cell}.txt
+    """
+    df = pd.read_csv(
+        checkpoints.filter_bad_cells_from_mosaic_count.get(
+            sample=wildcards.sample, folder=config["data_location"]
+        ).output.info,
+        skiprows=13,
+        sep="\t",
+    )
+    cell_list = df.cell.tolist()
+    # # print(cell_list)
+    
+    return expand("{folder}/{sample}/selected/{cell}.sort.mdup.bam",
+        folder=config["data_location"],
+        sample=wildcards.sample,
+        cell=cell_list,
+        )
+
+
+def selected_input_bai(wildcards):
+    """
+    Function based on checkpoint filter_bad_cells_from_mosaic_count
+    to process the segmentation only on cells that were flagged as high-quality
+    Return {cell}.txt
+    """
+    df = pd.read_csv(
+        checkpoints.filter_bad_cells_from_mosaic_count.get(
+            sample=wildcards.sample, folder=config["data_location"]
+        ).output.info,
+        skiprows=13,
+        sep="\t",
+    )
+    cell_list = df.cell.tolist()
+    
+    return expand("{folder}/{sample}/selected/{cell}.sort.mdup.bam.bai",
+        folder=config["data_location"],
+        sample=wildcards.sample,
+        cell=cell_list)
+
+def remove_unselected_fct(wildcards):
+    df = pd.read_csv(
+        checkpoints.filter_bad_cells_from_mosaic_count.get(
+            sample=wildcards.sample, folder=config["data_location"]
+        ).output.info_removed,
+        skiprows=13,
+        sep="\t",
+    )
+    cell_list = df.cell.tolist()
+    # print(cell_list)
+    # print(len(cell_list))
+    if len(cell_list) == 0:
+        return "{folder}/{sample}/config/remove_unselected_bam_empty.ok"
+    else:
+        return "{folder}/{sample}/config/remove_unselected_bam.ok"
 
 
 def bsgenome_install(wildcards):

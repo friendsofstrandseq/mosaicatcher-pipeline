@@ -33,7 +33,6 @@ rule aggregate_summary_statistics:
             for sub_e in e
         ],
     output:
-        # tsv=report("stats/{sample}/stats-merged.tsv", category="Stats", labels={"Type" : "Complete stats"})
         tsv="{folder}/{sample}/stats/stats-merged.tsv",
     log:
         tsv="{folder}/log/stats/{sample}/stats-merged.tsv",
@@ -41,3 +40,23 @@ rule aggregate_summary_statistics:
         "../envs/mc_base.yaml"
     shell:
         "(head -n1 {input.tsv[0]} && (tail -n1 -q {input.tsv} | sort -k1) ) > {output}"
+
+
+rule transpose_table:
+    input:
+        "{folder}/{sample}/stats/stats-merged.tsv",
+    output:
+        html=report(
+            "{folder}/{sample}/stats/stats-merged.html",
+            category="Stats",
+            subcategory="{sample}",
+            labels={
+                "Sample": "{sample}",
+            }
+        )   
+    log:
+        tsv="{folder}/log/{sample}/transpose_table.log",
+    conda:
+        "../envs/mc_base.yaml"
+    script:
+        "../scripts/stats/transpose_table.py"

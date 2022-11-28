@@ -4,9 +4,20 @@ rule haplotag_bams:
         vcf="{folder}/{sample}/strandphaser/phased-snvs/{sample}.vcf.gz",
         tbi="{folder}/{sample}/strandphaser/phased-snvs/{sample}.vcf.gz.tbi",
         bam=lambda wc: expand(
-            "{input_folder}/{{sample}}/bam/{{cell}}.sort.mdup.bam",
+            "{input_folder}/{{sample}}/selected/{{cell}}.sort.mdup.bam",
             input_folder=config["data_location"],
         ),
+        bai=lambda wc: expand(
+            "{input_folder}/{{sample}}/selected/{{cell}}.sort.mdup.bam.bai",
+            input_folder=config["data_location"],
+        ),
+        # check="{folder}/{sample}/config/remove_unselected_bam.ok",
+        # check=remove_unselected_fct,
+        # bam=selected_input_bam,
+        # bam=lambda wc: expand(
+        #     "{input_folder}/{{sample}}/bam/{{cell}}.sort.mdup.bam",
+        #     input_folder=config["data_location"],
+        # ),
         fasta=config["references_data"][config["reference"]]["reference_fasta"],
         fasta_index="{fasta}.fai".format(
             fasta=config["references_data"][config["reference"]]["reference_fasta"]
@@ -63,14 +74,16 @@ rule create_haplotag_table:
         "../scripts/haplotagging_scripts/haplotagTable.snakemake.R"
 
 
+
 rule merge_haplotag_tables:
     input:
-        tsvs=lambda wc: [
-            "{}/{}/haplotag/table/by-cell/{}.tsv".format(
-                config["data_location"], wc.sample, cell
-            )
-            for cell in bam_per_sample[wc.sample]
-        ],
+        # tsvs=lambda wc: [
+        #     "{}/{}/haplotag/table/by-cell/{}.tsv".format(
+        #         config["data_location"], wc.sample, cell
+        #     )
+        #     for cell in bam_per_sample[wc.sample]
+        # ],
+        tsvs=aggregate_cells_haplotag_tables
     output:
         tsv="{folder}/{sample}/haplotag/table/haplotag_counts_merged.tsv",
     log:

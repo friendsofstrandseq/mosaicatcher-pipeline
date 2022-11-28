@@ -120,5 +120,7 @@ rule samtools_faindex:
         "{file}.log",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
+    resources:
+        mem_mb=get_mem_mb_heavy,
     shell:
         "samtools faidx {input}"
