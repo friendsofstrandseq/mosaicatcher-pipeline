@@ -37,6 +37,13 @@ jobs:
     #   - Formatting
     steps:
       - uses: actions/checkout@v2
+      - name: Test ls
+        run: |
+          ls -alh $(pwd)
+          ls -alh $(pwd)/.tests/data_CHR17
+          ls -alh $(pwd)/.tests/data_CHR17/RPE-BM510
+          ls -alh $(pwd)/.tests/data_CHR17/RPE-BM510/bam
+          echo    $(pwd)
       - name: Testing data
         uses: snakemake/snakemake-github-action@v1.23.0
         with:
@@ -49,4 +56,4 @@ jobs:
         with:
           directory: .
           snakefile: ./workflow/Snakefile
-          args: "--cores 1 --use-conda --configfile .tests/config/simple_config.yaml --conda-frontend mamba --report report.zip"
+          args: "--cores 1 --use-conda --configfile .tests/config/simple_config.yaml  --conda-frontend mamba --report report.zip"

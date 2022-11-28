@@ -1,0 +1,44 @@
+email:
+  desc: "To be informed of pipeline status"
+  type: string
+  required: False
+data_location:
+  desc: "Input BAM location"
+  type: string
+  required: False
+reference:
+  desc: "Reference assembly selected"
+  type: string
+  required: False
+GC_analysis:
+  desc: "Enable / Disable GC analysis"
+  type: bool
+  required: False
+plate_orientation:
+  desc: "Plate orientation for GC analysis"
+  type: string
+  required: False
+normalized_counts:
+  desc: "Normalize or not mosaic counts"
+  type: bool
+  required: False
+input_bam_legacy:
+  desc: "Mutually exclusive with ashleys_pipeline"
+  type: bool
+  required: False
+ashleys_pipeline:
+  desc: "Enable/Disable ashleys-qc-pipeline module loading to start pipeline from FASTQ files"
+  type: bool
+  required: False
+check_sm_tag:
+  desc: "Enable / Disable comparison for each BAM file between folder name & SM tag"
+  type: bool
+  required: False
+dl_bam_example:
+  desc: "Enable / Disable download of BAM examples (RPE-BM510)"
+  type: string
+  required: False
+window:
+  desc: "Mosaic bin window size"
+  type: string
+  required: False
