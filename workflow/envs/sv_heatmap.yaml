@@ -10,3 +10,5 @@ dependencies:
   - r-base=3.5.1
   - r-gplots=3.0.3
   - r-pheatmap=1.0.12
+  - r-rcolorbrewer
+  - r-reshape2
