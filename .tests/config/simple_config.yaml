@@ -153,4 +153,4 @@ plottype_consistency:
 
 plottype_clustering:
   - "position"
-  # - "chromosome"
+  - "chromosome"

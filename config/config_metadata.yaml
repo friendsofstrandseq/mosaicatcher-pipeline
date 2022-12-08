@@ -2,43 +2,85 @@ email:
   desc: "To be informed of pipeline status"
   type: string
   required: False
+  default: '""'
 data_location:
   desc: "Input BAM location"
   type: string
-  required: False
+  required: True
+  default: '""'
 reference:
   desc: "Reference assembly selected"
   type: string
+  required: True
+  default: hg38
+hand_selection:
+  desc: "Enable / Disable low-quality libraries hand selection through Jupyter Notebook"
+  type: bool
   required: False
+  default: False
+FastQC_analysis:
+  desc: "Enable / Disable FastQC analysis"
+  type: bool
+  required: False
+  default: False
 GC_analysis:
   desc: "Enable / Disable GC analysis"
   type: bool
   required: False
+  default: False
+GC_rowcol_condition:
+  desc: "Enable / Disable GC row condition analysis"
+  type: bool
+  required: False
+  default: False
+ashleys_threshold:
+  desc: "Ashleys-qc binary classification threshold"
+  type: bool
+  required: False
+  default: 0.5
 plate_orientation:
-  desc: "Plate orientation for GC analysis"
+  desc: "Plate orientation for GC analysis (landscape/portrait)"
   type: string
   required: False
-normalized_counts:
-  desc: "Normalize or not mosaic counts"
-  type: bool
-  required: False
-input_bam_legacy:
-  desc: "Mutually exclusive with ashleys_pipeline"
-  type: bool
-  required: False
-ashleys_pipeline:
-  desc: "Enable/Disable ashleys-qc-pipeline module loading to start pipeline from FASTQ files"
-  type: bool
-  required: False
-check_sm_tag:
-  desc: "Enable / Disable comparison for each BAM file between folder name & SM tag"
-  type: bool
-  required: False
-dl_bam_example:
-  desc: "Enable / Disable download of BAM examples (RPE-BM510)"
-  type: string
-  required: False
+  default: landscape
 window:
   desc: "Mosaic bin window size"
-  type: string
+  type: int
+  required: True
+  default: 200000
+chromosomes:
+  desc: List of chromosomes to used in the GC_analysis
+  type: list
+  required: True
+  default: "[chr1..22,chrX]"
+genecore:
+  desc: Enable / Disable genecore option to work on GeneCore folder. Required genecore_date_folder
+  type: bool
   required: False
+  default: False
+genecore_date_folder:
+  desc: Genecore folder to be processed under /g/korbel/shared/genecore
+  type: str
+  required: False
+  default: '""'
+samples_to_process:
+  desc: Optional list of samples to be specifically processed in genecore_date_folder
+  type: list
+  required: True
+  default: "[]"
+
+normalized_counts:
+  desc: Normalize or not mosaic counts
+  type: bool
+  required: False
+  default: True
+input_bam_legacy:
+  desc: Mutually exclusive with ashleys_pipeline
+  type: bool
+  required: False
+  default: False
+ashleys_pipeline:
+  desc: Enable/Disable ashleys-qc-pipeline module loading to start pipeline from FASTQ files
+  type: bool
+  required: False
+  default: False
