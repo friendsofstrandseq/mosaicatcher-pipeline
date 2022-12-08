@@ -122,12 +122,11 @@ rule plot_clustering:
         "../scripts/plotting/plot-clustering.snakemake.R"
 
 
-rule plot_clustering_dev:
+rule plot_clustering_position_dev:
     input:
         sv_calls="{folder}/{sample}/mosaiclassifier/sv_calls/{method}_filter{filter}.tsv",
-        binbed="workflow/data/bin_200kb_all.bed",
     output:
-        position=report(
+        pdf=report(
             "{folder}/{sample}/plots/sv_clustering_dev/{method}-filter{filter}-position.pdf",
             category="SV Clustering",
             subcategory="{sample}",
@@ -136,14 +135,40 @@ rule plot_clustering_dev:
                 "filter": "{filter}",
             },
         ),
+        cluster_order_df="{folder}/{sample}/plots/sv_clustering_dev/clustering_{method}-filter{filter}-position.tsv"
     log:
         "{folder}/log/plot_clustering_dev/{sample}/{method}_filter{filter}.log",
     conda:
-        "../envs/sv_heatmap.yaml"
+        "../envs/rtools.yaml"
     resources:
         mem_mb=get_mem_mb,
     script:
-        "../scripts/plotting/plot-clustering_dev.snakemake.R"
+        "../scripts/plotting/plot_clustering_dev_clean.R"
+
+
+rule plot_clustering_chromosome_dev:
+    input:
+        sv_calls="{folder}/{sample}/mosaiclassifier/sv_calls/{method}_filter{filter}.tsv",
+        binbed="workflow/data/bin_200kb_all.bed",
+        cluster_order_df="{folder}/{sample}/plots/sv_clustering_dev/clustering_{method}-filter{filter}-position.tsv"
+    output:
+        pdf=report(
+            "{folder}/{sample}/plots/sv_clustering_dev/{method}-filter{filter}-chromosome.pdf",
+            category="SV Clustering",
+            subcategory="{sample}",
+            labels={
+                "method": "{method}",
+                "filter": "{filter}",
+            },
+        ),
+    log:
+        "{folder}/log/plot_clustering_chromosome_dev/{sample}/{method}_filter{filter}.log",
+    conda:
+        "../envs/mc_base.yaml"
+    resources:
+        mem_mb=get_mem_mb,
+    script:
+        "../scripts/plotting/plot_clustering_scale_clean.py"
 
 
 rule plot_SV_calls:
