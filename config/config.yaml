@@ -1,9 +1,10 @@
-version: 1.8.5
+version: 1.8.6
 ashleys_pipeline_version: 1.3.5
 #######################################
 #   MOSAICATCHER CONFIGURATION FILE   #
 #######################################
-
+# Option to display all potential options - listed in config_metadata.yaml
+list_commands: False
 # To be informed of pipeline status
 email: ""
 # Input BAM location
@@ -12,6 +13,10 @@ data_location: ".tests/data_CHR17"
 reference: "hg38"
 # Enable / Disable GC analysis
 GC_analysis: False
+# Enable / Disable GC row condition analysis
+GC_rowcol_condition: False
+# Enable / Disable FastQC analysis
+FastQC_analysis: False
 # Plate orientation for GC analysis
 plate_orientation: landscape
 # Normalize or not mosaic counts
@@ -123,7 +128,7 @@ plottype_consistency:
 
 plottype_clustering:
   - "position"
-  # - "chromosome"
+  - "chromosome"
 
 ## Breakpoint density
 # joint segmentation
@@ -150,4 +155,3 @@ abs_path: "/"
 ### Plot enabled [True] or disabled [False]
 # plot: False [CURRENTLY DISABLED]
 
-list_commands: False

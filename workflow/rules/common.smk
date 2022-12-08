@@ -313,7 +313,7 @@ c = HandleInput(
         genecore_prefix=config["genecore_prefix"],
         genecore_date_folder=config["genecore_date_folder"],
     ),
-    output_path="{data_location}/config/config_df_ashleys.tsv".format(
+    output_path="{data_location}/config/config_df.tsv".format(
         data_location=config["data_location"]
     ),
     check_sm_tag=False,
@@ -509,45 +509,46 @@ def get_all_plots(wildcards):
 
     # SV_clustering section
 
+    # l_outputs.extend(
+    #     [
+    #         sub_e
+    #         for e in [
+    #             expand(
+    #                 "{folder}/{sample}/plots/sv_clustering/{method}-filter{filter}-{plottype}.pdf",
+    #                 folder=config["data_location"],
+    #                 sample=samples,
+    #                 method=method,
+    #                 plottype=config["plottype_clustering"],
+    #                 filter=config["methods"][method]["filter"],
+    #             )
+    #             for method in config["methods"]
+    #         ]
+    #         for sub_e in e
+    #     ]
+    # )
+
+    # TMP FIX - TO PREVENT ISSUES WHEN USING ONLY SUBSET OF CHROMS
+    # if len(config["chromosomes"]) == 23:
+
+
     l_outputs.extend(
         [
             sub_e
             for e in [
                 expand(
-                    "{folder}/{sample}/plots/sv_clustering/{method}-filter{filter}-{plottype}.pdf",
+                    "{folder}/{sample}/plots/sv_clustering_dev/{method}-filter{filter}-{plottype}.pdf",
                     folder=config["data_location"],
                     sample=samples,
                     method=method,
                     plottype=config["plottype_clustering"],
+                    # plottype=config["plottype_clustering"],
                     filter=config["methods"][method]["filter"],
                 )
                 for method in config["methods"]
             ]
             for sub_e in e
         ]
-    )
-
-    # TMP FIX - TO PREVENT ISSUES WHEN USING ONLY SUBSET OF CHROMS
-    # if len(config["chromosomes"]) == 23:
-
-
-    #     l_outputs.extend(
-    #         [
-    #             sub_e
-    #             for e in [
-    #                 expand(
-    #                     "{folder}/{sample}/plots/sv_clustering_dev/{method}-filter{filter}-{plottype}.pdf",
-    #                     folder=config["data_location"],
-    #                     sample=samples,
-    #                     method=method,
-    #                     plottype=config["plottype_clustering"],
-    #                     filter=config["methods"][method]["filter"],
-    #                 )
-    #                 for method in config["methods"]
-    #             ]
-    #             for sub_e in e
-    #         ]
-    #     )
+        )
 
 
     l_outputs.extend(

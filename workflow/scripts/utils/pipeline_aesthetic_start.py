@@ -96,12 +96,50 @@ def argparse_help(config):
     # config = yaml.safe_load(open("config/config.yaml", "r"))
     # pipeline_aesthetic_start(config)
 
+    sep = """------------------------------------------------------"""
+
+    smk = """
+                     _                        _        
+     ___ _ __   __ _| | _____ _ __ ___   __ _| | _____ 
+    / __| '_ \ / _` | |/ / _ \ '_ ` _ \ / _` | |/ / _ \\
+    \__ \ | | | (_| |   <  __/ | | | | | (_| |   <  __/
+    |___/_| |_|\__,_|_|\_\___|_| |_| |_|\__,_|_|\_\___|
+    """
+    wf_name = """                                                   
+     __  __              _  ___      _      _            
+    |  \/  |___ ___ __ _(_)/ __|__ _| |_ __| |_  ___ _ _ 
+    | |\/| / _ (_-</ _` | | (__/ _` |  _/ _| ' \/ -_) '_|
+    |_|  |_\___/__/\__,_|_|\___\__,_|\__\__|_||_\___|_|  
+    """
+    wf_info = "smk-wf-catalog/mosaicatcher-pipeline v{version}".format(version=str(config["version"]))
+    print(sep + fg.GREEN + smk)
+    print(fg.ENDC)
+    print(fg.YELLOW + wf_name)
+    print(fg.ENDC)
+    print(fg.MAGENTA + wf_info)
+    print(fg.ENDC)
+    print(sep)
+
     config_metadata = yaml.safe_load(open("config/config_metadata.yaml", "r"))
     # parser = argparse.ArgumentParser(prog="mosaicatcher-pipeline", add_help=False)
     # group = parser.add_argument_group("--config")
-    print(f"{fg.BLACK}\033[1mConfig options available:\033[0m\n\n--config:")
-    l = [f"{fg.BLACK}       {{:<30}}{fg.BLACK}{{:<30}}".format(e, ": " + config_metadata[e]["desc"]) for e in config_metadata]
-    [print(e) for e in l]
+    print(f"{fg.BLACK}\n\n\033[1mConfig options available (--config):\033[0m\n\n")
+    l1 = [
+        f"{fg.BLACK}\033[1m       {{:<20}}{fg.BLACK}       {{:<10}}{fg.BLACK}       {{:<10}}{fg.BLACK}       {{:<20}}{fg.BLACK}{{:<30}}\033[0m".format(
+            "Option", "Type", "Required", "Default", "Description"
+        )
+    ]
+    l = [
+        f"{fg.BLACK}       {{:<20}}{fg.BLACK}       {{:<10}}{fg.BLACK}       {{:<10}}{fg.BLACK}       {{:<20}}{fg.BLACK}{{:<30}}".format(
+            e,
+            config_metadata[e]["type"],
+            str(config_metadata[e]["required"]),
+            str(config_metadata[e]["default"]),
+            ": " + config_metadata[e]["desc"],
+        )
+        for e in config_metadata
+    ]
+    [print(e) for e in l1 + l]
     print("\n\n")
     # args = parser.parse_args()
     # print(pipeline_aesthetic_start.fg.BOLD)

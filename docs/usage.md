@@ -263,8 +263,7 @@ Informations and modes of execution can be found on the [ashleys-qc-pipeline doc
 
 **⚠️ Warnings**
 
-1. When using ashleyq-qc-pipeline preprocessing module, Singularity execution is not possible at the moment (will be fixed soon).
-2. `ashleys_pipeline=True` and `input_bam_legacy=True` are mutually exclusive
+`ashleys_pipeline=True` and `input_bam_legacy=True` are mutually exclusive
 
 ---
 
