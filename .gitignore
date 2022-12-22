@@ -125,6 +125,7 @@ workflow/test.txt
 .tests/data_CHR17/RPE-BM510/ashleys_counts/
 .tests/data_CHR17/RPE-BM510/config/
 .tests/data_CHR17/RPE-BM510/predictions/
+.tests/data_CHR17/RPE-BM510/merged_bam/
 
 .tests/data_CHR17/RPE-BM510/
 
