@@ -361,7 +361,7 @@ The zip file produced can be heavy (~1GB for 24 HGSVC samples ; 2000 cells) if m
 
 ---
 
-## Update procedure
+## Pipeline update procedure
 
 If you already use a previous version of mosaicatcher-pipeline, here is a short procedure to update it:
 
@@ -369,16 +369,10 @@ If you already use a previous version of mosaicatcher-pipeline, here is a short 
 
 `git fetch --all`
 
-- Jump to the latest commit on origin/master and checkout those files:
+- Jump to a new version (here 1.8.5) & pull code:
 
-`git reset --hard origin/master`
+`git checkout 1.8.5 && git pull`
 
 Then, to initiate or update git snakemake_profiles submodule:
 
-For mosaicatcher-pipeline ≤ 1.7.0:
-
 `git submodule update --init --recursive`
-
-For mosaicatcher-pipeline > 1.7.0:
-
-`git submodule update --recursive`

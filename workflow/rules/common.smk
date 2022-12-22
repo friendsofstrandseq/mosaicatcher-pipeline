@@ -83,16 +83,18 @@ class HandleInput:
     @staticmethod
     def handle_input_data_genecore(thisdir):
         """_summary_
+
         Args:
             thisdir (_type_): _description_
             exclude_list (_type_, optional): _description_. Defaults to list.
+
         Returns:
             _type_: _description_
         """
         complete_df_list = list()
 
         # List of folders/files to not consider (restrict to samples only)
-        l = [
+        l = sorted([
             e
             for e in os.listdir(
                 "{genecore_prefix}/{date_folder}".format(
@@ -100,8 +102,8 @@ class HandleInput:
                     date_folder=config["genecore_date_folder"],
                 )
             )
-            if e.endswith(".gz")
-        ]
+            if e.endswith(".txt.gz")
+        ])
 
         # Create a list of  files to process for each sample
         d_master = collections.defaultdict(dict)
@@ -111,19 +113,24 @@ class HandleInput:
             if (j + 1) % 192 == 0:
                 common_element = findstem(sub_l)
                 l_elems = common_element.split("lane1")
+                # print(sub_l)
+                # print(common_element)
+                # print(l_elems)
+                # print(l_elems[1].split("PE20"))
                 prefix = l_elems[0]
-                technician_name = l_elems[0].split("_")[-2]
-                sample = l_elems[1].split("x")[0]
-                index = l_elems[1].split("x")[1].split("PE")[0][-1]
-                pe_index = common_element[-1]
+                # technician_name = l_elems[0].split("_")[-2]
+                sample = l_elems[1].split("PE20")[0]
+                index = l_elems[1].split("PE20")[1]
+                # pe_index = common_element[-1]
                 sub_l = list()
 
                 d_master[sample]["prefix"] = prefix
-                d_master[sample]["technician_name"] = technician_name
+                # d_master[sample]["technician_name"] = technician_name
                 d_master[sample]["index"] = index
-                d_master[sample]["pe_index"] = pe_index
                 d_master[sample]["common_element"] = common_element
-
+        # from pprint import pprint
+        # pprint(d_master)
+        # exit()
         samples_to_process = (
             config["samples_to_process"]
             if len(config["samples_to_process"]) > 0
@@ -137,14 +144,14 @@ class HandleInput:
 
         genecore_list = [
             expand(
-                "{data_location}/{sample}/fastq/{sample}x0{index}PE20{cell_nb}.{pair}.fastq.gz",
+                "{data_location}/{sample}/fastq/{sample}PE20{cell_nb}.{pair}.fastq.gz",
                 data_location=config["data_location"],
                 sample=sample,
-                index=d_master[sample]["index"],
+                # index=d_master[sample]["index"],
                 cell_nb=list(
                     range(
-                        (int(d_master[sample]["pe_index"]) * 100) + 1,
-                        (int(d_master[sample]["pe_index"]) * 100) + 97,
+                        (int(d_master[sample]["index"]) * 100) + 1,
+                        (int(d_master[sample]["index"]) * 100) + 97,
                     )
                 ),
                 pair=["1", "2"],
@@ -192,7 +199,6 @@ class HandleInput:
         )
         pd.options.display.max_colwidth = 200
         # print(complete_df)
-        # exit()
         return complete_df, d_master
 
     @staticmethod
