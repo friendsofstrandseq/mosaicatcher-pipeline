@@ -118,7 +118,7 @@ rule convert_strandphaser_output:
         initial_states="{folder}/{sample}/segmentation/Selection_initial_strand_state",
         info="{folder}/{sample}/counts/{sample}.info",
     output:
-        "{folder}/{sample}/strandphaser/StrandPhaseR_final_output.txt",
+        "{folder}/{sample}/strandphaser/StrandPhaseR_final_output.txt.raw",
     log:
         "{folder}/log/convert_strandphaser_output/{sample}.log",
     conda:
@@ -127,3 +127,17 @@ rule convert_strandphaser_output:
         mem_mb=get_mem_mb,
     script:
         "../scripts/strandphaser_scripts/helper.convert_strandphaser_output.R"
+
+rule keep_canonical_strandphaser_output:
+    input:
+        "{folder}/{sample}/strandphaser/StrandPhaseR_final_output.txt.raw",
+    output:
+        "{folder}/{sample}/strandphaser/StrandPhaseR_final_output.txt",
+    log:
+        "{folder}/log/keep_canonical_strandphaser_output/{sample}.log",
+    conda:
+        "../envs/mc_base.yaml"
+    resources:
+        mem_mb=get_mem_mb,
+    shell:
+        'grep -v -P "[WC]{{3,}}" {input} > {output}'

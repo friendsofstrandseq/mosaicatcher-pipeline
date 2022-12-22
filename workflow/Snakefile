@@ -33,6 +33,7 @@ if config["ashleys_pipeline"] is True:
             config
 
     use rule * from ashleys_qc as ashleys_*
+    localrules: ashleys_genecore_symlink
 
 
 
@@ -109,33 +110,33 @@ if config["list_commands"] is False:
                         rules.dl_example_data.output,
 
 
-            elif (
-                config["dl_bam_example"] is False
-                and config["dl_external_files"] is True
-                and config["reference"] in ["hg19", "hg38", "T2T"]
-            ):
-                if config["reference"] == "hg19":
+            # elif (
+            #     config["dl_bam_example"] is False
+            #     and config["dl_external_files"] is True
+            #     and config["reference"] in ["hg19", "hg38", "T2T"]
+            # ):
+            #     if config["reference"] == "hg19":
 
-                    rule all:
-                        input:
-                            rules.download_hg19_reference.output,
-
-
-                elif config["reference"] == "hg38":
-
-                    rule all:
-                        input:
-                            rules.download_hg38_reference.output,
+            #         rule all:
+            #             input:
+            #                 rules.download_hg19_reference.output,
 
 
-                elif config["reference"] == "T2T":
+            #     elif config["reference"] == "hg38":
 
-                    rule all:
-                        input:
-                            [
-                                rules.download_T2T_reference.output,
-                                rules.install_T2T_BSgenome_tarball.output,
-                            ],
+            #         rule all:
+            #             input:
+            #                 rules.download_hg38_reference.output,
+
+
+            #     elif config["reference"] == "T2T":
+
+            #         rule all:
+            #             input:
+            #                 [
+            #                     rules.download_T2T_reference.output,
+            #                     rules.install_T2T_BSgenome_tarball.output,
+            #                 ],
 
 
 

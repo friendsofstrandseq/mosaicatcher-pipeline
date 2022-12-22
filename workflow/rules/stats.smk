@@ -18,13 +18,13 @@ rule summary_statistics:
 
 rule aggregate_summary_statistics:
     input:
-        tsv=[
+        tsv=lambda wc: [
             sub_e
             for e in [
                 expand(
                     "{folder}/{sample}/stats/{method}_filter{filter}.tsv",
                     folder=config["data_location"],
-                    sample=samples,
+                    sample=wc.sample,
                     method=method,
                     filter=config["methods"][method]["filter"],
                 )
