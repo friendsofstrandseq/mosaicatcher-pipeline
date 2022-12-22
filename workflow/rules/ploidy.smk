@@ -39,11 +39,7 @@ checkpoint summarise_ploidy:
     log:
         "{folder}/log/ploidy/{sample}/ploidy_summary.log",
     run:
-        df = (
-            pd.read_csv(input.ploidy, sep="\t")
-            .groupby("#chrom")["ploidy_estimate"]
-            .describe()
-        )
+        df = pd.read_csv(input.ploidy, sep="\t").groupby("#chrom")["ploidy_estimate"].describe()
         df.to_csv(output.summary, sep="\t")
 
 
