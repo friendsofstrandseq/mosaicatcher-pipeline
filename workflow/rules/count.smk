@@ -115,11 +115,9 @@ rule symlink_selected_bam:
         "{folder}/log/symlink_selected_bam/{sample}/{cell}.log",
     run:
         if config["use_light_data"] is False:
-            shell("ln -s {input.bam} {output.bam}")
-            shell("ln -s {input.bai} {output.bai}")
+            shell("ln -s {input.bam} {output.bam} && ln -s {input.bai} {output.bai}")
         else:
-            shell("cp {input.bam} {output.bam}")
-            shell("cp {input.bai} {output.bai}")
+            shell("cp {input.bam} {output.bam} && cp {input.bai} {output.bai}")
 
     
 rule remove_unselected_bam:

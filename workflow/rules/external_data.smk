@@ -29,7 +29,7 @@ rule download_hg19_reference:
     log:
         "workflow/data/ref_genomes/log/hg19.ok",
     conda:
-        "../envs/ashleys_base.yaml"
+        "../envs/mc_base.yaml"
     shell:
         '''
         directory="workflow/data/ref_genomes/"
@@ -50,7 +50,7 @@ rule download_hg38_reference:
     log:
         "workflow/data/ref_genomes/log/hg38.ok",
     conda:
-        "../envs/ashleys_base.yaml"
+        "../envs/mc_base.yaml"
     shell:
         '''
         directory="workflow/data/ref_genomes/"
@@ -72,7 +72,7 @@ rule download_T2T_reference:
     log:
         "workflow/data/ref_genomes/log/T2T.ok",
     conda:
-        "../envs/ashleys_base.yaml"
+        "../envs/mc_base.yaml"
     shell:
         '''
         directory="workflow/data/ref_genomes/"
