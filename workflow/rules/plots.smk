@@ -135,7 +135,7 @@ rule plot_clustering_position_dev:
                 "filter": "{filter}",
             },
         ),
-        cluster_order_df="{folder}/{sample}/plots/sv_clustering_dev/clustering_{method}-filter{filter}-position.tsv"
+        cluster_order_df="{folder}/{sample}/plots/sv_clustering_dev/clustering_{method}-filter{filter}-position.tsv",
     log:
         "{folder}/log/plot_clustering_dev/{sample}/{method}_filter{filter}.log",
     conda:
@@ -150,7 +150,7 @@ rule plot_clustering_chromosome_dev:
     input:
         sv_calls="{folder}/{sample}/mosaiclassifier/sv_calls/{method}_filter{filter}.tsv",
         binbed="workflow/data/bin_200kb_all.bed",
-        cluster_order_df="{folder}/{sample}/plots/sv_clustering_dev/clustering_{method}-filter{filter}-position.tsv"
+        cluster_order_df="{folder}/{sample}/plots/sv_clustering_dev/clustering_{method}-filter{filter}-position.tsv",
     output:
         pdf=report(
             "{folder}/{sample}/plots/sv_clustering_dev/{method}-filter{filter}-chromosome.pdf",
@@ -238,7 +238,6 @@ rule plot_SV_calls_dev:
         "{folder}/log/plot_SV_calls_dev/{sample}/{method}_filter{filter}/{chrom}.log",
     conda:
         "../envs/rtools.yaml"
-        # "plot_sv_calls"
     resources:
         mem_mb=get_mem_mb,
     shell:

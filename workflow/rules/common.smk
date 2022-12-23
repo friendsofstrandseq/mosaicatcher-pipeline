@@ -20,6 +20,7 @@ if config["list_commands"] is True:
 # wildcard_constraints:
 #     cell="^((?!mdup).)*$"
 
+
 # Start with aesthetic pipeline config presentation
 onstart:
     pipeline_aesthetic_start.pipeline_aesthetic_start(config)
@@ -94,16 +95,18 @@ class HandleInput:
         complete_df_list = list()
 
         # List of folders/files to not consider (restrict to samples only)
-        l = sorted([
-            e
-            for e in os.listdir(
-                "{genecore_prefix}/{date_folder}".format(
-                    genecore_prefix=config["genecore_prefix"],
-                    date_folder=config["genecore_date_folder"],
+        l = sorted(
+            [
+                e
+                for e in os.listdir(
+                    "{genecore_prefix}/{date_folder}".format(
+                        genecore_prefix=config["genecore_prefix"],
+                        date_folder=config["genecore_date_folder"],
+                    )
                 )
-            )
-            if e.endswith(".txt.gz")
-        ])
+                if e.endswith(".txt.gz")
+            ]
+        )
 
         # Create a list of  files to process for each sample
         d_master = collections.defaultdict(dict)
@@ -393,9 +396,6 @@ def get_final_output():
     return final_list
 
 
-
-
-
 def get_mem_mb(wildcards, attempt):
     mem_avail = [2, 4, 8, 16, 64]
     return mem_avail[attempt - 1] * 1000
@@ -491,8 +491,6 @@ def get_all_plots(wildcards):
     #     ]
     # )
 
-
-
     # SV_consistency section
 
     l_outputs.extend(
@@ -536,7 +534,6 @@ def get_all_plots(wildcards):
     # TMP FIX - TO PREVENT ISSUES WHEN USING ONLY SUBSET OF CHROMS
     # if len(config["chromosomes"]) == 23:
 
-
     l_outputs.extend(
         [
             sub_e
@@ -554,8 +551,7 @@ def get_all_plots(wildcards):
             ]
             for sub_e in e
         ]
-        )
-
+    )
 
     l_outputs.extend(
         [
@@ -574,7 +570,6 @@ def get_all_plots(wildcards):
             for sub_e in e
         ]
     )
-
 
     # Complex section
 

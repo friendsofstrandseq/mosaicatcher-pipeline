@@ -31,12 +31,12 @@ rule download_hg19_reference:
     conda:
         "../envs/mc_base.yaml"
     shell:
-        '''
+        """
         directory="workflow/data/ref_genomes/"
         mkdir -p "$directory"
         mv {input} workflow/data/ref_genomes/hg19.fa.gz
         gunzip workflow/data/ref_genomes/hg19.fa.gz
-        '''
+        """
 
 
 rule download_hg38_reference:
@@ -52,13 +52,12 @@ rule download_hg38_reference:
     conda:
         "../envs/mc_base.yaml"
     shell:
-        '''
+        """
         directory="workflow/data/ref_genomes/"
         mkdir -p "$directory"
         mv {input} workflow/data/ref_genomes/hg38.fa.gz
         gunzip workflow/data/ref_genomes/hg38.fa.gz
-        '''
-
+        """
 
 
 rule download_T2T_reference:
@@ -74,12 +73,32 @@ rule download_T2T_reference:
     conda:
         "../envs/mc_base.yaml"
     shell:
-        '''
+        """
         directory="workflow/data/ref_genomes/"
         mkdir -p "$directory"
         mv {input} workflow/data/ref_genomes/T2T.fa.gz
         gunzip workflow/data/ref_genomes/T2T.fa.gz
-        '''
+        """
+
+
+rule download_T2T_tarball:
+    input:
+        HTTP.remote(
+            "https://sandbox.zenodo.org/record/1097504/files/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz",
+            keep_local=True,
+        ),
+    output:
+        "workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz",
+    log:
+        "workflow/data/ref_genomes/log/T2T_tarball.ok",
+    conda:
+        "../envs/mc_base.yaml"
+    shell:
+        """
+        directory="workflow/data/ref_genomes/"
+        mkdir -p "$directory"
+        mv {input} workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz
+        """
 
 
 rule install_T2T_BSgenome_tarball:
