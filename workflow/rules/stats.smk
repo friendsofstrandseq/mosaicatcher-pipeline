@@ -52,8 +52,8 @@ rule transpose_table:
             subcategory="{sample}",
             labels={
                 "Sample": "{sample}",
-            }
-        )   
+            },
+        ),
     log:
         tsv="{folder}/log/{sample}/transpose_table.log",
     conda:
