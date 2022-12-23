@@ -74,7 +74,6 @@ rule create_haplotag_table:
         "../scripts/haplotagging_scripts/haplotagTable.snakemake.R"
 
 
-
 rule merge_haplotag_tables:
     input:
         # tsvs=lambda wc: [
@@ -83,7 +82,7 @@ rule merge_haplotag_tables:
         #     )
         #     for cell in bam_per_sample[wc.sample]
         # ],
-        tsvs=aggregate_cells_haplotag_tables
+        tsvs=aggregate_cells_haplotag_tables,
     output:
         tsv="{folder}/{sample}/haplotag/table/haplotag_counts_merged.tsv",
     log:

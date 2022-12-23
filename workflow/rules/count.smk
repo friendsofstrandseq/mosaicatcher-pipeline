@@ -58,7 +58,6 @@ if config["ashleys_pipeline"] is False:
             > {log} 2>&1
             """
 
-
     if config["input_bam_legacy"] is True:
 
         rule selected_cells:
@@ -72,7 +71,6 @@ if config["ashleys_pipeline"] is False:
                 "../envs/mc_base.yaml"
             script:
                 "../scripts/utils/handle_input_old_behavior.py"
-
 
     else:
 
@@ -105,41 +103,46 @@ rule copy_labels:
 
 
 rule symlink_selected_bam:
-    input:  
-        bam = "{folder}/{sample}/bam/{cell}.sort.mdup.bam",
-        bai = "{folder}/{sample}/bam/{cell}.sort.mdup.bam.bai",
-    output:  
-        bam = "{folder}/{sample}/selected/{cell}.sort.mdup.bam",
-        bai = "{folder}/{sample}/selected/{cell}.sort.mdup.bam.bai",
+    input:
+        bam="{folder}/{sample}/bam/{cell}.sort.mdup.bam",
+        bai="{folder}/{sample}/bam/{cell}.sort.mdup.bam.bai",
+    output:
+        bam="{folder}/{sample}/selected/{cell}.sort.mdup.bam",
+        bai="{folder}/{sample}/selected/{cell}.sort.mdup.bam.bai",
     log:
         "{folder}/log/symlink_selected_bam/{sample}/{cell}.log",
     run:
         if config["use_light_data"] is False:
-            shell("ln -s {input.bam} {output.bam} && ln -s {input.bai} {output.bai}")
+            shell("ln -s {input.bam} {output.bam}")
+            shell("ln -s {input.bai} {output.bai}")
         else:
-            shell("cp {input.bam} {output.bam} && cp {input.bai} {output.bai}")
+            shell("cp {input.bam} {output.bam}")
+            shell("cp {input.bai} {output.bai}")
 
-    
+
+
 rule remove_unselected_bam:
     input:
         bam=unselected_input_bam,
         bai=unselected_input_bai,
     output:
-        touch("{folder}/{sample}/config/remove_unselected_bam.ok")
+        touch("{folder}/{sample}/config/remove_unselected_bam.ok"),
     log:
-        "{folder}/{sample}/log/remove_unselected_bam.log"
+        "{folder}/{sample}/log/remove_unselected_bam.log",
     conda:
         "../envs/mc_base.yaml"
     shell:
         """
         rm {input.bam} {input.bai}
         """
-    
+
+
 rule remove_unselected_bam_empty:
     output:
-        touch("{folder}/{sample}/config/remove_unselected_bam_empty.ok")
+        touch("{folder}/{sample}/config/remove_unselected_bam_empty.ok"),
     log:
-        "{folder}/{sample}/log/remove_unselected_bam_empty.log"
+        "{folder}/{sample}/log/remove_unselected_bam_empty.log",
+
 
 checkpoint filter_bad_cells_from_mosaic_count:
     input:
@@ -173,14 +176,14 @@ if (
         log:
             "{folder}/log/normalizations/{sample}/{reference}/HGSVC.{window}.merged.tsv",
         params:
-            window = config["window"]
+            window=config["window"],
         conda:
             "../envs/mc_base.yaml"
         shell:
             """
             workflow/scripts/normalization/merge-blacklist.py --merge_distance 500000 {input.norm} --whitelist {input.whitelist} --min_whitelist_interval_size {params.window} > {output.merged} 2>> {log}
             """
-            
+
     rule normalize_counts:
         input:
             counts="{folder}/{sample}/counts/{sample}.txt.filter.gz",
@@ -201,7 +204,6 @@ if (
             """
             Rscript workflow/scripts/normalization/normalize.R {input.counts} {input.norm} {output} 2>&1 > {log}
             """
-
 
 else:
 

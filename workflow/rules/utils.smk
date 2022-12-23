@@ -38,6 +38,7 @@
 #             rm {output.bam_out}.header {output.bam_out}.core
 #             """
 
+
 rule index_input_bam:
     input:
         "{folder}/{sample}/bam/{cell}.sort.mdup.bam",

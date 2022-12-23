@@ -20,7 +20,7 @@ rule check_single_paired_end:
         #     sample=wc.sample,
         #     cell=bam_per_sample_local[str(wc.sample)],
         # ),
-        bam=selected_input_bam
+        bam=selected_input_bam,
     output:
         single_paired_end_detect="{folder}/{sample}/config/single_paired_end_detection.txt",
     log:
@@ -127,6 +127,7 @@ rule convert_strandphaser_output:
         mem_mb=get_mem_mb,
     script:
         "../scripts/strandphaser_scripts/helper.convert_strandphaser_output.R"
+
 
 rule keep_canonical_strandphaser_output:
     input:
