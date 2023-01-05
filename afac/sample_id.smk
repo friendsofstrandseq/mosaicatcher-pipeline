@@ -8,6 +8,7 @@ list_dir = [
     if e.endswith(".sort.mdup.bam")
 ]
 
+
 rule all:
     input:
         expand(
@@ -32,6 +33,7 @@ rule freebayes:
     wrapper:
         "v1.12.2/bio/freebayes"
 
+
 # rule regenotype_SNVs:
 #     input:
 #         bam="{folder}/all/{file}.sort.mdup.bam",
@@ -53,17 +55,17 @@ rule freebayes:
 #             --genotype-qualities \
 #         > {output.vcf}
 #         """
-        # """
-        # (freebayes \
-        #     -f {input.fasta} \
-        #     -r {wildcards.chrom} \
-        #     -@ {input.sites} \
-        #     --only-use-input-alleles {input.bam} \
-        #     --genotype-qualities \
-        # | bcftools view \
-        #     --exclude-uncalled \
-        #     --types snps \
-        #     --genotype het \
-        #     --include "QUAL>=10" \
-        # > {output.vcf}) 2> {log}
-        # """
+# """
+# (freebayes \
+#     -f {input.fasta} \
+#     -r {wildcards.chrom} \
+#     -@ {input.sites} \
+#     --only-use-input-alleles {input.bam} \
+#     --genotype-qualities \
+# | bcftools view \
+#     --exclude-uncalled \
+#     --types snps \
+#     --genotype het \
+#     --include "QUAL>=10" \
+# > {output.vcf}) 2> {log}
+# """
