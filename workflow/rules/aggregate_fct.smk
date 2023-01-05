@@ -123,6 +123,7 @@ def aggregate_cells_segmentation(wildcards):
         cell=cell_list,
     )
 
+
 def aggregate_cells_haplotag_tables(wildcards):
     """
     Function based on checkpoint filter_bad_cells_from_mosaic_count
@@ -151,6 +152,7 @@ def aggregate_cells_haplotag_tables(wildcards):
         cell=cell_list,
     )
 
+
 def unselected_input_bam(wildcards):
     """
     Function based on checkpoint filter_bad_cells_from_mosaic_count
@@ -166,15 +168,17 @@ def unselected_input_bam(wildcards):
     )
     cell_list = df.cell.tolist()
     # # print(cell_list)
-    
+
     # if len(cell_list)>0:
-    return expand("{folder}/{sample}/selected/{cell}.sort.mdup.bam",
+    return expand(
+        "{folder}/{sample}/selected/{cell}.sort.mdup.bam",
         folder=config["data_location"],
         sample=wildcards.sample,
-        cell=cell_list, 
-        )
+        cell=cell_list,
+    )
     # else:
     #     return ""
+
 
 def unselected_input_bai(wildcards):
     """
@@ -190,14 +194,17 @@ def unselected_input_bai(wildcards):
         sep="\t",
     )
     cell_list = df.cell.tolist()
-    
+
     # if len(cell_list)>0:
-    return expand("{folder}/{sample}/selected/{cell}.sort.mdup.bam.bai",
+    return expand(
+        "{folder}/{sample}/selected/{cell}.sort.mdup.bam.bai",
         folder=config["data_location"],
         sample=wildcards.sample,
-        cell=cell_list)
+        cell=cell_list,
+    )
     # else:
     #     return ""
+
 
 def selected_input_bam(wildcards):
     """
@@ -214,12 +221,13 @@ def selected_input_bam(wildcards):
     )
     cell_list = df.cell.tolist()
     # # print(cell_list)
-    
-    return expand("{folder}/{sample}/selected/{cell}.sort.mdup.bam",
+
+    return expand(
+        "{folder}/{sample}/selected/{cell}.sort.mdup.bam",
         folder=config["data_location"],
         sample=wildcards.sample,
         cell=cell_list,
-        )
+    )
 
 
 def selected_input_bai(wildcards):
@@ -236,11 +244,14 @@ def selected_input_bai(wildcards):
         sep="\t",
     )
     cell_list = df.cell.tolist()
-    
-    return expand("{folder}/{sample}/selected/{cell}.sort.mdup.bam.bai",
+
+    return expand(
+        "{folder}/{sample}/selected/{cell}.sort.mdup.bam.bai",
         folder=config["data_location"],
         sample=wildcards.sample,
-        cell=cell_list)
+        cell=cell_list,
+    )
+
 
 def remove_unselected_fct(wildcards):
     df = pd.read_csv(
