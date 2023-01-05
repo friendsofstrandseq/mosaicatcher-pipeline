@@ -92,6 +92,7 @@ for s in SAMPLES:
 #     )
 # )
 
+
 # bams_all = ['HG00513/all/HG00513_IV_045.bam']
 rule all:
     input:
@@ -114,7 +115,7 @@ rule change_id_and_sam:
     output:
         bam_out="{path}/{SM}/bam/{ID}.sort.mdup.bam",
     envmodules:
-        "SAMtools/1.14-GCC-11.2.0"
+        "SAMtools/1.14-GCC-11.2.0",
     resources:
         mem_mb="16000",
         time="10:00:00",

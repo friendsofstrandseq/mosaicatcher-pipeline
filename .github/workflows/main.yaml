@@ -10,7 +10,7 @@ jobs:
   Formatting:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3.2.0
 
       - name: Formatting
         uses: github/super-linter@v4
@@ -23,9 +23,9 @@ jobs:
   Linting:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3.2.0
       - name: Linting
-        uses: snakemake/snakemake-github-action@v1.23.0
+        uses: snakemake/snakemake-github-action@v1.24.0
         with:
           directory: .
           snakefile: ./workflow/Snakefile
@@ -36,23 +36,16 @@ jobs:
     #   - Linting
     #   - Formatting
     steps:
-      - uses: actions/checkout@v2
-      - name: Test ls
-        run: |
-          ls -alh $(pwd)
-          ls -alh $(pwd)/.tests/data_CHR17
-          ls -alh $(pwd)/.tests/data_CHR17/RPE-BM510
-          ls -alh $(pwd)/.tests/data_CHR17/RPE-BM510/bam
-          echo    $(pwd)
+      - uses: actions/checkout@v3.2.0
       - name: Testing data
-        uses: snakemake/snakemake-github-action@v1.23.0
+        uses: snakemake/snakemake-github-action@v1.24.0
         with:
           directory: .
           snakefile: ./workflow/Snakefile
           stagein: "conda config --set channel_priority flexible"
           args: "--cores 1 --use-conda --configfile .tests/config/simple_config.yaml --conda-frontend mamba -p --verbose --debug"
       - name: Testing report
-        uses: snakemake/snakemake-github-action@v1.23.0
+        uses: snakemake/snakemake-github-action@v1.24.0
         with:
           directory: .
           snakefile: ./workflow/Snakefile
