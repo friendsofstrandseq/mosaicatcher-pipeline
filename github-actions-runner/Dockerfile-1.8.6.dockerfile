@@ -1,15 +1,3 @@
-Config file config/config.yaml is extended by additional config specified via the command line.
-localrules directive specifies rules that are not present in the Snakefile:
-	ashleys_genecore_symlink
-
-Building DAG of jobs...
-Hashing conda environment https://github.com/friendsofstrandseq/ashleys-qc-pipeline/raw/1.3.6/workflow/envs/ashleys_base.yaml.
-Hashing conda environment https://github.com/friendsofstrandseq/ashleys-qc-pipeline/raw/1.3.6/workflow/envs/ashleys_rtools.yaml.
-Hashing conda environment https://github.com/snakemake/snakemake-wrappers/raw/v1.7.0/bio/bwa/index/environment.yaml.
-Hashing conda environment https://github.com/snakemake/snakemake-wrappers/raw/v1.7.0/bio/fastqc/environment.yaml.
-Hashing conda environment workflow/envs/mc_base.yaml.
-Hashing conda environment workflow/envs/mc_bioinfo_tools.yaml.
-Hashing conda environment workflow/envs/rtools.yaml.
 FROM condaforge/mambaforge:latest
 LABEL io.github.snakemake.containerized="true"
 LABEL io.github.snakemake.conda_env_hash="616a023e6362b652dfd060868bd8de3c832accd6ccf573c3af64a2cdda123430"
