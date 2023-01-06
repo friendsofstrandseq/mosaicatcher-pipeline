@@ -19,7 +19,7 @@ rule estimate_ploidy:
         "../envs/mc_base.yaml"
     shell:
         """
-        python workflow/scripts/utils/ploidy_estimator.py --debug \
+        python workflow/scripts/ploidy/ploidy_estimator.py --debug \
             --merge-bins-to {params.merge_window} \
             --shift-window-by {params.shift_step} \
             --max-ploidy {params.max_ploidy} \
@@ -38,13 +38,17 @@ checkpoint summarise_ploidy:
         summary="{folder}/{sample}/ploidy/ploidy_summary.txt",
     log:
         "{folder}/log/ploidy/{sample}/ploidy_summary.log",
-    run:
-        df = (
-            pd.read_csv(input.ploidy, sep="\t")
-            .groupby("#chrom")["ploidy_estimate"]
-            .describe()
-        )
-        df.to_csv(output.summary, sep="\t")
+    conda:
+        "../envs/mc_base.yaml"
+    script:
+        "../scripts/ploidy/summarise_ploidy.py"
+    # run:
+        # df = (
+        #     pd.read_csv(input.ploidy, sep="\t")
+        #     .groupby("#chrom")["ploidy_estimate"]
+        #     .describe()
+        # )
+        # df.to_csv(output.summary, sep="\t")
 
 
 rule ploidy_bcftools:
@@ -57,4 +61,4 @@ rule ploidy_bcftools:
     conda:
         "../envs/mc_base.yaml"
     script:
-        "../scripts/utils/ploidy_bcftools.py"
+        "../scripts/ploidy/ploidy_bcftools.py"
