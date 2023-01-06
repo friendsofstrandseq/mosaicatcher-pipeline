@@ -1,6 +1,6 @@
 import subprocess
 
-if config["use_light_data"] is False:
+if snakemake.config["use_light_data"] is False:
     subprocess.Popen(
         "ln -s  {input_bam} {output_bam}".format(input=snakemake.input.bam, file=snakemake.output.bam), shell=True, stdout=subprocess.PIPE
     )
