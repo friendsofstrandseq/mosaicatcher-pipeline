@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - dev
+      - arbigent_dev
 
 jobs:
   # WORK

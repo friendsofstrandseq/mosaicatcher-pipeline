@@ -165,11 +165,7 @@ checkpoint filter_bad_cells_from_mosaic_count:
         "../scripts/utils/filter_bad_cells.py"
 
 
-if (
-    config["window"] in [50000, 100000, 200000]
-    and config["reference"] == "hg38"
-    and config["normalized_counts"] == True
-):
+if config["window"] in [50000, 100000, 200000] and (config["reference"] == "hg38") and (config["normalized_counts"] is True) and (config["arbigent"] is False):
 
     rule merge_blacklist_bins:
         input:
@@ -209,7 +205,24 @@ if (
             Rscript workflow/scripts/normalization/normalize.R {input.counts} {input.norm} {output} 2>&1 > {log}
             """
 
+
+elif config["arbigent"] is True:
+
+    rule merge_blacklist_bins:
+        input:
+            norm="utils/normalization_hg38_wmap/HGSVC.{bin_size}.txt",
+        output:
+            merged="normalizations/HGSVC.{bin_size}.merged.tsv",
+        log:
+            "log/merge_blacklist_bins/{bin_size}.log",
+        shell:
+            """
+            utils/merge-blacklist.py --merge_distance 500000 {input.norm} > {output.merged} 2> {log}
+            """
+
+
 else:
+
 
     rule cp_mosaic_count:
         input:
@@ -224,6 +237,8 @@ else:
             "cp {input} {output}"
 
 
+
+
 rule sort_counts:
     input:
         "{folder}/{sample}/counts/{sample}.txt.gz",
@@ -235,6 +250,8 @@ rule sort_counts:
         "../envs/mc_base.yaml"
     script:
         "../scripts/utils/sort_counts.py"
+
+
 
 
 rule extract_single_cell_counts:
