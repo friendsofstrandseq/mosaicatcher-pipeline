@@ -619,4 +619,13 @@ def get_all_plots(wildcards):
         ),
     )
 
+    if config["arbigent"] is True:
+        l_outputs.extend(
+            expand(
+                "{folder}/{sample}/arbigent/regenotyper_allsamples_bulk/qc/lineplot_gts.pdf",
+                folder=config["data_location"],
+                sample=samples,
+            )
+        )
+
     return l_outputs

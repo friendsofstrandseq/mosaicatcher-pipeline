@@ -13,6 +13,8 @@ data_location: ".tests/data_CHR17"
 reference: "hg38"
 # Enable / Disable GC analysis
 GC_analysis: False
+# Arbigent / Arbitraty-segments genotyping
+arbigent: False
 # Enable / Disable GC row condition analysis
 GC_rowcol_condition: False
 # Enable / Disable FastQC analysis
@@ -155,3 +157,6 @@ abs_path: "/"
 ### Plot enabled [True] or disabled [False]
 # plot: False [CURRENTLY DISABLED]
 
+arbigent_data:
+  arbigent_mapability_track: workflow/data/arbigent/mapping_counts_allchrs_hg38.txt
+  arbigent_mapability_track_h5: workflow/data/arbigent/mapping_counts_allchrs_hg38.h5
