@@ -88,7 +88,6 @@ invisible(assert_that(
 d <- d[, chrom := sub("^chr", "", chrom)][]
 d <- d[grepl("^([1-9]|[12][0-9]|X|Y)$", chrom), ]
 d <- d[, chrom := factor(chrom, levels = as.character(c(1:22, "X", "Y")), ordered = T)]
-
 # d[, c(6, 7)] <- sapply(d[, c(6, 7)], as.double)
 
 
@@ -189,6 +188,7 @@ for (s in unique(d$sample))
         message(paste("* Plotting sample", s, "cell", ce))
 
         e <- d[sample == s & cell == ce, ]
+        print(e)
 
 
         # Calculate some information
@@ -214,6 +214,7 @@ for (s in unique(d$sample))
         consecutive <- cumsum(c(0, abs(diff(as.numeric(as.factor(e$class))))))
         e$consecutive <- consecutive
         f <- e[, .(start = min(start), end = max(end), class = class[1]), by = .(consecutive, chrom)][]
+        print(f)
 
         plt <- plt +
             geom_rect(data = f, aes(xmin = start, xmax = end, ymin = -Inf, ymax = Inf, fill = class), inherit.aes = F, alpha = 0.2) +

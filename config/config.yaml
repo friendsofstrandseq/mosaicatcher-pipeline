@@ -160,3 +160,6 @@ abs_path: "/"
 arbigent_data:
   arbigent_mapability_track: workflow/data/arbigent/mapping_counts_allchrs_hg38.txt
   arbigent_mapability_track_h5: workflow/data/arbigent/mapping_counts_allchrs_hg38.h5
+
+# If specified, will copy important data (stats, plots, counts file) to a second place 
+publishdir: ""
