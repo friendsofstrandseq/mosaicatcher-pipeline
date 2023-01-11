@@ -114,15 +114,16 @@ rule symlink_selected_bam:
     conda:
         "../envs/mc_base.yaml"
     script:
-        "../scripts/utils/symlink_selected_bam.py"    
-    # run:
-    #     if config["use_light_data"] is False:
-    #         shell("ln -s {input.bam} {output.bam}")
-    #         shell("ln -s {input.bai} {output.bai}")
-    #     else:
-    #         shell("cp {input.bam} {output.bam}")
-    #         shell("cp {input.bai} {output.bai}")
+        "../scripts/utils/symlink_selected_bam.py"
 
+
+# run:
+#     if config["use_light_data"] is False:
+#         shell("ln -s {input.bam} {output.bam}")
+#         shell("ln -s {input.bai} {output.bai}")
+#     else:
+#         shell("cp {input.bam} {output.bam}")
+#         shell("cp {input.bai} {output.bai}")
 
 
 rule remove_unselected_bam:
@@ -165,7 +166,12 @@ checkpoint filter_bad_cells_from_mosaic_count:
         "../scripts/utils/filter_bad_cells.py"
 
 
-if config["window"] in [50000, 100000, 200000] and (config["reference"] == "hg38") and (config["normalized_counts"] is True) and (config["arbigent"] is False):
+if (
+    config["window"] in [50000, 100000, 200000]
+    and (config["reference"] == "hg38")
+    and (config["normalized_counts"] is True)
+    and (config["arbigent"] is False)
+):
 
     rule merge_blacklist_bins:
         input:
@@ -205,7 +211,6 @@ if config["window"] in [50000, 100000, 200000] and (config["reference"] == "hg38
             Rscript workflow/scripts/normalization/normalize.R {input.counts} {input.norm} {output} 2>&1 > {log}
             """
 
-
 elif config["arbigent"] is True:
 
     rule merge_blacklist_bins:
@@ -220,9 +225,7 @@ elif config["arbigent"] is True:
             utils/merge-blacklist.py --merge_distance 500000 {input.norm} > {output.merged} 2> {log}
             """
 
-
 else:
-
 
     rule cp_mosaic_count:
         input:
@@ -237,8 +240,6 @@ else:
             "cp {input} {output}"
 
 
-
-
 rule sort_counts:
     input:
         "{folder}/{sample}/counts/{sample}.txt.gz",
@@ -250,8 +251,6 @@ rule sort_counts:
         "../envs/mc_base.yaml"
     script:
         "../scripts/utils/sort_counts.py"
-
-
 
 
 rule extract_single_cell_counts:

@@ -83,6 +83,12 @@ include: "rules/stats.smk"
 include: "rules/external_data.smk"
 
 
+include: "rules/arbigent_rules.smk"
+
+
+include: "rules/arbigent.smk"
+
+
 if config["list_commands"] is False:
 
     if config["ashleys_pipeline"] is True:
