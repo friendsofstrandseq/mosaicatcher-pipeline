@@ -455,6 +455,7 @@ def get_all_plots(wildcards):
 
     l_outputs = list()
 
+
     tmp_l_divide = [
         expand(
             "{folder}/{sample}/plots/counts_{plottype}/{cell}.{i}.pdf",
@@ -470,6 +471,16 @@ def get_all_plots(wildcards):
 
     l_outputs.extend([sub_e for e in tmp_l_divide for sub_e in e])
     # pprint(l_outputs)
+
+
+    if config["arbigent"] is True:
+        l_outputs.extend(
+            expand(
+                "{folder}/{sample}/arbigent/regenotyper_allsamples_bulk/qc/lineplot_gts.pdf",
+                folder=config["data_location"],
+                sample=samples,
+            )
+        )
 
     # SV_calls section
 
@@ -491,141 +502,136 @@ def get_all_plots(wildcards):
     #     ]
     # )
 
-    # SV_consistency section
+    else:
 
-    l_outputs.extend(
-        [
-            sub_e
-            for e in [
-                expand(
-                    "{folder}/{sample}/plots/sv_consistency/{method}_filter{filter}.consistency-barplot-{plottype}.pdf",
-                    folder=config["data_location"],
-                    sample=samples,
-                    method=method,
-                    plottype=config["plottype_consistency"],
-                    filter=config["methods"][method]["filter"],
-                )
-                for method in config["methods"]
+        # SV_consistency section
+
+        l_outputs.extend(
+            [
+                sub_e
+                for e in [
+                    expand(
+                        "{folder}/{sample}/plots/sv_consistency/{method}_filter{filter}.consistency-barplot-{plottype}.pdf",
+                        folder=config["data_location"],
+                        sample=samples,
+                        method=method,
+                        plottype=config["plottype_consistency"],
+                        filter=config["methods"][method]["filter"],
+                    )
+                    for method in config["methods"]
+                ]
+                for sub_e in e
             ]
-            for sub_e in e
-        ]
-    )
+        )
 
-    # SV_clustering section
+        # SV_clustering section
 
-    # l_outputs.extend(
-    #     [
-    #         sub_e
-    #         for e in [
-    #             expand(
-    #                 "{folder}/{sample}/plots/sv_clustering/{method}-filter{filter}-{plottype}.pdf",
-    #                 folder=config["data_location"],
-    #                 sample=samples,
-    #                 method=method,
-    #                 plottype=config["plottype_clustering"],
-    #                 filter=config["methods"][method]["filter"],
-    #             )
-    #             for method in config["methods"]
-    #         ]
-    #         for sub_e in e
-    #     ]
-    # )
+        # l_outputs.extend(
+        #     [
+        #         sub_e
+        #         for e in [
+        #             expand(
+        #                 "{folder}/{sample}/plots/sv_clustering/{method}-filter{filter}-{plottype}.pdf",
+        #                 folder=config["data_location"],
+        #                 sample=samples,
+        #                 method=method,
+        #                 plottype=config["plottype_clustering"],
+        #                 filter=config["methods"][method]["filter"],
+        #             )
+        #             for method in config["methods"]
+        #         ]
+        #         for sub_e in e
+        #     ]
+        # )
 
-    # TMP FIX - TO PREVENT ISSUES WHEN USING ONLY SUBSET OF CHROMS
-    # if len(config["chromosomes"]) == 23:
+        # TMP FIX - TO PREVENT ISSUES WHEN USING ONLY SUBSET OF CHROMS
+        # if len(config["chromosomes"]) == 23:
 
-    l_outputs.extend(
-        [
-            sub_e
-            for e in [
-                expand(
-                    "{folder}/{sample}/plots/sv_clustering_dev/{method}-filter{filter}-{plottype}.pdf",
-                    folder=config["data_location"],
-                    sample=samples,
-                    method=method,
-                    plottype=config["plottype_clustering"],
-                    # plottype=config["plottype_clustering"],
-                    filter=config["methods"][method]["filter"],
-                )
-                for method in config["methods"]
+        l_outputs.extend(
+            [
+                sub_e
+                for e in [
+                    expand(
+                        "{folder}/{sample}/plots/sv_clustering_dev/{method}-filter{filter}-{plottype}.pdf",
+                        folder=config["data_location"],
+                        sample=samples,
+                        method=method,
+                        plottype=config["plottype_clustering"],
+                        # plottype=config["plottype_clustering"],
+                        filter=config["methods"][method]["filter"],
+                    )
+                    for method in config["methods"]
+                ]
+                for sub_e in e
             ]
-            for sub_e in e
-        ]
-    )
+        )
 
-    l_outputs.extend(
-        [
-            sub_e
-            for e in [
-                expand(
-                    "{folder}/{sample}/plots/sv_calls_dev/{method}_filter{filter}/{chrom}.pdf",
-                    folder=config["data_location"],
-                    sample=samples,
-                    method=method,
-                    chrom=config["chromosomes"],
-                    filter=config["methods"][method]["filter"],
-                )
-                for method in config["methods"]
+        l_outputs.extend(
+            [
+                sub_e
+                for e in [
+                    expand(
+                        "{folder}/{sample}/plots/sv_calls_dev/{method}_filter{filter}/{chrom}.pdf",
+                        folder=config["data_location"],
+                        sample=samples,
+                        method=method,
+                        chrom=config["chromosomes"],
+                        filter=config["methods"][method]["filter"],
+                    )
+                    for method in config["methods"]
+                ]
+                for sub_e in e
             ]
-            for sub_e in e
-        ]
-    )
+        )
 
-    # Complex section
+        # Complex section
 
-    l_outputs.extend(
-        [
-            sub_e
-            for e in [
-                expand(
-                    "{folder}/{sample}/mosaiclassifier/complex/{method}_filter{filter}.tsv",
-                    folder=config["data_location"],
-                    sample=samples,
-                    method=method,
-                    filter=config["methods"][method]["filter"],
-                )
-                for method in config["methods"]
+        l_outputs.extend(
+            [
+                sub_e
+                for e in [
+                    expand(
+                        "{folder}/{sample}/mosaiclassifier/complex/{method}_filter{filter}.tsv",
+                        folder=config["data_location"],
+                        sample=samples,
+                        method=method,
+                        filter=config["methods"][method]["filter"],
+                    )
+                    for method in config["methods"]
+                ]
+                for sub_e in e
             ]
-            for sub_e in e
-        ]
-    ),
-
-    # Ploidy section
-    l_outputs.extend(
-        expand(
-            "{folder}/{sample}/plots/ploidy/{sample}.pdf",
-            folder=config["data_location"],
-            sample=samples,
         ),
-    )
 
-    # Stats section
-
-    l_outputs.extend(
-        expand(
-            "{folder}/{sample}/stats/stats-merged.html",
-            folder=config["data_location"],
-            sample=samples,
-        ),
-    )
-
-    # Run summary section
-
-    l_outputs.extend(
-        expand(
-            "{folder}/config/{sample}/run_summary.txt",
-            folder=config["data_location"],
-            sample=samples,
-        ),
-    )
-
-    if config["arbigent"] is True:
+        # Ploidy section
         l_outputs.extend(
             expand(
-                "{folder}/{sample}/arbigent/regenotyper_allsamples_bulk/qc/lineplot_gts.pdf",
+                "{folder}/{sample}/plots/ploidy/{sample}.pdf",
                 folder=config["data_location"],
                 sample=samples,
-            )
+            ),
         )
+
+        # Stats section
+
+        l_outputs.extend(
+            expand(
+                "{folder}/{sample}/stats/stats-merged.html",
+                folder=config["data_location"],
+                sample=samples,
+            ),
+        )
+
+        # Run summary section
+
+        l_outputs.extend(
+            expand(
+                "{folder}/config/{sample}/run_summary.txt",
+                folder=config["data_location"],
+                sample=samples,
+            ),
+        )
+
+
 
     return l_outputs

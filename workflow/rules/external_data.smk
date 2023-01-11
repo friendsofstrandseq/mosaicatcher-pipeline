@@ -137,6 +137,7 @@ rule samtools_faindex:
     shell:
         "samtools faidx {input}"
 
+
 rule download_arbigent_mappability_track:
     input:
         HTTP.remote(
@@ -144,11 +145,12 @@ rule download_arbigent_mappability_track:
             keep_local=True,
         ),
     output:
-        config["arbigent_data"]["arbigent_mapability_track"]
+        config["arbigent_data"]["arbigent_mapability_track"],
     log:
         touch("log/config/dl_arbigent_mappability_track.ok"),
-    run:
-        directory = "workflow/data/arbigent/"
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-        shell("mv {input} {output}")
+    shell:
+        """
+        directory="workflow/data/arbigent/"
+        mkdir -p "$directory"
+        mv {input} {output}
+        """

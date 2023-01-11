@@ -125,7 +125,6 @@ print('Loading probabilities table')
 probs_raw = load_and_prep_pdf(p_link)
 print('Done loading')
 
-print(unique(probs_raw$chrom))
 # load file containing info on valid bins
 CN = read.table(debug_file, header=1, stringsAsFactors = F)
 
@@ -147,8 +146,6 @@ if (!is.null(CN)){
 probs_raw = p2[!is.na(p2$sample),]
 #probs_raw = probs_raw[probs_raw$chrom == 'chr22',]
 
-print("ASDSADSADSASDASA")
-print(unique(probs_raw$chrom))
 #############################################################
 #############################################################
 # ATTENTION LADIES AND GENTLEMEN, HERE IS THE NORMALIZATION #

@@ -17,3 +17,4 @@ dependencies:
   - matplotlib
   # SOLVE se-pe detection
   - samtools
+  - pytables
