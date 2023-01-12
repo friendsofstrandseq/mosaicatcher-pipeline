@@ -49,10 +49,15 @@ window:
   required: True
   default: 200000
 chromosomes:
-  desc: List of chromosomes to used in the GC_analysis
+  desc: List of chromosomes to be processed in the pipeline
   type: list
   required: True
   default: "[chr1..22,chrX]"
+chromosomes_to_exclude:
+  desc: List of chromosomes to be excluded
+  type: list
+  required: True
+  default: "[]"
 genecore:
   desc: Enable / Disable genecore option to work on GeneCore folder. Required genecore_date_folder
   type: bool
