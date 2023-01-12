@@ -574,7 +574,7 @@ def get_all_plots(wildcards):
 
         l_outputs.extend(
             expand(
-                "{folder}/config/{sample}/run_summary.txt",
+                "{folder}/{sample}/config/run_summary.txt",
                 folder=config["data_location"],
                 sample=samples,
             ),
