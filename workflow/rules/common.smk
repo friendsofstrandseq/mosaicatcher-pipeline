@@ -446,7 +446,6 @@ def get_all_plots(wildcards):
     for s in tmp_dict.keys():
         tmp_dict[s][0] = "SummaryPage"
 
-
     l_outputs = list()
 
     tmp_l_divide = [
