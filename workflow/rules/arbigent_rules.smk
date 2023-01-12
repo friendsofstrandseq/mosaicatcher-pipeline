@@ -21,11 +21,11 @@ if config["arbigent"] is True:
         input:
             "workflow/data/arbigent/manual_segmentation.bed",
         output:
-            "{folder}/{sample}/arbigent/manual_segmentation_custom.bed"
+            "{folder}/{sample}/arbigent/manual_segmentation_custom.bed",
         log:
-            "{folder}/{sample}/log/manual_segmentation_custom/{sample}.log"
+            "{folder}/{sample}/log/manual_segmentation_custom/{sample}.log",
         params:
-            chromosomes="|".join(config["chromosomes"])
+            chromosomes="|".join(config["chromosomes"]),
         conda:
             "../envs/mc_base.yaml"
         shell:
@@ -34,7 +34,9 @@ if config["arbigent"] is True:
     rule watson_crick_counts:
         input:
             bam_cells=selected_input_bam,
-            bed="{folder}/{sample}/arbigent/manual_segmentation_custom.bed",
+            bed="workflow/data/arbigent/manual_segmentation.bed"
+            if len(config["chromosomes"]) == 24
+            else "{folder}/{sample}/arbigent/manual_segmentation_custom.bed",
             mapping=config["arbigent_data"]["arbigent_mapability_track"],
             mapping_h5=config["arbigent_data"]["arbigent_mapability_track_h5"],
         output:
