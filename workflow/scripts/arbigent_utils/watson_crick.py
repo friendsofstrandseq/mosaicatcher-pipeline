@@ -515,7 +515,9 @@ def main():
 
     # args = parse_command_line()
     debug = False
-    chromosome = "genome"
+    chromosome = snakemake.params.genome_chromosome_param
+    print(chromosome)
+    # chromosome = "genome"
     bin_size = 100
     min_mapp = 75
     lengthcorr_bool = False
@@ -523,7 +525,7 @@ def main():
     jobs = snakemake.threads
 
     sample = snakemake.wildcards.sample
-    input_bam = snakemake.input.bam_folder
+    input_bam = snakemake.params.bam_folder
     input_bed = snakemake.input.bed
     norm_count_output = snakemake.output.processing_counts
     map_counts = snakemake.input.mapping
@@ -553,7 +555,8 @@ def main():
 
     chroms_to_process = []
     if chromosome != "genome":
-        chroms_to_process = [chromosome]
+        # chroms_to_process = [chromosome]
+        chroms_to_process = chromosome.split(",")
     else:
         with pd.HDFStore(map_counts_file, "r") as hdf:
             chroms_to_process = set([os.path.dirname(c).strip("/") for c in hdf.keys()])

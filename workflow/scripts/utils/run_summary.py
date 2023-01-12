@@ -29,7 +29,7 @@ final_df = final_df.rename({"hand_labels": "Ashleys/hand labels"}, axis=1).sort_
 
 df_ploidy = pd.read_csv(ploidy_summary, sep="\t")[["#chrom", "50%"]]
 df_ploidy = df_ploidy.loc[df_ploidy["#chrom"] != "genome"]
-chroms = ["chr" + str(c) for c in list(range(1, 23))] + ["chrX"]
+chroms = ["chr" + str(c) for c in list(range(1, 23))] + ["chrX", "chrY"]
 df_ploidy["#chrom"] = pd.Categorical(df_ploidy["#chrom"], categories=chroms, ordered=True)
 df_ploidy = df_ploidy.sort_values(by=["#chrom"]).rename({"#chrom": "chrom", "50%": "ploidy_estimation"}, axis=1)
 df_ploidy.loc[df_ploidy["ploidy_estimation"] == 1, "StrandPhaseR_processed"] = 0

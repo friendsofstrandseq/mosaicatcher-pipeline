@@ -33,7 +33,7 @@ rule config_run_summary:
         single_paired_end_detect="{folder}/{sample}/config/single_paired_end_detection.txt",
     output:
         summary=report(
-            "{folder}/config/{sample}/run_summary.txt",
+            "{folder}/{sample}/config/run_summary.txt",
             category="Run summary",
             labels={"Sample": "{sample}"},
         ),

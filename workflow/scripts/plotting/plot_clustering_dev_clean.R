@@ -16,12 +16,12 @@ pdf(snakemake@output[["pdf"]], width = 20, height = 10)
 
 # Chromosome order
 chrOrder <-
-    c(paste("chr", 1:22, sep = ""), "chrX")
+    c(paste("chr", 1:22, sep = ""), "chrX", "chrY")
 
 # Load SV data
 
 # data_file = "../stringent_filterTRUE.tsv"
-data_file = snakemake@input[["sv_calls"]]
+data_file <- snakemake@input[["sv_calls"]]
 # data1 <- read.table("../lenient_filterFALSE.tsv",
 data1 <- read.table(data_file,
     sep = "\t",
@@ -251,7 +251,7 @@ draw(cat_h,
 
 # Export clustered row order to output in order to use it in python script
 row_order <- row_order(cl_h)
-cell = rownames(t_lite_data_pivot)[row_order]
+cell <- rownames(t_lite_data_pivot)[row_order]
 index <- seq(1, length(cell))
 cluster_order_df <- data.frame(index, row_order, cell)
 # write.table(cluster_order_df, file = "test.tsv", sep = "\t", row.names = FALSE, quote = FALSE)
