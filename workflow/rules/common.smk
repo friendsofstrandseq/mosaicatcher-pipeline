@@ -17,14 +17,23 @@ envvars:
 if config["list_commands"] is True:
     pipeline_aesthetic_start.argparse_help(config)
 
-# wildcard_constraints:
-#     cell="^((?!mdup).)*$"
-
 
 # Start with aesthetic pipeline config presentation
 onstart:
     pipeline_aesthetic_start.pipeline_aesthetic_start(config)
+    subprocess.Popen(
+        "rsync --ignore-existing -avzh config/config.yaml {folder_path}/config".format(
+            folder_path=config["data_location"]
+        ),
+        shell=True,
+        stdout=subprocess.PIPE,
+    )
 
+
+if config["chromosomes_to_exclude"]:
+    chroms_init = config["chromosomes"]
+    chroms = [e for e in chroms_init if e not in config["chromosomes_to_exclude"]]
+    config["chromosomes"] = chroms
 
 # # List of assertions to verify
 # if config["genecore"] is False:
@@ -35,24 +44,10 @@ onstart:
 # #         config["data_location"]
 # #     )
 
-# dl_bam_example_option_selected = config["dl_bam_example"]
-# assert (
-#     type(dl_bam_example_option_selected) is bool
-# ), "Wrong plot option selected : {}\nPlease enter a valid value (True / False)".format(
-#     config["plot"]
-# )
-
-# dl_external_files_option_selected = config["dl_external_files"]
-# assert (
-#     type(dl_external_files_option_selected) is bool
-# ), "Wrong plot option selected : {}\nPlease enter a valid value (True / False)".format(
-#     config["plot"]
-# )
-
-# if config["ashleys_pipeline"] is True:
-#     assert (
-#         config["ashleys_pipeline"] != config["input_bam_legacy"]
-#     ), "ashleys_pipeline and input_bam_legacy parameters cannot both be set to True"
+if config["ashleys_pipeline"] is True:
+    assert (
+        config["ashleys_pipeline"] != config["input_bam_legacy"]
+    ), "ashleys_pipeline and input_bam_legacy parameters cannot both be set to True"
 
 
 # Configure if handle_input needs to be based on bam or fastq
@@ -364,6 +359,7 @@ bam_per_sample_local = (
     .apply(list)
     .to_dict()
 )
+
 bam_per_sample = (
     df_config_files.loc[df_config_files["Selected"] == True]
     .groupby("Sample")["Cell"]
@@ -450,11 +446,8 @@ def get_all_plots(wildcards):
     for s in tmp_dict.keys():
         tmp_dict[s][0] = "SummaryPage"
 
-    # from pprint import pprint
-    # pprint(tmp_dict)
 
     l_outputs = list()
-
 
     tmp_l_divide = [
         expand(
@@ -470,8 +463,6 @@ def get_all_plots(wildcards):
     ]
 
     l_outputs.extend([sub_e for e in tmp_l_divide for sub_e in e])
-    # pprint(l_outputs)
-
 
     if config["arbigent"] is True:
         l_outputs.extend(
@@ -481,26 +472,6 @@ def get_all_plots(wildcards):
                 sample=samples,
             )
         )
-
-    # SV_calls section
-
-    # l_outputs.extend(
-    #     [
-    #         sub_e
-    #         for e in [
-    #             expand(
-    #                 "{folder}/{sample}/plots/sv_calls/{method}_filter{filter}/{chrom}.pdf",
-    #                 folder=config["data_location"],
-    #                 sample=samples,
-    #                 method=method,
-    #                 chrom=config["chromosomes"],
-    #                 filter=config["methods"][method]["filter"],
-    #             )
-    #             for method in config["methods"]
-    #         ]
-    #         for sub_e in e
-    #     ]
-    # )
 
     else:
 
@@ -523,29 +494,6 @@ def get_all_plots(wildcards):
                 for sub_e in e
             ]
         )
-
-        # SV_clustering section
-
-        # l_outputs.extend(
-        #     [
-        #         sub_e
-        #         for e in [
-        #             expand(
-        #                 "{folder}/{sample}/plots/sv_clustering/{method}-filter{filter}-{plottype}.pdf",
-        #                 folder=config["data_location"],
-        #                 sample=samples,
-        #                 method=method,
-        #                 plottype=config["plottype_clustering"],
-        #                 filter=config["methods"][method]["filter"],
-        #             )
-        #             for method in config["methods"]
-        #         ]
-        #         for sub_e in e
-        #     ]
-        # )
-
-        # TMP FIX - TO PREVENT ISSUES WHEN USING ONLY SUBSET OF CHROMS
-        # if len(config["chromosomes"]) == 23:
 
         l_outputs.extend(
             [
@@ -631,7 +579,5 @@ def get_all_plots(wildcards):
                 sample=samples,
             ),
         )
-
-
 
     return l_outputs

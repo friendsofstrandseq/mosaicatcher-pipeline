@@ -11,7 +11,7 @@ if config["ashleys_pipeline"] is False:
 
     rule plot_mosaic_counts:
         input:
-            counts="{folder}/{sample}/counts/{sample}.txt.raw.gz",
+            counts="{folder}/{sample}/counts/{sample}.txt.populated.gz",
             info="{folder}/{sample}/counts/{sample}.info_raw",
         output:
             "{folder}/{sample}/plots/counts/CountComplete.classic.pdf",

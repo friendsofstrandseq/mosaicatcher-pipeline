@@ -10,19 +10,19 @@ sys.stderr = sys.stdout = log
 
 # Categorical mapping
 d = {
-    "none": 1,
-    "del_h1": 2,
-    "del_h2": 3,
-    "del_hom": 4,
-    "dup_h1": 5,
-    "dup_h2": 6,
-    "dup_hom": 7,
-    "inv_h1": 8,
-    "inv_h2": 9,
-    "inv_hom": 10,
-    "idup_h1": 11,
-    "idup_h2": 12,
-    "complex": 13,
+    "none": 0,
+    "del_h1": 1,
+    "del_h2": 2,
+    "del_hom": 3,
+    "dup_h1": 4,
+    "dup_h2": 5,
+    "dup_hom": 6,
+    "inv_h1": 7,
+    "inv_h2": 8,
+    "inv_hom": 9,
+    "idup_h1": 10,
+    "idup_h2": 11,
+    "complex": 12,
 }
 
 # Colors
@@ -65,7 +65,7 @@ binbed["chrom"] = pd.Categorical(
 
 # Sort & filter out chrY #TMP / can be changed
 binbed = binbed.sort_values(by=["chrom", "start", "end"]).reset_index(drop=True)
-binbed = binbed.loc[~binbed["chrom"].isin(["chrY"])]
+# binbed = binbed.loc[~binbed["chrom"].isin(["chrY"])]
 
 # Instanciate final list
 l = list()
@@ -141,12 +141,12 @@ pivot_concat_df = pd.concat([pivot_concat_df.reset_index(), tmp], axis=1).drop(p
 
 pivot_concat_df["chrom"] = pd.Categorical(
     pivot_concat_df["chrom"],
-    categories=["chr{}".format(e) for e in range(1, 23)] + ["chrX"],
+    categories=["chr{}".format(e) for e in range(1, 23)] + ["chrX", "chrY"],
     ordered=True,
 )
 pivot_concat_df = pivot_concat_df.sort_values(by=["chrom", "start", "end"]).reset_index(drop=True)
 
-chroms = ["chr{}".format(e) for e in range(1, 23)] + ["chrX"]
+chroms = ["chr{}".format(e) for e in range(1, 23)] + ["chrX", "chrY"]
 # chroms = chroms[:2]
 # chroms = ["chr10", "chr13", "chr22"]
 
@@ -221,13 +221,13 @@ pivot_concat_df = pd.concat([pivot_concat_df.reset_index(), tmp], axis=1).drop(p
 
 pivot_concat_df["chrom"] = pd.Categorical(
     pivot_concat_df["chrom"],
-    categories=["chr{}".format(e) for e in range(1, 23)] + ["chrX"],
+    categories=["chr{}".format(e) for e in range(1, 23)] + ["chrX", "chrY"],
     ordered=True,
 )
 pivot_concat_df = pivot_concat_df.sort_values(by=["chrom", "start", "end"]).reset_index(drop=True)
 
 
-chroms = ["chr{}".format(e) for e in range(1, 23)] + ["chrX"]
+chroms = ["chr{}".format(e) for e in range(1, 23)] + ["chrX", "chrY"]
 # chroms = ["chr10", "chr13"]
 # chroms = chroms[:2]
 

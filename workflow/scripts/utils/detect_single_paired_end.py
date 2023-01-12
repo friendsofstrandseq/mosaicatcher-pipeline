@@ -17,7 +17,7 @@ l_df = m.list()
 
 
 def loop(file, l_df):
-    """MP function to compute chrX/chrY coverage ratio
+    """MP function
 
     Args:
         file (str): bam file path

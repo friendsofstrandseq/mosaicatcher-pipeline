@@ -1,7 +1,7 @@
 # Make a table
 make_table_sc_separated <- function(pg_f){
   library(reshape2)
-  library(reshape)
+  # library(reshape)
     
   n_sites = dim(unique(pg_f[,c('chrom','start','end')]))[1]
   

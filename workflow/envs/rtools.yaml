@@ -33,7 +33,6 @@ dependencies:
   - r-gplots
   - r-gtools
   - r-mc2d
-  # - r-pheatmap
   - r-rcolorbrewer
   - r-reshape2
   - r-scales
@@ -44,3 +43,9 @@ dependencies:
   - r-ggnewscale
   # HEATMAP
   - r-tidyr
+  # ARBIGENT
+  - r-reshape
+  - r-optparse
+  - r-tidyr
+  - r-ggbeeswarm
+  - r-pheatmap

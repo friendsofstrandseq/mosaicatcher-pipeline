@@ -9,7 +9,7 @@ if config["arbigent"] is True:
         plots for each sample
         """
         input:
-            probabilities_table="{folder}/{sample}/arbigent/mosaiclassifier/sv_probabilities/probabilities.Rdata",
+            probabilities_table="{folder}/{sample}/arbigent_mosaiclassifier/sv_probabilities/probabilities.Rdata",
             msc="{folder}/{sample}/arbigent/sv_calls/msc.debug",
         output:
             sv_calls_bulk_dir=directory(
@@ -18,10 +18,8 @@ if config["arbigent"] is True:
             sv_calls_bulk="{folder}/{sample}/arbigent/regenotyper_samplewise_bulk/sv_calls/all/sv_calls_bulk.txt",
         log:
             "{folder}/log/run_regenotypeR_samplewise_bulk/{sample}.log",
-        # params:
-        #     outputfolder=lambda wc, output: f"{'/'.join(str(output.sv_calls_bulk).split('/')[:-1])}/",
         conda:
-            "../envs/dev/rtools_enhanced.yaml"
+            "../envs/rtools.yaml"
         shell:
             """
             Rscript workflow/scripts/arbigent/regenotype.R \
@@ -40,6 +38,8 @@ if config["arbigent"] is True:
             sv_calls_bulk="{folder}/{sample}/arbigent/regenotyper_samplewise_bulk/sv_calls/all/sv_calls_bulk.txt",
         output:
             "{folder}/{sample}/arbigent/regenotyper_allsamples_bulk/all_sv_calls_unphased.txt",
+        log:
+            "{folder}/log/regenotyper_allsamples_bulk/{sample}.log",
         conda:
             "../envs/mc_base.yaml"
         shell:
@@ -55,6 +55,8 @@ if config["arbigent"] is True:
             all_txt="{folder}/{sample}/arbigent/regenotyper_allsamples_bulk/all_sv_calls_unphased.txt",
         output:
             all_txt_rephased="{folder}/{sample}/arbigent/regenotyper_allsamples_bulk/all_sv_calls_phased.txt",
+        log:
+            "{folder}/log/rephase_all_txt/{sample}.log",
         conda:
             "../envs/mc_base.yaml"
         shell:
@@ -80,10 +82,8 @@ if config["arbigent"] is True:
             ),
         log:
             "{folder}/log/make_output_vcfs/{sample}.log",
-        params:
-            outdir=lambda wc, output: f"{'/'.join(str(output.res_csv).split('/')[:-1])}/",
         conda:
-            "../envs/dev/rtools_enhanced.yaml"
+            "../envs/rtools.yaml"
         shell:
             """
             Rscript workflow/scripts/arbigent/table_to_vcfs.R \
@@ -105,7 +105,7 @@ if config["arbigent"] is True:
         params:
             names_gm_to_na=1,
         conda:
-            "../envs/dev/rtools_enhanced.yaml"
+            "../envs/rtools.yaml"
         shell:
             """
             Rscript workflow/scripts/arbigent/add_filter.R \
@@ -124,10 +124,8 @@ if config["arbigent"] is True:
             ),
         log:
             "{folder}/log/qc_result/{sample}.log",
-        params:
-            qc_folder=lambda wc, output: f"{'/'.join(str(output.verdict_plot).split('/')[:-1])}/",
         conda:
-            "../envs/dev/rtools_enhanced.yaml"
+            "../envs/rtools.yaml"
         shell:
             """
             Rscript workflow/scripts/arbigent/qc_res_verdicted.R \
