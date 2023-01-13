@@ -31,7 +31,6 @@ genecore: False
 samples_to_process: []
 genecore_date_folder: ""
 genecore_prefix: "/g/korbel/shared/genecore"
-arbigent: False
 input_bam_legacy: False
 
 ### Modes ["count", "segmentation", "mosaiclassifier"]
