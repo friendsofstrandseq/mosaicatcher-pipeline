@@ -342,7 +342,8 @@ The `logs` and `errors` directory will be automatically created in the current d
 
 ### 📊 5. Generate report [Optional]
 
-Optionally, you can also MosaiCatcher rules that produce plots
+Optionally, it's also possible to generate a static interactive HTML report to explore the different plots produced by MosaiCatcher, using the same command as before and just adding at the end the following:
+`--report <report>.zip --report-stylesheet workflow/report/custom-stylesheet.css`, which correspond to the following complete command:
 
 ```bash
 snakemake \
@@ -350,7 +351,7 @@ snakemake \
         data_location=<INPUT_FOLDER> \
     --singularity-args "-B /<mounting_point>:/<mounting_point>" \
     --profile workflow/snakemake_profiles/slurm_generic/ \
-    --report <report>.zip
+    --report <report>.zip --report-stylesheet workflow/report/custom-stylesheet.css
 ```
 
 ---
@@ -358,6 +359,28 @@ snakemake \
 **ℹ️ Note**
 
 The zip file produced can be heavy (~1GB for 24 HGSVC samples ; 2000 cells) if multiple samples are processed in parallel in the same output folder.
+
+---
+
+### ArbiGent mode of execution
+
+From 1.9.0, it's now possible to run MosaiCatcher in order to genotype a given list of positions specified in a bed file. To do so, `arbigent` config parameter need to be set to `True`.
+Thus, an alternative branch of the pipeline will be executed instead of the classic one, targetting results produced by ArbiGent.
+
+```bash
+snakemake \
+    --cores <N> --config data_location=<INPUT_DATA_FOLDER> arbigent=True \
+    --profile workflow/snakemake_profiles/local/conda_singularity/
+
+```
+
+A generic BED file is provided in `workflow/data/arbigent/manual_segmentation.bed`. A custom BED file can be specified by modifying `arbigent_bed` config parameter to the path of your choice.
+
+---
+
+**ℹ️ Note**
+
+If you modify the chromosome list to be processed (remove chrX & chrY for instance), a dedicated rule will extract only from the BED file, the rows matching the list of chromosomes to be analysed.
 
 ---
 

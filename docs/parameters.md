@@ -15,10 +15,10 @@ All these arguments can be specified in two ways:
 
 ### Input/output options
 
-| Parameter            | Comment                                                                                                           | Parameter type | Default            |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------- | ------------------ |
-| `data_location`      | Path to parent folder containing samples                                                                          | String         | .tests/data_CHR17/ |
-| `ashleys_pipeline`   | Allow to load and use ashleys-qc-pipeline snakemake preprocessing module and to start from FASTQ inputs           | Boolean        | False              |
+| Parameter          | Comment                                                                                                           | Parameter type | Default            |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------- | -------------- | ------------------ |
+| `data_location`    | Path to parent folder containing samples                                                                          | String         | .tests/data_CHR17/ |
+| `ashleys_pipeline` | Allow to load and use ashleys-qc-pipeline snakemake preprocessing module and to start from FASTQ inputs           | Boolean        | False              |
 | `input_bam_legacy` | Mutualy exclusive with ashleys_pipeline. Will use `selected` folder to identify high-quality libraries to process | Boolean        | False              |
 
 ### Other parameters
@@ -42,6 +42,7 @@ All these arguments can be specified in two ways:
 | `reference`             | Reference genome                                                              | X                                                                          |
 | `R_reference`           | Reference genome used by R scripts                                            | X                                                                          |
 | `segdups`               | Segmental duplication file defined for hg38 reference genome                  | X                                                                          |
+| `arbigent_bed`          | Allow to specify custom ArbiGent BED file                                     | X                                                                          |
 
 ### Processing options
 
