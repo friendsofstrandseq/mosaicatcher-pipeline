@@ -13,8 +13,10 @@ data_location: ".tests/data_CHR17"
 reference: "hg38"
 # Enable / Disable GC analysis
 GC_analysis: False
-# Arbigent / Arbitraty-segments genotyping
+# ArbiGent (Arbitrary-segments genotyping) mode of execution
 arbigent: False
+# Arbigent default BED file, can be changed and adapted based on user question
+arbigent_bed_file: "workflow/data/arbigent/manual_segmentation.bed"
 # Enable / Disable GC row condition analysis
 GC_rowcol_condition: False
 # Enable / Disable FastQC analysis
