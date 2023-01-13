@@ -374,7 +374,7 @@ snakemake \
 
 ```
 
-A generic BED file is provided in `workflow/data/arbigent/manual_segmentation.bed`. A custom BED file can be specified by modifying `arbigent_bed` config parameter to the path of your choice.
+A generic BED file is provided in `workflow/data/arbigent/manual_segmentation.bed`. A custom BED file can be specified by modifying `arbigent_bed_file` config parameter to the path of your choice.
 
 ---
 
