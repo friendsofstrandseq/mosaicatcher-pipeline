@@ -49,10 +49,15 @@ window:
   required: True
   default: 200000
 chromosomes:
-  desc: List of chromosomes to used in the GC_analysis
+  desc: List of chromosomes to be processed in the pipeline
   type: list
   required: True
   default: "[chr1..22,chrX]"
+chromosomes_to_exclude:
+  desc: List of chromosomes to be excluded
+  type: list
+  required: True
+  default: "[]"
 genecore:
   desc: Enable / Disable genecore option to work on GeneCore folder. Required genecore_date_folder
   type: bool
@@ -68,7 +73,6 @@ samples_to_process:
   type: list
   required: True
   default: "[]"
-
 normalized_counts:
   desc: Normalize or not mosaic counts
   type: bool
@@ -84,3 +88,15 @@ ashleys_pipeline:
   type: bool
   required: False
   default: False
+arbigent:
+  desc: Enable ArbiGent mode of execution to genotype specific regions of Strand Seq libraries
+  type: bool
+  required: False
+  default: False
+  lint_check: False
+arbigent_bed_file:
+  desc: ArbiGent BED file path that would be used to perform arbitrary segmentation
+  type: str
+  required: False
+  default: "workflow/data/arbigent/manual_segmentation.bed"
+  lint_check: False

@@ -13,6 +13,10 @@ data_location: ".tests/data_CHR17"
 reference: "hg38"
 # Enable / Disable GC analysis
 GC_analysis: False
+# ArbiGent (Arbitrary-segments genotyping) mode of execution
+arbigent: False
+# Arbigent default BED file, can be changed and adapted based on user question
+arbigent_bed_file: "workflow/data/arbigent/manual_segmentation.bed"
 # Enable / Disable GC row condition analysis
 GC_rowcol_condition: False
 # Enable / Disable FastQC analysis
@@ -56,6 +60,9 @@ chromosomes:
   - chr21
   - chr22
   - chrX
+  - chrY
+
+chromosomes_to_exclude: []
 
 # GENECORE
 genecore: False
@@ -155,3 +162,9 @@ abs_path: "/"
 ### Plot enabled [True] or disabled [False]
 # plot: False [CURRENTLY DISABLED]
 
+arbigent_data:
+  arbigent_mapability_track: workflow/data/arbigent/mapping_counts_allchrs_hg38.txt
+  arbigent_mapability_track_h5: workflow/data/arbigent/mapping_counts_allchrs_hg38.h5
+
+# If specified, will copy important data (stats, plots, counts file) to a second place
+publishdir: ""

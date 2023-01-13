@@ -58,6 +58,19 @@ if config["ashleys_pipeline"] is False:
             > {log} 2>&1
             """
 
+    rule populate_counts:
+        input:
+            bin_bed="workflow/data/bin_200kb_all.bed",
+            counts="{folder}/{sample}/counts/{sample}.txt.raw.gz",
+        output:
+            populated_counts="{folder}/{sample}/counts/{sample}.txt.populated.gz",
+        log:
+            "{folder}/log/plot_mosaic_counts/{sample}.log",
+        conda:
+            "../envs/mc_base.yaml"
+        script:
+            "../scripts/utils/populated_counts_for_qc_plot.py"
+
     if config["input_bam_legacy"] is True:
 
         rule selected_cells:
@@ -114,15 +127,16 @@ rule symlink_selected_bam:
     conda:
         "../envs/mc_base.yaml"
     script:
-        "../scripts/utils/symlink_selected_bam.py"    
-    # run:
-    #     if config["use_light_data"] is False:
-    #         shell("ln -s {input.bam} {output.bam}")
-    #         shell("ln -s {input.bai} {output.bai}")
-    #     else:
-    #         shell("cp {input.bam} {output.bam}")
-    #         shell("cp {input.bai} {output.bai}")
+        "../scripts/utils/symlink_selected_bam.py"
 
+
+# run:
+#     if config["use_light_data"] is False:
+#         shell("ln -s {input.bam} {output.bam}")
+#         shell("ln -s {input.bai} {output.bai}")
+#     else:
+#         shell("cp {input.bam} {output.bam}")
+#         shell("cp {input.bai} {output.bai}")
 
 
 rule remove_unselected_bam:
@@ -167,8 +181,9 @@ checkpoint filter_bad_cells_from_mosaic_count:
 
 if (
     config["window"] in [50000, 100000, 200000]
-    and config["reference"] == "hg38"
-    and config["normalized_counts"] == True
+    and (config["reference"] == "hg38")
+    and (config["normalized_counts"] is True)
+    and (config["arbigent"] is False)
 ):
 
     rule merge_blacklist_bins:
@@ -178,7 +193,7 @@ if (
         output:
             merged="{folder}/{sample}/normalizations/{reference}/HGSVC.{window}.merged.tsv",
         log:
-            "{folder}/log/normalizations/{sample}/{reference}/HGSVC.{window}.merged.tsv",
+            "{folder}/log/merge_blacklist_bins/{sample}/{reference}/HGSVC.{window}.merged.tsv",
         params:
             window=config["window"],
         conda:
@@ -188,25 +203,20 @@ if (
             workflow/scripts/normalization/merge-blacklist.py --merge_distance 500000 {input.norm} --whitelist {input.whitelist} --min_whitelist_interval_size {params.window} > {output.merged} 2>> {log}
             """
 
-    rule normalize_counts:
+elif config["arbigent"] is True:
+
+    rule merge_blacklist_bins_arbigent:
         input:
-            counts="{folder}/{sample}/counts/{sample}.txt.filter.gz",
-            norm=lambda wc: expand(
-                "{folder}/{sample}/normalizations/{reference}/HGSVC.{window}.merged.tsv",
-                folder=config["data_location"],
-                sample=wc.sample,
-                reference=config["reference"],
-                window=config["window"],
-            ),
+            norm="workflow/data/arbigent/normalization/{reference}/HGSVC.{window}.txt",
         output:
-            "{folder}/{sample}/counts/{window}.txt.gz",
+            merged="{folder}/{sample}/normalizations/{reference}/HGSVC.{window}.merged.tsv",
         log:
-            "{folder}/log/normalize_counts/{sample}_{window}.log",
+            "{folder}/log/merge_blacklist_bins_arbigent/{sample}/{reference}/HGSVC.{window}.merged.tsv",
         conda:
-            "../envs/rtools.yaml"
+            "../envs/mc_base.yaml"
         shell:
             """
-            Rscript workflow/scripts/normalization/normalize.R {input.counts} {input.norm} {output} 2>&1 > {log}
+            workflow/scripts/normalization/merge-blacklist.py --merge_distance 500000 {input.norm} > {output.merged} 2> {log}
             """
 
 else:
@@ -222,6 +232,28 @@ else:
             "../envs/mc_base.yaml"
         shell:
             "cp {input} {output}"
+
+
+rule normalize_counts:
+    input:
+        counts="{folder}/{sample}/counts/{sample}.txt.filter.gz",
+        norm=lambda wc: expand(
+            "{folder}/{sample}/normalizations/{reference}/HGSVC.{window}.merged.tsv",
+            folder=config["data_location"],
+            sample=wc.sample,
+            reference=config["reference"],
+            window=config["window"],
+        ),
+    output:
+        "{folder}/{sample}/counts/{sample}.txt.gz",
+    log:
+        "{folder}/log/normalize_counts/{sample}.log",
+    conda:
+        "../envs/rtools.yaml"
+    shell:
+        """
+        Rscript workflow/scripts/normalization/normalize.R {input.counts} {input.norm} {output} 2>&1 > {log}
+        """
 
 
 rule sort_counts:

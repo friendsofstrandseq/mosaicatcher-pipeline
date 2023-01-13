@@ -72,14 +72,17 @@ def pipeline_aesthetic_start(config):
 
     print(fg.ENDC)
     # Genome & chrom
-    chroms = ["chr{e}".format(e=str(e)) for e in range(1, 23)] + ["chrX"]
+    chroms = ["chr{e}".format(e=str(e)) for e in range(1, 23)] + ["chrX", "chrY"]
     if config["chromosomes"] == chroms:
-        print_chroms = "chr1..22,chrX"
+        print_chroms = "chr1..22,chrX,chrY"
     else:
         print_chroms = ",".join(config["chromosomes"])
     print("\033[1m{}\033[0m".format("Reference genome & Chromosomes options:"))
     l = [
         f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format("List of chromosomes processed", ": " + print_chroms),
+        f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format(
+            "List of chromosomes to exclude", ": " + ",".join(config["chromosomes_to_exclude"])
+        ),
         f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format("Reference genome selected", ": " + str(config["reference"])),
         # f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format("Reference FASTA file", ": " + str(config["references_data"][config["reference"]]["reference_file_location"])),
     ]

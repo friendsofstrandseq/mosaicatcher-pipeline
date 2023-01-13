@@ -13,7 +13,7 @@ df = pd.read_csv(snakemake.input.ploidy_detailled, sep="\t")
 df = df.loc[df["#chrom"] != "genome"]
 
 # GETTING CHR LIST & ORDER CATEGORICALLY
-chroms = ["chr" + str(c) for c in list(range(1, 23))] + ["chrX"]
+chroms = ["chr" + str(c) for c in list(range(1, 23))] + ["chrX", "chrY"]
 df["#chrom"] = pd.Categorical(df["#chrom"], categories=chroms, ordered=True)
 df = df.sort_values(by=["#chrom", "start"])
 

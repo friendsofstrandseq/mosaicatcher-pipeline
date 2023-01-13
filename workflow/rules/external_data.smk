@@ -136,3 +136,21 @@ rule samtools_faindex:
         mem_mb=get_mem_mb_heavy,
     shell:
         "samtools faidx {input}"
+
+
+rule download_arbigent_mappability_track:
+    input:
+        HTTP.remote(
+            "https://sandbox.zenodo.org/record/1119112/files/mapping_counts_allchrs_hg38.txt",
+            keep_local=True,
+        ),
+    output:
+        config["arbigent_data"]["arbigent_mapability_track"],
+    log:
+        touch("log/config/dl_arbigent_mappability_track.ok"),
+    shell:
+        """
+        directory="workflow/data/arbigent/"
+        mkdir -p "$directory"
+        mv {input} {output}
+        """
