@@ -19,7 +19,8 @@ if config["arbigent"] is True:
 
     rule custom_manual_segmentation_file:
         input:
-            "workflow/data/arbigent/manual_segmentation.bed",
+            config["arbigent_bed"],
+            # "workflow/data/arbigent/manual_segmentation.bed",
         output:
             "{folder}/{sample}/arbigent/manual_segmentation_custom.bed",
         log:
@@ -34,7 +35,7 @@ if config["arbigent"] is True:
     rule watson_crick_counts:
         input:
             bam_cells=selected_input_bam,
-            bed="workflow/data/arbigent/manual_segmentation.bed"
+            bed=config["arbigent_bed"]
             if len(config["chromosomes"]) == 24
             else "{folder}/{sample}/arbigent/manual_segmentation_custom.bed",
             mapping=config["arbigent_data"]["arbigent_mapability_track"],

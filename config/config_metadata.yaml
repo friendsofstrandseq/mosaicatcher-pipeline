@@ -73,7 +73,6 @@ samples_to_process:
   type: list
   required: True
   default: "[]"
-
 normalized_counts:
   desc: Normalize or not mosaic counts
   type: bool
@@ -89,15 +88,15 @@ ashleys_pipeline:
   type: bool
   required: False
   default: False
-publishdir:
-  desc: If specified, will copy important data (stats, plots, counts file) to a second place
-  type: str
-  required: False
-  default: ""
-  lint_check: False
 arbigent:
   desc: Enable ArbiGent mode of execution to genotype specific regions of Strand Seq libraries
   type: bool
   required: False
   default: False
+  lint_check: False
+arbigent_bed_file:
+  desc: ArbiGent BED file path that would be used to perform arbitrary segmentation
+  type: str
+  required: False
+  default: "workflow/data/arbigent/manual_segmentation.bed"
   lint_check: False
