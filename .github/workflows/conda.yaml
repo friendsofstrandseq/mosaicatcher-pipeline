@@ -15,7 +15,7 @@ jobs:
     #   - Linting
     #   - Formatting
     steps:
-      - uses: actions/checkout@v3.2.0
+      - uses: actions/checkout@v3.3.0
       - name: Testing data
         uses: snakemake/snakemake-github-action@v1.24.0
         with:
@@ -33,7 +33,7 @@ jobs:
   Linting_ashleys:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3.2.0
+      - uses: actions/checkout@v3.3.0
       - name: Linting
         uses: snakemake/snakemake-github-action@v1.24.0
         with:
@@ -46,7 +46,7 @@ jobs:
     #   - Linting
     #   - Formatting
     steps:
-      - uses: actions/checkout@v3.2.0
+      - uses: actions/checkout@v3.3.0
       - name: Testing data
         uses: snakemake/snakemake-github-action@v1.24.0
         with:
@@ -67,7 +67,7 @@ jobs:
     #   - Linting
     #   - Formatting
     steps:
-      - uses: actions/checkout@v3.2.0
+      - uses: actions/checkout@v3.3.0
       - name: Testing data
         uses: snakemake/snakemake-github-action@v1.24.0
         with:
@@ -87,7 +87,7 @@ jobs:
     #   - Linting
     #   - Formatting
     steps:
-      - uses: actions/checkout@v3.2.0
+      - uses: actions/checkout@v3.3.0
       - name: Testing data
         uses: snakemake/snakemake-github-action@v1.24.0
         with:
@@ -107,7 +107,7 @@ jobs:
     #   - Linting
     #   - Formatting
     steps:
-      - uses: actions/checkout@v3.2.0
+      - uses: actions/checkout@v3.3.0
       - name: Testing data
         uses: snakemake/snakemake-github-action@v1.24.0
         with:
@@ -128,7 +128,7 @@ jobs:
     #   - Linting
     #   - Formatting
     steps:
-      - uses: actions/checkout@v3.2.0
+      - uses: actions/checkout@v3.3.0
       - name: Testing data
         uses: snakemake/snakemake-github-action@v1.24.0
         with:
@@ -148,7 +148,7 @@ jobs:
     #   - Linting
     #   - Formatting
     steps:
-      - uses: actions/checkout@v3.2.0
+      - uses: actions/checkout@v3.3.0
       - name: Testing data
         uses: snakemake/snakemake-github-action@v1.24.0
         with:
@@ -168,7 +168,7 @@ jobs:
     #   - Linting
     #   - Formatting
     steps:
-      - uses: actions/checkout@v3.2.0
+      - uses: actions/checkout@v3.3.0
       - name: Testing data
         uses: snakemake/snakemake-github-action@v1.24.0
         with:
@@ -185,7 +185,7 @@ jobs:
   Linting_arbigent:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3.2.0
+      - uses: actions/checkout@v3.3.0
       - name: Linting
         uses: snakemake/snakemake-github-action@v1.24.0
         with:
@@ -198,7 +198,7 @@ jobs:
     #   - Linting
     #   - Formatting
     steps:
-      - uses: actions/checkout@v3.2.0
+      - uses: actions/checkout@v3.3.0
       - name: Testing data
         uses: snakemake/snakemake-github-action@v1.24.0
         with:
@@ -219,7 +219,7 @@ jobs:
   #   #   - Linting
   #   #   - Formatting
   #   steps:
-  #     - uses: actions/checkout@v3.2.0
+  #     - uses: actions/checkout@v3.3.0
   #     - name: Downloading_example_data
   #       uses: snakemake/snakemake-github-action@v1.24.0
   #       with:
@@ -233,7 +233,7 @@ jobs:
   #   #   - Linting
   #   #   - Formatting
   #   steps:
-  #     - uses: actions/checkout@v3.2.0
+  #     - uses: actions/checkout@v3.3.0
   #     - name: Downloading_hg19
   #       uses: snakemake/snakemake-github-action@v1.24.0
   #       with:
@@ -246,7 +246,7 @@ jobs:
   #   #   - Linting
   #   #   - Formatting
   #   steps:
-  #     - uses: actions/checkout@v3.2.0
+  #     - uses: actions/checkout@v3.3.0
   #     - name: Downloading_hg38
   #       uses: snakemake/snakemake-github-action@v1.24.0
   #       with:
@@ -259,7 +259,7 @@ jobs:
   #   #   - Linting
   #   #   - Formatting
   #   steps:
-  #     - uses: actions/checkout@v3.2.0
+  #     - uses: actions/checkout@v3.3.0
   #     - name: Downloading_T2T
   #       uses: snakemake/snakemake-github-action@v1.24.0
   #       with:
