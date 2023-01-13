@@ -42,13 +42,15 @@ checkpoint summarise_ploidy:
         "../envs/mc_base.yaml"
     script:
         "../scripts/ploidy/summarise_ploidy.py"
-    # run:
-        # df = (
-        #     pd.read_csv(input.ploidy, sep="\t")
-        #     .groupby("#chrom")["ploidy_estimate"]
-        #     .describe()
-        # )
-        # df.to_csv(output.summary, sep="\t")
+
+
+# run:
+# df = (
+#     pd.read_csv(input.ploidy, sep="\t")
+#     .groupby("#chrom")["ploidy_estimate"]
+#     .describe()
+# )
+# df.to_csv(output.summary, sep="\t")
 
 
 rule ploidy_bcftools:

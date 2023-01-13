@@ -1,0 +1,11 @@
+    "{folder}/{sample}/cell_selection/labels_raw.tsv",  
+    "{folder}/{sample}/cell_selection/labels.tsv",  
+    "{folder}/{sample}/counts/{sample}.info_raw",
+    "{folder}/{sample}/counts/{sample}.txt.raw.gz",
+    "{folder}/{sample}/plots/counts/CountComplete.classic.pdf",
+*    "{folder}/{sample}/cell_selection/labels_positive_control_corrected.tsv",
+*    "{folder}/{sample}/config/bypass_cell.txt"
+*    "{folder}/{sample}/plots/plate/ashleys_plate_predictions.pdf"
+*    "{folder}/{sample}/plots/plate/ashleys_plate_probabilities.pdf"
+*   "{folder}/{sample}/cell_selection/labels_notebook.tsv",
+*   "{folder}/{sample}/fastqc/{cell}_{pair}_fastqc.html",

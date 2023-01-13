@@ -1,19 +1,21 @@
-rule mosaiClassifier_calc_probs:
-    input:
-        counts="{folder}/{sample}/counts/{sample}.txt.gz",
-        info="{folder}/{sample}/counts/{sample}.info",
-        states="{folder}/{sample}/strandphaser/StrandPhaseR_final_output.txt",
-        bp="{folder}/{sample}/segmentation/Selection_jointseg.txt",
-    output:
-        output="{folder}/{sample}/mosaiclassifier/sv_probabilities/probabilities.Rdata",
-    log:
-        "{folder}/log/mosaiClassifier_calc_probs/{sample}.log",
-    conda:
-        "../envs/rtools.yaml"
-    resources:
-        mem_mb=get_mem_mb_heavy,
-    script:
-        "../scripts/mosaiclassifier_scripts/mosaiClassifier.snakemake.R"
+if config["arbigent"] is False:
+
+    rule mosaiClassifier_calc_probs:
+        input:
+            counts="{folder}/{sample}/counts/{sample}.txt.gz",
+            info="{folder}/{sample}/counts/{sample}.info",
+            states="{folder}/{sample}/strandphaser/StrandPhaseR_final_output.txt",
+            bp="{folder}/{sample}/segmentation/Selection_jointseg.txt",
+        output:
+            output="{folder}/{sample}/mosaiclassifier/sv_probabilities/probabilities.Rdata",
+        log:
+            "{folder}/log/mosaiClassifier_calc_probs/{sample}.log",
+        conda:
+            "../envs/rtools.yaml"
+        resources:
+            mem_mb=get_mem_mb_heavy,
+        script:
+            "../scripts/mosaiclassifier_scripts/mosaiClassifier.snakemake.R"
 
 
 rule create_haplotag_likelihoods:
@@ -58,7 +60,7 @@ rule mosaiClassifier_make_call:
 
 rule mosaiClassifier_make_call_biallelic:
     input:
-        probs="{folder}/{sample}/sv_probabilities/probabilities.Rdata",
+        probs="{folder}/{sample}/sv_probabilities/*probabilities.Rdata",
     output:
         "{folder}/{sample}/sv_calls/biAllelic_llr{llr}.txt",
     log:

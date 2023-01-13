@@ -17,3 +17,6 @@ dependencies:
   - matplotlib
   # SOLVE se-pe detection
   - samtools
+  # ArbiGent Hufsah deps
+  - pytables
+  - xopen
