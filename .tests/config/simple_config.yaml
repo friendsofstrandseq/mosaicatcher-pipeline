@@ -18,12 +18,19 @@ use_light_data: True
 GC_analysis: False
 ashleys_threshold: 0.5
 
+# ARBIGENT
+
+# ArbiGent (Arbitrary-segments genotyping) mode of execution
+arbigent: False
+# Arbigent default BED file, can be changed and adapted based on user question
+arbigent_bed_file: "workflow/data/arbigent/manual_segmentation.bed"
+
+
 # GENECORE
 genecore: False
 samples_to_process: []
 genecore_date_folder: ""
 genecore_prefix: "/g/korbel/shared/genecore"
-
 input_bam_legacy: False
 
 ### Modes ["count", "segmentation", "mosaiclassifier"]

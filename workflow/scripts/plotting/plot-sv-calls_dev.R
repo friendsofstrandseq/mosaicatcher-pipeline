@@ -61,7 +61,8 @@ chroms <-
     "chr20",
     "chr21",
     "chr22",
-    "chrX"
+    "chrX",
+    "chrY"
   )
 
 format_Mb <- function(x) {

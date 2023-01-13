@@ -24,10 +24,12 @@ if df_labels.shape[0] > 0:
 else:
     final_df = df_info
     final_df["Final_keep"] = final_df["mosaic_cov_pass"]
+final_df = final_df.rename({"hand_labels": "Ashleys/hand labels"}, axis=1).sort_values(by="cell", ascending=True)
+
 
 df_ploidy = pd.read_csv(ploidy_summary, sep="\t")[["#chrom", "50%"]]
 df_ploidy = df_ploidy.loc[df_ploidy["#chrom"] != "genome"]
-chroms = ["chr" + str(c) for c in list(range(1, 23))] + ["chrX"]
+chroms = ["chr" + str(c) for c in list(range(1, 23))] + ["chrX", "chrY"]
 df_ploidy["#chrom"] = pd.Categorical(df_ploidy["#chrom"], categories=chroms, ordered=True)
 df_ploidy = df_ploidy.sort_values(by=["#chrom"]).rename({"#chrom": "chrom", "50%": "ploidy_estimation"}, axis=1)
 df_ploidy.loc[df_ploidy["ploidy_estimation"] == 1, "StrandPhaseR_processed"] = 0

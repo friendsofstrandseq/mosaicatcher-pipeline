@@ -6,7 +6,7 @@ if config["GC_analysis"] == False or config["ashleys_pipeline"] == False:
             bam=selected_input_bam,
             bai=selected_input_bai,
         output:
-            "{folder}/{sample}/merged_bam/merged.raw.bam",
+            temp("{folder}/{sample}/merged_bam/merged.raw.bam"),
         log:
             "{folder}/log/mergeBams/{sample}.log",
         resources:
@@ -22,7 +22,7 @@ if config["GC_analysis"] == False or config["ashleys_pipeline"] == False:
         input:
             "{folder}/{sample}/merged_bam/merged.raw.bam",
         output:
-            "{folder}/{sample}/merged_bam/merged.bam",
+            temp("{folder}/{sample}/merged_bam/merged.bam"),
         log:
             "{folder}/log/mergeBams/{sample}.log",
         resources:
@@ -38,7 +38,7 @@ if config["GC_analysis"] == False or config["ashleys_pipeline"] == False:
         input:
             "{folder}/{sample}/merged_bam/merged.bam",
         output:
-            "{folder}/{sample}/merged_bam/merged.bam.bai",
+            temp("{folder}/{sample}/merged_bam/merged.bam.bai"),
         log:
             "{folder}/log/merged_bam/{sample}/merged.log",
         conda:

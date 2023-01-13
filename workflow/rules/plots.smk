@@ -11,7 +11,7 @@ if config["ashleys_pipeline"] is False:
 
     rule plot_mosaic_counts:
         input:
-            counts="{folder}/{sample}/counts/{sample}.txt.raw.gz",
+            counts="{folder}/{sample}/counts/{sample}.txt.populated.gz",
             info="{folder}/{sample}/counts/{sample}.info_raw",
         output:
             "{folder}/{sample}/plots/counts/CountComplete.classic.pdf",
@@ -133,6 +133,7 @@ rule plot_clustering_position_dev:
             labels={
                 "method": "{method}",
                 "filter": "{filter}",
+                "Chr size scaled": "False",
             },
         ),
         cluster_order_df="{folder}/{sample}/plots/sv_clustering_dev/clustering_{method}-filter{filter}-position.tsv",
@@ -159,6 +160,7 @@ rule plot_clustering_chromosome_dev:
             labels={
                 "method": "{method}",
                 "filter": "{filter}",
+                "Chr size scaled": "True",
             },
         ),
     log:
