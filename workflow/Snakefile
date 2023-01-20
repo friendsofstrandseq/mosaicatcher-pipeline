@@ -36,6 +36,12 @@ if config["ashleys_pipeline"] is True:
 
     localrules:
         ashleys_genecore_symlink,
+        symlink_selected_bam,
+
+else:
+
+    localrules:
+        symlink_selected_bam,
 
 
 include: "rules/common.smk"
