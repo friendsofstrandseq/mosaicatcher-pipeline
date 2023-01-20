@@ -1,5 +1,5 @@
-version: 1.9.0
-ashleys_pipeline_version: 1.3.6
+version: 1.9.1
+ashleys_pipeline_version: 1.4.1
 #######################################
 #   MOSAICATCHER CONFIGURATION FILE   #
 #######################################
@@ -31,10 +31,8 @@ input_bam_legacy: False
 ashleys_pipeline: False
 # Enable / Disable comparison for each BAM file between folder name & SM tag
 check_sm_tag: True
-# Enable / Disable download of BAM examples (RPE-BM510)
-dl_bam_example: False
-# Enable / Disable download of external files (1000G SNV & Fasta ref genome)
-dl_external_files: False
+# Split / Do not split QC counts plot into single individual images (limit jobs)
+split_qc_plot: True
 # Chromosomes list to process
 chromosomes:
   - chr1
