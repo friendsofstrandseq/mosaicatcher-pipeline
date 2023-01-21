@@ -461,7 +461,8 @@ def get_all_plots(wildcards):
         for i in range(dict_cells_nb_per_sample[sample] + 1)
     ]
 
-    l_outputs.extend([sub_e for e in tmp_l_divide for sub_e in e])
+    if config["split_qc_plot"] is True:
+        l_outputs.extend([sub_e for e in tmp_l_divide for sub_e in e])
 
     if config["arbigent"] is True:
         l_outputs.extend(
@@ -483,7 +484,7 @@ def get_all_plots(wildcards):
                     expand(
                         "{folder}/{sample}/plots/sv_consistency/{method}_filter{filter}.consistency-barplot-{plottype}.pdf",
                         folder=config["data_location"],
-                        sample=samples,
+                        sample=wildcards.sample,
                         method=method,
                         plottype=config["plottype_consistency"],
                         filter=config["methods"][method]["filter"],
@@ -501,7 +502,7 @@ def get_all_plots(wildcards):
                     expand(
                         "{folder}/{sample}/plots/sv_clustering_dev/{method}-filter{filter}-{plottype}.pdf",
                         folder=config["data_location"],
-                        sample=samples,
+                        sample=wildcards.sample,
                         method=method,
                         plottype=config["plottype_clustering"],
                         # plottype=config["plottype_clustering"],
@@ -520,7 +521,7 @@ def get_all_plots(wildcards):
                     expand(
                         "{folder}/{sample}/plots/sv_calls_dev/{method}_filter{filter}/{chrom}.pdf",
                         folder=config["data_location"],
-                        sample=samples,
+                        sample=wildcards.sample,
                         method=method,
                         chrom=config["chromosomes"],
                         filter=config["methods"][method]["filter"],
@@ -540,7 +541,7 @@ def get_all_plots(wildcards):
                     expand(
                         "{folder}/{sample}/mosaiclassifier/complex/{method}_filter{filter}.tsv",
                         folder=config["data_location"],
-                        sample=samples,
+                        sample=wildcards.sample,
                         method=method,
                         filter=config["methods"][method]["filter"],
                     )
@@ -555,7 +556,7 @@ def get_all_plots(wildcards):
             expand(
                 "{folder}/{sample}/plots/ploidy/{sample}.pdf",
                 folder=config["data_location"],
-                sample=samples,
+                sample=wildcards.sample,
             ),
         )
 
@@ -565,7 +566,7 @@ def get_all_plots(wildcards):
             expand(
                 "{folder}/{sample}/stats/stats-merged.html",
                 folder=config["data_location"],
-                sample=samples,
+                sample=wildcards.sample,
             ),
         )
 
@@ -575,7 +576,7 @@ def get_all_plots(wildcards):
             expand(
                 "{folder}/{sample}/config/run_summary.txt",
                 folder=config["data_location"],
-                sample=samples,
+                sample=wildcards.sample,
             ),
         )
 

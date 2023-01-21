@@ -36,6 +36,12 @@ if config["ashleys_pipeline"] is True:
 
     localrules:
         ashleys_genecore_symlink,
+        symlink_selected_bam,
+
+else:
+
+    localrules:
+        symlink_selected_bam,
 
 
 include: "rules/common.smk"
@@ -100,25 +106,11 @@ if config["list_commands"] is False:
             default_target: True
 
     else:
-        if (
-            config["dl_external_files"] is False
-            and config["dl_bam_example"] is False
-        ):
 
-            rule all:
-                input:
-                    get_final_output(),
+        rule all:
+            input:
+                get_final_output(),
 
-        else:
-
-            if (
-                config["dl_bam_example"] is True
-                and config["dl_external_files"] is False
-            ):
-
-                rule all:
-                    input:
-                        rules.dl_example_data.output,
 
     # elif (
     #     config["dl_bam_example"] is False
