@@ -180,13 +180,12 @@ checkpoint filter_bad_cells_from_mosaic_count:
 
 
 if (
-    config["window"] in [50000, 100000, 200000]
+    config["normalized_counts"] is True
+    and (config["window"] in [50000, 100000, 200000])
     and (config["reference"] == "hg38")
-    and (config["normalized_counts"] is True)
-    and (config["arbigent"] is False)
 ):
 
-    rule merge_blacklist_bins:
+    rule merge_blacklist_bins_for_norm:
         input:
             norm="workflow/data/normalization/{reference}/HGSVC.{window}.txt",
             whitelist="workflow/data/normalization/inversion-whitelist.tsv",
@@ -203,9 +202,9 @@ if (
             workflow/scripts/normalization/merge-blacklist.py --merge_distance 500000 {input.norm} --whitelist {input.whitelist} --min_whitelist_interval_size {params.window} > {output.merged} 2>> {log}
             """
 
-elif config["arbigent"] is True:
+else:
 
-    rule merge_blacklist_bins_arbigent:
+    rule merge_blacklist_bins:
         input:
             norm="workflow/data/arbigent/normalization/{reference}/HGSVC.{window}.txt",
         output:
@@ -218,20 +217,6 @@ elif config["arbigent"] is True:
             """
             workflow/scripts/normalization/merge-blacklist.py --merge_distance 500000 {input.norm} > {output.merged} 2> {log}
             """
-
-else:
-
-    rule cp_mosaic_count:
-        input:
-            "{folder}/{sample}/counts/{sample}.txt.filter.gz",
-        output:
-            "{folder}/{sample}/counts/{sample}.txt.gz",
-        log:
-            "{folder}/log/counts/{sample}.log",
-        conda:
-            "../envs/mc_base.yaml"
-        shell:
-            "cp {input} {output}"
 
 
 rule normalize_counts:
@@ -254,6 +239,19 @@ rule normalize_counts:
         """
         Rscript workflow/scripts/normalization/normalize.R {input.counts} {input.norm} {output} 2>&1 > {log}
         """
+
+
+# rule cp_mosaic_count:
+#     input:
+#         "{folder}/{sample}/counts/{sample}.txt.filter.gz",
+#     output:
+#         "{folder}/{sample}/counts/{sample}.txt.gz",
+#     log:
+#         "{folder}/log/counts/{sample}.log",
+#     conda:
+#         "../envs/mc_base.yaml"
+#     shell:
+#         "cp {input} {output}"
 
 
 rule sort_counts:
