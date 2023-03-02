@@ -68,6 +68,8 @@ if config["ashleys_pipeline"] is False:
             "{folder}/log/plot_mosaic_counts/{sample}.log",
         conda:
             "../envs/mc_base.yaml"
+        resources:
+            mem_mb=get_mem_mb,
         script:
             "../scripts/utils/populated_counts_for_qc_plot.py"
 
@@ -175,6 +177,8 @@ checkpoint filter_bad_cells_from_mosaic_count:
         "{folder}/log/filter_bad_cells_from_mosaic_count/{sample}.log",
     conda:
         "../envs/mc_base.yaml"
+    resources:
+        mem_mb=get_mem_mb,
     script:
         "../scripts/utils/filter_bad_cells.py"
 
@@ -235,6 +239,8 @@ rule normalize_counts:
         "{folder}/log/normalize_counts/{sample}.log",
     conda:
         "../envs/rtools.yaml"
+    resources:
+        mem_mb=get_mem_mb,
     shell:
         """
         Rscript workflow/scripts/normalization/normalize.R {input.counts} {input.norm} {output} 2>&1 > {log}
@@ -263,6 +269,8 @@ rule sort_counts:
         "{folder}/log/sort_counts/{sample}.log",
     conda:
         "../envs/mc_base.yaml"
+    resources:
+        mem_mb=get_mem_mb,
     script:
         "../scripts/utils/sort_counts.py"
 

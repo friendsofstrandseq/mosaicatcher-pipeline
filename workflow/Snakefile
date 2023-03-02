@@ -21,14 +21,14 @@ if config["ashleys_pipeline"] is True:
 
     module ashleys_qc:
         snakefile:
-            # "../../ashleys-qc-pipeline/workflow/Snakefile"
-            github(
-                "friendsofstrandseq/ashleys-qc-pipeline",
-                path="workflow/Snakefile",
-                tag=str(config["ashleys_pipeline_version"])
-                # branch="main",
-                # branch="dev",
-            )
+            "../../ashleys-qc-pipeline/workflow/Snakefile"
+            # github(
+            #     "friendsofstrandseq/ashleys-qc-pipeline",
+            #     path="workflow/Snakefile",
+            #     tag=str(config["ashleys_pipeline_version"])
+            #     # branch="main",
+            #     # branch="dev",
+            # )
         config:
             config
 
@@ -93,6 +93,9 @@ include: "rules/arbigent_rules.smk"
 
 
 include: "rules/arbigent.smk"
+
+
+include: "rules/scNOVA.smk"
 
 
 if config["list_commands"] is False:
