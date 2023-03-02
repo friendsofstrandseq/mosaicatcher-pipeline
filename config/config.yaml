@@ -166,3 +166,20 @@ arbigent_data:
 
 # If specified, will copy important data (stats, plots, counts file) to a second place
 publishdir: ""
+
+scNOVA: False
+scNOVA_subclonality:
+  - clone1
+  - clone2
+scNOVA_scripts:
+  generate_CN_for_CNN: "workflow/scripts/scNOVA_scripts/generate_CN_for_CNN.R"
+  generate_CN_for_chromVAR: "workflow/scripts/scNOVA_scripts/generate_CN_for_chromVAR.R"
+  count_sort_annotate_geneid: "workflow/scripts/scNOVA_scripts/count_sort_annotate_geneid.R"
+  count_sort_label: "workflow/scripts/scNOVA_scripts/count_sort_label.R"
+  count_norm: "workflow/scripts/scNOVA_scripts/count_norm.R"
+  feature_sc_var: "workflow/scripts/scNOVA_scripts/feature_sc_var.R"
+  combine_features: "workflow/scripts/scNOVA_scripts/combine_features.R"
+  annot_expressed: "workflow/scripts/scNOVA_scripts/annot_expressed.R"
+  infer_diff_gene_expression: "workflow/scripts/scNOVA_scripts/infer_diff_gene_expression.R"
+  count_sort_annotate_chrid_CREs: "workflow/scripts/scNOVA_scripts/count_sort_annotate_chrid_CREs.R"
+  infer_diff_gene_expression_alt: "workflow/scripts/scNOVA_scripts/infer_diff_gene_expression_alt.R"

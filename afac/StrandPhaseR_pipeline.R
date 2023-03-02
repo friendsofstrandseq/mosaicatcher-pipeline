@@ -15,9 +15,9 @@ load_all("/g/korbel2/weber/Gits/StrandPhaseR/")
 
 
 strandPhaseR(
-    inputfolder = "/g/korbel2/weber/MosaiCatcher_files/POOLING/POOLING_POOL2_HG00186/HGSVCxpool2/all",
-    outputfolder = "./TEST_SPHR",
-    configfile = "/g/korbel2/weber/MosaiCatcher_output/POOLING/POOLING_POOL2_HG00186/strandphaser/HGSVCxpool2/StrandPhaseR.chr22.config",
-    WCregions = "/g/korbel2/weber/MosaiCatcher_output/POOLING/POOLING_POOL2_HG00186/strandphaser/HGSVCxpool2/strandphaser_input.txt",
-    positions = "/g/korbel2/weber/MosaiCatcher_output/POOLING/POOLING_POOL2_HG00186/snv_calls/HGSVCxpool2/chr22.vcf",
+    inputfolder = "/g/korbel2/tsapalou/KAPA_POOL1/HGSVCpool1_15ulOP_96of384_KAPA/bam",
+    outputfolder = "./TEST_KAPPA",
+    configfile = "/g/korbel2/tsapalou/KAPA_POOL1/HGSVCpool1_15ulOP_96of384_KAPA/strandphaser/StrandPhaseR.chr5.config",
+    WCregions = "/g/korbel2/tsapalou/KAPA_POOL1/HGSVCpool1_15ulOP_96of384_KAPA/strandphaser/strandphaser_input.txt",
+    positions = "/g/korbel2/tsapalou/KAPA_POOL1/HGSVCpool1_15ulOP_96of384_KAPA/snv_calls/chr5.vcf",
 )
