@@ -273,7 +273,7 @@ for (s in unique(d$sample))
             geom_histogram(binwidth = 1, position = position_dodge(), alpha = 0.9) +
             scale_x_continuous(limits = c(-1, plt_hist_xlim), breaks = pretty_breaks(5), labels = comma) +
             theme(text = element_text(size = 10), axis.text = element_text(size = 8)) +
-            scale_fill_manual(values = c(w = "sandybrown", c = "paleturquoise4")) +
+            scale_fill_manual(values = c(w = "#F4A460", c = "#668B8B")) +
             guides(fill = FALSE, col = FALSE) +
             ylab("bin count") +
             xlab("reads per bin") +
@@ -318,22 +318,22 @@ for (s in unique(d$sample))
         plot_hst_width <- .03 + .13 * length(unique(e$class))
         all <- ggdraw() + draw_plot(plt) +
             draw_plot(plt_hist, x = .45, y = .76, width = plot_hst_width, height = .23) +
-            draw_label(paste("Sample:", info_sample_name), x = .29, y = .97, vjust = 1, hjust = 0, size = 14) +
-            draw_label(paste("Cell:", info_cell_name), x = .29, y = .94, vjust = 1, hjust = 0, size = 12) +
+            draw_label(paste("Sample:", info_sample_name), x = .29, y = .97, vjust = 1, hjust = 0, size = 12) +
+            draw_label(paste("Cell:", info_cell_name), x = .29, y = .94, vjust = 1, hjust = 0, size = 10) +
             draw_label(paste("Median binwidth:", format(round(info_binwidth / 1000, 0), big.mark = ",", scientific = F), "kb"),
-                x = .29, y = .91, vjust = 1, hjust = 0, size = 10
+                x = .29, y = .91, vjust = 1, hjust = 0, size = 8
             ) +
             draw_label(paste("Number bins:", format(info_num_bins, big.mark = ",")),
-                x = .29, y = .89, vjust = 1, hjust = 0, size = 10
+                x = .29, y = .89, vjust = 1, hjust = 0, size = 8
             ) +
             draw_label(paste("Total number of reads:", format(info_total_reads, big.mark = ",")),
-                x = .29, y = .87, vjust = 1, hjust = 0, size = 10
+                x = .29, y = .87, vjust = 1, hjust = 0, size = 8
             ) +
             draw_label(paste("Median reads/bin (dotted):", info_reads_per_bin),
-                x = .29, y = .85, vjust = 1, hjust = 0, size = 10
+                x = .29, y = .85, vjust = 1, hjust = 0, size = 8
             ) +
             draw_label(paste0("Plot limits: [-", info_y_limit, ",", info_y_limit, "]"),
-                x = .29, y = .83, vjust = 1, hjust = 0, size = 10
+                x = .29, y = .83, vjust = 1, hjust = 0, size = 8
             )
         # If available, add additional info like duplicate rate and NB params!
         if (!is.null(info)) {
@@ -341,12 +341,12 @@ for (s in unique(d$sample))
             if (nrow(Ie) == 1) {
                 all <- all +
                     draw_label(paste0("Duplicate rate: ", round(Ie$dupl / Ie$mapped, 2) * 100, "%"),
-                        x = .29, y = .80, vjust = 1, hjust = 0, size = 10
+                        x = .29, y = .80, vjust = 1, hjust = 0, size = 8
                     )
                 if (Ie$pass1 == 1) {
                     all <- all +
                         draw_label(paste0("NB parameters (p,r,a): ", round(Ie$nb_p, 2), ",", round(Ie$nb_r, 2), ",", round(Ie$nb_a, 2)),
-                            x = .29, y = .78, vjust = 1, hjust = 0, size = 10
+                            x = .29, y = .78, vjust = 1, hjust = 0, size = 8
                         )
                 }
             }
@@ -357,7 +357,7 @@ for (s in unique(d$sample))
             sces_local <- sces[sample == s & cell == ce][, .SD[.N > 1], by = chrom]
             if (nrow(sces_local) > 0) sces_local <- sces_local[, .(pos = (end[1:(.N - 1)] + start[2:(.N)]) / 2), by = chrom]
             all <- all + draw_label(paste("SCEs detected:", nrow(sces_local)),
-                x = .29, y = .76, vjust = 1, hjust = 0, size = 10
+                x = .29, y = .76, vjust = 1, hjust = 0, size = 8
             )
         }
 
