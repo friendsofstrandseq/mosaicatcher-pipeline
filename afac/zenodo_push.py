@@ -6,16 +6,19 @@ import pandas as pd
 ACCESS_TOKEN = sys.argv[1]
 title, desc = sys.argv[2], sys.argv[3]
 filelist_path = sys.argv[4]
+compressed = bool(sys.argv[5])
 
 # GET
-r = requests.get("https://sandbox.zenodo.org/api/deposit/depositions", params={"access_token": ACCESS_TOKEN})
+# r = requests.get("https://sandbox.zenodo.org/api/deposit/depositions", params={"access_token": ACCESS_TOKEN})
+r = requests.get("https://zenodo.org/api/deposit/depositions", params={"access_token": ACCESS_TOKEN})
 print("GET")
 
 # POST DEPOSITION
 headers = {"Content-Type": "application/json"}
 params = {"access_token": ACCESS_TOKEN}
 r = requests.post(
-    "https://sandbox.zenodo.org/api/deposit/depositions",
+    # "https://sandbox.zenodo.org/api/deposit/depositions",
+    "https://zenodo.org/api/deposit/depositions",
     params=params,
     json={},
     # Headers are not necessary here since "requests" automatically
@@ -48,7 +51,7 @@ def zenodo_put_into_bucket(fp):
         fp = "./" + fp
     print(fp)
     filename = os.path.basename(fp)
-    read_mode = "rb" if filename.endswith(".gz") else "r"
+    read_mode = "rb" if compressed is True else "r"
     with open(fp, read_mode) as f_zenodo:
         r = requests.put(
             "%s/%s" % (bucket_url, filename),
@@ -73,7 +76,8 @@ data = {
     }
 }
 r = requests.put(
-    "https://sandbox.zenodo.org/api/deposit/depositions/%s" % deposition_id,
+    # "https://sandbox.zenodo.org/api/deposit/depositions/%s" % deposition_id,
+    "https://zenodo.org/api/deposit/depositions/%s" % deposition_id,
     params={"access_token": ACCESS_TOKEN},
     data=json.dumps(data),
     headers=headers,
@@ -82,6 +86,8 @@ print("Adding metadata, title: {}, desc: {}".format(title, desc))
 
 
 r = requests.post(
-    "https://sandbox.zenodo.org/api/deposit/depositions/%s/actions/publish" % deposition_id, params={"access_token": ACCESS_TOKEN}
+    "https://zenodo.org/api/deposit/depositions/%s/actions/publish" % deposition_id,
+    params={"access_token": ACCESS_TOKEN}
+    # "https://sandbox.zenodo.org/api/deposit/depositions/%s/actions/publish" % deposition_id, params={"access_token": ACCESS_TOKEN}
 )
 print("FINAL POST")

@@ -1,8 +1,7 @@
 name: scNOVA_DL
 channels:
-  - anaconda
   - conda-forge
-  - bioconda
+  - anaconda
 dependencies:
   - tensorflow=1.15.0
   - scikit-learn=0.21.3
@@ -10,3 +9,4 @@ dependencies:
   - matplotlib=3.1.1
   - pandas=0.25.3
   - h5py=2.10.0
+  - numpy

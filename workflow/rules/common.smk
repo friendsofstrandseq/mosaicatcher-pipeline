@@ -379,7 +379,11 @@ plottype_counts = (
     else config["plottype_counts"][0]
 )
 
-
+if config["scNOVA"] is True:
+    clones = collections.defaultdict(dict)
+    for sample in samples:
+        subclonality_file = pd.read_csv("{}/{}/scNOVA_input_user/input_subclonality.txt".format(config["data_location"], sample), sep="\t")
+        clones[sample] = list(sorted(subclonality_file.Subclonality.unique().tolist()))
 
 
 def get_mem_mb(wildcards, attempt):
@@ -410,13 +414,11 @@ def onerror_fct(log):
     )
 
 
-
-
-
 def get_scnova_final_output(wildcards):
     # WARNING
-    clones = ["clone1", "clone2"]
-    CLONE_NAME = ["clone1", "clone2"]
+
+    # subclonality_file = pd.read_csv(config["scnova_subclonality"], sep="\t")
+    # clones = ["clone1", "clone2"]
     # clones = config["subclonality_list"]
 
     # SAMPLE_NAME = "TALL03-DEA5"
@@ -424,65 +426,64 @@ def get_scnova_final_output(wildcards):
     # abbreviate_names = False
 
     l = [ 
-expand("{folder}/{sample}/scNOVA_input_user/{clone}_sv_calls_all_print.txt", folder=config["data_location"], sample=wildcards.sample, clone=clones),
-expand("{folder}/{sample}/scNOVA_result/Features_reshape_{c}_orientation_CN_correct0.txt", c = clones, folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_input_user/sv_calls_all_print_CREs.txt", folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam", cell=cell_per_sample[wildcards.sample], folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_result/{sample}.tab", folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_result/{sample}_sort.txt", folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_result/{sample}_sort_geneid.txt", folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}.tab", folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}_sc.tab", folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_result/Deeptool_chr_length_{sample}.tab", folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_result/Deeptool_chr_length_{sample}_sc.tab", folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}_sort.txt", folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}_sort_lab.txt", folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}_sort_lab_final.txt", folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_result/Features_reshape_{sample}_{c}_orientation_norm_qc.pdf", c = clones, folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_result/Features_reshape_{c}_orientation_norm.txt", c = clones, folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}_sc_sort.txt", folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}_sc_sort_lab.txt", folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}_sc_sort_lab_final.txt", folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_result/Features_reshape_{sample}_{c}_Resid_orientation_qc.pdf", c = clones, folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_result/Features_reshape_{c}_Resid_orientation.txt", c = clones, folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_result/Features_reshape_all_orientation_norm_var_GC_CpG_RT_T_comb3_{c}.txt", c = clones, folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_result/Expression_all_{c}.txt", c = clones, folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_result/Features_reshape_all_TSS_matrix_woM_all_RT_{c}.txt", c = clones, folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_result_CNN/DNN_train80_output_ypred_{c}.csv", c = clones, folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_result_CNN/DNN_train40_output_ypred_{c}.csv", c = clones, folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_result_CNN/DNN_train20_output_ypred_{c}.csv", c = clones, folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_result_CNN/DNN_train5_output_ypred_{c}.csv", c = clones, folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_result_CNN/DNN_train80_output_ypred_{c}_annot.txt", c = clones, folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_result_CNN/DNN_train40_output_ypred_{c}_annot.txt", c = clones, folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_result_CNN/DNN_train20_output_ypred_{c}_annot.txt", c = clones, folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_result_CNN/DNN_train5_output_ypred_{c}_annot.txt", c = clones, folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_result_plots/Result_scNOVA_plots_{sample}.pdf", folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_result/result_PLSDA_{sample}.txt", folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_result_plots/Result_scNOVA_plots_{sample}_alternative_PLSDA.pdf", folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_result/{sample}_CREs_2kb.tab", folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_result/{sample}_CREs_2kb_sort.txt", folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_result/{sample}_CREs_2kb_sort_num.txt", folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_result/{sample}_CREs_2kb_sort_num_sort_for_chromVAR.txt", folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.W1.bam", cell=cell_per_sample[wildcards.sample], folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.W2.bam", cell=cell_per_sample[wildcards.sample], folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.C1.bam", cell=cell_per_sample[wildcards.sample], folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.C2.bam", cell=cell_per_sample[wildcards.sample], folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.W.bam", cell=cell_per_sample[wildcards.sample], folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.C.bam", cell=cell_per_sample[wildcards.sample], folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.W.bam.bai", cell=cell_per_sample[wildcards.sample], folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.C.bam.bai", cell=cell_per_sample[wildcards.sample], folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_nucleosomes_bam/nucleosome_sampleA/result.H1.bam", folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_nucleosomes_bam/nucleosome_sampleB/result.H2.bam", folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_input_user/strandphaser_output_copy.txt", folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_result_haplo/Deeptool_DHS_2kb_H1H2.tab", folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_result_haplo/Deeptool_DHS_2kb_H1H2_sort.txt", folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_result_haplo/Deeptool_Genebody_H1H2.tab", folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_result_haplo/Deeptool_Genebody_H1H2_sort.txt", folder=config["data_location"], sample=wildcards.sample),
-expand("{folder}/{sample}/scNOVA_bam_merge/{clone}.merge.bam", clone=clones, folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_input_user/{clone}_sv_calls_all_print.txt", folder=config["data_location"], sample=wildcards.sample, clone=clones[wildcards.sample]),
+        expand("{folder}/{sample}/scNOVA_result/Features_reshape_{clone}_orientation_CN_correct0.txt", clone=clones[wildcards.sample], folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_input_user/sv_calls_all_print_CREs.txt", folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam", cell=cell_per_sample[wildcards.sample], folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_result/{sample}.tab", folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_result/{sample}_sort.txt", folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_result/{sample}_sort_geneid.txt", folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}.tab", folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}_sc.tab", folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_result/Deeptool_chr_length_{sample}.tab", folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_result/Deeptool_chr_length_{sample}_sc.tab", folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}_sort.txt", folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}_sort_lab.txt", folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}_sort_lab_final.txt", folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_result/Features_reshape_{sample}_{clone}_orientation_norm_qc.pdf", clone=clones[wildcards.sample], folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_result/Features_reshape_{clone}_orientation_norm.txt", clone=clones[wildcards.sample], folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}_sc_sort.txt", folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}_sc_sort_lab.txt", folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}_sc_sort_lab_final.txt", folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_result/Features_reshape_{sample}_{clone}_Resid_orientation_qc.pdf", clone=clones[wildcards.sample], folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_result/Features_reshape_{clone}_Resid_orientation.txt", clone=clones[wildcards.sample], folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_result/Features_reshape_all_orientation_norm_var_GC_CpG_RT_T_comb3_{clone}.txt", clone=clones[wildcards.sample], folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_result/Expression_all_{clone}.txt", clone=clones[wildcards.sample], folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_result/Features_reshape_all_TSS_matrix_woM_all_RT_{clone}.txt", clone=clones[wildcards.sample], folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_result_CNN/DNN_train80_output_ypred_{clone}.csv", clone=clones[wildcards.sample], folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_result_CNN/DNN_train40_output_ypred_{clone}.csv", clone=clones[wildcards.sample], folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_result_CNN/DNN_train20_output_ypred_{clone}.csv", clone=clones[wildcards.sample], folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_result_CNN/DNN_train5_output_ypred_{clone}.csv", clone=clones[wildcards.sample], folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_result_CNN/DNN_train80_output_ypred_{clone}_annot.txt", clone=clones[wildcards.sample], folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_result_CNN/DNN_train40_output_ypred_{clone}_annot.txt", clone=clones[wildcards.sample], folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_result_CNN/DNN_train20_output_ypred_{clone}_annot.txt", clone=clones[wildcards.sample], folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_result_CNN/DNN_train5_output_ypred_{clone}_annot.txt", clone=clones[wildcards.sample], folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_result_plots/Result_scNOVA_plots_{sample}.pdf", folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_result/result_PLSDA_{sample}.txt", folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_result_plots/Result_scNOVA_plots_{sample}_alternative_PLSDA.pdf", folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_result/{sample}_CREs_2kb.tab", folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_result/{sample}_CREs_2kb_sort.txt", folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_result/{sample}_CREs_2kb_sort_num.txt", folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_result/{sample}_CREs_2kb_sort_num_sort_for_chromVAR.txt", folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.W1.bam", cell=cell_per_sample[wildcards.sample], folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.W2.bam", cell=cell_per_sample[wildcards.sample], folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.C1.bam", cell=cell_per_sample[wildcards.sample], folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.C2.bam", cell=cell_per_sample[wildcards.sample], folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.W.bam", cell=cell_per_sample[wildcards.sample], folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.C.bam", cell=cell_per_sample[wildcards.sample], folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.W.bam.bai", cell=cell_per_sample[wildcards.sample], folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.C.bam.bai", cell=cell_per_sample[wildcards.sample], folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_nucleosomes_bam/nucleosome_sampleA/result.H1.bam", folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_nucleosomes_bam/nucleosome_sampleB/result.H2.bam", folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_input_user/strandphaser_output_copy.txt", folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_result_haplo/Deeptool_DHS_2kb_H1H2.tab", folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_result_haplo/Deeptool_DHS_2kb_H1H2_sort.txt", folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_result_haplo/Deeptool_Genebody_H1H2.tab", folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_result_haplo/Deeptool_Genebody_H1H2_sort.txt", folder=config["data_location"], sample=wildcards.sample),
+        expand("{folder}/{sample}/scNOVA_bam_merge/{clone}.merge.bam", clone=clones[wildcards.sample], folder=config["data_location"], sample=wildcards.sample),
     ]
     l = [sub_e for e in l for sub_e in e]
     return l
-
 
 
 def get_final_output():
@@ -498,12 +499,12 @@ def get_final_output():
             sample=samples,
         )
     )
-    print(config["scNOVA"])
+    # print(config["scNOVA"])
     if config["scNOVA"] is True:
-        print("TOTO")
+        # print("TOTO")
         final_list.extend(get_final_output_scnova())
-    from pprint import pprint 
-    pprint(final_list)
+    # from pprint import pprint 
+    # pprint(final_list)
 
 
     return final_list

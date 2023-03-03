@@ -19,7 +19,10 @@ library(fitdistrplus)
 library(doParallel)
 library(foreach)
 
-pdf(args[9], width = 11, height = 10)
+
+filename = args[9]
+
+pdf(filename, width = 11, height = 10)
 
 ## 1) Load count matrix
 
@@ -57,7 +60,8 @@ print("B")
 GB_count_name <- as.data.frame(as.matrix(colnames(GB_count)))
 GB_count_name$index <- 0
 for (j in 1:nrow(GB_count_name)) {
-    GB_count_name[j, 1] <- strsplit(GB_count_name[j, 1], ".sort.mdup.sc_pre_mono_sort_for_mark_uniq.bam")[[1]][1]
+    # GB_count_name[j, 1] <- strsplit(GB_count_name[j, 1], ".sort.mdup.sc_pre_mono_sort_for_mark_uniq.bam")[[1]][1]
+    GB_count_name[j, 1] <- strsplit(GB_count_name[j, 1], ".bam")[[1]][1]
     GB_count_name[j, 2] <- which(class_label_strict_subclone[, 1] == GB_count_name[j, 1])
 }
 GB_count <- GB_count[, order(GB_count_name[, 2])]
@@ -138,14 +142,8 @@ print("E")
 
 
 
-prefix <- strsplit(output_filename, "scNOVA_result")[[1]][1]
-prefix <- substring(prefix, 1, nchar(prefix) - 1)
-if (nchar(prefix) == 0) {
-    prefix <- "."
-}
-print(prefix)
 
-Expressed_pred <- read.table(args[10]), sep = "\t", header = T, comment.char = "")
+Expressed_pred <- read.table(args[10], sep = "\t", header = T, comment.char = "")
 Expressed_pred_median <- rowMedians(as.matrix(Expressed_pred[, 1:2]))
 
 print("F")

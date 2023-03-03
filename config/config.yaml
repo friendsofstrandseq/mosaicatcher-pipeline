@@ -168,9 +168,6 @@ arbigent_data:
 publishdir: ""
 
 scNOVA: False
-scNOVA_subclonality:
-  - clone1
-  - clone2
 scNOVA_scripts:
   generate_CN_for_CNN: "workflow/scripts/scNOVA_scripts/generate_CN_for_CNN.R"
   generate_CN_for_chromVAR: "workflow/scripts/scNOVA_scripts/generate_CN_for_chromVAR.R"
