@@ -84,7 +84,8 @@ rule download_T2T_reference:
 rule download_T2T_tarball:
     input:
         HTTP.remote(
-            "https://sandbox.zenodo.org/record/1097504/files/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz",
+            "https://zenodo.org/record/7697400/files/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz",
+            # "https://sandbox.zenodo.org/record/1097504/files/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz",
             keep_local=True,
         ),
     output:
@@ -141,7 +142,8 @@ rule samtools_faindex:
 rule download_arbigent_mappability_track:
     input:
         HTTP.remote(
-            "https://sandbox.zenodo.org/record/1119112/files/mapping_counts_allchrs_hg38.txt",
+            # "https://sandbox.zenodo.org/record/1119112/files/mapping_counts_allchrs_hg38.txt",
+            "https://zenodo.org/record/7697400/files/mapping_counts_allchrs_hg38.txt",
             keep_local=True,
         ),
     output:
@@ -153,4 +155,22 @@ rule download_arbigent_mappability_track:
         directory="workflow/data/arbigent/"
         mkdir -p "$directory"
         mv {input} {output}
+        """
+
+rule download_scnova_data:
+    input:
+        HTTP.remote(
+            "https://zenodo.org/record/7697400/files/scNOVA_data_models.zip",
+            keep_local=True,
+        ),
+    output:
+        touch("workflow/data/scNOVA/log/dl.ok"),
+    log:
+        touch("log/config/dl_arbigent_mappability_track.ok"),
+    shell:
+        """
+        directory="workflow/data/ref_genomes/"
+        mkdir -p "$directory"
+        mv {input} workflow/data/scNOVA_data_models.zip
+        unzip workflow/data/scNOVA_data_models.zip
         """
