@@ -19,7 +19,7 @@ clone_num <- ncol(Deeptool_result_final) - 4
 
 # for (k in 1:clone_num){
 clone_name <- strsplit(args[9], paste0(prefix, "/scNOVA_result/Features_reshape_"))[[1]][2]
-clone_name <- strsplit(clone_name, paste0(prefix, "/scNOVA_result/_orientation_CN_correct0.txt"))[[1]][1]
+clone_name <- strsplit(clone_name, "_orientation_CN_correct0.txt")[[1]][1]
 k <- as.numeric(strsplit(clone_name, "clone")[[1]][2])
 filename <- paste0(prefix, "/scNOVA_result/Features_reshape_", clone_name, "_orientation_norm.txt")
 Deeptool_result_final_reshape <- t(Reshape(Deeptool_result_final[, (k + 4)], 150, (19770 - 13)))

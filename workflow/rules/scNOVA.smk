@@ -1,5 +1,5 @@
 # SAMPLE_NAME = "TALL03-DEA5"
-# config["scNOVA_subclonality"] = ["clone1", "clone2"]
+# clones[wc.sample] = ["clone1", "clone2"]
 # BAMFILE, = glob_wildcards("{folder}/{sample}/bam/{cell}.bam")
 # BAM_SC, = glob_wildcards("{folder}/{sample}/bam/{single_cells}.sort.mdup.bam")
 # abbreviate_names = False
@@ -283,7 +283,7 @@ rule count_reads_for_DNN_aggr:
     input:
         lambda wc: expand(
             "{folder}/{sample}/scNOVA_result/count_reads_for_DNN/Deeptool_Genes_for_CNN_{clone}.tab",
-            clone=config["scNOVA_subclonality"], sample=wc.sample, folder=config["data_location"]
+            clone=clones[wc.sample], sample=wc.sample, folder=config["data_location"]
         ),
     output:
         tab="{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}.tab",
@@ -354,7 +354,7 @@ rule count_reads_chr_length_aggr:
     input:
         lambda wc: expand(
             "{folder}/{sample}/scNOVA_result/count_reads_chr_length/Deeptool_chr_length_{clone}.tab",
-            clone=config["scNOVA_subclonality"],sample=wc.sample, folder=config["data_location"]
+            clone=clones[wc.sample],sample=wc.sample, folder=config["data_location"]
         ),
     output:
         tab="{folder}/{sample}/scNOVA_result/Deeptool_chr_length_{sample}.tab",
@@ -584,10 +584,12 @@ rule infer_expressed_genes_split:
         "../envs/scNOVA/scNOVA_DL.yaml"
     resources:
         mem_mb=get_mem_mb,
-    shell:
-        """
-        python ../scripts/scNOVA_scripts/Deeplearning_Nucleosome_predict_train_RPE.py {input.features} {input.TSS_annot} {output.train} {wildcards.chrom} {wildcards.i}
-        """
+    script:
+        "../scripts/scNOVA_scripts/Deeplearning_Nucleosome_predict_train_RPE.py"
+    # shell:
+    #     """
+    #     python workflow/scripts/scNOVA_scripts/Deeplearning_Nucleosome_predict_train_RPE.py {input.features} {input.TSS_annot} {output.train} {wildcards.chrom} {wildcards.i}
+    #     """
 
 
 rule gather_infer_expressed_genes_split:
