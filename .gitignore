@@ -187,3 +187,7 @@ workflow/data/arbigent/mapping_*
 workflow/data/scNOVA/
 workflow/data/scNOVA_data_models.tar.gz
 afac/zenodo_push.py
+cluster*
+workflow/data/zenodo_filelist.txt
+workflow/data/scNOVA_zenodo_filelist.txt
+workflow/data/mapping_counts_allchrs_hg38.txt

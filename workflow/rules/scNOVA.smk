@@ -8,7 +8,8 @@
 
 
 rule filter_sv_calls:
-    input: "{folder}/{sample}/mosaiclassifier/sv_calls/stringent_filterTRUE.tsv",
+    input: 
+        "{folder}/{sample}/mosaiclassifier/sv_calls/stringent_filterTRUE.tsv",
     output: "{folder}/{sample}/scNOVA_input_user/sv_calls.tsv",
     run: 
         df = pd.read_csv(input[0], sep="\t")
@@ -80,10 +81,13 @@ rule generate_CN_for_chromVAR:
         """
 
 
+
+
 rule remove_low_quality_reads:
     container: None
     input:
         bam="{folder}/{sample}/bam/{cell}.sort.mdup.bam",
+        check="workflow/data/scNOVA/log/dl.ok"
     output:
         bam_pre="{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono.bam",
         bam_header="{folder}/{sample}/scNOVA_bam_modified/{cell}.header_test.sam",
