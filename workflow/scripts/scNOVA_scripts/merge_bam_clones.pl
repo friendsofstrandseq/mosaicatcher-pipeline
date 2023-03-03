@@ -26,6 +26,7 @@ foreach $clone_ind (@clone_all) {
 	while (<FILE>){
 	chomp;
 	($x) = split("\t");
+	
 	print "$x\n";
 	}
     close (FILE);

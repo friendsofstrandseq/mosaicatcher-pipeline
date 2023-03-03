@@ -10,7 +10,17 @@ library(umap)
 library(pheatmap)
 library(gplots)
 
-pdf(args[8], width = 11, height = 10)
+filename = args[8]
+
+
+prefix <- strsplit(filename, "scNOVA_result_plots")[[1]][1]
+prefix <- substring(prefix, 1, nchar(prefix) - 1)
+if (nchar(prefix) == 0) {
+    prefix <- "."
+}
+print(prefix)
+
+pdf(filename, width = 11, height = 10)
 
 
 ## 1) Load count matrix
@@ -40,7 +50,8 @@ cond_label <- class_label_strict_subclone[, 2]
 GB_count_name <- as.data.frame(as.matrix(colnames(GB_count)))
 GB_count_name$index <- 0
 for (j in 1:nrow(GB_count_name)) {
-    GB_count_name[j, 1] <- strsplit(GB_count_name[j, 1], ".sort.mdup.sc_pre_mono_sort_for_mark_uniq.bam")[[1]][1]
+    GB_count_name[j, 1] <- strsplit(GB_count_name[j, 1], ".bam")[[1]][1]
+    # GB_count_name[j, 1] <- strsplit(GB_count_name[j, 1], ".sort.mdup.sc_pre_mono_sort_for_mark_uniq.bam")[[1]][1]
     GB_count_name[j, 2] <- which(class_label_strict_subclone[, 1] == GB_count_name[j, 1])
 }
 GB_count <- GB_count[, order(GB_count_name[, 2])]
@@ -316,6 +327,6 @@ res_sort_hit <- cbind(res_sort, input_matrix$blacklist, Expressed_pred_median)
 res_sort_hit$Hit <- 0
 res_sort_hit[input_matrix$blacklist == 0 & res_sort$padj < 0.1 & is.na(res_sort$padj) == 0, ncol(res_sort_hit)] <- 1
 
-write.table(cbind(GB_matrix_sort[, 2:5], res_sort_hit), file = "result/Result_scNOVA_infer_expression_table.txt", row.names = TRUE, col.names = TRUE, sep = "\t", quote = FALSE)
+write.table(cbind(GB_matrix_sort[, 2:5], res_sort_hit), file = paste0(prefix, "/scNOVA_result/Result_scNOVA_infer_expression_table.txt"), row.names = TRUE, col.names = TRUE, sep = "\t", quote = FALSE)
 
 dev.off()
