@@ -35,6 +35,7 @@ rule generate_CN_for_CNN:
         sv_calls_all="{folder}/{sample}/scNOVA_input_user/sv_calls.tsv",
         Deeptool_result_final="workflow/data/scNOVA/utils/Deeptool_Genes_for_CNN_merge_sort_lab_final.txt",
         CNN_features_annot="workflow/data/scNOVA/utils/bin_Genes_for_CNN_reshape_annot.txt",
+
     output:
         sv_calls_all_print="{folder}/{sample}/scNOVA_input_user/{clone}_sv_calls_all_print.txt",
         CN_result_data1="{folder}/{sample}/scNOVA_result/Features_reshape_{clone}_orientation_CN_correct0.txt",
@@ -833,7 +834,7 @@ rule infer_differential_gene_expression_alt:
         GB_matrix="workflow/data/scNOVA/utils/Strand_seq_matrix_Genebody_for_SCDE.txt",
         CNN_result1="{folder}/{sample}/scNOVA_result_CNN/DNN_train80_output_ypred_clone1_annot.txt",
         CNN_result2="{folder}/{sample}/scNOVA_result_CNN/DNN_train80_output_ypred_clone2_annot.txt",
-        input_matrix="{folder}/{sample}/scNOVA_input_user/input_SV_affected_genes.txt",
+        input_matrix="workflow/data/scNOVA_input_SV_affected_genes.txt",
         final_result="{folder}/{sample}/scNOVA_result_CNN/Expressed_train80_final_result.txt",
     output:
         result_table="{folder}/{sample}/scNOVA_result/result_PLSDA_{sample}.txt",
