@@ -85,7 +85,6 @@ rule download_T2T_tarball:
     input:
         HTTP.remote(
             "https://zenodo.org/record/7697400/files/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz",
-            # "https://sandbox.zenodo.org/record/1097504/files/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz",
             keep_local=True,
         ),
     output:
@@ -142,7 +141,6 @@ rule samtools_faindex:
 rule download_arbigent_mappability_track:
     input:
         HTTP.remote(
-            # "https://sandbox.zenodo.org/record/1119112/files/mapping_counts_allchrs_hg38.txt",
             "https://zenodo.org/record/7697400/files/mapping_counts_allchrs_hg38.txt",
             keep_local=True,
         ),
@@ -156,6 +154,7 @@ rule download_arbigent_mappability_track:
         mkdir -p "$directory"
         mv {input} {output}
         """
+
 
 rule download_scnova_data:
     input:
