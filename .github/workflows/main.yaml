@@ -5,6 +5,7 @@ on:
     branches:
       - dev
       - arbigent_dev
+      - scNOVA
 
 jobs:
   # WORK
