@@ -260,7 +260,7 @@ jobs:
         with:
           directory: .
           snakefile: ./workflow/Snakefile
-          args: "--cores 1 scNOVA=True workflow/data/scNOVA/log/dl.ok -p --verbose --debug"
+          args: "--cores 1 --verbose --debug workflow/data/scNOVA/log/dl.ok -p"
   # Downloading_hg19:
   #   runs-on: ubuntu-latest
   #   # needs:
