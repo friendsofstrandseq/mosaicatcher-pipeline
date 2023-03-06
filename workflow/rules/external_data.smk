@@ -164,6 +164,7 @@ rule download_scnova_data:
         ),
     output:
         touch("workflow/data/scNOVA/log/dl.ok"),
+        "workflow/data/scNOVA/utils/bin_Genes_for_CNN_reshape_annot.txt"
     log:
         touch("log/config/dl_arbigent_mappability_track.ok"),
     conda:
@@ -173,5 +174,5 @@ rule download_scnova_data:
         directory="workflow/data/ref_genomes/"
         mkdir -p "$directory"
         mv {input} workflow/data/scNOVA_data_models.zip
-        unzip workflow/data/scNOVA_data_models.zip
+        unzip workflow/data/scNOVA_data_models.zip -d workflow/data/
         """
