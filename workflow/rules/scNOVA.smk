@@ -5,10 +5,10 @@ rule filter_sv_calls:
         "{folder}/{sample}/mosaiclassifier/sv_calls/stringent_filterTRUE.tsv",
     output:
         "{folder}/{sample}/scNOVA_input_user/sv_calls.tsv",
-    run:
-        df = pd.read_csv(input[0], sep="\t")
-        df = df.loc[df["chrom"] != "chrY"]
-        df.to_csv(output[0], sep="\t", index=False)
+    conda:
+        "../envs/mc_base.yaml"
+    script:
+        "../scripts/scNOVA_scripts/filter_sv_calls.py"
 
 
 rule scNOVA_final_results:
@@ -196,8 +196,6 @@ rule count_reads_split:
     threads: 1
     conda:
         "../envs/scNOVA/scNOVA_bioinfo_tools.yaml"
-    # envmodules:
-    #     "BEDTools/2.30.0-GCC-11.2.0",
     shell:
         """
         bedtools multicov -bams {input.bam}  -bed workflow/data/scNOVA/utils/bin_Genebody_all.bed > {output.tab}
@@ -218,6 +216,8 @@ rule count_reads_split_aggr:
         ),
     output:
         tab="{folder}/{sample}/scNOVA_result/{sample}.tab",
+    conda:
+        "../envs/mc_base.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
     script:
@@ -233,6 +233,8 @@ rule count_sort_by_coordinate:
         "{folder}/{sample}/scNOVA_result/{sample}.tab",
     output:
         "{folder}/{sample}/scNOVA_result/{sample}_sort.txt",
+    conda:
+        "../envs/mc_base.yaml"
     shell:
         """
         sort -k1,1 -k2,2n -k3,3n -t$'\t' {input} > {output}
@@ -272,13 +274,10 @@ rule filter_input_subclonality:
         "{folder}/{sample}/scNOVA_input_user/input_subclonality.txt",
     output:
         "{folder}/{sample}/scNOVA_input_user/input_subclonality_{clone}.txt",
-    run:
-        import pandas as pd
-
-        df = pd.read_csv(input[0], sep="\t")
-        df.loc[df["Subclonality"] == wildcards.clone].to_csv(
-            output[0], sep="\t", index=False
-        )
+    conda:
+        "../envs/mc_base.yaml"
+    script:
+        "../scripts/scNOVA_scripts/filter_input_subclonality.py"
 
 
 rule merge_bam_clones:
@@ -331,8 +330,6 @@ rule count_reads_for_DNN:
     threads: 1
     conda:
         "../envs/scNOVA/scNOVA_bioinfo_tools.yaml"
-    # envmodules:
-    #     "BEDTools/2.30.0-GCC-11.2.0",
     shell:
         """
         bedtools multicov -bams {input.bam}  -bed workflow/data/scNOVA/utils/bin_Genes_for_CNN_sort.txt.corrected > {output.tab}
@@ -353,6 +350,8 @@ rule count_reads_for_DNN_aggr:
         ),
     output:
         tab="{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}.tab",
+    conda:
+        "../envs/mc_base.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
     script:
@@ -375,8 +374,6 @@ rule count_reads_for_DNN_sc:
     threads: 1
     conda:
         "../envs/scNOVA/scNOVA_bioinfo_tools.yaml"
-    # envmodules:
-    #     "BEDTools/2.30.0-GCC-11.2.0",
     shell:
         """
         bedtools multicov -bams {input.bam}  -bed workflow/data/scNOVA/utils/bin_Genes_for_CNN_sort.txt.corrected > {output.tab}
@@ -397,6 +394,8 @@ rule count_reads_for_DNN_sc_aggr:
         ),
     output:
         tab="{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}_sc.tab",
+    conda:
+        "../envs/mc_base.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
     script:
@@ -421,8 +420,6 @@ rule count_reads_chr_length:
     threads: 1
     conda:
         "../envs/scNOVA/scNOVA_bioinfo_tools.yaml"
-    # envmodules:
-    #     "BEDTools/2.30.0-GCC-11.2.0",
     shell:
         """
         bedtools multicov -bams {input.bam} -bed workflow/data/scNOVA/utils/bin_chr_length.bed > {output.tab}
@@ -443,6 +440,8 @@ rule count_reads_chr_length_aggr:
         ),
     output:
         tab="{folder}/{sample}/scNOVA_result/Deeptool_chr_length_{sample}.tab",
+    conda:
+        "../envs/mc_base.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
     script:
@@ -465,8 +464,6 @@ rule count_reads_chr_length_sc:
     threads: 1
     conda:
         "../envs/scNOVA/scNOVA_bioinfo_tools.yaml"
-    # envmodules:
-    #     "BEDTools/2.30.0-GCC-11.2.0",
     shell:
         """
         bedtools multicov -bams {input.bam}  -bed workflow/data/scNOVA/utils/bin_chr_length.bed > {output.tab}
@@ -487,6 +484,8 @@ rule count_reads_chr_length_sc_aggr:
         ),
     output:
         tab="{folder}/{sample}/scNOVA_result/Deeptool_chr_length_{sample}_sc.tab",
+    conda:
+        "../envs/mc_base.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
     script:
@@ -502,6 +501,8 @@ rule count_reads_for_DNN_sort:
         "{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}.tab",
     output:
         "{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}_sort.txt",
+    conda:
+        "../envs/mc_base.yaml"
     shell:
         """
         sort -k1,1 -k2,2n -k3,3n -t$'\t' {input} > {output}
@@ -540,6 +541,8 @@ rule count_reads_for_DNN_sort_label_sort:
         "{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}_sort_lab.txt",
     output:
         "{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}_sort_lab_final.txt",
+    conda:
+        "../envs/mc_base.yaml"
     shell:
         """
         sort -k4,4n -t$'\t' {input} > {output}
@@ -586,6 +589,8 @@ rule count_reads_for_DNN_sc_sort:
         "{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}_sc.tab",
     output:
         "{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}_sc_sort.txt",
+    conda:
+        "../envs/mc_base.yaml"
     shell:
         """
         sort -k1,1 -k2,2n -k3,3n -t$'\t' {input} > {output}
@@ -624,6 +629,8 @@ rule count_reads_for_DNN_sc_sort_label_sort:
         "{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}_sc_sort_lab.txt",
     output:
         "{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}_sc_sort_lab_final.txt",
+    conda:
+        "../envs/mc_base.yaml"
     shell:
         """
         sort -k4,4n -t$'\t' {input} > {output}
@@ -712,12 +719,6 @@ rule infer_expressed_genes_split:
         "../scripts/scNOVA_scripts/Deeplearning_Nucleosome_predict_train_RPE.py"
 
 
-# shell:
-#     """
-#     python workflow/scripts/scNOVA_scripts/Deeplearning_Nucleosome_predict_train_RPE.py {input.features} {input.TSS_annot} {output.train} {wildcards.chrom} {wildcards.i}
-#     """
-
-
 rule gather_infer_expressed_genes_split:
     log:
         "{folder}/{sample}/log/gather_infer_expressed_genes_split/{clone}_{i}.log",
@@ -734,12 +735,10 @@ rule gather_infer_expressed_genes_split:
         ),
     output:
         "{folder}/{sample}/scNOVA_result_CNN/DNN_train{i}_output_ypred_{clone}.csv",
-    run:
-        import pandas as pd
-
-        pd.concat([pd.read_csv(e) for e in sorted(list(input))])[
-            ["prob1", "prob2"]
-        ].reset_index().to_csv(output[0], index=False)
+    conda:
+        "../envs/mc_base.yaml"
+    script:
+        "../scripts/scNOVA_scripts/gather_infer_expr_genes_split.py"
 
 
 rule aggr_models_touch:
@@ -875,8 +874,6 @@ rule count_reads_CREs:
     threads: 1
     conda:
         "../envs/scNOVA/scNOVA_bioinfo_tools.yaml"
-    # envmodules:
-    #     "BEDTools/2.30.0-GCC-11.2.0",
     shell:
         """
         bedtools multicov -bams {input.bam}  -bed workflow/data/scNOVA/utils/regions_all_hg38_v2_resize_2kb_sort.bed > {output.tab}
@@ -899,6 +896,8 @@ rule count_reads_CREs_aggr:
         tab="{folder}/{sample}/scNOVA_result/{sample}_CREs_2kb.tab",
     resources:
         mem_mb=get_mem_mb_heavy,
+    conda:
+        "../envs/mc_base.yaml"
     script:
         "../scripts/scNOVA_scripts/dev_aggr.py"
 
@@ -912,6 +911,8 @@ rule count_sort_by_coordinate_CREs:
         "{folder}/{sample}/scNOVA_result/{sample}_CREs_2kb.tab",
     output:
         "{folder}/{sample}/scNOVA_result/{sample}_CREs_2kb_sort.txt",
+    conda:
+        "../envs/mc_base.yaml"
     shell:
         """
         sort -k1,1 -k2,2n -k3,3n -t$'\t' {input} > {output}
@@ -952,6 +953,8 @@ rule count_sort_annotate_chrid_CREs_sort:
         "{folder}/{sample}/scNOVA_result/{sample}_CREs_2kb_sort_num.txt",
     output:
         "{folder}/{sample}/scNOVA_result/{sample}_CREs_2kb_sort_num_sort_for_chromVAR.txt",
+    conda:
+        "../envs/mc_base.yaml"
     shell:
         """
         sort -k1,1n -k2,2n -k3,3n -t$'\t' {input} > {output}
@@ -1082,8 +1085,6 @@ rule count_reads_CREs_haplo:
     threads: 1
     conda:
         "../envs/scNOVA/scNOVA_bioinfo_tools.yaml"
-    # envmodules:
-    #     "BEDTools/2.30.0-GCC-11.2.0",
     shell:
         """
         bedtools multicov -bams {input.bam1} {input.bam2} -bed workflow/data/scNOVA/utils/regions_all_hg38_v2_resize_2kb_sort.bed > {output.tab}
@@ -1099,6 +1100,8 @@ rule count_reads_CREs_haplo_sort_by_coordinate:
         "{folder}/{sample}/scNOVA_result_haplo/Deeptool_DHS_2kb_H1H2.tab",
     output:
         "{folder}/{sample}/scNOVA_result_haplo/Deeptool_DHS_2kb_H1H2_sort.txt",
+    conda:
+        "../envs/mc_base.yaml"
     shell:
         """
         sort -k1,1 -k2,2n -k3,3n -t$'\t' {input} > {output}
@@ -1123,8 +1126,6 @@ rule count_reads_genebody_haplo:
     threads: 1
     conda:
         "../envs/scNOVA/scNOVA_bioinfo_tools.yaml"
-    # envmodules:
-    #     "BEDTools/2.30.0-GCC-11.2.0",
     shell:
         """
         bedtools multicov -bams {input.bam1} {input.bam2}  -bed workflow/data/scNOVA/utils/bin_Genebody_all.bed > {output.tab}
@@ -1140,6 +1141,8 @@ rule count_reads_genebody_haplo_sort_by_coordinate_genebody:
         "{folder}/{sample}/scNOVA_result_haplo/Deeptool_Genebody_H1H2.tab",
     output:
         "{folder}/{sample}/scNOVA_result_haplo/Deeptool_Genebody_H1H2_sort.txt",
+    conda:
+        "../envs/mc_base.yaml"
     shell:
         """
         sort -k1,1 -k2,2n -k3,3n -t$'\t' {input} > {output}
