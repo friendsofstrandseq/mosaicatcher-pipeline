@@ -75,7 +75,7 @@ rule run_strandphaser_per_chrom:
                 {input.configfile} \
                 {input.wcregions} \
                 {input.snppositions} \
-                $(pwd)/utils/R-packages/ > {log} 2>&1
+                $(pwd)/utils/R-packages/
         """
 
 

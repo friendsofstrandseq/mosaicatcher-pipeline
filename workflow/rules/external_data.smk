@@ -166,6 +166,8 @@ rule download_scnova_data:
         touch("workflow/data/scNOVA/log/dl.ok"),
     log:
         touch("log/config/dl_arbigent_mappability_track.ok"),
+    conda:
+        "../envs/mc_base.yaml"
     shell:
         """
         directory="workflow/data/ref_genomes/"
