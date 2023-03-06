@@ -362,7 +362,7 @@ The zip file produced can be heavy (~1GB for 24 HGSVC samples ; 2000 cells) if m
 
 ---
 
-### ArbiGent mode of execution
+## ArbiGent mode of execution
 
 From 1.9.0, it's now possible to run MosaiCatcher in order to genotype a given list of positions specified in a bed file. To do so, `arbigent` config parameter need to be set to `True`.
 Thus, an alternative branch of the pipeline will be executed instead of the classic one, targetting results produced by ArbiGent.
@@ -381,6 +381,43 @@ A generic BED file is provided in `workflow/data/arbigent/manual_segmentation.be
 **ℹ️ Note**
 
 If you modify the chromosome list to be processed (remove chrX & chrY for instance), a dedicated rule will extract only from the BED file, the rows matching the list of chromosomes to be analysed.
+
+---
+
+## scNOVA mode of execution
+
+From 1.9.2, it's now possible to run [scNOVA](https://github.com/jeongdo801/scNOVA/) directly from MosaiCatcher in order to determine the nucleosome occupancy associated to the SV calls provided during MosaiCatcher execution.
+
+To do so, mosaicatcher must be executed during a first step in order to generate the SV calls and associated plots/tables required to determine subclonality.
+
+Once the subclonality was determined, a table respecting the following template must be provided at this path `<DATA_LOCATION>/<SAMPLE>/scNOVA_input_user/input_subclonality.txt` where the different clones are named `clone<N>`:
+
+| Filename             | Subclonality |
+| -------------------- | ------------ |
+| TALL3x1_DEA5_PE20406 | clone2       |
+| TALL3x1_DEA5_PE20414 | clone2       |
+| TALL3x1_DEA5_PE20415 | clone1       |
+| TALL3x1_DEA5_PE20416 | clone1       |
+| TALL3x1_DEA5_PE20417 | clone1       |
+| TALL3x1_DEA5_PE20418 | clone1       |
+| TALL3x1_DEA5_PE20419 | clone1       |
+| TALL3x1_DEA5_PE20421 | clone1       |
+| TALL3x1_DEA5_PE20422 | clone1       |
+
+Once done, you can run the exact same command as previously and set `scNOVA` config parameter to `True` like the following:
+
+```bash
+snakemake \
+    --cores <N> --config data_location=<INPUT_DATA_FOLDER> scNOVA=True \
+    --profile workflow/snakemake_profiles/local/conda_singularity/
+
+```
+
+---
+
+**ℹ️ Note**
+
+scNOVA related snakemake rules and scripts only support conda execution at the moment
 
 ---
 

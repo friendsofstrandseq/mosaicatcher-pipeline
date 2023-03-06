@@ -33,6 +33,7 @@ All these arguments can be specified in two ways:
 | ------------- | ---------------------------------------------------------------------------------------------- | ------- | ------------ |
 | `GC_analysis` | Allow to perform GC analysis using Alfred and GC correction for visualization (Marco Cosenza). | False   | False        |
 | `arbigent`    | Enable ArbiGent mode of execution to genotype SV based on arbitrary segments                   | False   | True         |
+| `scNOVA`    | Enable scNOVA mode of execution to compute Nucleosome Occupancy (NO) of detected SV                   | False   | True         |
 
 ### External files
 
