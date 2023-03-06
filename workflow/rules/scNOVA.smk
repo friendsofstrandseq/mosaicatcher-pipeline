@@ -1,24 +1,19 @@
-# SAMPLE_NAME = "TALL03-DEA5"
-# clones[wc.sample] = ["clone1", "clone2"]
-# BAMFILE, = glob_wildcards("{folder}/{sample}/bam/{cell}.bam")
-# BAM_SC, = glob_wildcards("{folder}/{sample}/bam/{single_cells}.sort.mdup.bam")
-# abbreviate_names = False
-
-# configfile: "Snake.config.json"
-
-
-
 rule filter_sv_calls:
-    input: 
+    log:
+        "{folder}/{sample}/log/filter_sv_calls/{sample}.log",
+    input:
         "{folder}/{sample}/mosaiclassifier/sv_calls/stringent_filterTRUE.tsv",
-    output: "{folder}/{sample}/scNOVA_input_user/sv_calls.tsv",
-    run: 
+    output:
+        "{folder}/{sample}/scNOVA_input_user/sv_calls.tsv",
+    run:
         df = pd.read_csv(input[0], sep="\t")
         df = df.loc[df["chrom"] != "chrY"]
-        df.to_csv(output[0], sep='\t', index=False)
+        df.to_csv(output[0], sep="\t", index=False)
+
 
 rule scNOVA_final_results:
-    container: None
+    container:
+        None
     input:
         get_scnova_final_output,
     output:
@@ -30,8 +25,10 @@ rule scNOVA_final_results:
     shell:
         "touch {output}"
 
+
 rule generate_CN_for_CNN:
-    container: None
+    container:
+        None
     input:
         mosaiclassifier_final_results="{folder}/{sample}/plots/final_results/{sample}.txt",
         subclone="{folder}/{sample}/scNOVA_input_user/input_subclonality.txt",
@@ -57,7 +54,8 @@ rule generate_CN_for_CNN:
 
 
 rule generate_CN_for_chromVAR:
-    container: None
+    container:
+        None
     input:
         TSS_matrix="workflow/data/scNOVA/utils/Strand_seq_matrix_TSS_for_SVM.txt",
         TES_matrix="workflow/data/scNOVA/utils/Strand_seq_matrix_TES_for_SVM.txt",
@@ -82,16 +80,17 @@ rule generate_CN_for_chromVAR:
         """
 
 
-
-
 rule remove_low_quality_reads:
-    container: None
+    container:
+        None
     input:
         bam="{folder}/{sample}/bam/{cell}.sort.mdup.bam",
-        check="workflow/data/scNOVA/log/dl.ok"
+        check="workflow/data/scNOVA/log/dl.ok",
     output:
         bam_pre="{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono.bam",
         bam_header="{folder}/{sample}/scNOVA_bam_modified/{cell}.header_test.sam",
+    log:
+        "{folder}/{sample}/log/remove_low_quality_reads/{cell}.log",
     conda:
         "../envs/scNOVA/scNOVA_bioinfo_tools.yaml"
     resources:
@@ -104,7 +103,10 @@ rule remove_low_quality_reads:
 
 
 rule sort_bam:
-    container: None
+    log:
+        "{folder}/{sample}/log/sort_bam/{cell}.log",
+    container:
+        None
     input:
         "{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono.bam",
     output:
@@ -121,7 +123,10 @@ rule sort_bam:
 
 
 rule index_num1:
-    container: None
+    log:
+        "{folder}/{sample}/log/index_num1/{cell}.log",
+    container:
+        None
     input:
         "{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark.bam",
     output:
@@ -137,7 +142,10 @@ rule index_num1:
 
 
 rule remove_dup:
-    container: None
+    log:
+        "{folder}/{sample}/log/remove_dup/{cell}.log",
+    container:
+        None
     input:
         bam="{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark.bam",
     output:
@@ -154,7 +162,10 @@ rule remove_dup:
 
 
 rule index_num2:
-    container: None
+    log:
+        "{folder}/{sample}/log/index_num2/{cell}.log",
+    container:
+        None
     input:
         "{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam",
     output:
@@ -170,7 +181,10 @@ rule index_num2:
 
 
 rule count_reads_split:
-    container: None
+    log:
+        "{folder}/{sample}/log/count_reads_split/{cell}.log",
+    container:
+        None
     input:
         bam="{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam",
         bai="{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.bai",
@@ -180,7 +194,8 @@ rule count_reads_split:
         mem_mb=get_mem_mb_heavy,
         time="10:00:00",
     threads: 1
-    conda: "../envs/scNOVA/scNOVA_bioinfo_tools.yaml"
+    conda:
+        "../envs/scNOVA/scNOVA_bioinfo_tools.yaml"
     # envmodules:
     #     "BEDTools/2.30.0-GCC-11.2.0",
     shell:
@@ -190,9 +205,17 @@ rule count_reads_split:
 
 
 rule count_reads_split_aggr:
-    container: None
+    log:
+        "{folder}/{sample}/log/count_reads_split_aggr.log",
+    container:
+        None
     input:
-        lambda wc: expand("{folder}/{sample}/scNOVA_result/count_reads_split/{cell}.tab", cell=bam_per_sample[wc.sample], sample=wc.sample, folder=config["data_location"]),
+        lambda wc: expand(
+            "{folder}/{sample}/scNOVA_result/count_reads_split/{cell}.tab",
+            cell=bam_per_sample[wc.sample],
+            sample=wc.sample,
+            folder=config["data_location"],
+        ),
     output:
         tab="{folder}/{sample}/scNOVA_result/{sample}.tab",
     resources:
@@ -202,7 +225,10 @@ rule count_reads_split_aggr:
 
 
 rule count_sort_by_coordinate:
-    container: None
+    log:
+        "{folder}/{sample}/log/count_sort_by_coordinate/{sample}.log",
+    container:
+        None
     input:
         "{folder}/{sample}/scNOVA_result/{sample}.tab",
     output:
@@ -214,14 +240,19 @@ rule count_sort_by_coordinate:
 
 
 rule count_sort_annotate_geneid:
-    container: None
+    log:
+        "{folder}/{sample}/log/count_sort_annotate_geneid/{sample}.log",
+    container:
+        None
     input:
         count_table="{folder}/{sample}/scNOVA_result/{sample}_sort.txt",
         GB_matrix="workflow/data/scNOVA/utils/Strand_seq_matrix_Genebody_for_SCDE.txt",
     output:
         "{folder}/{sample}/scNOVA_result/{sample}_sort_geneid.txt",
     params:
-        count_sort_annotate_geneid=config["scNOVA_scripts"]["count_sort_annotate_geneid"],
+        count_sort_annotate_geneid=config["scNOVA_scripts"][
+            "count_sort_annotate_geneid"
+        ],
     conda:
         "../envs/scNOVA/scNOVA_R.yaml"
     resources:
@@ -231,23 +262,43 @@ rule count_sort_annotate_geneid:
         Rscript {params.count_sort_annotate_geneid} {input.count_table} {input.GB_matrix} {output}  
         """
 
+
 rule filter_input_subclonality:
-    container: None
-    input: "{folder}/{sample}/scNOVA_input_user/input_subclonality.txt"
-    output: "{folder}/{sample}/scNOVA_input_user/input_subclonality_{clone}.txt"
+    log:
+        "{folder}/{sample}/log/filter_input_subclonality/{clone}.log",
+    container:
+        None
+    input:
+        "{folder}/{sample}/scNOVA_input_user/input_subclonality.txt",
+    output:
+        "{folder}/{sample}/scNOVA_input_user/input_subclonality_{clone}.txt",
     run:
         import pandas as pd
+
         df = pd.read_csv(input[0], sep="\t")
-        df.loc[df["Subclonality"] == wildcards.clone].to_csv(output[0], sep="\t", index=False)
-
-
+        df.loc[df["Subclonality"] == wildcards.clone].to_csv(
+            output[0], sep="\t", index=False
+        )
 
 
 rule merge_bam_clones:
-    container: None
+    log:
+        "{folder}/{sample}/log/merge_bam_clones/{clone}.log",
+    container:
+        None
     input:
-        bam=lambda wc: expand("{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam", cell=bam_per_sample[wc.sample], sample=wc.sample, folder=config["data_location"]),
-        bai=lambda wc: expand("{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.bai", cell=bam_per_sample[wc.sample], sample=wc.sample, folder=config["data_location"]),
+        bam=lambda wc: expand(
+            "{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam",
+            cell=bam_per_sample[wc.sample],
+            sample=wc.sample,
+            folder=config["data_location"],
+        ),
+        bai=lambda wc: expand(
+            "{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.bai",
+            cell=bam_per_sample[wc.sample],
+            sample=wc.sample,
+            folder=config["data_location"],
+        ),
         input_subclonality="{folder}/{sample}/scNOVA_input_user/input_subclonality_{clone}.txt",
     output:
         bam="{folder}/{sample}/scNOVA_bam_merge/{clone}.merge.bam",
@@ -263,8 +314,12 @@ rule merge_bam_clones:
         perl workflow/scripts/scNOVA_scripts/merge_bam_clones.pl {input.input_subclonality} {output.subclonality_colnames} {output.line}
         """
 
+
 rule count_reads_for_DNN:
-    container: None
+    log:
+        "{folder}/{sample}/log/count_reads_for_DNN/{clone}.log",
+    container:
+        None
     input:
         bam="{folder}/{sample}/scNOVA_bam_merge/{clone}.merge.bam",
         bai="{folder}/{sample}/scNOVA_bam_merge/{clone}.merge.bam.bai",
@@ -274,7 +329,8 @@ rule count_reads_for_DNN:
         mem_mb=get_mem_mb_heavy,
         time="10:00:00",
     threads: 1
-    conda: "../envs/scNOVA/scNOVA_bioinfo_tools.yaml"
+    conda:
+        "../envs/scNOVA/scNOVA_bioinfo_tools.yaml"
     # envmodules:
     #     "BEDTools/2.30.0-GCC-11.2.0",
     shell:
@@ -284,11 +340,16 @@ rule count_reads_for_DNN:
 
 
 rule count_reads_for_DNN_aggr:
-    container: None
+    log:
+        "{folder}/{sample}/log/count_reads_for_DNN_aggr/{sample}.log",
+    container:
+        None
     input:
         lambda wc: expand(
             "{folder}/{sample}/scNOVA_result/count_reads_for_DNN/Deeptool_Genes_for_CNN_{clone}.tab",
-            clone=clones[wc.sample], sample=wc.sample, folder=config["data_location"]
+            clone=clones[wc.sample],
+            sample=wc.sample,
+            folder=config["data_location"],
         ),
     output:
         tab="{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}.tab",
@@ -299,7 +360,10 @@ rule count_reads_for_DNN_aggr:
 
 
 rule count_reads_for_DNN_sc:
-    container: None
+    log:
+        "{folder}/{sample}/log/count_reads_for_DNN_sc/{cell}.log",
+    container:
+        None
     input:
         bam="{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam",
         bai="{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.bai",
@@ -309,7 +373,8 @@ rule count_reads_for_DNN_sc:
         mem_mb=get_mem_mb_heavy,
         time="10:00:00",
     threads: 1
-    conda: "../envs/scNOVA/scNOVA_bioinfo_tools.yaml"
+    conda:
+        "../envs/scNOVA/scNOVA_bioinfo_tools.yaml"
     # envmodules:
     #     "BEDTools/2.30.0-GCC-11.2.0",
     shell:
@@ -319,10 +384,16 @@ rule count_reads_for_DNN_sc:
 
 
 rule count_reads_for_DNN_sc_aggr:
-    container: None
+    log:
+        "{folder}/{sample}/log/count_reads_for_DNN_sc_aggr/{sample}.log",
+    container:
+        None
     input:
         lambda wc: expand(
-            "{folder}/{sample}/scNOVA_result/count_reads_for_DNN_sc/Deeptool_Genes_for_CNN_{cell}.tab", cell=bam_per_sample[wc.sample], sample=wc.sample, folder=config["data_location"]
+            "{folder}/{sample}/scNOVA_result/count_reads_for_DNN_sc/Deeptool_Genes_for_CNN_{cell}.tab",
+            cell=bam_per_sample[wc.sample],
+            sample=wc.sample,
+            folder=config["data_location"],
         ),
     output:
         tab="{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}_sc.tab",
@@ -333,7 +404,10 @@ rule count_reads_for_DNN_sc_aggr:
 
 
 rule count_reads_chr_length:
-    container: None
+    log:
+        "{folder}/{sample}/log/count_reads_chr_length/{clone}.log",
+    container:
+        None
     input:
         bam="{folder}/{sample}/scNOVA_bam_merge/{clone}.merge.bam",
         bai="{folder}/{sample}/scNOVA_bam_merge/{clone}.merge.bam.bai",
@@ -345,7 +419,8 @@ rule count_reads_chr_length:
         mem_mb=get_mem_mb_heavy,
         time="10:00:00",
     threads: 1
-    conda: "../envs/scNOVA/scNOVA_bioinfo_tools.yaml"
+    conda:
+        "../envs/scNOVA/scNOVA_bioinfo_tools.yaml"
     # envmodules:
     #     "BEDTools/2.30.0-GCC-11.2.0",
     shell:
@@ -355,11 +430,16 @@ rule count_reads_chr_length:
 
 
 rule count_reads_chr_length_aggr:
-    container: None
+    log:
+        "{folder}/{sample}/log/count_reads_chr_length_aggr/{sample}.log",
+    container:
+        None
     input:
         lambda wc: expand(
             "{folder}/{sample}/scNOVA_result/count_reads_chr_length/Deeptool_chr_length_{clone}.tab",
-            clone=clones[wc.sample],sample=wc.sample, folder=config["data_location"]
+            clone=clones[wc.sample],
+            sample=wc.sample,
+            folder=config["data_location"],
         ),
     output:
         tab="{folder}/{sample}/scNOVA_result/Deeptool_chr_length_{sample}.tab",
@@ -370,7 +450,10 @@ rule count_reads_chr_length_aggr:
 
 
 rule count_reads_chr_length_sc:
-    container: None
+    log:
+        "{folder}/{sample}/log/count_reads_chr_length_sc/{cell}.log",
+    container:
+        None
     input:
         bam="{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam",
         bai="{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.bai",
@@ -380,7 +463,8 @@ rule count_reads_chr_length_sc:
         mem_mb=get_mem_mb_heavy,
         time="10:00:00",
     threads: 1
-    conda: "../envs/scNOVA/scNOVA_bioinfo_tools.yaml"
+    conda:
+        "../envs/scNOVA/scNOVA_bioinfo_tools.yaml"
     # envmodules:
     #     "BEDTools/2.30.0-GCC-11.2.0",
     shell:
@@ -390,11 +474,16 @@ rule count_reads_chr_length_sc:
 
 
 rule count_reads_chr_length_sc_aggr:
-    container: None
+    log:
+        "{folder}/{sample}/log/count_reads_chr_length_sc_aggr/{sample}.log",
+    container:
+        None
     input:
         lambda wc: expand(
             "{folder}/{sample}/scNOVA_result/count_reads_chr_length_sc/Deeptool_chr_length_{cell}.tab",
-            cell=bam_per_sample[wc.sample],sample=wc.sample, folder=config["data_location"]
+            cell=bam_per_sample[wc.sample],
+            sample=wc.sample,
+            folder=config["data_location"],
         ),
     output:
         tab="{folder}/{sample}/scNOVA_result/Deeptool_chr_length_{sample}_sc.tab",
@@ -405,7 +494,10 @@ rule count_reads_chr_length_sc_aggr:
 
 
 rule count_reads_for_DNN_sort:
-    container: None
+    log:
+        "{folder}/{sample}/log/count_reads_for_DNN_sort/{sample}.log",
+    container:
+        None
     input:
         "{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}.tab",
     output:
@@ -417,7 +509,10 @@ rule count_reads_for_DNN_sort:
 
 
 rule count_reads_for_DNN_sort_lab:
-    container: None
+    log:
+        "{folder}/{sample}/log/count_reads_for_DNN_sort_lab/{sample}.log",
+    container:
+        None
     input:
         count_reads_sort="{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}_sort.txt",
         Ref_bed="workflow/data/scNOVA/utils/bin_Genes_for_CNN_num_sort.txt",
@@ -437,7 +532,10 @@ rule count_reads_for_DNN_sort_lab:
 
 
 rule count_reads_for_DNN_sort_label_sort:
-    container: None
+    log:
+        "{folder}/{sample}/log/count_reads_for_DNN_sort_label_sort/{sample}.log",
+    container:
+        None
     input:
         "{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}_sort_lab.txt",
     output:
@@ -449,7 +547,10 @@ rule count_reads_for_DNN_sort_label_sort:
 
 
 rule count_reads_for_DNN_normalization:
-    container: None
+    log:
+        "{folder}/{sample}/log/count_reads_for_DNN_normalization/{clone}.log",
+    container:
+        None
     input:
         count_reads_chr_length="{folder}/{sample}/scNOVA_result/Deeptool_chr_length_{sample}.tab",
         count_reads_sort_label="{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}_sort_lab.txt",
@@ -477,7 +578,10 @@ rule count_reads_for_DNN_normalization:
 
 
 rule count_reads_for_DNN_sc_sort:
-    container: None
+    log:
+        "{folder}/{sample}/log/count_reads_for_DNN_sc_sort/{sample}.log",
+    container:
+        None
     input:
         "{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}_sc.tab",
     output:
@@ -489,7 +593,10 @@ rule count_reads_for_DNN_sc_sort:
 
 
 rule count_reads_for_DNN_sc_sort_lab:
-    container: None
+    log:
+        "{folder}/{sample}/log/count_reads_for_DNN_sc_sort_lab/{sample}.log",
+    container:
+        None
     input:
         count_reads_sort="{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}_sc_sort.txt",
         Ref_bed="workflow/data/scNOVA/utils/bin_Genes_for_CNN_num_sort.txt",
@@ -509,7 +616,10 @@ rule count_reads_for_DNN_sc_sort_lab:
 
 
 rule count_reads_for_DNN_sc_sort_label_sort:
-    container: None
+    log:
+        "{folder}/{sample}/log/count_reads_for_DNN_sc_sort_label_sort/{sample}.log",
+    container:
+        None
     input:
         "{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}_sc_sort_lab.txt",
     output:
@@ -521,7 +631,10 @@ rule count_reads_for_DNN_sc_sort_label_sort:
 
 
 rule generate_feature_sc_var:
-    container: None
+    log:
+        "{folder}/{sample}/log/generate_feature_sc_var/{clone}.log",
+    container:
+        None
     input:
         subclone_list="{folder}/{sample}/scNOVA_input_user/input_subclonality.txt",
         count_reads_sc_sort="{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}_sc_sort_lab_final.txt",
@@ -549,7 +662,10 @@ rule generate_feature_sc_var:
 
 
 rule combine_features:
-    container: None
+    log:
+        "{folder}/{sample}/log/combine_features/{clone}.log",
+    container:
+        None
     input:
         TSS_matrix="workflow/data/scNOVA/utils/Strand_seq_matrix_TSS_for_SVM.txt",
         table_GC_imput="workflow/data/scNOVA/utils/Features_reshape_GC_orientation_impute.txt",
@@ -579,7 +695,10 @@ rule combine_features:
 
 
 rule infer_expressed_genes_split:
-    container: None
+    log:
+        "{folder}/{sample}/log/infer_expressed_genes_split/{clone}_{chrom}_{i}.log",
+    container:
+        None
     input:
         features="{folder}/{sample}/scNOVA_result/Features_reshape_all_orientation_norm_var_GC_CpG_RT_T_comb3_{clone}.txt",
         TSS_annot="{folder}/{sample}/scNOVA_result/Features_reshape_all_TSS_matrix_woM_all_RT_{clone}.txt",
@@ -591,14 +710,19 @@ rule infer_expressed_genes_split:
         mem_mb=get_mem_mb,
     script:
         "../scripts/scNOVA_scripts/Deeplearning_Nucleosome_predict_train_RPE.py"
-    # shell:
-    #     """
-    #     python workflow/scripts/scNOVA_scripts/Deeplearning_Nucleosome_predict_train_RPE.py {input.features} {input.TSS_annot} {output.train} {wildcards.chrom} {wildcards.i}
-    #     """
+
+
+# shell:
+#     """
+#     python workflow/scripts/scNOVA_scripts/Deeplearning_Nucleosome_predict_train_RPE.py {input.features} {input.TSS_annot} {output.train} {wildcards.chrom} {wildcards.i}
+#     """
 
 
 rule gather_infer_expressed_genes_split:
-    container: None
+    log:
+        "{folder}/{sample}/log/gather_infer_expressed_genes_split/{clone}_{i}.log",
+    container:
+        None
     input:
         lambda wc: expand(
             "{folder}/{sample}/scNOVA_result_CNN/{chrom}/DNN_train{i}_output_ypred_{clone}.csv",
@@ -606,7 +730,7 @@ rule gather_infer_expressed_genes_split:
             clone=wc.clone,
             chrom=config["chromosomes"],
             sample=wc.sample,
-            folder=config["data_location"]
+            folder=config["data_location"],
         ),
     output:
         "{folder}/{sample}/scNOVA_result_CNN/DNN_train{i}_output_ypred_{clone}.csv",
@@ -619,21 +743,27 @@ rule gather_infer_expressed_genes_split:
 
 
 rule aggr_models_touch:
-    container: None
+    log:
+        "{folder}/{sample}/log/aggr_models_touch/{clone}.log",
+    container:
+        None
     input:
         lambda wc: expand(
             "{folder}/{sample}/scNOVA_result_CNN/DNN_train{i}_output_ypred_{clone}.csv",
             i=["5", "20", "40", "80"],
             clone=wc.clone,
             sample=wc.sample,
-            folder=config["data_location"]
-                    ),
+            folder=config["data_location"],
+        ),
     output:
         touch("{folder}/{sample}/scNOVA_result_CNN/DNN_train_models_{clone}.ok"),
 
 
 rule annot_expressed_genes:
-    container: None
+    log:
+        "{folder}/{sample}/log/annot_expressed_genes/{clone}.log",
+    container:
+        None
     input:
         TSS_annot="{folder}/{sample}/scNOVA_result/Features_reshape_all_TSS_matrix_woM_all_RT_{clone}.txt",
         train80="{folder}/{sample}/scNOVA_result_CNN/DNN_train80_output_ypred_{clone}.csv",
@@ -661,7 +791,10 @@ rule annot_expressed_genes:
 
 
 rule infer_differential_gene_expression:
-    container: None
+    log:
+        "{folder}/{sample}/log/infer_differential_gene_expression/{sample}.log",
+    container:
+        None
     input:
         Genebody_NO="{folder}/{sample}/scNOVA_result/{sample}_sort.txt",
         clonality="{folder}/{sample}/scNOVA_input_user/input_subclonality.txt",
@@ -674,7 +807,9 @@ rule infer_differential_gene_expression:
         pdf="{folder}/{sample}/scNOVA_result_plots/Result_scNOVA_plots_{sample}.pdf",
         final_result="{folder}/{sample}/scNOVA_result_CNN/Expressed_train80_final_result.txt",
     params:
-        infer_diff_gene_expression=config["scNOVA_scripts"]["infer_diff_gene_expression"],
+        infer_diff_gene_expression=config["scNOVA_scripts"][
+            "infer_diff_gene_expression"
+        ],
     log:
         "{folder}/{sample}/log/infer_diff_gene_expression.log",
     conda:
@@ -688,7 +823,10 @@ rule infer_differential_gene_expression:
 
 
 rule infer_differential_gene_expression_alt:
-    container: None
+    log:
+        "{folder}/{sample}/log/infer_differential_gene_expression_alt/{sample}.log",
+    container:
+        None
     input:
         Genebody_NO="{folder}/{sample}/scNOVA_result/{sample}_sort.txt",
         clonality="{folder}/{sample}/scNOVA_input_user/input_subclonality.txt",
@@ -702,7 +840,9 @@ rule infer_differential_gene_expression_alt:
         result_table="{folder}/{sample}/scNOVA_result/result_PLSDA_{sample}.txt",
         result_plot="{folder}/{sample}/scNOVA_result_plots/Result_scNOVA_plots_{sample}_alternative_PLSDA.pdf",
     params:
-        infer_diff_gene_expression_alt=config["scNOVA_scripts"]["infer_diff_gene_expression_alt"],
+        infer_diff_gene_expression_alt=config["scNOVA_scripts"][
+            "infer_diff_gene_expression_alt"
+        ],
     log:
         "{folder}/{sample}/log/infer_diff_gene_expression_alt.log",
     conda:
@@ -718,7 +858,10 @@ rule infer_differential_gene_expression_alt:
 
 
 rule count_reads_CREs:
-    container: None
+    log:
+        "{folder}/{sample}/log/count_reads_CREs/{cell}.log",
+    container:
+        None
     input:
         bam="{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam",
         bai="{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.bai",
@@ -730,7 +873,8 @@ rule count_reads_CREs:
         mem_mb=get_mem_mb_heavy,
         time="10:00:00",
     threads: 1
-    conda: "../envs/scNOVA/scNOVA_bioinfo_tools.yaml"
+    conda:
+        "../envs/scNOVA/scNOVA_bioinfo_tools.yaml"
     # envmodules:
     #     "BEDTools/2.30.0-GCC-11.2.0",
     shell:
@@ -740,9 +884,17 @@ rule count_reads_CREs:
 
 
 rule count_reads_CREs_aggr:
-    container: None
+    log:
+        "{folder}/{sample}/log/count_reads_CREs_aggr/{sample}.log",
+    container:
+        None
     input:
-        lambda wc: expand("{folder}/{sample}/scNOVA_result/count_reads_CREs/{cell}_CREs_2kb.tab", cell=bam_per_sample[wc.sample],             sample=wc.sample, folder=config["data_location"]),
+        lambda wc: expand(
+            "{folder}/{sample}/scNOVA_result/count_reads_CREs/{cell}_CREs_2kb.tab",
+            cell=bam_per_sample[wc.sample],
+            sample=wc.sample,
+            folder=config["data_location"],
+        ),
     output:
         tab="{folder}/{sample}/scNOVA_result/{sample}_CREs_2kb.tab",
     resources:
@@ -752,7 +904,10 @@ rule count_reads_CREs_aggr:
 
 
 rule count_sort_by_coordinate_CREs:
-    container: None
+    log:
+        "{folder}/{sample}/log/count_sort_by_coordinate_CREs/{sample}.log",
+    container:
+        None
     input:
         "{folder}/{sample}/scNOVA_result/{sample}_CREs_2kb.tab",
     output:
@@ -764,13 +919,18 @@ rule count_sort_by_coordinate_CREs:
 
 
 rule count_sort_annotate_chrid_CREs:
-    container: None
+    log:
+        "{folder}/{sample}/log/count_sort_annotate_chrid_CREs/{sample}.log",
+    container:
+        None
     input:
         "{folder}/{sample}/scNOVA_result/{sample}_CREs_2kb_sort.txt",
     output:
         "{folder}/{sample}/scNOVA_result/{sample}_CREs_2kb_sort_num.txt",
     params:
-        count_sort_annotate_chrid_CREs=config["scNOVA_scripts"]["count_sort_annotate_chrid_CREs"],
+        count_sort_annotate_chrid_CREs=config["scNOVA_scripts"][
+            "count_sort_annotate_chrid_CREs"
+        ],
     log:
         "{folder}/{sample}/log/count_sort_annotate_chrid_CREs.log",
     conda:
@@ -784,7 +944,10 @@ rule count_sort_annotate_chrid_CREs:
 
 
 rule count_sort_annotate_chrid_CREs_sort:
-    container: None
+    log:
+        "{folder}/{sample}/log/count_sort_annotate_chrid_CREs_sort/{sample}.log",
+    container:
+        None
     input:
         "{folder}/{sample}/scNOVA_result/{sample}_CREs_2kb_sort_num.txt",
     output:
@@ -796,7 +959,10 @@ rule count_sort_annotate_chrid_CREs_sort:
 
 
 rule split_bam_WC:
-    container: None
+    log:
+        "{folder}/{sample}/log/split_bam_WC/{cell}.log",
+    container:
+        None
     input:
         "{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam",
     output:
@@ -820,7 +986,10 @@ rule split_bam_WC:
 
 
 rule split_bam_WC_merge:
-    container: None
+    log:
+        "{folder}/{sample}/log/split_bam_WC_merge/{cell}.log",
+    container:
+        None
     input:
         bam_C1="{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.C1.bam",
         bam_C2="{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.C2.bam",
@@ -841,7 +1010,10 @@ rule split_bam_WC_merge:
 
 
 rule split_bam_WC_index:
-    container: None
+    log:
+        "{folder}/{sample}/log/split_bam_WC_index/{cell}.log",
+    container:
+        None
     input:
         bam_C="{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.C.bam",
         bam_W="{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.W.bam",
@@ -860,14 +1032,23 @@ rule split_bam_WC_index:
 
 
 rule perl_split_sc:
-    container: None
+    log:
+        "{folder}/{sample}/log/perl_split_sc/{sample}.log",
+    container:
+        None
     input:
         strandphaser_output="{folder}/{sample}/strandphaser/strandphaser_phased_haps_merged.txt",
-        bam_C_ind= lambda wc: expand(
-           "{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.C.bam.bai", cell=bam_per_sample[wc.sample],sample=wc.sample, folder=config["data_location"]
+        bam_C_ind=lambda wc: expand(
+            "{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.C.bam.bai",
+            cell=bam_per_sample[wc.sample],
+            sample=wc.sample,
+            folder=config["data_location"],
         ),
-        bam_W_ind= lambda wc: expand(
-            "{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.W.bam.bai", cell=bam_per_sample[wc.sample],sample=wc.sample, folder=config["data_location"]
+        bam_W_ind=lambda wc: expand(
+            "{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.W.bam.bai",
+            cell=bam_per_sample[wc.sample],
+            sample=wc.sample,
+            folder=config["data_location"],
         ),
     output:
         nucleosome_sampleA="{folder}/{sample}/scNOVA_nucleosomes_bam/nucleosome_sampleA/result.H1.bam",
@@ -886,7 +1067,10 @@ rule perl_split_sc:
 
 
 rule count_reads_CREs_haplo:
-    container: None
+    log:
+        "{folder}/{sample}/log/count_reads_CREs_haplo/{sample}.log",
+    container:
+        None
     input:
         bam1="{folder}/{sample}/scNOVA_nucleosomes_bam/nucleosome_sampleA/result.H1.bam",
         bam2="{folder}/{sample}/scNOVA_nucleosomes_bam/nucleosome_sampleB/result.H2.bam",
@@ -896,7 +1080,8 @@ rule count_reads_CREs_haplo:
         mem_mb=get_mem_mb_heavy,
         time="10:00:00",
     threads: 1
-    conda: "../envs/scNOVA/scNOVA_bioinfo_tools.yaml"
+    conda:
+        "../envs/scNOVA/scNOVA_bioinfo_tools.yaml"
     # envmodules:
     #     "BEDTools/2.30.0-GCC-11.2.0",
     shell:
@@ -906,7 +1091,10 @@ rule count_reads_CREs_haplo:
 
 
 rule count_reads_CREs_haplo_sort_by_coordinate:
-    container: None
+    log:
+        "{folder}/{sample}/log/count_reads_CREs_haplo_sort_by_coordinate/{sample}.log",
+    container:
+        None
     input:
         "{folder}/{sample}/scNOVA_result_haplo/Deeptool_DHS_2kb_H1H2.tab",
     output:
@@ -918,7 +1106,10 @@ rule count_reads_CREs_haplo_sort_by_coordinate:
 
 
 rule count_reads_genebody_haplo:
-    container: None
+    log:
+        "{folder}/{sample}/log/count_reads_genebody_haplo/{sample}.log",
+    container:
+        None
     input:
         bam1="{folder}/{sample}/scNOVA_nucleosomes_bam/nucleosome_sampleA/result.H1.bam",
         bam2="{folder}/{sample}/scNOVA_nucleosomes_bam/nucleosome_sampleB/result.H2.bam",
@@ -930,7 +1121,8 @@ rule count_reads_genebody_haplo:
         mem_mb=get_mem_mb_heavy,
         time="10:00:00",
     threads: 1
-    conda: "../envs/scNOVA/scNOVA_bioinfo_tools.yaml"
+    conda:
+        "../envs/scNOVA/scNOVA_bioinfo_tools.yaml"
     # envmodules:
     #     "BEDTools/2.30.0-GCC-11.2.0",
     shell:
@@ -940,7 +1132,10 @@ rule count_reads_genebody_haplo:
 
 
 rule count_reads_genebody_haplo_sort_by_coordinate_genebody:
-    container: None
+    log:
+        "{folder}/{sample}/log/count_reads_genebody_haplo_sort_by_coordinate_genebody/{sample}.log",
+    container:
+        None
     input:
         "{folder}/{sample}/scNOVA_result_haplo/Deeptool_Genebody_H1H2.tab",
     output:
