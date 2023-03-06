@@ -12,7 +12,7 @@ BAM files from Strand-seq experiments and the final output are SV predictions in
 a tabular format as well as in a graphical representation. To get to this point,
 the workflow goes through the following steps:
 
-1. Binning of sequencing reads in genomic windows of 100kb via [mosaic](https://github.com/friendsofstrandseq/mosaicatcher)
+1. Binning of sequencing reads in genomic windows of 200kb via [mosaic](https://github.com/friendsofstrandseq/mosaicatcher)
 2. Strand state detection
 3. [Optional]Normalization of coverage with respect to a reference sample
 4. Multi-variate segmentation of cells ([mosaic](https://github.com/friendsofstrandseq/mosaicatcher))
