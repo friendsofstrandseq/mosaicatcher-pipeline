@@ -20,6 +20,5 @@ dependencies:
   # ArbiGent Hufsah deps
   - pytables
   - xopen
-  # Base tools
-  - rsync
+  # scNOVA archive
   - unzip
