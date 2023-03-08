@@ -337,17 +337,54 @@ if config["genecore"] is True:
 
 # Read config file previously produced
 df_config_files = c.df_config_files
+df_config_files["Selected"] = True
 
-
+# List of available samples
 samples = list(sorted(list(df_config_files.Sample.unique().tolist())))
 
 
+
+# scNOVA dedicated - to handle only selected cells labeled by the user /& ashleys
+if config["scNOVA"] is True:
+    l = list()
+
+    for sample in samples:
+        # Path of the labels file
+        labels_path = "{folder}/{sample}/cell_selection/labels.tsv".format(folder=config["data_location"], sample=sample)
+        if os.path.exists(labels_path):
+            # Read df
+            tmp_df_labels_selected = pd.read_csv(labels_path, sep="\t")[["cell", "prediction"]]
+            # Reformat to match #df_config_files
+            tmp_df_labels_selected = tmp_df_labels_selected.rename({"cell" : "Cell", "prediction": "Selected"}, axis=1)
+            tmp_df_labels_selected["Cell"] = tmp_df_labels_selected["Cell"].str.replace(".sort.mdup.bam", "", regex=False)
+            tmp_df_labels_selected["Selected"] = tmp_df_labels_selected["Selected"].astype(bool)
+            # Merge dfs
+            tmp_merge_df = pd.merge(tmp_df_labels_selected,df_config_files.drop(["Selected"], axis=1), on=["Cell"])
+            # Handle use-case if df don't have the same shapes
+            if tmp_merge_df.shape[0] < df_config_files.loc[df_config_files["Sample"] == sample].shape[0]:
+                print("WARNING: shape error when merging labels TSV & config TSV")
+                tmp_merge_df = df_config_files.loc[df_config_files["Sample"] == sample, ["Cell"]]
+                tmp_merge_df["Selected"] = True
+            l.append(tmp_merge_df)
+
+    # Concat df to create a new one
+    df_config_files_with_labels = pd.concat(l).reset_index(drop=True)
+    df_config_files_with_labels.to_csv("{data_location}/config/config_df_scNOVA.tsv".format(
+        data_location=config["data_location"]
+    ))
+
+    bam_per_sample_selected = (
+        df_config_files_with_labels.loc[df_config_files_with_labels["Selected"] == True]
+        .groupby("Sample")["Cell"]
+        .unique()
+        .apply(list)
+        .to_dict()
+    )
 
     
 
 
 
-df_config_files["Selected"] = True
 
 
 # Creation of dicts to be used in the rules
@@ -434,36 +471,7 @@ def onerror_fct(log):
 def get_scnova_final_output(wildcards):
     # WARNING
 
-    # List of available samples
-    l = list()
 
-    for sample in samples:
-        labels_path = "{folder}/{sample}/cell_selection/labels.tsv".format(folder=config["data_location"], sample=sample)
-        if os.path.exists(labels_path):
-            tmp_df_labels_selected = pd.read_csv(labels_path, sep="\t")[["cell", "prediction"]]
-            tmp_df_labels_selected = tmp_df_labels_selected.rename({"cell" : "Cell", "prediction": "Selected"}, axis=1)
-            tmp_df_labels_selected["Cell"] = tmp_df_labels_selected["Cell"].str.replace(".sort.mdup.bam", "")
-            tmp_df_labels_selected["Selected"] = tmp_df_labels_selected["Selected"].astype(bool)
-            tmp_merge_df = pd.merge(tmp_df_labels_selected,df_config_files.drop(["Selected"], axis=1), on=["Cell"])
-            if tmp_merge_df.shape[0] < df_config_files.loc[df_config_files["Sample"] == sample].shape[0]:
-                print("WARNING: shape error when merging labels TSV & config TSV")
-                tmp_merge_df = df_config_files.loc[df_config_files["Sample"] == sample, ["Cell"]]
-                tmp_merge_df["Selected"] = True
-            l.append(tmp_merge_df)
-
-    df_config_files_with_labels = pd.concat(l).reset_index(drop=True)
-    print(df_config_files_with_labels)
-
-    bam_per_sample_selected = (
-        df_config_files_with_labels.loc[df_config_files_with_labels["Selected"] == True]
-        .groupby("Sample")["Cell"]
-        .unique()
-        .apply(list)
-        .to_dict()
-    )
-
-    from pprint import pprint 
-    pprint(bam_per_sample_selected)
 
 
     # subclonality_file = pd.read_csv(config["scnova_subclonality"], sep="\t")
