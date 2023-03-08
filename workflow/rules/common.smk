@@ -103,7 +103,7 @@ class HandleInput:
                 if e.endswith(".txt.gz")
             ]
         )
-        print(l)
+        # print(l)
         # Create a list of  files to process for each sample
         d_master = collections.defaultdict(dict)
         sub_l = list()

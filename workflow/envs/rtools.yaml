@@ -1,7 +1,7 @@
 name: rtools
 channels:
-  - conda-forge
   - bioconda
+  - conda-forge
   - r
   - anaconda
 dependencies:
