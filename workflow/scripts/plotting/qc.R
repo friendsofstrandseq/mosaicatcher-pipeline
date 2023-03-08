@@ -88,7 +88,6 @@ invisible(assert_that(
 d <- d[, chrom := sub("^chr", "", chrom)][]
 d <- d[grepl("^([1-9]|[12][0-9]|X|Y)$", chrom), ]
 d <- d[, chrom := factor(chrom, levels = as.character(c(1:22, "X", "Y")), ordered = T)]
-
 # d[, c(6, 7)] <- sapply(d[, c(6, 7)], as.double)
 
 
@@ -184,20 +183,43 @@ if (add_overview_plot == T) {
 # Plot all cells
 for (s in unique(d$sample))
 {
-    for (ce in unique(d[sample == s, ]$cell))
+    for (ce in unique(d[sample == s, ]$cell)[1])
+    # for (ce in unique(d[sample == s, ]$cell))
     {
         message(paste("* Plotting sample", s, "cell", ce))
 
+
         e <- d[sample == s & cell == ce, ]
+        e$total <- e$c + e$w
+        # print(e)
+
+        library(dplyr)
+        # e_sum <- e %>%
+        #     group_by(chrom) %>%
+        #     summarise(total = sum(total))
+
+        # print(e_sum, n = 40)
 
 
-        # Calculate some information
-        info_binwidth <- median(e$end - e$start)
-        info_reads_per_bin <- median(e$w + e$c)
+        # e_sum <- e_sum[e_sum$total > 0, ]$chrom
+
+        # print(e_sum)
+
+        # e_lite <- filter(e, chrom %in% e_sum)
+        # print(e_lite, n = 40)
+
+        e_lite <- filter(e, bin_id == "")
+        print(e_lite)
+
+
+
+        # Calculate some informationxx
+        info_binwidth <- median(e_lite$end - e_lite$start)
+        info_reads_per_bin <- median(e_lite$w + e_lite$c)
         if (!is.integer(info_reads_per_bin)) info_reads_per_bin <- round(info_reads_per_bin, 2)
-        info_chrom_sizes <- e[, .(xend = max(end)), by = chrom]
-        info_num_bins <- nrow(e)
-        info_total_reads <- sum(e$c + e$w)
+        info_chrom_sizes <- e_lite[, .(xend = max(end)), by = chrom]
+        info_num_bins <- nrow(e_lite)
+        info_total_reads <- sum(e_lite$c + e_lite$w)
         info_y_limit <- 2 * info_reads_per_bin + 1
         if (!is.integer(info_y_limit)) info_y_limit <- round(info_y_limit, 2)
         info_sample_name <- substr(s, 1, 25)
@@ -214,6 +236,7 @@ for (s in unique(d$sample))
         consecutive <- cumsum(c(0, abs(diff(as.numeric(as.factor(e$class))))))
         e$consecutive <- consecutive
         f <- e[, .(start = min(start), end = max(end), class = class[1]), by = .(consecutive, chrom)][]
+        print(f)
 
         plt <- plt +
             geom_rect(data = f, aes(xmin = start, xmax = end, ymin = -Inf, ymax = Inf, fill = class), inherit.aes = F, alpha = 0.2) +
@@ -273,7 +296,7 @@ for (s in unique(d$sample))
             geom_histogram(binwidth = 1, position = position_dodge(), alpha = 0.9) +
             scale_x_continuous(limits = c(-1, plt_hist_xlim), breaks = pretty_breaks(5), labels = comma) +
             theme(text = element_text(size = 10), axis.text = element_text(size = 8)) +
-            scale_fill_manual(values = c(w = "#F4A460", c = "#668B8B")) +
+            scale_fill_manual(values = c(w = "sandybrown", c = "paleturquoise4")) +
             guides(fill = FALSE, col = FALSE) +
             ylab("bin count") +
             xlab("reads per bin") +

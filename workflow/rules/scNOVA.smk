@@ -35,7 +35,6 @@ rule generate_CN_for_CNN:
         sv_calls_all="{folder}/{sample}/scNOVA_input_user/sv_calls.tsv",
         Deeptool_result_final="workflow/data/scNOVA/utils/Deeptool_Genes_for_CNN_merge_sort_lab_final.txt",
         CNN_features_annot="workflow/data/scNOVA/utils/bin_Genes_for_CNN_reshape_annot.txt",
-
     output:
         sv_calls_all_print="{folder}/{sample}/scNOVA_input_user/{clone}_sv_calls_all_print.txt",
         CN_result_data1="{folder}/{sample}/scNOVA_result/Features_reshape_{clone}_orientation_CN_correct0.txt",
@@ -211,7 +210,7 @@ rule count_reads_split_aggr:
     input:
         lambda wc: expand(
             "{folder}/{sample}/scNOVA_result/count_reads_split/{cell}.tab",
-            cell=bam_per_sample[wc.sample],
+            cell=bam_per_sample_selected[wc.sample],
             sample=wc.sample,
             folder=config["data_location"],
         ),
@@ -289,13 +288,13 @@ rule merge_bam_clones:
     input:
         bam=lambda wc: expand(
             "{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam",
-            cell=bam_per_sample[wc.sample],
+            cell=bam_per_sample_selected[wc.sample],
             sample=wc.sample,
             folder=config["data_location"],
         ),
         bai=lambda wc: expand(
             "{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.bai",
-            cell=bam_per_sample[wc.sample],
+            cell=bam_per_sample_selected[wc.sample],
             sample=wc.sample,
             folder=config["data_location"],
         ),
@@ -389,7 +388,7 @@ rule count_reads_for_DNN_sc_aggr:
     input:
         lambda wc: expand(
             "{folder}/{sample}/scNOVA_result/count_reads_for_DNN_sc/Deeptool_Genes_for_CNN_{cell}.tab",
-            cell=bam_per_sample[wc.sample],
+            cell=bam_per_sample_selected[wc.sample],
             sample=wc.sample,
             folder=config["data_location"],
         ),
@@ -479,7 +478,7 @@ rule count_reads_chr_length_sc_aggr:
     input:
         lambda wc: expand(
             "{folder}/{sample}/scNOVA_result/count_reads_chr_length_sc/Deeptool_chr_length_{cell}.tab",
-            cell=bam_per_sample[wc.sample],
+            cell=bam_per_sample_selected[wc.sample],
             sample=wc.sample,
             folder=config["data_location"],
         ),
@@ -889,7 +888,7 @@ rule count_reads_CREs_aggr:
     input:
         lambda wc: expand(
             "{folder}/{sample}/scNOVA_result/count_reads_CREs/{cell}_CREs_2kb.tab",
-            cell=bam_per_sample[wc.sample],
+            cell=bam_per_sample_selected[wc.sample],
             sample=wc.sample,
             folder=config["data_location"],
         ),
@@ -1044,13 +1043,13 @@ rule perl_split_sc:
         strandphaser_output="{folder}/{sample}/strandphaser/strandphaser_phased_haps_merged.txt",
         bam_C_ind=lambda wc: expand(
             "{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.C.bam.bai",
-            cell=bam_per_sample[wc.sample],
+            cell=bam_per_sample_selected[wc.sample],
             sample=wc.sample,
             folder=config["data_location"],
         ),
         bam_W_ind=lambda wc: expand(
             "{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.W.bam.bai",
-            cell=bam_per_sample[wc.sample],
+            cell=bam_per_sample_selected[wc.sample],
             sample=wc.sample,
             folder=config["data_location"],
         ),
