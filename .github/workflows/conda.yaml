@@ -247,4 +247,4 @@ jobs:
         with:
           directory: .
           snakefile: ./workflow/Snakefile
-          args: "--cores 1 --use-conda --conda-frontend mamba --verbose --debug workflow/data/scNOVA/log/dl.ok -p"
+          args: "--cores 1 --use-conda --conda-frontend mamba --verbose --debug workflow/data/scNOVA/utils/bin_Genes_for_CNN_reshape_annot.txt -p"
