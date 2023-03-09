@@ -847,9 +847,7 @@ rule infer_differential_gene_expression_alt:
     conda:
         "../envs/scNOVA/scNOVA_R.yaml"
     resources:
-        mem_mb=64000,
-        time="10:00:00",
-    threads: 64
+        mem_mb=get_mem_mb,
     shell:
         """
         Rscript {params.infer_diff_gene_expression_alt} {input.Genebody_NO} {input.clonality} {input.TSS_matrix} {input.GB_matrix} {input.CNN_result1} {input.CNN_result2} {input.input_matrix} {output.result_table} {output.result_plot} {input.final_result} 

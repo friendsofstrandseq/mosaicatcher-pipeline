@@ -101,42 +101,6 @@ rule download_T2T_tarball:
         """
 
 
-rule install_T2T_BSgenome_tarball:
-    input:
-        tarball="workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz",
-    output:
-        touch("workflow/data/ref_genomes/config/T2T_R_tarball_install.ok"),
-    log:
-        "workflow/data/ref_genomes/log/T2T_R_tarball_install.log",
-    conda:
-        "../envs/rtools.yaml"
-    resources:
-        mem_mb=get_mem_mb_heavy,
-    script:
-        "../scripts/utils/install_R_tarball.R"
-
-
-rule empty_install:
-    output:
-        touch("workflow/data/ref_genomes/config/fake_install.ok"),
-    log:
-        "workflow/data/ref_genomes/config/fake_install.log",
-
-
-rule samtools_faindex:
-    input:
-        ancient("{file}.fa"),
-    output:
-        "{file}.fa.fai",
-    log:
-        "{file}.log",
-    conda:
-        "../envs/mc_bioinfo_tools.yaml"
-    resources:
-        mem_mb=get_mem_mb_heavy,
-    shell:
-        "samtools faidx {input}"
-
 
 rule download_arbigent_mappability_track:
     input:

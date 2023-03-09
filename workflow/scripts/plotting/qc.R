@@ -183,8 +183,8 @@ if (add_overview_plot == T) {
 # Plot all cells
 for (s in unique(d$sample))
 {
-    for (ce in unique(d[sample == s, ]$cell)[1])
-    # for (ce in unique(d[sample == s, ]$cell))
+    # for (ce in unique(d[sample == s, ]$cell)[1])
+    for (ce in unique(d[sample == s, ]$cell))
     {
         message(paste("* Plotting sample", s, "cell", ce))
 

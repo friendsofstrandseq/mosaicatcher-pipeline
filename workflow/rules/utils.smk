@@ -103,3 +103,20 @@ rule index_merged_strandphaser_vcf:
         mem_mb=get_mem_mb,
     shell:
         "tabix -p vcf {input.vcf} > {log} 2>&1"
+
+
+
+
+rule samtools_faindex:
+    input:
+        ancient("{file}.fa"),
+    output:
+        "{file}.fa.fai",
+    log:
+        "{file}.log",
+    conda:
+        "../envs/mc_bioinfo_tools.yaml"
+    resources:
+        mem_mb=get_mem_mb_heavy,
+    shell:
+        "samtools faidx {input}"
