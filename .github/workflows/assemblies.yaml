@@ -60,4 +60,4 @@ jobs:
           directory: .
           snakefile: ./workflow/Snakefile
           stagein: "conda config --set channel_priority flexible"
-          args: "--cores 1  --use-conda --conda-frontend mamba --latency-wait 60 workflow/data/ref_genomes/config/BSgenome_T2T.ok reference=T2T -p --verbose --debug"
+          args: "--cores 1  --use-conda --conda-frontend mamba --latency-wait 60 --config reference=T2T workflow/data/ref_genomes/config/BSgenome_T2T.ok -p --verbose --debug"
