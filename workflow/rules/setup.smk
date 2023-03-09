@@ -5,7 +5,7 @@ rule install_T2T_BSgenome_tarball:
     output:
         touch("workflow/data/ref_genomes/config/BSgenome_{}.ok".format(config['reference'])),
     params:
-        lambda input, wc: selected_package = wc.input.tarball
+        selected_package = lambda input, wc: wc.input.tarball
     log:
         "workflow/data/ref_genomes/log/T2T_R_tarball_install.log",
     conda:
