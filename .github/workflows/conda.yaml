@@ -234,23 +234,9 @@ jobs:
           directory: .
           snakefile: ./workflow/Snakefile
           args: "--cores 1 --use-conda --latency-wait 60 --configfile .tests/config/simple_config.yaml --config publishdir=.tests/data_chr17_publishdir --conda-frontend mamba -p --verbose --debug --report report.zip"
-
-  # Downloading_example_data:
-  #   runs-on: ubuntu-latest
-  #   # needs:
-  #   #   - Linting
-  #   #   - Formatting
-  #   steps:
-  #     - uses: actions/checkout@v3.3.0
-  #     - name: Downloading_example_data
-  #       uses: snakemake/snakemake-github-action@v1.24.0
-  #       with:
-  #         directory: .
-  #         snakefile: ./workflow/Snakefile
-  #         stagein: "mamba install -c conda-forge unzip"
-  #         args: "--cores 1 --config dl_bam_example=True -p --verbose --debug"
   Downloading_extracting_scNOVA_data:
     runs-on: ubuntu-latest
+
     # needs:
     #   - Linting
     #   - Formatting
@@ -262,43 +248,3 @@ jobs:
           directory: .
           snakefile: ./workflow/Snakefile
           args: "--cores 1 --use-conda --conda-frontend mamba --verbose --debug workflow/data/scNOVA/log/dl.ok -p"
-  Downloading_hg19:
-    runs-on: ubuntu-latest
-    # needs:
-    #   - Linting
-    #   - Formatting
-    steps:
-      - uses: actions/checkout@v3.3.0
-      - name: Downloading_hg19
-        uses: snakemake/snakemake-github-action@v1.24.0
-        with:
-          directory: .
-          snakefile: ./workflow/Snakefile
-          args: "--cores 1 --use-conda --conda-frontend mamba --config workflow/data/ref_genomes/config/BSgenome_hg19.ok reference=hg19 -p --verbose --debug"
-  Downloading_hg38:
-    runs-on: ubuntu-latest
-    # needs:
-    #   - Linting
-    #   - Formatting
-    steps:
-      - uses: actions/checkout@v3.3.0
-      - name: Downloading_hg38
-        uses: snakemake/snakemake-github-action@v1.24.0
-        with:
-          directory: .
-          snakefile: ./workflow/Snakefile
-          args: "--cores 1 --use-conda --conda-frontend mamba --config workflow/data/ref_genomes/config/BSgenome_hg38.ok reference=hg38 -p --verbose --debug"
-  Downloading_T2T:
-    runs-on: ubuntu-latest
-    # needs:
-    #   - Linting
-    #   - Formatting
-    steps:
-      - uses: actions/checkout@v3.3.0
-      - name: Downloading_T2T
-        uses: snakemake/snakemake-github-action@v1.24.0
-        with:
-          directory: .
-          snakefile: ./workflow/Snakefile
-          stagein: "conda config --set channel_priority flexible"
-          args: "--cores 1  --use-conda --latency-wait 60 --conda-frontend mamba workflow/data/ref_genomes/config/BSgenome_T2T.ok reference=T2T -p --verbose --debug"
