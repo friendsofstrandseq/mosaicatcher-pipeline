@@ -10,3 +10,5 @@ dependencies:
   - pandas=0.25.3
   - h5py=2.10.0
   - numpy
+  # scNOVA archive
+  - unzip

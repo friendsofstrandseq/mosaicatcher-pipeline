@@ -230,8 +230,15 @@ lines(
 
 
 d <- dist(ind.coord[, 1:10])
+# print(ind.coord)
+# print(nrow(ind.coord))
+# print(floor((nrow(ind.coord) - 1) / 3))
+# print(d)
+# print(nrow(d))
+# print(floor((nrow(d) - 1) / 3))
 set.seed(0) # tsne has some stochastic steps (gradient descent) so need to set random
-tsne_out <- Rtsne(d, is_distance = TRUE, perplexity = 10, verbose = TRUE)
+# tsne_out <- Rtsne(d, is_distance = TRUE, perplexity = 10, verbose = TRUE)
+tsne_out <- Rtsne(d, is_distance = TRUE, perplexity = floor((nrow(ind.coord) - 1) / 3), verbose = TRUE)
 plot(tsne_out$Y, pch = 16, xlab = "t-SNE1", ylab = "t-SNE2", cex = 1, col = data_lab_mat_sub)
 # write.table(tsne_out$Y, file = "/Users/jeong/Documents/Strand_Seq/Deeptool/deeptool_ATAC/Active_X_haplo_analysis/LCL_GM20509/output_tsne_500genes.txt", row.names = TRUE, col.names = TRUE, sep = "\t", quote = FALSE)
 

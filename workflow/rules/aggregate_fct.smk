@@ -270,8 +270,9 @@ def remove_unselected_fct(wildcards):
         return "{folder}/{sample}/config/remove_unselected_bam.ok"
 
 
-def bsgenome_install(wildcards):
-    if config["reference"] == "T2T":
-        return "workflow/data/ref_genomes/config/T2T_R_tarball_install.ok"
-    else:
-        return "workflow/data/ref_genomes/config/fake_install.ok"
+# def bsgenome_install(wildcards):
+#     return "workflow/data/ref_genomes/config/install_BSgenome_package_{}.log".format(config['reference'])
+    # if config["reference"] == "T2T":
+    #     return "workflow/data/ref_genomes/config/T2T_R_tarball_install.ok"
+    # else:
+    #     return "workflow/data/ref_genomes/config/fake_install.ok"
