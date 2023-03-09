@@ -30,7 +30,7 @@ jobs:
     #   - Formatting
     steps:
       - uses: actions/checkout@v3.3.0
-      - name: Downloading_hg19
+      - name: Downloading hg19
         uses: snakemake/snakemake-github-action@v1.24.0
         with:
           directory: .
@@ -43,7 +43,7 @@ jobs:
     #   - Formatting
     steps:
       - uses: actions/checkout@v3.3.0
-      - name: Downloading_hg38
+      - name: Downloading hg38
         uses: snakemake/snakemake-github-action@v1.24.0
         with:
           directory: .
@@ -56,7 +56,7 @@ jobs:
     #   - Formatting
     steps:
       - uses: actions/checkout@v3.3.0
-      - name: Downloading_T2T
+      - name: Downloading T2T
         uses: snakemake/snakemake-github-action@v1.24.0
         with:
           directory: .
