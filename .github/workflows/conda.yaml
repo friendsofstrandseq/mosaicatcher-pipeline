@@ -242,7 +242,7 @@ jobs:
     #   - Formatting
     steps:
       - uses: actions/checkout@v3.3.0
-      - name: Downloading_hg19
+      - name: Downloading & extracting scNOVA data
         uses: snakemake/snakemake-github-action@v1.24.0
         with:
           directory: .
