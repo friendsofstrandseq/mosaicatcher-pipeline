@@ -247,4 +247,5 @@ jobs:
         with:
           directory: .
           snakefile: ./workflow/Snakefile
+          stagein: "conda config --set channel_priority flexible"
           args: "--cores 1 --use-conda --conda-frontend mamba --verbose --debug workflow/data/scNOVA/utils/bin_Genes_for_CNN_reshape_annot.txt -p"
