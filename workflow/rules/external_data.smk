@@ -127,7 +127,6 @@ rule download_scnova_data:
             keep_local=True,
         ),
     output:
-        touch("workflow/data/scNOVA/log/dl.ok"),
         "workflow/data/scNOVA/utils/bin_Genes_for_CNN_reshape_annot.txt",
     log:
         touch("log/config/dl_arbigent_mappability_track.ok"),
