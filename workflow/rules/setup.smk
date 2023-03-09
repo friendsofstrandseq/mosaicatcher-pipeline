@@ -1,29 +1,33 @@
-# rule install_rlib_strandphaser:
-#     output:
-#         check=touch(
-#             expand(
-#                 "{folder}/config/strandphaser/R_setup/strandphaser_version-{commit}.ok".format(
-#                     folder=config["data_location"],
-#                     commit=config["git_commit_strandphaser"],
-#                 )
-#             )
-#         ),
-#     log:
-#         expand(
-#             "{}/log/strandphaser/R_setup/strandphaser_version-{}.ok".format(
-#                 config["data_location"], config["git_commit_strandphaser"]
-#             )
-#         ),
-#     conda:
-#         "../envs/rtools.yaml"
-#     resources:
-#         mem_mb=get_mem_mb_heavy,
-#     params:
-#         version=config["git_commit_strandphaser"],
-#         repo=config["git_repo_strandphaser"],
-#     shell:
-#         "LC_CTYPE=C TAR=$(which tar) Rscript workflow/scripts/strandphaser_scripts/install_strandphaser.R {params.version} {params.repo}  > {output} 2>&1"
 
+rule install_T2T_BSgenome_tarball:
+    input:
+        tarball="workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz",
+    output:
+        touch("workflow/data/ref_genomes/config/BSgenome_{}.ok".format(config['reference'])),
+    params:
+        lambda input, wc: selected_package = wc.input.tarball
+    log:
+        "workflow/data/ref_genomes/log/T2T_R_tarball_install.log",
+    conda:
+        "../envs/rtools.yaml"
+    resources:
+        mem_mb=get_mem_mb_heavy,
+    script:
+        "../scripts/utils/install_R_package.R"
+
+rule install_BSgenome_package:
+    output:
+        touch("workflow/data/ref_genomes/config/BSgenome_{}.ok".format(config['reference'])),
+    log:
+        "workflow/data/ref_genomes/log/install_BSgenome_package_{}.log".format(config['reference']),
+    params:
+        selected_package = "BSgenome.Hsapiens.UCSC.{}".format(config["reference"])
+    conda:
+        "../envs/rtools.yaml"
+    resources:
+        mem_mb=get_mem_mb_heavy,
+    script:
+        "../scripts/utils/install_R_package.R"
 
 rule config_run_summary:
     input:
