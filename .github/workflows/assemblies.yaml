@@ -35,6 +35,7 @@ jobs:
         with:
           directory: .
           snakefile: ./workflow/Snakefile
+          stagein: "conda config --set channel_priority flexible"
           args: "--cores 1 --use-conda --conda-frontend mamba  --config reference=hg19 -p --verbose --debug workflow/data/ref_genomes/config/BSgenome_hg19.ok"
   Downloading_hg38:
     runs-on: ubuntu-latest # needs:
@@ -47,6 +48,7 @@ jobs:
         with:
           directory: .
           snakefile: ./workflow/Snakefile
+          stagein: "conda config --set channel_priority flexible"
           args: "--cores 1 --use-conda --conda-frontend mamba  --config reference=hg38 -p --verbose --debug workflow/data/ref_genomes/config/BSgenome_hg38.ok"
   Downloading_T2T:
     runs-on: ubuntu-latest # needs:
