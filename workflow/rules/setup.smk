@@ -1,21 +1,26 @@
 
-rule install_T2T_BSgenome_tarball:
-    input:
-        tarball="workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz",
-    output:
-        touch("workflow/data/ref_genomes/config/BSgenome_{}.ok".format(config['reference'])),
-    params:
-        selected_package = lambda input, wc: wc.input.tarball
-    log:
-        "workflow/data/ref_genomes/log/T2T_R_tarball_install.log",
-    conda:
-        "../envs/rtools.yaml"
-    resources:
-        mem_mb=get_mem_mb_heavy,
-    script:
-        "../scripts/utils/install_R_package.R"
+# rule install_T2T_BSgenome_tarball:
+#     input:
+#         tarball="workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz",
+#     output:
+#         touch("workflow/data/ref_genomes/config/BSgenome_{}.ok".format(config['reference'])),
+#     params:
+#         selected_package = lambda input, wc: wc.input.tarball
+#     log:
+#         "workflow/data/ref_genomes/log/T2T_R_tarball_install.log",
+#     conda:
+#         "../envs/rtools.yaml"
+#     resources:
+#         mem_mb=get_mem_mb_heavy,
+#     script:
+#         "../scripts/utils/install_R_package.R"
+
+rule fake_package:
+    output: touch("workflow/data/ref_genomes/log/fake_package.ok")
 
 rule install_BSgenome_package:
+    input:
+        bsgenome_install,
     output:
         touch("workflow/data/ref_genomes/config/BSgenome_{}.ok".format(config['reference'])),
     log:
