@@ -16,35 +16,6 @@ env:
   IMAGE_NAME: mosaicatcher-pipeline
 
 jobs:
-  # create_dockerfile:
-  #   name: Run pipeline & Create Dockerfile
-  #   runs-on: ubuntu-20.04
-
-  #   steps:
-  #     - uses: actions/checkout@v3.1.0
-  #     - name: Testing data
-  #       uses: snakemake/snakemake-github-action@v1.24.0
-  #       with:
-  #         directory: .
-  #         snakefile: ./workflow/Snakefile
-  #         stagein: "conda config --set channel_priority flexible"
-  #         args: "--cores 1 --use-conda --config chromosomes=[chr17] ashleys_pipeline=True normalized_counts=True GC_analysis=True use_light_data=True  --conda-frontend mamba -p --verbose --debug"
-  #     - name: Create container file
-  #       uses: snakemake/snakemake-github-action@v1.24.0
-  #       with:
-  #         snakefile: ./workflow/Snakefile
-  #         directory: .
-  #         task: "containerize"
-  #         args: "--cores 1 --use-conda --config chromosomes=[chr17] ashleys_pipeline=True normalized_counts=True GC_analysis=True use_light_data=True  --conda-frontend mamba -p --verbose --debug"
-  #     - name: Print Dockerfile
-  #       run: |
-  #         cat Dockerfile
-
-  #     - uses: actions/upload-artifact@master
-  #       with:
-  #         name: Dockerfile_artifact
-  #         path: ./Dockerfile
-
   build_and_push_image:
     name: Build and push image
     runs-on: ubuntu-20.04

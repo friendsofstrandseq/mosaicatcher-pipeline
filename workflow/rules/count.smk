@@ -184,7 +184,7 @@ checkpoint filter_bad_cells_from_mosaic_count:
 
 
 if (
-    config["normalized_counts"] is True
+    config["hgsvc_based_normalized_counts"] is True
     and (config["window"] in [50000, 100000, 200000])
     and (config["reference"] == "hg38")
 ):
