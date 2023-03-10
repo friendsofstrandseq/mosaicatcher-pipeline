@@ -27,8 +27,8 @@
     .. # Main options
     .. print("\033[1m{}\033[0m".format("Main options:"))
     .. l = [
-    ..     f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format("GC analysis", ": " + str(config["GC_analysis"])),
-    ..     f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format("Read Counts normalization", ": " + str(config["normalized_counts"])),
+    ..     f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format("Multistep normalisation module", ": " + str(config["multistep_normalisation"])),
+    ..     f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format("HGSVC-based read counts normalization", ": " + str(config["hgsvc_based_normalized_counts"])),
     ..     f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format("Binning window size", ": " + str(config["window"])),
     .. ]
     .. [print(e) for e in l]

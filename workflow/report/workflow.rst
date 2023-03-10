@@ -15,12 +15,12 @@ MosaiCatcher v2 is a `Snakemake <https://snakemake.github.io>`__ pipeline that a
 
 * Ashleys-QC preprocessing pipeline enabled: {{ snakemake.config["ashleys_pipeline"] }}
 * Ashleys-QC preprocessing pipeline version used: {{ snakemake.config["ashleys_pipeline_version"] }}
-* GC analysis module enabled: {{ snakemake.config["GC_analysis"] }}
 * BAM folder legacy format (all/selected) enabled: {{ snakemake.config["input_bam_legacy"] }}
 
 **Counts option:**
 
-* Read Counts normalization enabled: {{ snakemake.config["normalized_counts"] }}
+* Multistep normalisation enabled: {{ snakemake.config["multistep_normalisation"] }}
+* Read Counts normalization enabled: {{ snakemake.config["hgsvc_based_normalized_counts"] }}
 * Binning window size: {{ snakemake.config["window"] }}
 
 **Reference genome & Chromosomes options:**

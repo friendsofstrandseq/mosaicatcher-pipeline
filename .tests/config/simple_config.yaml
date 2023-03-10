@@ -15,7 +15,7 @@ mosaicatcher_pipeline: True
 ashleys_pipeline: False
 hand_selection: False
 use_light_data: True
-GC_analysis: False
+multistep_normalisation: False
 ashleys_threshold: 0.5
 
 # Split / Do not split QC counts plot into single individual images (limit jobs)
@@ -46,7 +46,7 @@ dl_bam_example: False
 ### Enable / Disable download of external files (1000G SNV & Fasta ref genome)
 dl_external_files: False
 
-normalized_counts: True
+hgsvc_based_normalized_counts: True
 
 ## Input BAM location
 data_location: ".tests/data_CHR17"
@@ -163,3 +163,9 @@ plottype_consistency:
 plottype_clustering:
   - "position"
   - "chromosome"
+
+# Multi-step normalisation advanced parameters
+multistep_normalisation_options:
+  min_reads_bin: 5
+  n_subsample: 1000
+  min_reads_cell: 100000

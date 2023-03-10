@@ -29,11 +29,11 @@ All these arguments can be specified in two ways:
 
 ### Execution boolean parameters
 
-| Parameter     | Comment                                                                                        | Default | Experimental |
-| ------------- | ---------------------------------------------------------------------------------------------- | ------- | ------------ |
-| `GC_analysis` | Allow to perform GC analysis using Alfred and GC correction for visualization (Marco Cosenza). | False   | False        |
-| `arbigent`    | Enable ArbiGent mode of execution to genotype SV based on arbitrary segments                   | False   | True         |
-| `scNOVA`    | Enable scNOVA mode of execution to compute Nucleosome Occupancy (NO) of detected SV                   | False   | True         |
+| Parameter                          | Comment                                                                                             | Default | Experimental |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------- | ------- | ------------ |
+| `multistep_normalisation_analysis` | Allow to perform multistep normalisation including GC correction for visualization (Marco Cosenza). | False   | False        |
+| `arbigent`                         | Enable ArbiGent mode of execution to genotype SV based on arbitrary segments                        | False   | True         |
+| `scNOVA`                           | Enable scNOVA mode of execution to compute Nucleosome Occupancy (NO) of detected SV                 | False   | True         |
 
 ### External files
 
@@ -43,7 +43,7 @@ All these arguments can be specified in two ways:
 | `reference`             | Reference genome                                                              | X                                                                          |
 | `R_reference`           | Reference genome used by R scripts                                            | X                                                                          |
 | `segdups`               | Segmental duplication file defined for hg38 reference genome                  | X                                                                          |
-| `arbigent_bed_file`          | Allow to specify custom ArbiGent BED file                                     | X                                                                          |
+| `arbigent_bed_file`     | Allow to specify custom ArbiGent BED file                                     | X                                                                          |
 
 ### Processing options
 

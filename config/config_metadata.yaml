@@ -23,13 +23,8 @@ FastQC_analysis:
   type: bool
   required: False
   default: False
-GC_analysis:
-  desc: "Enable / Disable GC analysis"
-  type: bool
-  required: False
-  default: False
-GC_rowcol_condition:
-  desc: "Enable / Disable GC row condition analysis"
+multistep_normalisation_analysis:
+  desc: "Enable / Disable multistep normalisation"
   type: bool
   required: False
   default: False
@@ -52,7 +47,7 @@ chromosomes:
   desc: List of chromosomes to be processed in the pipeline
   type: list
   required: True
-  default: "[chr1..22,chrX]"
+  default: "[chr1..22,chrX,chrY]"
 chromosomes_to_exclude:
   desc: List of chromosomes to be excluded
   type: list
@@ -99,4 +94,10 @@ arbigent_bed_file:
   type: str
   required: False
   default: "workflow/data/arbigent/manual_segmentation.bed"
+  lint_check: False
+scNOVA:
+  desc: Enable scNOVA downstream module to perform nucleosome occupancy based SV analysis
+  type: bool
+  required: False
+  default: False
   lint_check: False
