@@ -11,20 +11,18 @@ email: ""
 data_location: ".tests/data_CHR17"
 # Reference assembly selected
 reference: "hg38"
-# Enable / Disable GC analysis
-GC_analysis: False
+# Enable / Disable multistep normalisation analysis
+multistep_normalisation: False
 # ArbiGent (Arbitrary-segments genotyping) mode of execution
 arbigent: False
 # Arbigent default BED file, can be changed and adapted based on user question
 arbigent_bed_file: "workflow/data/arbigent/manual_segmentation.bed"
-# Enable / Disable GC row condition analysis
-GC_rowcol_condition: False
 # Enable / Disable FastQC analysis
 FastQC_analysis: False
 # Plate orientation for GC analysis
 plate_orientation: landscape
 # Normalize or not mosaic counts
-normalized_counts: True
+hgsvc_based_normalized_counts: True
 # Mutually exclusive with ashleys_pipeline
 input_bam_legacy: False
 # Enable/Disable ashleys-qc-pipeline module loading to start pipeline from FASTQ files
@@ -180,3 +178,9 @@ scNOVA_scripts:
   infer_diff_gene_expression: "workflow/scripts/scNOVA_scripts/infer_diff_gene_expression.R"
   count_sort_annotate_chrid_CREs: "workflow/scripts/scNOVA_scripts/count_sort_annotate_chrid_CREs.R"
   infer_diff_gene_expression_alt: "workflow/scripts/scNOVA_scripts/infer_diff_gene_expression_alt.R"
+
+# Multi-step normalisation advanced parameters
+multistep_normalisation_options:
+  min_reads_bin: 5
+  n_subsample: 1000
+  min_reads_cell: 100000

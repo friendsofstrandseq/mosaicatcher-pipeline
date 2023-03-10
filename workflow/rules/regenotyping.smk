@@ -1,4 +1,4 @@
-if config["GC_analysis"] == False or config["ashleys_pipeline"] == False:
+if config["multistep_normalisation"] == False or config["ashleys_pipeline"] == False:
 
     rule mergeBams:
         input:
