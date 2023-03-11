@@ -20,16 +20,16 @@ rule fake_package:
 
 rule install_BSgenome_package:
     input:
-        bsgenome_install,
+        package = bsgenome_install,
     output:
         touch("workflow/data/ref_genomes/config/BSgenome_{}.ok".format(config['reference'])),
     log:
         "workflow/data/ref_genomes/log/install_BSgenome_package_{}.log".format(config['reference']),
     params:
-        selected_package = "BSgenome.Hsapiens.UCSC.{}".format(config["reference"])
+        selected_package = lambda wc, input: "BSgenome.Hsapiens.UCSC.{}".format(config["reference"]) if config["reference"] in ["hg38", "hg19"] else input.package # workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz
     conda:
         "../envs/rtools.yaml"
-    resources:
+    resources: 
         mem_mb=get_mem_mb_heavy,
     script:
         "../scripts/utils/install_R_package.R"
