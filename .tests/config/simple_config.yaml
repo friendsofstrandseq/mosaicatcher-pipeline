@@ -1,5 +1,5 @@
 version: 2.0.0
-ashleys_pipeline_version: 1.4.1
+ashleys_pipeline_version: 2.0.0
 #######################################
 #   MOSAICATCHER CONFIGURATION FILE.  #
 #######################################
@@ -168,4 +168,4 @@ plottype_clustering:
 multistep_normalisation_options:
   min_reads_bin: 5
   n_subsample: 1000
-  min_reads_cell: 100000
+  min_reads_cell: 1000
