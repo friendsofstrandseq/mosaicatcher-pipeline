@@ -218,7 +218,3 @@ RUN mamba env create --prefix /conda-envs/6c6d3e92c1c97170f4d531b908ca85cf --fil
 
 
 
-#CUSTOM PART
-COPY github-actions-runner/bioconductor_install.R /conda-envs/
-RUN chmod -R 0777 /conda-envs/91d5ffe2d429bcebd6bab78e9ca3a1d4/lib/R/library &&     /conda-envs/91d5ffe2d429bcebd6bab78e9ca3a1d4/bin/Rscript /conda-envs/bioconductor_install.R
-
