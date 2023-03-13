@@ -4,11 +4,11 @@ is_package_available <- require(package)
 
 if (!isTRUE(is_package_available)) {
     if (!require("BiocManager", quietly = TRUE)) {
-        install.packages("BiocManager")
+        install.packages("BiocManager", repos = "http://cran.us.r-project.org")
     }
     if (grepl(package, "T2T", fixed = TRUE)) {
         BiocManager::install("GenomeInfoDbData", update = FALSE)
-        install.packages(package)
+        install.packages(package, repos = NULL, type = "source")
     } else {
         BiocManager::install(package, update = FALSE)
     }
