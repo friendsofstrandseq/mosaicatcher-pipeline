@@ -8,7 +8,7 @@ if (!isTRUE(is_package_available)) {
     }
     if (grepl(package, "T2T", fixed = TRUE)) {
         BiocManager::install("GenomeInfoDbData", update = FALSE)
-        BiocManager::install(package, update = FALSE)
+        install.packages(package)
     } else {
         BiocManager::install(package, update = FALSE)
     }
