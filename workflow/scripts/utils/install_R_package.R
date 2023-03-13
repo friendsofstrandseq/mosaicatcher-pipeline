@@ -1,6 +1,6 @@
-# package <- snakemake@params[["selected_package"]]
-package <- "workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz"
-print(grepl("BSgenome.T2T.CHM13.V2_1.0.0.tar.gz", package, fixed = TRUE, perl = FALSE))
+package <- snakemake@params[["selected_package"]]
+# package <- "workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz"
+# print(grepl("BSgenome.T2T.CHM13.V2_1.0.0.tar.gz", package, fixed = TRUE, perl = FALSE))
 
 is_package_available <- require(package)
 
