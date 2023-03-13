@@ -16,46 +16,46 @@ env:
   IMAGE_NAME: mosaicatcher-pipeline
 
 jobs:
-  build_and_push_image_mosaicatcher:
-    name: Build and push image
-    runs-on: ubuntu-20.04
-    # needs:
-    #   - create_dockerfile
-    steps:
-      - uses: actions/checkout@v3.2.0
+  # build_and_push_image_mosaicatcher:
+  #   name: Build and push image
+  #   runs-on: ubuntu-20.04
+  #   # needs:
+  #   #   - create_dockerfile
+  #   steps:
+  #     - uses: actions/checkout@v3.2.0
 
-      - name: Run read-yaml action
-        id: yaml-data
-        uses: jbutcher5/read-yaml@main # You may wish to replace main with a version tag such as '1.6' etc.
-        with:
-          file: "./config/config.yaml"
-          key-path: '["version"]' # Access the runs key then the using key and retuns the value.
+  #     - name: Run read-yaml action
+  #       id: yaml-data
+  #       uses: jbutcher5/read-yaml@main # You may wish to replace main with a version tag such as '1.6' etc.
+  #       with:
+  #         file: "./config/config.yaml"
+  #         key-path: '["version"]' # Access the runs key then the using key and retuns the value.
 
-      - name: Display read-yaml output
-        run: echo "${{ steps.yaml-data.outputs.data }}"
+  #     - name: Display read-yaml output
+  #       run: echo "${{ steps.yaml-data.outputs.data }}"
 
-      - name: Print Dockerfile
-        run: |
-          cat ./github-actions-runner/Dockerfile-${{ steps.yaml-data.outputs.data }}.dockerfile
+  #     - name: Print Dockerfile
+  #       run: |
+  #         cat ./github-actions-runner/Dockerfile-${{ steps.yaml-data.outputs.data }}.dockerfile
 
-      - name: Build Image
-        id: build-image
-        uses: redhat-actions/buildah-build@v2
-        with:
-          image: ${{ env.IMAGE_NAME }}
-          tags: ${{ steps.yaml-data.outputs.data }} dev
-          dockerfiles: |
-            ./github-actions-runner/Dockerfile-${{ steps.yaml-data.outputs.data }}.dockerfile
+  #     - name: Build Image
+  #       id: build-image
+  #       uses: redhat-actions/buildah-build@v2
+  #       with:
+  #         image: ${{ env.IMAGE_NAME }}
+  #         tags: ${{ steps.yaml-data.outputs.data }} dev
+  #         dockerfiles: |
+  #           ./github-actions-runner/Dockerfile-${{ steps.yaml-data.outputs.data }}.dockerfile
 
-      - name: Push To DockerHub
-        id: push-to-dockerhub
-        uses: redhat-actions/push-to-registry@v2
-        with:
-          image: ${{ steps.build-image.outputs.image }}
-          tags: ${{ steps.build-image.outputs.tags }}
-          registry: docker.io/weber8thomas
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_TOKEN }}
+  #     - name: Push To DockerHub
+  #       id: push-to-dockerhub
+  #       uses: redhat-actions/push-to-registry@v2
+  #       with:
+  #         image: ${{ steps.build-image.outputs.image }}
+  #         tags: ${{ steps.build-image.outputs.tags }}
+  #         registry: docker.io/weber8thomas
+  #         username: ${{ secrets.DOCKER_USERNAME }}
+  #         password: ${{ secrets.DOCKER_TOKEN }}
   build_and_push_custom_image_stranpdhaser:
     name: Build and push image
     runs-on: ubuntu-20.04
