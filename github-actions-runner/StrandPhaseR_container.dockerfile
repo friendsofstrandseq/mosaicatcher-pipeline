@@ -11,7 +11,7 @@ FROM condaforge/mambaforge:latest
 #     # # NEW
 #     - strandphaser
 
-RUN mamba env create --prefix /conda-envs/strandphaser -c bioconda -c conda-forge -c r -c anaconda strandphaser 
+RUN mamba env create --prefix /conda-envs/strandphaser --chanel bioconda --chanel conda-forge --chanel r --chanel anaconda strandphaser 
 
 
 #CUSTOM PART
