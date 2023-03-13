@@ -7,7 +7,7 @@ on:
   # #     branches:
   # #       - master
 
-  # on:
+  # # on:
   push:
     branches:
       - dev
