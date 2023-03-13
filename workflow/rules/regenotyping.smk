@@ -1,52 +1,52 @@
-if config["multistep_normalisation"] == False or config["ashleys_pipeline"] == False:
+# if config["multistep_normalisation"] == False or config["ashleys_pipeline"] == False:
 
-    rule mergeBams:
-        input:
-            check=remove_unselected_fct,
-            bam=selected_input_bam,
-            bai=selected_input_bai,
-        output:
-            temp("{folder}/{sample}/merged_bam/merged.raw.bam"),
-        log:
-            "{folder}/log/mergeBams/{sample}.log",
-        resources:
-            mem_mb=get_mem_mb_heavy,
-            time="01:00:00",
-        threads: 10
-        conda:
-            "../envs/mc_bioinfo_tools.yaml"
-        shell:
-            "samtools merge -@ {threads} {output} {input.bam} 2>&1 > {log}"
+rule mergeBams:
+    input:
+        check=remove_unselected_fct,
+        bam=selected_input_bam,
+        bai=selected_input_bai,
+    output:
+        temp("{folder}/{sample}/merged_bam/merged.raw.bam"),
+    log:
+        "{folder}/log/mergeBams/{sample}.log",
+    resources:
+        mem_mb=get_mem_mb_heavy,
+        time="01:00:00",
+    threads: 10
+    conda:
+        "../envs/mc_bioinfo_tools.yaml"
+    shell:
+        "samtools merge -@ {threads} {output} {input.bam} 2>&1 > {log}"
 
-    rule mergeSortBams:
-        input:
-            "{folder}/{sample}/merged_bam/merged.raw.bam",
-        output:
-            temp("{folder}/{sample}/merged_bam/merged.bam"),
-        log:
-            "{folder}/log/mergeBams/{sample}.log",
-        resources:
-            mem_mb=get_mem_mb_heavy,
-            time="01:00:00",
-        threads: 10
-        conda:
-            "../envs/mc_bioinfo_tools.yaml"
-        shell:
-            "samtools sort -@ {threads} -o {output} {input} 2>&1 > {log}"
+rule mergeSortBams:
+    input:
+        "{folder}/{sample}/merged_bam/merged.raw.bam",
+    output:
+        temp("{folder}/{sample}/merged_bam/merged.bam"),
+    log:
+        "{folder}/log/mergeBams/{sample}.log",
+    resources:
+        mem_mb=get_mem_mb_heavy,
+        time="01:00:00",
+    threads: 10
+    conda:
+        "../envs/mc_bioinfo_tools.yaml"
+    shell:
+        "samtools sort -@ {threads} -o {output} {input} 2>&1 > {log}"
 
-    rule index_merged_bam:
-        input:
-            "{folder}/{sample}/merged_bam/merged.bam",
-        output:
-            temp("{folder}/{sample}/merged_bam/merged.bam.bai"),
-        log:
-            "{folder}/log/merged_bam/{sample}/merged.log",
-        conda:
-            "../envs/mc_bioinfo_tools.yaml"
-        resources:
-            mem_mb=get_mem_mb,
-        shell:
-            "samtools index {input} > {log} 2>&1"
+rule index_merged_bam:
+    input:
+        "{folder}/{sample}/merged_bam/merged.bam",
+    output:
+        temp("{folder}/{sample}/merged_bam/merged.bam.bai"),
+    log:
+        "{folder}/log/merged_bam/{sample}/merged.log",
+    conda:
+        "../envs/mc_bioinfo_tools.yaml"
+    resources:
+        mem_mb=get_mem_mb,
+    shell:
+        "samtools index {input} > {log} 2>&1"
 
 
 rule regenotype_SNVs:
