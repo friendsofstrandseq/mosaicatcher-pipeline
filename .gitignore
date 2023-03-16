@@ -191,3 +191,4 @@ cluster*
 workflow/data/zenodo_filelist.txt
 workflow/data/scNOVA_zenodo_filelist.txt
 workflow/data/mapping_counts_allchrs_hg38.txt
+workflow/data/arbigent/scTRIP_segmentation.bed
