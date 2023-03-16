@@ -128,7 +128,11 @@ if (is.null(labels_link)) {
 }
 
 # sample name could be interesting
-sname <- str_match(p_link, "([HG|NA|GM]+[0-9]{3,5})")[, 2]
+# print(p_link)
+sname <- tail(strsplit(sub("/arbigent_mosaiclassifier/sv_probabilities/probabilities.Rdata", "", p_link), "/")[[1]], 1)
+# sname <- str_match(p_link, "([HG|NA|GM]+[0-9]{3,5})")[, 2]
+print(sname)
+# stop()
 
 # load p to p_grouped
 print("Loading probabilities table")

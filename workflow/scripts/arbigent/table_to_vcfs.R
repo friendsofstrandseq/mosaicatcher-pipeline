@@ -170,7 +170,7 @@ load_and_prep_CN <- function(msc_file_f) {
   CN <- read.table(msc_file, header = 1, stringsAsFactors = F)
   CNmerge <- as.data.frame(lapply(CN[, c("chrom", "start", "end", "valid_bins")], as.character))
 
-  CNmerge <- as.tbl(CNmerge)
+  CNmerge <- tibble::as_tibble(CNmerge)
   CNmerge <- CNmerge %>% mutate(
     chrom = as.character(chrom),
     start = as.numeric(as.character(start)),
@@ -205,8 +205,11 @@ if (use_cntrack) {
 }
 # tabp = Complex calls allowed, lowconf label added
 tabp <- add_gts_revisited_lowconf(tab, bias_factor, bias_add_factor, cutoff)
+print(tabp)
 # tabp2 =  Complex calls allowed, lowconf label nope, LLHs printed
 tabp2 <- add_long_gts_revisited(tab, bias_factor, bias_add_factor, cutoff)
+print(tabp2)
+
 # tabp3 = Complex calls allowed, lowconf label nope
 tabp3 <- add_gts_revisited(tab, bias_factor, bias_add_factor, cutoff)
 
@@ -215,6 +218,8 @@ tabp3 <- add_gts_revisited(tab, bias_factor, bias_add_factor, cutoff)
 tabp <- full_join(tabp, CNmerge, by = c("chrom", "start", "end"))
 tabp2 <- full_join(tabp2, CNmerge, by = c("chrom", "start", "end"))
 tabp3 <- full_join(tabp3, CNmerge, by = c("chrom", "start", "end"))
+print(tabp3)
+print(CNmerge)
 
 ####################################################################################
 
@@ -225,12 +230,17 @@ callmatrix <- cast(unique(tabp3), chrom + start + end + ID + len + valid_bins ~ 
 
 # Name shortening, a bit of reformatting
 cms <- callmatrix
+print(colnames(cms))
 samplenames <- colnames(cms)[7:length(colnames(cms))]
+print(samplenames)
+
 cms_gts <- cms[, samplenames, drop = F]
+print(cms_gts)
 
 # print(head(lapply(cms_gts, as.character)))
 cms_gts[] <- lapply(cms_gts, as.character)
 # Complex calls to simple ones
+print(cms_gts)
 
 countm <- simplify_countmatrix(cms_gts)
 countm_idup <- simplify_countmatrix_idup(cms_gts)
@@ -257,6 +267,7 @@ callmatrix_hom_lab$nhom <- rowSums(callmatrix_hom_lab == "1|1")
 cm_hom <- callmatrix_hom_lab[callmatrix_hom_lab$nhom > (dim(callmatrix_hom_lab)[2] - 5) * 0.8, ]
 hom_ids <- cm_hom$ID
 cm_detail_hom <- callmatrix_detail[callmatrix_detail$ID %in% hom_ids, ]
+
 ################## MAKE VCFS
 # The detailed one from tabp2, including LLH info.
 vcf <- vcfify_callmatrix_detail(callmatrix_detail)
