@@ -1,0 +1,7 @@
+name: strandphaser
+prefix: /conda-envs/strandphaser
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - strandphaser

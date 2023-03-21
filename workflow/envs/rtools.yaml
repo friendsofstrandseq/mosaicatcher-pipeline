@@ -1,7 +1,7 @@
 name: rtools
 channels:
-  - conda-forge
   - bioconda
+  - conda-forge
   - r
   - anaconda
 dependencies:
@@ -10,8 +10,8 @@ dependencies:
   # ###############
   - bioconductor-biocparallel
   - bioconductor-bsgenome
-  - bioconductor-bsgenome.hsapiens.ucsc.hg19
-  - bioconductor-bsgenome.hsapiens.ucsc.hg38
+  # - bioconductor-bsgenome.hsapiens.ucsc.hg19
+  # - bioconductor-bsgenome.hsapiens.ucsc.hg38
   - bioconductor-complexheatmap
   # - bioconductor-fastseg
   - bioconductor-genomicalignments

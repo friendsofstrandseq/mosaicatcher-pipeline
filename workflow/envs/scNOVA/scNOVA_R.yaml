@@ -1,0 +1,23 @@
+name: scNOVA
+channels:
+  - bioconda
+  - conda-forge
+  - r
+dependencies:
+  - bioconductor-deseq2=1.30.0
+  - r-matrixstats=0.58.0
+  - r-pheatmap=1.0.12
+  - r-gplots=3.1.1
+  - r-umap=0.2.7.0
+  - r-rtsne=0.15
+  - r-factoextra=1.0.7
+  - r-pracma=2.3.3
+  - bioconductor-chromvar=1.12.0
+  - r-nabor=0.5.0
+  - bioconductor-motifmatchr=1.12.0
+  - bioconductor-bsgenome.hsapiens.ucsc.hg38=1.4.3
+  - bioconductor-jaspar2016=1.18.0
+  - r-codetools=0.2_18
+  - r-fitdistrplus
+  - r-doparallel
+  - r-foreach

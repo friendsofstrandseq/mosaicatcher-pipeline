@@ -184,3 +184,11 @@ TMP/
 log.txt
 .nfs00000000002b143a000012cb
 workflow/data/arbigent/mapping_*
+workflow/data/scNOVA/
+workflow/data/scNOVA_data_models.tar.gz
+afac/zenodo_push.py
+cluster*
+workflow/data/zenodo_filelist.txt
+workflow/data/scNOVA_zenodo_filelist.txt
+workflow/data/mapping_counts_allchrs_hg38.txt
+workflow/data/arbigent/scTRIP_segmentation.bed

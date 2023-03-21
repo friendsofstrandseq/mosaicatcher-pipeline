@@ -1,0 +1,14 @@
+name: scNOVA_DL
+channels:
+  - conda-forge
+  - anaconda
+dependencies:
+  - tensorflow=1.15.0
+  - scikit-learn=0.21.3
+  - python=3.7.4
+  - matplotlib=3.1.1
+  - pandas=0.25.3
+  - h5py=2.10.0
+  - numpy
+  # scNOVA archive
+  - unzip
