@@ -14,7 +14,7 @@ jobs:
   #   #   - Linting
   #   #   - Formatting
   #   steps:
-  #     - uses: actions/checkout@v3.3.0
+  #     - uses: actions/checkout@v3.4.0
   #     - name: Downloading_example_data
   #       uses: snakemake/snakemake-github-action@v1.24.0
   #       with:
@@ -29,7 +29,7 @@ jobs:
     #   - Linting
     #   - Formatting
     steps:
-      - uses: actions/checkout@v3.3.0
+      - uses: actions/checkout@v3.4.0
       - name: Downloading hg19
         uses: snakemake/snakemake-github-action@v1.24.0
         with:
@@ -42,7 +42,7 @@ jobs:
     #   - Linting
     #   - Formatting
     steps:
-      - uses: actions/checkout@v3.3.0
+      - uses: actions/checkout@v3.4.0
       - name: Downloading hg38
         uses: snakemake/snakemake-github-action@v1.24.0
         with:
@@ -55,7 +55,7 @@ jobs:
     #   - Linting
     #   - Formatting
     steps:
-      - uses: actions/checkout@v3.3.0
+      - uses: actions/checkout@v3.4.0
       - name: Downloading T2T
         uses: snakemake/snakemake-github-action@v1.24.0
         with:

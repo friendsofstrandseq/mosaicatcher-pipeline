@@ -22,7 +22,7 @@ jobs:
     # needs:
     #   - create_dockerfile
     steps:
-      - uses: actions/checkout@v3.2.0
+      - uses: actions/checkout@v3.4.0
 
       - name: Run read-yaml action
         id: yaml-data
@@ -62,7 +62,7 @@ jobs:
   #   # needs:
   #   #   - create_dockerfile
   #   steps:
-  #     - uses: actions/checkout@v3.2.0
+  #     - uses: actions/checkout@v3.4.0
 
   #     - name: Display read-yaml output
   #       run: echo "${{ steps.yaml-data.outputs.data }}"
