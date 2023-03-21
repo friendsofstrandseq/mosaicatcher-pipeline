@@ -51,7 +51,8 @@ rule run_strandphaser_per_chrom:
         wcregions="{folder}/{sample}/strandphaser/strandphaser_input.txt",
         snppositions=locate_snv_vcf,
         configfile="{folder}/{sample}/strandphaser/StrandPhaseR.{chrom}.config",
-        bsgenome=bsgenome_install,
+        bsgenome="workflow/data/ref_genomes/config/BSgenome_{}.ok".format(config['reference']),
+        # bsgenome=bsgenome_install,
     output:
         "{folder}/{sample}/strandphaser/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt",
         "{folder}/{sample}/strandphaser/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf",
@@ -75,7 +76,7 @@ rule run_strandphaser_per_chrom:
                 {input.configfile} \
                 {input.wcregions} \
                 {input.snppositions} \
-                $(pwd)/utils/R-packages/ > {log} 2>&1
+                $(pwd)/utils/R-packages/
         """
 
 

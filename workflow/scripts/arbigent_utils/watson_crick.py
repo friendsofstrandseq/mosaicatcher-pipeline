@@ -118,9 +118,11 @@ def filter_reads(align_read):
 def aggregate_segment_read_counts(process_args):
 
     chrom, sample, segment_file, bam_folder, mappability_track, bin_size, min_correct_reads, lengthcorr_bool = process_args
-
-    segments = pd.read_csv(segment_file, sep="\t", header=0, names=["chrom", "start", "end"])
+    # print(segment_file)
+    segments = pd.read_csv(segment_file, sep="\t", header=None, names=["chrom", "start", "end"])
+    # print(segments)
     segments = segments.loc[segments["chrom"] == chrom, :].copy()
+    # print(segments)
     if segments.empty:
         return chrom, None
     segments_low_bound = (segments["start"].apply(determine_boundaries, args=(bin_size, "low"))).tolist()
@@ -260,12 +262,15 @@ def counts(sample, input_bam, input_bed, norm_count_output, mapping_counts, norm
     # Store the whole mapability track
     for lines in mapping_counts_file:
         line = lines.strip().split("\t")
+        # print(line)
         chrom = line[0]
         interval_start = int(line[1])
         interval_end = int(line[2])
         reads_originated = int(line[3])
         reads_mapped = int(line[4])
         dictionary[chrom][(interval_start, interval_end)] = (reads_originated, reads_mapped)
+
+    print("Mapping_counts over")
 
     watson_count = 0
     crick_count = 0
@@ -280,11 +285,16 @@ def counts(sample, input_bam, input_bed, norm_count_output, mapping_counts, norm
     path = Path(input_bam)
     glob_path = path.glob("*.bam")
 
+    print(glob_path)
+    print("Iterate over cells")
+
     # Iterate over each cell / bam file
     for file in glob_path:
+        print(file)
         # Load the according file
         file_name = str(file).strip().split("/")[-1]
         cell = file_name.strip().split(".bam")[0]
+        print(cell)
         bam_file = pysam.AlignmentFile(file, "rb")
         # Also get the bed_file
         norm_dictionary = defaultdict(lambda: defaultdict(tuple))
@@ -446,10 +456,12 @@ def convert_mapping_counts(raw_counts, process_chrom):
     Convert textual BED-like raw mapping counts into
     binary representation stored as HDF for faster access.
     """
+    print("DEBUG")
     num_splits = 1
     if any([raw_counts.endswith(x) for x in [".gz", ".zip", ".bz2", ".xz"]]):
         num_splits = 2
     basename = raw_counts.rsplit(".", num_splits)[0]
+    print(basename)
     hdf_file = basename + ".h5"
     if os.path.isfile(hdf_file):
         return hdf_file
@@ -458,9 +470,10 @@ def convert_mapping_counts(raw_counts, process_chrom):
             pass
 
     process_genome = process_chrom == "genome"
-
+    print(raw_counts)
     with xopen.xopen(raw_counts, mode="rt") as bedfile:
         columns = bedfile.readline().strip().split()
+        print(columns)
         if not int(columns[1]) == 0:
             raise ValueError("Mapping counts track does not start at beginning of chromosome: {}".format("\t".join(columns)))
         bin_size = int(columns[2]) - int(columns[1])
@@ -516,7 +529,7 @@ def main():
     # args = parse_command_line()
     debug = False
     chromosome = snakemake.params.genome_chromosome_param
-    print(chromosome)
+    # print(chromosome)
     # chromosome = "genome"
     bin_size = 100
     min_mapp = 75
@@ -524,10 +537,19 @@ def main():
     # jobs = 1
     jobs = snakemake.threads
 
+    # sample = "RPE1-WT"
+    # input_bam = "/scratch/tweber/DATA/MC_DATA/PAPER_ARBIGENT/RPE1-WT/selected"
+    # input_bed = "workflow/data/arbigent/scTRIP_segmentation.bed"
+    # norm_count_output = "TEST_arbigent_manual_segments.txt.raw"
+    # norm_plot_output = "TEST_arbigent_blub.txt"
+    # debug_output = "TEST_arbigent.txt.debug"
+    # map_counts = "workflow/data/arbigent/mapping_counts_allchrs_hg38.txt"
+
     sample = snakemake.wildcards.sample
     input_bam = snakemake.params.bam_folder
     input_bed = snakemake.input.bed
     norm_count_output = snakemake.output.processing_counts
+    debug_output = snakemake.output.debug
     map_counts = snakemake.input.mapping
     norm_plot_output = snakemake.output.norm_plot_output
 
@@ -552,6 +574,7 @@ def main():
         return 1
 
     map_counts_file = convert_mapping_counts(map_counts, chromosome)
+    # print(map_counts_file)
 
     chroms_to_process = []
     if chromosome != "genome":
@@ -560,8 +583,10 @@ def main():
     else:
         with pd.HDFStore(map_counts_file, "r") as hdf:
             chroms_to_process = set([os.path.dirname(c).strip("/") for c in hdf.keys()])
+            print(chroms_to_process)
 
     param_list = [(c, sample, input_bed, input_bam, map_counts_file, bin_size, min_mapp, lengthcorr_bool) for c in chroms_to_process]
+    # print(param_list)
     merge_list = []
     with mp.Pool(min(len(chroms_to_process), jobs)) as pool:
         res_iter = pool.imap_unordered(aggregate_segment_read_counts, param_list)
@@ -579,7 +604,7 @@ def main():
 
     output[reduced_output].to_csv(norm_plot_output, index=False, header=True, sep="\t")
 
-    output.to_csv(norm_count_output + ".debug", index=False, header=True, sep="\t")
+    output.to_csv(debug_output, index=False, header=True, sep="\t")
 
     return 0
 

@@ -1,0 +1,9 @@
+name: scNOVA_bioinfo_tools
+channels:
+  - conda-forge
+  - bioconda
+  - anaconda
+dependencies:
+  - samtools
+  - biobambam
+  - bedtools

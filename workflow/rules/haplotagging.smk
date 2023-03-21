@@ -23,7 +23,7 @@ rule haplotag_bams:
             fasta=config["references_data"][config["reference"]]["reference_fasta"]
         ),
     output:
-        temp("{folder}/{sample}/haplotag/bam/{cell}.bam.htg"),
+        "{folder}/{sample}/haplotag/bam/{cell}.bam.htg",
     log:
         "{folder}/log/haplotag_bams/{sample}/{cell}.log",
     params:
