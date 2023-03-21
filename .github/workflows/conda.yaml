@@ -5,6 +5,7 @@ on:
     branches:
       - dev
       - arbigent_dev
+      - scNOVA
 
 jobs:
   # WORK
@@ -22,13 +23,13 @@ jobs:
           directory: .
           snakefile: ./workflow/Snakefile
           stagein: "conda config --set channel_priority flexible"
-          args: "--cores 1 --use-conda --configfile .tests/config/simple_config.yaml --config normalized_counts=False --conda-frontend mamba -p --verbose --debug"
+          args: "--cores 1 --use-conda --latency-wait 60 --configfile .tests/config/simple_config.yaml --config hgsvc_based_normalized_counts=False --conda-frontend mamba -p --verbose --debug"
       - name: Testing report
         uses: snakemake/snakemake-github-action@v1.24.0
         with:
           directory: .
           snakefile: ./workflow/Snakefile
-          args: "--cores 1 --use-conda --configfile .tests/config/simple_config.yaml --config normalized_counts=False --conda-frontend mamba --report report.zip"
+          args: "--cores 1 --use-conda --latency-wait 60 --configfile .tests/config/simple_config.yaml --config hgsvc_based_normalized_counts=False --conda-frontend mamba --report report.zip"
 
   Linting_ashleys:
     runs-on: ubuntu-latest
@@ -53,13 +54,13 @@ jobs:
           directory: .
           snakefile: ./workflow/Snakefile
           stagein: "conda config --set channel_priority flexible"
-          args: "--cores 1 --use-conda --configfile .tests/config/simple_config.yaml --config ashleys_pipeline=True use_light_data=True --conda-frontend mamba -p --verbose --debug"
+          args: "--cores 1 --use-conda --latency-wait 60 --configfile .tests/config/simple_config.yaml --config ashleys_pipeline=True use_light_data=True --conda-frontend mamba -p --verbose --debug"
       - name: Testing report
         uses: snakemake/snakemake-github-action@v1.24.0
         with:
           directory: .
           snakefile: ./workflow/Snakefile
-          args: "--cores 1 --use-conda --configfile .tests/config/simple_config.yaml --config ashleys_pipeline=True use_light_data=True --conda-frontend mamba --report report.zip"
+          args: "--cores 1 --use-conda --latency-wait 60 --configfile .tests/config/simple_config.yaml --config ashleys_pipeline=True use_light_data=True --conda-frontend mamba --report report.zip"
 
   Testing_ashleys_norm_counts_disabled:
     runs-on: ubuntu-latest
@@ -74,13 +75,13 @@ jobs:
           directory: .
           snakefile: ./workflow/Snakefile
           stagein: "conda config --set channel_priority flexible"
-          args: "--cores 1 --use-conda --configfile .tests/config/simple_config.yaml --config ashleys_pipeline=True use_light_data=True normalized_counts=False --conda-frontend mamba -p --verbose --debug"
+          args: "--cores 1 --use-conda --latency-wait 60 --configfile .tests/config/simple_config.yaml --config ashleys_pipeline=True use_light_data=True hgsvc_based_normalized_counts=False --conda-frontend mamba -p --verbose --debug"
       - name: Testing report
         uses: snakemake/snakemake-github-action@v1.24.0
         with:
           directory: .
           snakefile: ./workflow/Snakefile
-          args: "--cores 1 --use-conda --configfile .tests/config/simple_config.yaml --config ashleys_pipeline=True use_light_data=True normalized_counts=False --conda-frontend mamba --report report.zip"
+          args: "--cores 1 --use-conda --latency-wait 60 --configfile .tests/config/simple_config.yaml --config ashleys_pipeline=True use_light_data=True hgsvc_based_normalized_counts=False --conda-frontend mamba --report report.zip"
   Testing_ashleys_norm_enabled_GC_correction:
     runs-on: ubuntu-latest
     # needs:
@@ -94,13 +95,13 @@ jobs:
           directory: .
           snakefile: ./workflow/Snakefile
           stagein: "conda config --set channel_priority flexible"
-          args: "--cores 1 --use-conda --config chromosomes=[chr17] ashleys_pipeline=True normalized_counts=True GC_analysis=True use_light_data=True  --conda-frontend mamba -p --verbose --debug"
+          args: "--cores 1 --use-conda --latency-wait 60 --configfile .tests/config/simple_config.yaml --config chromosomes=[chr17] ashleys_pipeline=True hgsvc_based_normalized_counts=True multistep_normalisation=True use_light_data=True  --conda-frontend mamba -p --verbose --debug"
       - name: Testing report
         uses: snakemake/snakemake-github-action@v1.24.0
         with:
           directory: .
           snakefile: ./workflow/Snakefile
-          args: "--cores 1 --use-conda --config chromosomes=[chr17] ashleys_pipeline=True normalized_counts=True GC_analysis=True use_light_data=True  --conda-frontend mamba --report report.zip"
+          args: "--cores 1 --use-conda --latency-wait 60 --configfile .tests/config/simple_config.yaml --config chromosomes=[chr17] ashleys_pipeline=True hgsvc_based_normalized_counts=True multistep_normalisation=True use_light_data=True  --conda-frontend mamba --report report.zip"
   Testing_ashleys_jup_nb:
     runs-on: ubuntu-latest
     # needs:
@@ -114,13 +115,13 @@ jobs:
           directory: .
           snakefile: ./workflow/Snakefile
           stagein: "conda config --set channel_priority flexible"
-          args: "--cores 1 --use-conda --configfile .tests/config/simple_config.yaml --config ashleys_pipeline=True use_light_data=True hand_selection=True --conda-frontend mamba -p --verbose --debug"
+          args: "--cores 1 --use-conda --latency-wait 60 --configfile .tests/config/simple_config.yaml --config ashleys_pipeline=True use_light_data=True hand_selection=True --conda-frontend mamba -p --verbose --debug"
       - name: Testing report
         uses: snakemake/snakemake-github-action@v1.24.0
         with:
           directory: .
           snakefile: ./workflow/Snakefile
-          args: "--cores 1 --use-conda --configfile .tests/config/simple_config.yaml --config ashleys_pipeline=True use_light_data=True hand_selection=True  --conda-frontend mamba --report report.zip"
+          args: "--cores 1 --use-conda --latency-wait 60 --configfile .tests/config/simple_config.yaml --config ashleys_pipeline=True use_light_data=True hand_selection=True  --conda-frontend mamba --report report.zip"
 
   Testing_ashleys_norm_enabled_hg19:
     runs-on: ubuntu-latest
@@ -135,13 +136,13 @@ jobs:
           directory: .
           snakefile: ./workflow/Snakefile
           stagein: "conda config --set channel_priority flexible"
-          args: "--cores 1 --use-conda --config ashleys_pipeline=True use_light_data=True chromosomes=[chr17] normalized_counts=True reference=hg19 --conda-frontend mamba -p --verbose --debug"
+          args: "--cores 1 --use-conda --latency-wait 60 --config ashleys_pipeline=True use_light_data=True chromosomes=[chr17] hgsvc_based_normalized_counts=True reference=hg19 --conda-frontend mamba -p --verbose --debug"
       - name: Testing report
         uses: snakemake/snakemake-github-action@v1.24.0
         with:
           directory: .
           snakefile: ./workflow/Snakefile
-          args: "--cores 1 --use-conda --config ashleys_pipeline=True use_light_data=True chromosomes=[chr17] normalized_counts=True reference=hg19 --conda-frontend mamba --report report.zip"
+          args: "--cores 1 --use-conda --latency-wait 60 --config ashleys_pipeline=True use_light_data=True chromosomes=[chr17] hgsvc_based_normalized_counts=True reference=hg19 --conda-frontend mamba --report report.zip"
   Testing_ashleys_norm_enabled_hg38_full:
     runs-on: ubuntu-latest
     # needs:
@@ -155,13 +156,13 @@ jobs:
           directory: .
           snakefile: ./workflow/Snakefile
           stagein: "conda config --set channel_priority flexible"
-          args: "--cores 1 --use-conda --config ashleys_pipeline=True use_light_data=True chromosomes=[chr17] normalized_counts=True reference=hg38 --conda-frontend mamba -p --verbose --debug"
+          args: "--cores 1 --use-conda --latency-wait 60 --config ashleys_pipeline=True use_light_data=True chromosomes=[chr17] hgsvc_based_normalized_counts=True reference=hg38 --conda-frontend mamba -p --verbose --debug"
       - name: Testing report
         uses: snakemake/snakemake-github-action@v1.24.0
         with:
           directory: .
           snakefile: ./workflow/Snakefile
-          args: "--cores 1 --use-conda --config ashleys_pipeline=True use_light_data=True chromosomes=[chr17] normalized_counts=True reference=hg38 --conda-frontend mamba --report report.zip"
+          args: "--cores 1 --use-conda --latency-wait 60 --config ashleys_pipeline=True use_light_data=True chromosomes=[chr17] hgsvc_based_normalized_counts=True reference=hg38 --conda-frontend mamba --report report.zip"
   Testing_ashleys_norm_enabled_T2T:
     runs-on: ubuntu-latest
     # needs:
@@ -175,13 +176,13 @@ jobs:
           directory: .
           snakefile: ./workflow/Snakefile
           stagein: "conda config --set channel_priority flexible"
-          args: "--cores 1 --use-conda --config ashleys_pipeline=True use_light_data=True chromosomes=[chr17] normalized_counts=True reference=T2T --conda-frontend mamba -p --verbose --debug"
+          args: "--cores 1 --use-conda --latency-wait 60 --config ashleys_pipeline=True use_light_data=True chromosomes=[chr17] hgsvc_based_normalized_counts=True reference=T2T --conda-frontend mamba -p --verbose --debug"
       - name: Testing report
         uses: snakemake/snakemake-github-action@v1.24.0
         with:
           directory: .
           snakefile: ./workflow/Snakefile
-          args: "--cores 1 --use-conda --config ashleys_pipeline=True use_light_data=True chromosomes=[chr17] normalized_counts=True reference=T2T --conda-frontend mamba --report report.zip"
+          args: "--cores 1 --use-conda --latency-wait 60 --config ashleys_pipeline=True use_light_data=True chromosomes=[chr17] hgsvc_based_normalized_counts=True reference=T2T --conda-frontend mamba --report report.zip"
   Linting_arbigent:
     runs-on: ubuntu-latest
     steps:
@@ -205,13 +206,13 @@ jobs:
           directory: .
           snakefile: ./workflow/Snakefile
           stagein: "conda config --set channel_priority flexible"
-          args: "--cores 1 --use-conda --configfile .tests/config/simple_config.yaml --config arbigent=True --conda-frontend mamba -p --verbose --debug"
+          args: "--cores 1 --use-conda --latency-wait 60 --configfile .tests/config/simple_config.yaml --config arbigent=True --conda-frontend mamba -p --verbose --debug"
       - name: Testing report
         uses: snakemake/snakemake-github-action@v1.24.0
         with:
           directory: .
           snakefile: ./workflow/Snakefile
-          args: "--cores 1 --use-conda --configfile .tests/config/simple_config.yaml --config arbigent=True --conda-frontend mamba -p --verbose --debug --report report.zip"
+          args: "--cores 1 --use-conda --latency-wait 60 --configfile .tests/config/simple_config.yaml --config arbigent=True --conda-frontend mamba -p --verbose --debug --report report.zip"
 
   Testing_publishdir:
     runs-on: ubuntu-latest
@@ -226,65 +227,25 @@ jobs:
           directory: .
           snakefile: ./workflow/Snakefile
           stagein: "conda config --set channel_priority flexible"
-          args: "--cores 1 --use-conda --configfile .tests/config/simple_config.yaml --config publishdir=.tests/data_chr17_publishdir --conda-frontend mamba -p --verbose --debug"
+          args: "--cores 1 --use-conda --latency-wait 60 --configfile .tests/config/simple_config.yaml --config publishdir=.tests/data_chr17_publishdir --conda-frontend mamba -p --verbose --debug"
       - name: Testing report
         uses: snakemake/snakemake-github-action@v1.24.0
         with:
           directory: .
           snakefile: ./workflow/Snakefile
-          args: "--cores 1 --use-conda --configfile .tests/config/simple_config.yaml --config publishdir=.tests/data_chr17_publishdir --conda-frontend mamba -p --verbose --debug --report report.zip"
+          args: "--cores 1 --use-conda --latency-wait 60 --configfile .tests/config/simple_config.yaml --config publishdir=.tests/data_chr17_publishdir --conda-frontend mamba -p --verbose --debug --report report.zip"
+  Downloading_extracting_scNOVA_data:
+    runs-on: ubuntu-latest
 
-  # Downloading_example_data:
-  #   runs-on: ubuntu-latest
-  #   # needs:
-  #   #   - Linting
-  #   #   - Formatting
-  #   steps:
-  #     - uses: actions/checkout@v3.3.0
-  #     - name: Downloading_example_data
-  #       uses: snakemake/snakemake-github-action@v1.24.0
-  #       with:
-  #         directory: .
-  #         snakefile: ./workflow/Snakefile
-  #         stagein: "mamba install -c conda-forge unzip"
-  #         args: "--cores 1 --config dl_bam_example=True -p --verbose --debug"
-  # Downloading_hg19:
-  #   runs-on: ubuntu-latest
-  #   # needs:
-  #   #   - Linting
-  #   #   - Formatting
-  #   steps:
-  #     - uses: actions/checkout@v3.3.0
-  #     - name: Downloading_hg19
-  #       uses: snakemake/snakemake-github-action@v1.24.0
-  #       with:
-  #         directory: .
-  #         snakefile: ./workflow/Snakefile
-  #         args: "--cores 1 --config dl_external_files=True reference=hg19 -p --verbose --debug"
-  # Downloading_hg38:
-  #   runs-on: ubuntu-latest
-  #   # needs:
-  #   #   - Linting
-  #   #   - Formatting
-  #   steps:
-  #     - uses: actions/checkout@v3.3.0
-  #     - name: Downloading_hg38
-  #       uses: snakemake/snakemake-github-action@v1.24.0
-  #       with:
-  #         directory: .
-  #         snakefile: ./workflow/Snakefile
-  #         args: "--cores 1 --config dl_external_files=True reference=hg38 -p --verbose --debug"
-  # Downloading_installing_T2T:
-  #   runs-on: ubuntu-latest
-  #   # needs:
-  #   #   - Linting
-  #   #   - Formatting
-  #   steps:
-  #     - uses: actions/checkout@v3.3.0
-  #     - name: Downloading_T2T
-  #       uses: snakemake/snakemake-github-action@v1.24.0
-  #       with:
-  #         directory: .
-  #         snakefile: ./workflow/Snakefile
-  #         stagein: "conda config --set channel_priority flexible"
-  #         args: "--cores 1  --use-conda --conda-frontend mamba --config dl_external_files=True reference=T2T -p --verbose --debug"
+    # needs:
+    #   - Linting
+    #   - Formatting
+    steps:
+      - uses: actions/checkout@v3.3.0
+      - name: Downloading & extracting scNOVA data
+        uses: snakemake/snakemake-github-action@v1.24.0
+        with:
+          directory: .
+          snakefile: ./workflow/Snakefile
+          stagein: "conda config --set channel_priority flexible"
+          args: "--cores 1 --use-conda --conda-frontend mamba --verbose --debug workflow/data/scNOVA/utils/bin_Genes_for_CNN_reshape_annot.txt -p"

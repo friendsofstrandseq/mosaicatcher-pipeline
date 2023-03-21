@@ -2,7 +2,7 @@
 
 * **Stringent/Lenient filtering step:** {{ snakemake.wildcards.method }}
 * **Binning window size used:** {{ snakemake.config["window"] }} bp
-* **Normalization enabled:** {{ snakemake.config["normalized_counts"] }}
+* **HGSVC-based normalization enabled:** {{ snakemake.config["hgsvc_based_normalized_counts"] }}
 * **Likelihood ratio used to detect SV calls (llr):** {{ snakemake.config["methods"][snakemake.wildcards.method]["llr"] }}
 * **Population prior (poppriors):** {{ snakemake.config["methods"][snakemake.wildcards.method]["poppriors"] }}
 * **Haplotags used (haplotags):** {{ snakemake.config["methods"][snakemake.wildcards.method]["haplotags"] }}

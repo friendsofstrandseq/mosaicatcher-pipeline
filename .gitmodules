@@ -1,4 +1,4 @@
 [submodule "workflow/snakemake_profiles"]
-	path = workflow/snakemake_profiles
-	url = https://github.com/weber8thomas/snakemake_profiles
-	branch = main
+path = workflow/snakemake_profiles
+url = https://github.com/weber8thomas/snakemake_profiles
+branch = dev

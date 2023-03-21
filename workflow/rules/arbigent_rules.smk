@@ -52,7 +52,7 @@ if config["arbigent"] is True:
             genome_chromosome_param="genome"
             if len(config["chromosomes"]) == 24
             else ",".join(config["chromosomes"]),
-        threads: 16
+        threads: 12
         script:
             "../scripts/arbigent_utils/watson_crick.py"
 

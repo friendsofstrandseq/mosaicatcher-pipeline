@@ -75,7 +75,7 @@ if config["arbigent"] is True:
             # WARNING
             msc="{folder}/{sample}/arbigent/sv_calls/msc.debug",
         output:
-            vcf1="{folder}/{sample}/arbigent/regenotyper_allsamples_bulk/arbigent_results/res_all.vcf",
+            # vcf1="{folder}/{sample}/arbigent/regenotyper_allsamples_bulk/arbigent_results/res_all.vcf",
             res_csv="{folder}/{sample}/arbigent/regenotyper_allsamples_bulk/arbigent_results/res.csv",
             res_csv_dir=directory(
                 "{folder}/{sample}/arbigent/regenotyper_allsamples_bulk/arbigent_results/"

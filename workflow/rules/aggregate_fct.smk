@@ -271,7 +271,11 @@ def remove_unselected_fct(wildcards):
 
 
 def bsgenome_install(wildcards):
+#     return "workflow/data/ref_genomes/config/install_BSgenome_package_{}.log".format(config['reference'])
     if config["reference"] == "T2T":
-        return "workflow/data/ref_genomes/config/T2T_R_tarball_install.ok"
+        return "workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz"
     else:
-        return "workflow/data/ref_genomes/config/fake_install.ok"
+        return "workflow/data/ref_genomes/log/fake_package.ok"
+    #     return "workflow/data/ref_genomes/config/T2T_R_tarball_install.ok"
+    # else:
+    #     return "workflow/data/ref_genomes/config/fake_install.ok"
