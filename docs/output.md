@@ -208,27 +208,6 @@ By using these heatmaps, the user can easily identify subclones based on the SV 
 
 ---
 
-File path: `<OUTPUT_FOLDER>/<SAMPLE>/plots/alfred/<CELL>_gc_[devi|dist].png`
-
-Report category: `GC analysis`
-
----
-
-
-
-
-| ![summary](images/plots/alfred_devi.png) |
-| :--------------------------------------: |
-|    _1. Alfred GC deviation analysis_     |
-
-| ![summary](images/plots/alfred_dist.png) |
-| :--------------------------------------: |
-|   _2. Alfred GC distribution analysis_   |
-
-## Statistics
-
----
-
 File path: `<OUTPUT_FOLDER>/<SAMPLE>/stats/stats-merged.tsv`
 
 Report category: `Stats`

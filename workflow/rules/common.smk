@@ -49,7 +49,7 @@ if config["ashleys_pipeline"] is True:
     assert (
         config["ashleys_pipeline"] != config["input_bam_legacy"]
     ), "ashleys_pipeline and input_bam_legacy parameters cannot both be set to True"
-
+ 
 
 # Configure if handle_input needs to be based on bam or fastq
 bam = True if config["ashleys_pipeline"] is False else False
