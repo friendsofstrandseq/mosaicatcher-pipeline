@@ -21,14 +21,14 @@ if config["ashleys_pipeline"] is True:
 
     module ashleys_qc:
         snakefile:
-            # "../../ashleys-qc-pipeline/workflow/Snakefile"
-            github(
-                "friendsofstrandseq/ashleys-qc-pipeline",
-                path="workflow/Snakefile",
-                tag=str(config["ashleys_pipeline_version"])
-                # branch="main",
-                # branch="dev",
-            )
+            "../../ashleys-qc-pipeline/workflow/Snakefile"
+            # github(
+            #     "friendsofstrandseq/ashleys-qc-pipeline",
+            #     path="workflow/Snakefile",
+            #     tag=str(config["ashleys_pipeline_version"])
+            #     # branch="main",
+            #     # branch="dev",
+            # )
         config:
             config
 
@@ -39,7 +39,6 @@ if config["ashleys_pipeline"] is True:
         symlink_selected_bam,
 
 else:
-
     localrules:
         symlink_selected_bam,
 
@@ -98,6 +97,9 @@ include: "rules/arbigent.smk"
 include: "rules/scNOVA.smk"
 
 
+include: "rules/gc.smk"
+
+
 if config["list_commands"] is False:
 
     if config["ashleys_pipeline"] is True:
@@ -114,31 +116,6 @@ if config["list_commands"] is False:
             input:
                 get_final_output(),
 
-    # elif (
-    #     config["dl_bam_example"] is False
-    #     and config["dl_external_files"] is True
-    #     and config["reference"] in ["hg19", "hg38", "T2T"]
-    # ):
-    #     if config["reference"] == "hg19":
-
-    #         rule all:
-    #             input:
-    #                 rules.download_hg19_reference.output,
-
-    #     elif config["reference"] == "hg38":
-
-    #         rule all:
-    #             input:
-    #                 rules.download_hg38_reference.output,
-
-    #     elif config["reference"] == "T2T":
-
-    #         rule all:
-    #             input:
-    #                 [
-    #                     rules.download_T2T_reference.output,
-    #                     rules.install_T2T_BSgenome_tarball.output,
-    #                 ],
 
     if config["email"]:
 

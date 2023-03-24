@@ -6,6 +6,7 @@ on:
       - dev
       - arbigent_dev
       - scNOVA
+      - multistep_normalisation
 
 jobs:
   # Downloading_example_data:

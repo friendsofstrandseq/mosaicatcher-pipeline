@@ -13,6 +13,8 @@ data_location: ".tests/data_CHR17"
 reference: "hg38"
 # Enable / Disable multistep normalisation analysis
 multistep_normalisation: False
+# Enable / Disable multistep normalisation output for SV calling
+multistep_normalisation_for_SV_calling: False
 # ArbiGent (Arbitrary-segments genotyping) mode of execution
 arbigent: False
 # Arbigent default BED file, can be changed and adapted based on user question
@@ -64,7 +66,8 @@ chromosomes_to_exclude: []
 genecore: False
 samples_to_process: []
 genecore_date_folder: ""
-genecore_prefix: "/g/korbel/shared/genecore"
+# genecore_prefix: "/g/korbel/shared/genecore"
+genecore_prefix: "/g/korbel/STOCKS/Data/Assay/sequencing/2023"
 ## Mosaic bin window size
 window: 200000
 ##############################
