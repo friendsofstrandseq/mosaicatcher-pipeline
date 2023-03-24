@@ -29,11 +29,12 @@ All these arguments can be specified in two ways:
 
 ### Execution boolean parameters
 
-| Parameter                          | Comment                                                                                             | Default | Experimental |
-| ---------------------------------- | --------------------------------------------------------------------------------------------------- | ------- | ------------ |
-| `multistep_normalisation_analysis` | Allow to perform multistep normalisation including GC correction for visualization (Marco Cosenza). | False   | False        |
-| `arbigent`                         | Enable ArbiGent mode of execution to genotype SV based on arbitrary segments                        | False   | True         |
-| `scNOVA`                           | Enable scNOVA mode of execution to compute Nucleosome Occupancy (NO) of detected SV                 | False   | True         |
+| Parameter                                | Comment                                                                                             | Default | Experimental |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------------- | ------- | ------------ |
+| `multistep_normalisation_analysis`       | Allow to perform multistep normalisation including GC correction for visualization (Marco Cosenza). | False   | False        |
+| `multistep_normalisation_for_SV_calling` | Allow to use multistep normalisation count file during SV calling (Marco Cosenza).                  | False   | False        |
+| `arbigent`                               | Enable ArbiGent mode of execution to genotype SV based on arbitrary segments                        | False   | True         |
+| `scNOVA`                                 | Enable scNOVA mode of execution to compute Nucleosome Occupancy (NO) of detected SV                 | False   | True         |
 
 ### External files
 

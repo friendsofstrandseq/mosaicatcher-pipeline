@@ -28,6 +28,11 @@ multistep_normalisation_analysis:
   type: bool
   required: False
   default: False
+multistep_normalisation_for_SV_calling:
+  desc: "Enable / Disable multistep normalisation to be used in SV calling"
+  type: bool
+  required: False
+  default: False
 ashleys_threshold:
   desc: "Ashleys-qc binary classification threshold"
   type: bool

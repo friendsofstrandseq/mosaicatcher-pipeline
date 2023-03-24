@@ -100,7 +100,7 @@ rule plot_SV_consistency_barplot:
 rule plot_clustering:
     input:
         sv_calls="{folder}/{sample}/mosaiclassifier/sv_calls/{method}_filter{filter}.tsv",
-        binbed="workflow/data/bin_200kb_all.bed",
+        binbed=ancient("workflow/data/bin_200kb_all.bed"),
     output:
         position=report(
             "{folder}/{sample}/plots/sv_clustering/{method}-filter{filter}-position.pdf",
@@ -150,7 +150,7 @@ rule plot_clustering_position_dev:
 rule plot_clustering_chromosome_dev:
     input:
         sv_calls="{folder}/{sample}/mosaiclassifier/sv_calls/{method}_filter{filter}.tsv",
-        binbed="workflow/data/bin_200kb_all.bed",
+        binbed=ancient("workflow/data/bin_200kb_all.bed"),
         cluster_order_df="{folder}/{sample}/plots/sv_clustering_dev/clustering_{method}-filter{filter}-position.tsv",
     output:
         pdf=report(

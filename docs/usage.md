@@ -29,13 +29,23 @@ git clone --recurse-submodules https://github.com/friendsofstrandseq/mosaicatche
 ```bash
 # Snakemake Profile: if singularity installed: workflow/snakemake_profiles/local/conda_singularity/
 # Snakemake Profile: if singularity NOT installed: workflow/snakemake_profiles/local/conda/
-snakemake --cores 6 --configfile .tests/config/simple_config.yaml --profile workflow/snakemake_profiles/local/conda_singularity/ --singularity-args "-B /disk:/disk"
+snakemake \
+    --cores 6 \
+    --configfile .tests/config/simple_config.yaml \
+    --profile workflow/snakemake_profiles/local/conda_singularity/ \
+    --singularity-args "-B /disk:/disk"
 ```
 
 4. Generate report on example data
 
 ```bash
-snakemake --cores 6 --configfile .tests/config/simple_config.yaml --profile workflow/snakemake_profiles/local/conda_singularity/ --singularity-args "-B /disk:/disk" --report report.zip
+snakemake \
+    --cores 6 \
+    --configfile .tests/config/simple_config.yaml \
+    --profile workflow/snakemake_profiles/local/conda_singularity/ \
+    --singularity-args "-B /disk:/disk" \
+    --report report.zip \
+    --report-stylesheet workflow/report/custom-stylesheet.css
 ```
 
 ---
@@ -64,7 +74,9 @@ Following commands show you an example using local execution (not HPC or cloud)
 
 ```bash
 snakemake \
-    --cores <N> --config data_location=<INPUT_DATA_FOLDER> \
+    --cores <N> \
+    --config \
+        data_location=<INPUT_DATA_FOLDER> \
     --profile workflow/snakemake_profiles/local/conda_singularity/
 
 ```
@@ -73,9 +85,12 @@ snakemake \
 
 ```bash
 snakemake \
-    --cores <N> --config data_location=<INPUT_DATA_FOLDER> \
+    --cores <N> \
+    --config \
+        data_location=<INPUT_DATA_FOLDER> \
     --profile workflow/snakemake_profiles/local/conda_singularity/ \
-    --report <INPUT_DATA_FOLDER>/<REPORT.zip>
+    --report <INPUT_DATA_FOLDER>/<REPORT.zip> \
+    --report-stylesheet workflow/report/custom-stylesheet.css
 ```
 
 ## System requirements
@@ -111,24 +126,6 @@ cd mosaicatcher-pipeline
 ```
 
 ### ⚙️ 3. MosaiCatcher execution (without preprocessing)
-
-#### (i) Download & use example data automatically with snakemake [Optional]
-
-In a first step, `dl_bam_example=True` will allow to retrieve data stored on Zenodo registry.
-
-```bash
-snakemake -c1 --config dl_bam_example=True data_location=TEST_EXAMPLE_DATA/
-```
-
-Then, the following command will process the 18 cells (full BAM with all chromosomes) present in this example.
-
-```bash
-snakemake -c6 --config data_location=TEST_EXAMPLE_DATA --profile workflow/snakemake_profiles/local/conda_singularity/ --singularity-args "-B /disk:/disk"
-```
-
-**Warning:** Download example data currently requires 3GB of free space disk.
-
-#### (ii) Use your own data
 
 #### BAM input requirements
 
@@ -263,7 +260,8 @@ Informations and modes of execution can be found on the [ashleys-qc-pipeline doc
 
 **⚠️ Warnings**
 
-`ashleys_pipeline=True` and `input_bam_legacy=True` are mutually exclusive
+- `ashleys_pipeline=True` and `input_bam_legacy=True` are mutually exclusive
+- We advice to limit to the number of 2 the "_" characters in your file names (Ashleys-qc ML tool will react weidly with more than 3 "_")
 
 ---
 
@@ -320,7 +318,7 @@ If you are experiencing any issues with conda-frontend snakemake option, please 
 
 #### HPC execution
 
-MosaiCatcher can be executed on HPC using [Slurm](https://slurm.schedmd.com/documentation.html) by leveraging snakemake profile feature. Current Slurm profile [`workflow/snakemake_profiles/slurm_EMBL/config.yaml`] was defined and tested on EMBL HPC cluster but can be modified, especially regarding **partition** setting.
+MosaiCatcher can be executed on HPC using [Slurm](https://slurm.schedmd.com/documentation.html) by leveraging snakemake profile feature. Current Slurm profile [`workflow/snakemake_profiles/HPC/slurm_EMBL/config.yaml`] was defined and tested on EMBL HPC cluster but can be modified, especially regarding **partition** setting.
 
 ##### Current strategy to solve HPC job OOM
 
@@ -335,7 +333,7 @@ snakemake \
     --config \
         data_location=<INPUT_FOLDER> \
     --singularity-args "-B /<mounting_point>:/<mounting_point>" \
-    --profile workflow/snakemake_profiles/slurm_generic/
+    --profile workflow/snakemake_profiles/HPC/slurm_generic/
 ```
 
 The `logs` and `errors` directory will be automatically created in the current directory, corresponding respectively to the `output` and `error` parameter of the `sbatch` command.
@@ -369,7 +367,10 @@ Thus, an alternative branch of the pipeline will be executed instead of the clas
 
 ```bash
 snakemake \
-    --cores <N> --config data_location=<INPUT_DATA_FOLDER> arbigent=True \
+    --cores <N> \
+    --config \
+        data_location=<INPUT_DATA_FOLDER> \
+        arbigent=True \
     --profile workflow/snakemake_profiles/local/conda_singularity/
 
 ```
@@ -408,7 +409,10 @@ Once done, you can run the exact same command as previously and set `scNOVA` con
 
 ```bash
 snakemake \
-    --cores <N> --config data_location=<INPUT_DATA_FOLDER> scNOVA=True \
+    --cores <N> \
+    --config \
+        data_location=<INPUT_DATA_FOLDER> \
+        scNOVA=True \
     --profile workflow/snakemake_profiles/local/conda_singularity/
 
 ```
@@ -421,6 +425,29 @@ scNOVA related snakemake rules and scripts only support conda execution at the m
 
 ---
 
+## Multistep normalisation
+
+From 2.1.0, it's now possible to use multistep normalisation (library size normalisation, GC correction, Variance Stabilising Transformation) resulting counts file, not only for visualisation purpose, but also to rely on it during the SV calling framework. To do so
+
+```bash
+snakemake \
+    --cores <N> \
+    --config \
+        data_location=<INPUT_DATA_FOLDER> \
+        multistep_normalisation=True \
+        multistep_normalisation_for_SV_calling=True \
+    --profile workflow/snakemake_profiles/local/conda_singularity/
+
+```
+
+---
+
+**ℹ️ Note**
+
+`multistep_normalisation_for_SV_calling` is mutually exclusive with `hgsvc_based_normalisation`
+
+---
+
 ## Pipeline update procedure
 
 If you already use a previous version of mosaicatcher-pipeline, here is a short procedure to update it:
@@ -429,7 +456,7 @@ If you already use a previous version of mosaicatcher-pipeline, here is a short 
 
 `git fetch --all`
 
-- Jump to a new version (here 1.8.5) & pull code:
+- Jump to a new version (for example 1.8.5) & pull code:
 
 `git checkout 1.8.5 && git pull`
 

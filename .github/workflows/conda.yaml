@@ -6,6 +6,7 @@ on:
       - dev
       - arbigent_dev
       - scNOVA
+      - multistep_normalisation
 
 jobs:
   # WORK
@@ -62,6 +63,46 @@ jobs:
           snakefile: ./workflow/Snakefile
           args: "--cores 1 --use-conda --latency-wait 60 --configfile .tests/config/simple_config.yaml --config ashleys_pipeline=True use_light_data=True --conda-frontend mamba --report report.zip"
 
+  Testing_ashleys_multistep_norm:
+    runs-on: ubuntu-latest
+    # needs:
+    #   - Linting
+    #   - Formatting
+    steps:
+      - uses: actions/checkout@v3.3.0
+      - name: Testing data
+        uses: snakemake/snakemake-github-action@v1.24.0
+        with:
+          directory: .
+          snakefile: ./workflow/Snakefile
+          stagein: "conda config --set channel_priority flexible"
+          args: "--cores 1 --use-conda --latency-wait 60 --configfile .tests/config/simple_config.yaml --config ashleys_pipeline=True use_light_data=True multistep_normalisation=True --conda-frontend mamba -p --verbose --debug"
+      - name: Testing report
+        uses: snakemake/snakemake-github-action@v1.24.0
+        with:
+          directory: .
+          snakefile: ./workflow/Snakefile
+          args: "--cores 1 --use-conda --latency-wait 60 --configfile .tests/config/simple_config.yaml --config ashleys_pipeline=True use_light_data=True multistep_normalisation=True --conda-frontend mamba --report report.zip"
+  Testing_ashleys_multistep_norm_for_SV_calling:
+    runs-on: ubuntu-latest
+    # needs:
+    #   - Linting
+    #   - Formatting
+    steps:
+      - uses: actions/checkout@v3.3.0
+      - name: Testing data
+        uses: snakemake/snakemake-github-action@v1.24.0
+        with:
+          directory: .
+          snakefile: ./workflow/Snakefile
+          stagein: "conda config --set channel_priority flexible"
+          args: "--cores 1 --use-conda --latency-wait 60 --configfile .tests/config/simple_config.yaml --config ashleys_pipeline=True use_light_data=True multistep_normalisation=True multistep_normalisation_for_SV_calling=True --conda-frontend mamba -p --verbose --debug"
+      - name: Testing report
+        uses: snakemake/snakemake-github-action@v1.24.0
+        with:
+          directory: .
+          snakefile: ./workflow/Snakefile
+          args: "--cores 1 --use-conda --latency-wait 60 --configfile .tests/config/simple_config.yaml --config ashleys_pipeline=True use_light_data=True multistep_normalisation=True multistep_normalisation_for_SV_calling=True --conda-frontend mamba --report report.zip"
   Testing_ashleys_norm_counts_disabled:
     runs-on: ubuntu-latest
     # needs:
@@ -82,7 +123,7 @@ jobs:
           directory: .
           snakefile: ./workflow/Snakefile
           args: "--cores 1 --use-conda --latency-wait 60 --configfile .tests/config/simple_config.yaml --config ashleys_pipeline=True use_light_data=True hgsvc_based_normalized_counts=False --conda-frontend mamba --report report.zip"
-  Testing_ashleys_norm_enabled_GC_correction:
+  Testing_ashleys_norm_enabled_multistep_normalisation:
     runs-on: ubuntu-latest
     # needs:
     #   - Linting
