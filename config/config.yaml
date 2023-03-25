@@ -24,7 +24,7 @@ FastQC_analysis: False
 # Plate orientation for GC analysis
 plate_orientation: landscape
 # Normalize or not mosaic counts
-hgsvc_based_normalized_counts: True
+hgsvc_based_normalized_counts: False
 # Mutually exclusive with ashleys_pipeline
 input_bam_legacy: False
 # Enable/Disable ashleys-qc-pipeline module loading to start pipeline from FASTQ files
