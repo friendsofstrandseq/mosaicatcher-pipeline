@@ -126,9 +126,19 @@ workflow/test.txt
 .tests/data_CHR17/RPE-BM510/config/
 .tests/data_CHR17/RPE-BM510/predictions/
 .tests/data_CHR17/RPE-BM510/merged_bam/
+.tests/data_CHR17/RPE-BM510/alfred/
+.tests/data_CHR17/RPE-BM510/ploidy/
+.tests/data_CHR17/RPE-BM510/selected/
+.tests/data_CHR17/RPE-BM510/strandphaser/
+.tests/data_CHR17/RPE-BM510/mosaiclassifier/
+.tests/data_CHR17/RPE-BM510/haplotag/
+# .tests/data_CHR17/RPE-BM510/
 
-.tests/data_CHR17/RPE-BM510/
-
+.tests/data_CHR21/RPE-BM510/alfred/
+.tests/data_CHR21/RPE-BM510/ploidy/
+.tests/data_CHR21/RPE-BM510/selected/
+.tests/data_CHR21/RPE-BM510/strandphaser/
+.tests/data_CHR21/RPE-BM510/haplotag/
 .tests/data_CHR21/RPE-BM510/predictions/
 .tests/data_CHR21/RPE-BM510/cell_selection/
 
