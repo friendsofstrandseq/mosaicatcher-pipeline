@@ -19,7 +19,7 @@ if config["ashleys_pipeline"] is False:
         script:
             "../scripts/utils/generate_exclude_file.py"
 
-    rule mosaic_count:
+    checkpoint mosaic_count:
         input:
             bam=lambda wc: expand(
                 "{folder}/{sample}/bam/{cell}.sort.mdup.bam",
