@@ -7,7 +7,7 @@
 1. A. Create a dedicated conda environment
 
 ```bash
-conda create -n snakemake -c bioconda -c conda-forge -c defaults -c anaconda snakemake=7.12.0
+conda create -n snakemake -c bioconda -c conda-forge -c defaults -c anaconda snakemake 
 ```
 
 1. B. Activate the dedicated conda environment
@@ -456,9 +456,9 @@ If you already use a previous version of mosaicatcher-pipeline, here is a short 
 
 `git fetch --all`
 
-- Jump to a new version (for example 1.8.5) & pull code:
+- Jump to a new version (for example 2.1.0) & pull code:
 
-`git checkout 1.8.5 && git pull`
+`git checkout 2.1.0 && git pull`
 
 Then, to initiate or update git snakemake_profiles submodule:
 
