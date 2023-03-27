@@ -12,7 +12,7 @@ jobs:
   Formatting:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3.2.0
+      - uses: actions/checkout@v3.5.0
 
       - name: Formatting
         uses: github/super-linter@v4
@@ -25,7 +25,7 @@ jobs:
   Linting:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3.2.0
+      - uses: actions/checkout@v3.5.0
       - name: Linting
         uses: snakemake/snakemake-github-action@v1.24.0
         with:
@@ -38,7 +38,7 @@ jobs:
     #   - Linting
     #   - Formatting
     steps:
-      - uses: actions/checkout@v3.2.0
+      - uses: actions/checkout@v3.5.0
       - name: Testing data
         uses: snakemake/snakemake-github-action@v1.24.0
         with:
