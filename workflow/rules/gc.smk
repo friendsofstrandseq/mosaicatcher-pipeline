@@ -101,7 +101,7 @@ if (config["multistep_normalisation"] is True) and (config["ashleys_pipeline"] i
             counts="{folder}/{sample}/counts/multistep_normalisation/{sample}.txt.scaled.GC.VST.populated.gz",
             info="{folder}/{sample}/counts/{sample}.info_raw",
         output:
-            "{folder}/{sample}/plots/counts/CountComplete.GC_corrected.pdf",
+            "{folder}/{sample}/plots/counts/CountComplete.normalised.pdf",
         log:
             "{folder}/{sample}/log/plot_mosaic_counts/{sample}.log",
         conda:
