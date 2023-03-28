@@ -1,6 +1,6 @@
 FROM condaforge/mambaforge:latest
 LABEL io.github.snakemake.containerized="true"
-LABEL io.github.snakemake.conda_env_hash="813ff0f7596c29c41e53dfdc51fd71341c808f6329d198b81efb0a3c237106cc"
+LABEL io.github.snakemake.conda_env_hash="847dcdece9702cd9d390eac5fe2f09d0b0dc03308dc6c5623ba37f90af4ea5f9"
 
 # Step 1: Retrieve conda environments
 
@@ -27,7 +27,7 @@ ADD https://github.com/friendsofstrandseq/ashleys-qc-pipeline/raw/dev/workflow/e
 
 # Conda environment:
 #   source: https://github.com/friendsofstrandseq/ashleys-qc-pipeline/raw/dev/workflow/envs/ashleys_rtools.yaml
-#   prefix: /conda-envs/9b847fc31baae8e01dfb7ce438a56b71
+#   prefix: /conda-envs/413cc1031d64cf89e8b32aaa9a29fdbf
 #   name: rtools
 #   channels:
 #     - conda-forge
@@ -76,10 +76,8 @@ ADD https://github.com/friendsofstrandseq/ashleys-qc-pipeline/raw/dev/workflow/e
 #     # GC_correction
 #     - r-tidyr
 #     - r-ggpubr
-#     # SOLVE R lib issue
-#     - r-stringi=1.7.12
-RUN mkdir -p /conda-envs/9b847fc31baae8e01dfb7ce438a56b71
-ADD https://github.com/friendsofstrandseq/ashleys-qc-pipeline/raw/dev/workflow/envs/ashleys_rtools.yaml /conda-envs/9b847fc31baae8e01dfb7ce438a56b71/environment.yaml
+RUN mkdir -p /conda-envs/413cc1031d64cf89e8b32aaa9a29fdbf
+ADD https://github.com/friendsofstrandseq/ashleys-qc-pipeline/raw/dev/workflow/envs/ashleys_rtools.yaml /conda-envs/413cc1031d64cf89e8b32aaa9a29fdbf/environment.yaml
 
 # Conda environment:
 #   source: https://github.com/snakemake/snakemake-wrappers/raw/v1.7.0/bio/bwa/index/environment.yaml
@@ -210,13 +208,14 @@ COPY workflow/envs/rtools.yaml /conda-envs/91d5ffe2d429bcebd6bab78e9ca3a1d4/envi
 # Step 2: Generate conda environments
 
 RUN mamba env create --prefix /conda-envs/6c6d3e92c1c97170f4d531b908ca85cf --file /conda-envs/6c6d3e92c1c97170f4d531b908ca85cf/environment.yaml && \
-    mamba env create --prefix /conda-envs/9b847fc31baae8e01dfb7ce438a56b71 --file /conda-envs/9b847fc31baae8e01dfb7ce438a56b71/environment.yaml && \
+    mamba env create --prefix /conda-envs/413cc1031d64cf89e8b32aaa9a29fdbf --file /conda-envs/413cc1031d64cf89e8b32aaa9a29fdbf/environment.yaml && \
     mamba env create --prefix /conda-envs/5681728a49bd83ceed09ba194330c858 --file /conda-envs/5681728a49bd83ceed09ba194330c858/environment.yaml && \
     mamba env create --prefix /conda-envs/08d4368302a4bdf7eda6b536495efe7d --file /conda-envs/08d4368302a4bdf7eda6b536495efe7d/environment.yaml && \
     mamba env create --prefix /conda-envs/c80307395eddf442c2fb6870f40d822b --file /conda-envs/c80307395eddf442c2fb6870f40d822b/environment.yaml && \
     mamba env create --prefix /conda-envs/f251d84cdc9f25d0e14b48e780261d66 --file /conda-envs/f251d84cdc9f25d0e14b48e780261d66/environment.yaml && \
     mamba env create --prefix /conda-envs/91d5ffe2d429bcebd6bab78e9ca3a1d4 --file /conda-envs/91d5ffe2d429bcebd6bab78e9ca3a1d4/environment.yaml && \
     mamba clean --all -y
+
 
 
 # Custom Bsgenome R install
