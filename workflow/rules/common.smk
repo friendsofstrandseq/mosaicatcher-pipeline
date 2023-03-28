@@ -861,6 +861,16 @@ def get_all_plots(wildcards):
         for sample in samples
         for i in range(dict_cells_nb_per_sample[sample] + 1)
     ]
+    tmp_l_divide.extend([
+        expand(
+            "{folder}/{sample}/plots/counts/CountComplete.{plottype}.pdf",
+            folder=config["data_location"],
+            sample=sample,
+            # plottype=["raw"],
+            plottype=plottype_counts,
+        )
+        for sample in samples
+    ])
 
     if config["split_qc_plot"] is True:
         l_outputs.extend([sub_e for e in tmp_l_divide for sub_e in e])
@@ -981,4 +991,6 @@ def get_all_plots(wildcards):
             ),
         )
 
+    from pprint import pprint
+    pprint(l_outputs)
     return l_outputs
