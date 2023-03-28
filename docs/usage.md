@@ -7,7 +7,7 @@
 1. A. Create a dedicated conda environment
 
 ```bash
-conda create -n snakemake -c bioconda -c conda-forge -c defaults -c anaconda snakemake 
+conda create -n snakemake -c bioconda -c conda-forge -c defaults -c anaconda snakemake
 ```
 
 1. B. Activate the dedicated conda environment
