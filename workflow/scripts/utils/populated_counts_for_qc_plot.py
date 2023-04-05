@@ -1,6 +1,7 @@
 import pandas as pd
 
 # Read 200kb bins file
+
 binbed = pd.read_csv(
     snakemake.input.bin_bed,
     # "../../../../mosaicatcher-update/workflow/data/bin_200kb_all.bed",
@@ -18,13 +19,20 @@ binbed["chrom"] = pd.Categorical(
 
 # Sort & filter out chrY #TMP / can be changed
 binbed = binbed.sort_values(by=["chrom", "start", "end"]).reset_index(drop=True)
-binbed["w"], binbed["c"], binbed["class"] = 0, 0, "None"
+binbed["w"], binbed["c"], binbed["class"] = 0, 0, None
 
 
 # Read SV file
 # df = pd.read_csv("../../../../mosaicatcher-update/.tests/data_CHR17/RPE-BM510/counts/RPE-BM510.txt.raw.gz", sep="\t")
-df = pd.read_csv(snakemake.input.counts, sep="\t")
+
+# sep = "," if "/multistep_normalisation/" in snakemake.input.counts else "\t"
+sep = "\t"
+df = pd.read_csv(snakemake.input.counts, sep=sep, compression="gzip")
 df["ID"] = df["chrom"] + "_" + df["start"].astype(str) + "_" + df["end"].astype(str)
+df["w"] = df["w"].round(0).astype(int)
+df["c"] = df["c"].round(0).astype(int)
+if sep == ",":
+    df["tot_count"] = df["tot_count"].round(0).astype(int)
 
 ## Populate counts df for each cell in order to have all bins represented
 l = list()

@@ -1,4 +1,4 @@
-if (config["multistep_normalisation"] is True) and (config["ashleys_pipeline"] is False):
+if (config["multistep_normalisation"] is True) and (config["ashleys_pipeline"] is False) and config["window"] == 200000:
 
 
     rule library_size_normalisation:
@@ -35,7 +35,8 @@ if (config["multistep_normalisation"] is True) and (config["ashleys_pipeline"] i
         log:
             "{folder}/{sample}/log/multistep_normalisation/{sample}.log",
         params:
-            gc_matrix=ancient("workflow/data/GC/GC_matrix_200000.txt"),
+            gc_matrix=ancient("workflow/data/GC/{assembly}.GC_matrix.txt.gz".format(assembly=config["reference"])),
+            # gc_matrix=ancient("workflow/data/GC/GC_matrix_200000.txt"),
             gc_min_reads=config["multistep_normalisation_options"]["min_reads_bin"],
             gc_n_subsample=config["multistep_normalisation_options"]["n_subsample"],
         resources:
