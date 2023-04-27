@@ -189,8 +189,8 @@ len_normalization[len_normalization == 0] <- 1
 
 # option A: if we multiply by len_normalization, we remove previous
 # normalization, and return back to non-length-corrected counts.
-probs_raw$W <- probs_raw$W * len_normalization
-probs_raw$C <- probs_raw$C * len_normalization
+# probs_raw$W <- probs_raw$W * len_normalization
+# probs_raw$C <- probs_raw$C * len_normalization
 
 # option B: we can downscale expectations
 probs_raw$expected <- probs_raw$expected * len_normalization
