@@ -131,7 +131,6 @@ if (is.null(labels_link)) {
 # print(p_link)
 sname <- tail(strsplit(sub("/arbigent_mosaiclassifier/sv_probabilities/probabilities.Rdata", "", p_link), "/")[[1]], 1)
 # sname <- str_match(p_link, "([HG|NA|GM]+[0-9]{3,5})")[, 2]
-print(sname)
 # stop()
 
 # load p to p_grouped
@@ -161,7 +160,6 @@ if (!is.null(CN)) {
 probs_raw <- p2[!is.na(p2$sample), ]
 # probs_raw = probs_raw[probs_raw$chrom == 'chr22',]
 
-print("ASDSADSADSASDASA")
 print(unique(probs_raw$chrom))
 #############################################################
 #############################################################
@@ -327,9 +325,7 @@ for (group in unique(probs_raw$group)) {
 
   if (make_bee_bulk) {
     ## [I]c) make beeswarm plots ##
-    print("sup")
     save_beeswarms(pg_bulk %>% group_by(start), call_llhs_bulk, outdir, testrun = F, compositemode = T)
-    print("over the hill")
   }
 
   ### [II] SINGLE CELL ###
