@@ -2,7 +2,6 @@
 # This is the main script for step three of the regenotyper Snakemake.
 # Take an all.txt and turn it into a series of vcfs.
 # Filtering and testing will, i think, be done by another file.
-print('Line 5')
 
 library(ggplot2)
 library(reshape)
@@ -10,7 +9,6 @@ library(dplyr)
 library(tibble)
 library(optparse)
 
-print('Line 12')
 
 source("workflow/scripts/arbigent/clean_genotype_defs.R")
 source("workflow/scripts/arbigent/vcf_defs.R")
