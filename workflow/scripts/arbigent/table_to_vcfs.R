@@ -9,7 +9,6 @@ library(dplyr)
 library(tibble)
 library(optparse)
 
-
 source("workflow/scripts/arbigent/clean_genotype_defs.R")
 source("workflow/scripts/arbigent/vcf_defs.R")
 
@@ -185,6 +184,7 @@ load_and_prep_CN <- function(msc_file_f) {
 ################
 ### RUN CODE ###
 ################
+
 # Load input file
 tab <- load_tab(alltxt_file)
 # Load CN file. It will be used to include 'valid bins' information, which is good to have in the output files.
@@ -203,11 +203,12 @@ if (use_cntrack) {
   tab$pred_hard <- paste(tab$pred_hard, tab$illumina_CN, sep = ":")
   tab$pred_nobias <- paste(tab$pred_nobias, tab$illumina_CN, sep = ":")
 }
-
 # tabp = Complex calls allowed, lowconf label added
 tabp <- add_gts_revisited_lowconf(tab, bias_factor, bias_add_factor, cutoff)
+print(tabp)
 # tabp2 =  Complex calls allowed, lowconf label nope, LLHs printed
 tabp2 <- add_long_gts_revisited(tab, bias_factor, bias_add_factor, cutoff)
+print(tabp2)
 
 # tabp3 = Complex calls allowed, lowconf label nope
 tabp3 <- add_gts_revisited(tab, bias_factor, bias_add_factor, cutoff)
@@ -217,6 +218,8 @@ tabp3 <- add_gts_revisited(tab, bias_factor, bias_add_factor, cutoff)
 tabp <- full_join(tabp, CNmerge, by = c("chrom", "start", "end"))
 tabp2 <- full_join(tabp2, CNmerge, by = c("chrom", "start", "end"))
 tabp3 <- full_join(tabp3, CNmerge, by = c("chrom", "start", "end"))
+print(tabp3)
+print(CNmerge)
 
 ####################################################################################
 
@@ -227,13 +230,17 @@ callmatrix <- cast(unique(tabp3), chrom + start + end + ID + len + valid_bins ~ 
 
 # Name shortening, a bit of reformatting
 cms <- callmatrix
+print(colnames(cms))
 samplenames <- colnames(cms)[7:length(colnames(cms))]
+print(samplenames)
 
 cms_gts <- cms[, samplenames, drop = F]
+print(cms_gts)
 
 # print(head(lapply(cms_gts, as.character)))
 cms_gts[] <- lapply(cms_gts, as.character)
 # Complex calls to simple ones
+print(cms_gts)
 
 countm <- simplify_countmatrix(cms_gts)
 countm_idup <- simplify_countmatrix_idup(cms_gts)
@@ -271,6 +278,7 @@ vcf_limix <- vcfify_callmatrix_simple_for_limix(cms_simple)
 # And here we save the one that contains idups
 vcf_limix_plus_idups <- vcfify_callmatrix_simple_for_limix(cms_simple_idup)
 ################## Make at least one plot TODO
+print(head(cms_simple_idup))
 # ggplot(tabp3) + geom_point(aes(x=log1p(confidence_hard_over_second), y=log1p(confidence_nobias_over_hard), col=GT))
 
 
