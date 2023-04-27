@@ -2,12 +2,15 @@
 # This is the main script for step three of the regenotyper Snakemake.
 # Take an all.txt and turn it into a series of vcfs.
 # Filtering and testing will, i think, be done by another file.
+print('Line 5')
 
 library(ggplot2)
 library(reshape)
 library(dplyr)
 library(tibble)
 library(optparse)
+
+print('Line 12')
 
 source("workflow/scripts/arbigent/clean_genotype_defs.R")
 source("workflow/scripts/arbigent/vcf_defs.R")
@@ -184,7 +187,7 @@ load_and_prep_CN <- function(msc_file_f) {
 ################
 ### RUN CODE ###
 ################
-
+print('HERE IS FIRST')
 # Load input file
 tab <- load_tab(alltxt_file)
 # Load CN file. It will be used to include 'valid bins' information, which is good to have in the output files.
@@ -203,6 +206,9 @@ if (use_cntrack) {
   tab$pred_hard <- paste(tab$pred_hard, tab$illumina_CN, sep = ":")
   tab$pred_nobias <- paste(tab$pred_nobias, tab$illumina_CN, sep = ":")
 }
+
+print('####################################')
+print(tab)
 # tabp = Complex calls allowed, lowconf label added
 tabp <- add_gts_revisited_lowconf(tab, bias_factor, bias_add_factor, cutoff)
 print(tabp)
