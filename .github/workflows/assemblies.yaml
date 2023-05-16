@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - dev
+      - mm10
       - arbigent_dev
       - scNOVA
       - multistep_normalisation
