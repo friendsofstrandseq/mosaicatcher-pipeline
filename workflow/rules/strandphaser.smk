@@ -70,9 +70,9 @@ rule run_strandphaser_per_chrom:
             config["data_location"], wc.sample, wc.chrom
         ),
     shell:
-        # Rscript workflow/scripts/strandphaser_scripts/StrandPhaseR_pipeline.R \
+        # Rscript afac/StrandPhaseR_pipeline.R \
         """
-        Rscript afac/StrandPhaseR_pipeline.R \
+        Rscript workflow/scripts/strandphaser_scripts/StrandPhaseR_pipeline.R \
                 {params.input_bam} \
                 {params.output} \
                 {input.configfile} \
