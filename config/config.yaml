@@ -103,6 +103,15 @@ references_data:
     snv_sites_to_genotype: ""
     reference_file_location: https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/CHM13/assemblies/analysis_set/chm13v2.0.fa.gz
     # snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/ALL.chr1-22plusXY_T2T_sites.20170504.renamedCHR.vcf.gz"
+  "mm10":
+    reference_fasta: "workflow/data/ref_genomes/mm10.fa"
+    R_reference: "BSgenome.Mmusculus.UCSC.mm10"
+    # TO CHANGE
+    # R_reference_tarball: "/g/korbel2/weber/MosaiCatcher_files/EXTERNAL_DATA/R_reference//BSgenome.T2T.CHM13.V2_1.0.0.tar.gz"
+    segdups: "workflow/data/segdups/segDups_mm10_UCSCtrack.bed.gz"
+    snv_sites_to_genotype: ""
+    # reference_file_location: https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/CHM13/assemblies/analysis_set/chm13v2.0.fa.gz
+    # snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/ALL.chr1-22plusXY_T2T_sites.20170504.renamedCHR.vcf.gz"
 
 ## Methods dictionnary
 methods:

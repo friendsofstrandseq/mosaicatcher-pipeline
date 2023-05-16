@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # This script takes two arguments:
 #   1. An indexed fasta genome file ($1)
 #   2. The reference genome used ($2)
