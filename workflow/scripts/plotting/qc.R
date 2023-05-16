@@ -207,8 +207,8 @@ for (s in unique(d$sample))
 
         # e_lite <- filter(e, chrom %in% e_sum)
         # print(e_lite, n = 40)
-
-        e_lite <- filter(e, bin_id == "")
+        e_lite <- e
+        # e_lite <- filter(e, bin_id == "")
         print(e_lite)
 
 

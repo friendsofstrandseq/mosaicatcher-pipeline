@@ -63,13 +63,21 @@ df = pd.read_csv(snakemake.input.sv_calls, sep="\t")
 # df = pd.read_csv("../stringent_filterTRUE.tsv", sep="\t")
 df["ID"] = df["chrom"] + "_" + df["start"].astype(str) + "_" + df["end"].astype(str)
 
+
+if snakemake.config["reference"] != "mm10":
+    names = ["chrom", "start", "end", "bin_id"]
+else:
+    names = ["chrom", "start", "end"]
+
 # Read 200kb bins file
 binbed = pd.read_csv(
     # "../bin_200kb_all.bed",
     snakemake.input.binbed,
     sep="\t",
-    names=["chrom", "start", "end", "bin_id"],
+    names=names,
 )
+
+
 binbed["ID"] = binbed["chrom"] + "_" + binbed["start"].astype(str) + "_" + binbed["end"].astype(str)
 
 # Turn chrom into categorical
