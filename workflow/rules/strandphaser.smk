@@ -62,6 +62,7 @@ rule run_strandphaser_per_chrom:
         "../envs/rtools.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
+        time="10:00:00",
     params:
         # input_bam=lambda wc: "{}/{}/bam".format(config["data_location"], wc.sample),
         input_bam=lambda wc: "{}/{}/selected".format(config["data_location"], wc.sample),
@@ -69,8 +70,9 @@ rule run_strandphaser_per_chrom:
             config["data_location"], wc.sample, wc.chrom
         ),
     shell:
+        # Rscript workflow/scripts/strandphaser_scripts/StrandPhaseR_pipeline.R \
         """
-        Rscript workflow/scripts/strandphaser_scripts/StrandPhaseR_pipeline.R \
+        Rscript afac/StrandPhaseR_pipeline.R \
                 {params.input_bam} \
                 {params.output} \
                 {input.configfile} \

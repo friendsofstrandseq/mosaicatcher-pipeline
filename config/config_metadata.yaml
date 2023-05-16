@@ -18,8 +18,8 @@ hand_selection:
   type: bool
   required: False
   default: False
-FastQC_analysis:
-  desc: "Enable / Disable FastQC analysis"
+MultiQC:
+  desc: "Enable / Disable MultiQC aggregation"
   type: bool
   required: False
   default: False
