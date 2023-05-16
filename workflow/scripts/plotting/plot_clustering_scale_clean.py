@@ -80,10 +80,16 @@ binbed = pd.read_csv(
 
 binbed["ID"] = binbed["chrom"] + "_" + binbed["start"].astype(str) + "_" + binbed["end"].astype(str)
 
+cats = (
+    ["chr{}".format(e) for e in range(1, 23)] + ["chrX", "chrY"]
+    if snakemake.config["reference"] != "mm10"
+    else ["chr{}".format(e) for e in range(1, 20)] + ["chrX", "chrY"]
+)
+
 # Turn chrom into categorical
 binbed["chrom"] = pd.Categorical(
     binbed["chrom"],
-    categories=["chr{}".format(e) for e in range(1, 23)] + ["chrX", "chrY"],
+    categories=cats,
     ordered=True,
 )
 
@@ -165,12 +171,12 @@ pivot_concat_df = pd.concat([pivot_concat_df.reset_index(), tmp], axis=1).drop(p
 
 pivot_concat_df["chrom"] = pd.Categorical(
     pivot_concat_df["chrom"],
-    categories=["chr{}".format(e) for e in range(1, 23)] + ["chrX", "chrY"],
+    categories=cats,
     ordered=True,
 )
 pivot_concat_df = pivot_concat_df.sort_values(by=["chrom", "start", "end"]).reset_index(drop=True)
 
-chroms = ["chr{}".format(e) for e in range(1, 23)] + ["chrX", "chrY"]
+chroms = cats
 # chroms = chroms[:2]
 # chroms = ["chr10", "chr13", "chr22"]
 
@@ -245,13 +251,14 @@ pivot_concat_df = pd.concat([pivot_concat_df.reset_index(), tmp], axis=1).drop(p
 
 pivot_concat_df["chrom"] = pd.Categorical(
     pivot_concat_df["chrom"],
-    categories=["chr{}".format(e) for e in range(1, 23)] + ["chrX", "chrY"],
+    categories=cats,
     ordered=True,
 )
 pivot_concat_df = pivot_concat_df.sort_values(by=["chrom", "start", "end"]).reset_index(drop=True)
 
 
-chroms = ["chr{}".format(e) for e in range(1, 23)] + ["chrX", "chrY"]
+# chroms = ["chr{}".format(e) for e in range(1, 23)] + ["chrX", "chrY"]
+chroms = cats
 # chroms = ["chr10", "chr13"]
 # chroms = chroms[:2]
 

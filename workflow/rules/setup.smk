@@ -26,7 +26,7 @@ rule install_BSgenome_package:
     log:
         "workflow/data/ref_genomes/log/install_BSgenome_package_{}.log".format(config['reference']),
     params:
-        selected_package = lambda wc, input: "BSgenome.Hsapiens.UCSC.{}".format(config["reference"]) if config["reference"] in ["hg38", "hg19"] else input.package # workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz
+        selected_package = lambda wc, input: "BSgenome.Hsapiens.UCSC.{}".format(config["reference"]) if config["reference"] in ["hg38", "hg19", "mm10"] else input.package # workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz
     conda:
         "../envs/rtools.yaml"
     resources: 
