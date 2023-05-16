@@ -9,20 +9,36 @@ log = open(snakemake.log[0], "w")
 sys.stderr = sys.stdout = log
 
 # Categorical mapping
+# d = {
+#     "none": 0,
+#     "del_h1": 1,
+#     "del_h2": 2,
+#     "del_hom": 3,
+#     "dup_h1": 4,
+#     "dup_h2": 5,
+#     "dup_hom": 6,
+#     "inv_h1": 7,
+#     "inv_h2": 8,
+#     "inv_hom": 9,
+#     "idup_h1": 10,
+#     "idup_h2": 11,
+#     "complex": 12,
+# }
+
 d = {
-    "none": 0,
-    "del_h1": 1,
-    "del_h2": 2,
-    "del_hom": 3,
-    "dup_h1": 4,
-    "dup_h2": 5,
-    "dup_hom": 6,
-    "inv_h1": 7,
-    "inv_h2": 8,
-    "inv_hom": 9,
-    "idup_h1": 10,
-    "idup_h2": 11,
-    "complex": 12,
+    "none": 1,
+    "del_h1": 2,
+    "del_h2": 3,
+    "del_hom": 4,
+    "dup_h1": 5,
+    "dup_h2": 6,
+    "dup_hom": 7,
+    "inv_h1": 8,
+    "inv_h2": 9,
+    "inv_hom": 10,
+    "idup_h1": 11,
+    "idup_h2": 12,
+    "complex": 13,
 }
 
 # Colors

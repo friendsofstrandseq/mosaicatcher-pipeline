@@ -31,6 +31,31 @@ onstart:
 
 
 
+exclude = [
+    "._.DS_Store",
+    ".DS_Store",
+    "all",
+    "ashleys_counts",
+    "bam",
+    "cell_selection",
+    "config",
+    "counts",
+    "fastq",
+    "fastqc",
+    "haplotag",
+    "log",
+    "merged_bam",
+    "mosaiclassifier",
+    "normalizations",
+    "ploidy",
+    "plots",
+    "predictions",
+    "segmentation",
+    "snv_calls",
+    "stats",
+    "strandphaser",
+]
+
 if config["chromosomes_to_exclude"]:
     chroms_init = config["chromosomes"]
     chroms = [e for e in chroms_init if e not in config["chromosomes_to_exclude"]]
@@ -46,10 +71,22 @@ if config["chromosomes_to_exclude"]:
 # #     )
 
 if config["ashleys_pipeline"] is True:
+    for sample in [e for e in os.listdir(config["data_location"]) if e not in exclude]:
+        if len(sample.split("_")) == 4:
+            assert len(sample.split("_")) != 4, "Your sample name is using 4 times the '_' character, which is currently not supported by ashleys-qc"
+
     assert (
         config["ashleys_pipeline"] != config["input_bam_legacy"]
     ), "ashleys_pipeline and input_bam_legacy parameters cannot both be set to True"
  
+
+if config["hgsvc_based_normalized_counts"] is True and config["multistep_normalisation_for_SV_calling"] is True:
+    assert (
+        config["hgsvc_based_normalized_counts"] != config["multistep_normalisation_for_SV_calling"]
+    ), "hgsvc_based_normalized_counts and multistep_normalisation_for_SV_calling parameters cannot both be set to True, parameters are mutually exclusive"
+
+
+
 
 # Configure if handle_input needs to be based on bam or fastq
 bam = True if config["ashleys_pipeline"] is False else False
@@ -210,30 +247,7 @@ class HandleInput:
         folder = "bam" if bam is True else "fastq"
         complete_df_list = list()
         # List of folders/files to not consider (restrict to samples only)
-        exclude = [
-            "._.DS_Store",
-            ".DS_Store",
-            "all",
-            "ashleys_counts",
-            "bam",
-            "cell_selection",
-            "config",
-            "counts",
-            "fastq",
-            "fastqc",
-            "haplotag",
-            "log",
-            "merged_bam",
-            "mosaiclassifier",
-            "normalizations",
-            "ploidy",
-            "plots",
-            "predictions",
-            "segmentation",
-            "snv_calls",
-            "stats",
-            "strandphaser",
-        ]
+
 
         for sample in [e for e in os.listdir(thisdir) if e not in exclude]:
             # Create a list of  files to process for each sample
@@ -419,7 +433,7 @@ plottype_counts = (
 )
 
 if config["scNOVA"] is True:
-    clones = collections.defaultdict(dict)
+    clones = collections.defaultdict(list)
     for sample in samples:
         subclonality_file = pd.read_csv(
             "{}/{}/scNOVA_input_user/input_subclonality.txt".format(
@@ -428,6 +442,7 @@ if config["scNOVA"] is True:
             sep="\t",
         )
         clones[sample] = list(sorted(subclonality_file.Subclonality.unique().tolist()))
+    print(clones)
 
 
 def get_mem_mb(wildcards, attempt):
