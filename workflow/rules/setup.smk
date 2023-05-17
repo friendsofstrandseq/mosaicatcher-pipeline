@@ -1,4 +1,3 @@
-
 # rule install_T2T_BSgenome_tarball:
 #     input:
 #         tarball="workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz",
@@ -15,24 +14,39 @@
 #     script:
 #         "../scripts/utils/install_R_package.R"
 
+
 rule fake_package:
-    output: touch("workflow/data/ref_genomes/log/fake_package.ok")
+    output:
+        touch("workflow/data/ref_genomes/log/fake_package.ok"),
+
 
 rule install_BSgenome_package:
     input:
-        package = bsgenome_install,
+        package=bsgenome_install,
     output:
-        touch("workflow/data/ref_genomes/config/BSgenome_{}.ok".format(config['reference'])),
+        touch(
+            "workflow/data/ref_genomes/config/BSgenome_{}.ok".format(
+                config["reference"]
+            )
+        ),
     log:
-        "workflow/data/ref_genomes/log/install_BSgenome_package_{}.log".format(config['reference']),
+        "workflow/data/ref_genomes/log/install_BSgenome_package_{}.log".format(
+            config["reference"]
+        ),
     params:
-        selected_package = lambda wc, input: "BSgenome.Hsapiens.UCSC.{}".format(config["reference"]) if config["reference"] in ["hg38", "hg19", "mm10"] else input.package # workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz
+        selected_package=lambda wc, input: "BSgenome.Hsapiens.UCSC.{}".format(
+            config["reference"]
+        )
+        if config["reference"] in ["hg38", "hg19", "mm10"]
+        else input.package,
+        # workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz
     conda:
         "../envs/rtools.yaml"
-    resources: 
+    resources:
         mem_mb=get_mem_mb_heavy,
     script:
         "../scripts/utils/install_R_package.R"
+
 
 rule config_run_summary:
     input:

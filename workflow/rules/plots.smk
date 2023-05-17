@@ -47,6 +47,7 @@ rule divide_pdf:
     script:
         "../scripts/plotting/dividing_pdf.py"
 
+
 # rule divide_pdf:
 #     input:
 #         "{folder}/{sample}/plots/counts/CountComplete.{plottype}.pdf",
@@ -166,12 +167,6 @@ rule plot_clustering_position_dev:
     script:
         "../scripts/plotting/plot_clustering_dev_clean.R"
 
-
-def select_binbed(wildcards):
-    if config["reference"] != "mm10":
-        return "workflow/data/bin_200kb_all.bed"
-    else:
-        return "workflow/data/mm10.bin_200kb_all.bed"
 
 rule plot_clustering_chromosome_dev:
     input:

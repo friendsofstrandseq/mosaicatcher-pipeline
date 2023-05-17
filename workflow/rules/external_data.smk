@@ -80,6 +80,7 @@ rule download_T2T_reference:
         gunzip workflow/data/ref_genomes/T2T.fa.gz
         """
 
+
 rule download_mm10_reference:
     input:
         HTTP.remote(
@@ -101,9 +102,6 @@ rule download_mm10_reference:
         """
 
 
-
-
-
 rule download_T2T_tarball:
     input:
         HTTP.remote(
@@ -122,7 +120,6 @@ rule download_T2T_tarball:
         mkdir -p "$directory"
         mv {input} workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz
         """
-
 
 
 rule download_arbigent_mappability_track:
