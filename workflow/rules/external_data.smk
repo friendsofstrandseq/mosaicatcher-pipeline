@@ -92,7 +92,7 @@ rule download_mm10_reference:
     log:
         "workflow/data/ref_genomes/log/mm10.ok",
     conda:
-        "../envs/ashleys_base.yaml"
+        "../envs/mc_base.yaml"
     shell:
         """
         directory="workflow/data/ref_genomes/"
