@@ -270,9 +270,10 @@ def remove_unselected_fct(wildcards):
         return "{folder}/{sample}/config/remove_unselected_bam.ok"
 
 
-
 def select_counts_for_SV_calling(wildcards):
-    if (config["ashleys_pipeline"] == True) and (config["multistep_normalisation_for_SV_calling"] == True):
+    if (config["ashleys_pipeline"] == True) and (
+        config["multistep_normalisation_for_SV_calling"] == True
+    ):
         return "{folder}/{sample}/counts/multistep_normalisation/{sample}.txt.scaled.GC.VST.reformat.gz"
     else:
         return "{folder}/{sample}/counts/{sample}.txt.raw.gz"
@@ -283,3 +284,10 @@ def bsgenome_install(wildcards):
         return "workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz"
     else:
         return "workflow/data/ref_genomes/log/fake_package.ok"
+
+
+def select_binbed(wildcards):
+    if config["reference"] != "mm10":
+        return "workflow/data/bin_200kb_all.bed"
+    else:
+        return "workflow/data/mm10.bin_200kb_all.bed"

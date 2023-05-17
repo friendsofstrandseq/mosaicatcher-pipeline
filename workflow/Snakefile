@@ -28,7 +28,7 @@ if config["ashleys_pipeline"] is True:
                 # tag=str(config["ashleys_pipeline_version"])
                 # branch="main",
                 branch="dev",
-            ) 
+            )
         config:
             config
 
@@ -39,6 +39,7 @@ if config["ashleys_pipeline"] is True:
         symlink_selected_bam,
 
 else:
+
     localrules:
         symlink_selected_bam,
 
@@ -115,7 +116,6 @@ if config["list_commands"] is False:
         rule all:
             input:
                 get_final_output(),
-
 
     if config["email"]:
 
