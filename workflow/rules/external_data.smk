@@ -80,6 +80,29 @@ rule download_T2T_reference:
         gunzip workflow/data/ref_genomes/T2T.fa.gz
         """
 
+rule download_mm10_reference:
+    input:
+        HTTP.remote(
+            "https://hgdownload.soe.ucsc.edu/goldenPath/mm10/bigZips/mm10.fa.gz",
+            keep_local=True,
+        ),
+    output:
+        "workflow/data/ref_genomes/mm10.fa",
+    log:
+        "workflow/data/ref_genomes/log/mm10.ok",
+    conda:
+        "../envs/ashleys_base.yaml"
+    shell:
+        """
+        directory="workflow/data/ref_genomes/"
+        mkdir -p "$directory"
+        mv {input} workflow/data/ref_genomes/mm10.fa.gz
+        gunzip workflow/data/ref_genomes/mm10.fa.gz
+        """
+
+
+
+
 
 rule download_T2T_tarball:
     input:
