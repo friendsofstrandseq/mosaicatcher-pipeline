@@ -164,7 +164,6 @@ rule remove_unselected_bam_empty:
         "{folder}/{sample}/log/remove_unselected_bam_empty.log",
 
 
-
 checkpoint filter_bad_cells_from_mosaic_count:
     input:
         info_raw="{folder}/{sample}/counts/{sample}.info_raw",
@@ -215,7 +214,9 @@ else:
 
     rule merge_blacklist_bins:
         input:
-            norm=ancient("workflow/data/arbigent/normalization/{reference}/HGSVC.{window}.txt"),
+            norm=ancient(
+                "workflow/data/arbigent/normalization/{reference}/HGSVC.{window}.txt"
+            ),
         output:
             merged="{folder}/{sample}/normalizations/{reference}/HGSVC.{window}.merged.tsv",
         log:
@@ -247,11 +248,13 @@ rule normalize_counts:
     resources:
         mem_mb=get_mem_mb,
     params:
-        normalisation_type = config["hgsvc_based_normalized_counts"]
+        normalisation_type=config["hgsvc_based_normalized_counts"],
     shell:
         """
         Rscript workflow/scripts/normalization/normalize.R {input.counts} {input.norm} {output} {params.normalisation_type} 2>&1 > {log}
         """
+
+
 # else:
 
 

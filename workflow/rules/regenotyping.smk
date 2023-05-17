@@ -1,5 +1,6 @@
 # if config["multistep_normalisation"] == False or config["ashleys_pipeline"] == False:
 
+
 rule mergeBams:
     input:
         check=remove_unselected_fct,
@@ -18,6 +19,7 @@ rule mergeBams:
     shell:
         "samtools merge -@ {threads} {output} {input.bam} 2>&1 > {log}"
 
+
 rule mergeSortBams:
     input:
         "{folder}/{sample}/merged_bam/merged.raw.bam",
@@ -33,6 +35,7 @@ rule mergeSortBams:
         "../envs/mc_bioinfo_tools.yaml"
     shell:
         "samtools sort -@ {threads} -o {output} {input} 2>&1 > {log}"
+
 
 rule index_merged_bam:
     input:
