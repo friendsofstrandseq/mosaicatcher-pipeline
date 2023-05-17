@@ -66,10 +66,14 @@ def main():
         elif (cur_chrom == chrom) and (start - cur_end < args.merge_distance):
             cur_end = end
         else:
-            complex_segments = complex_segments.append({"chrom": cur_chrom, "start": cur_start, "end": cur_end}, ignore_index=True)
+            # complex_segments = complex_segments.append({"chrom": cur_chrom, "start": cur_start, "end": cur_end}, ignore_index=True)
+            complex_segments = pd.concat([complex_segments, pd.DataFrame([{"chrom": cur_chrom, "start": cur_start, "end": cur_end}])], ignore_index=True)
+
             cur_chrom, cur_start, cur_end = chrom, start, end
     if cur_chrom is not None:
-        complex_segments = complex_segments.append({"chrom": cur_chrom, "start": cur_start, "end": cur_end}, ignore_index=True)
+        # complex_segments = complex_segments.append({"chrom": cur_chrom, "start": cur_start, "end": cur_end}, ignore_index=True)
+        complex_segments = pd.concat([complex_segments, pd.DataFrame([{"chrom": cur_chrom, "start": cur_start, "end": cur_end}])], ignore_index=True)
+
 
     print(complex_segments, file=sys.stderr)
     total_complex = sum(complex_segments.end - complex_segments.start)
