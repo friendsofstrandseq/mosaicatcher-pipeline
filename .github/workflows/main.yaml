@@ -1,13 +1,16 @@
 name: MosaiCatcher basic checks
 
 on:
+  schedule:
+    # Run every Sunday at 00:00 UTC on the master branch
+    - cron:  '0 0 * * 0'
+      branches:
+        - master
   push:
     branches:
-      - dev
-      - mm10
-      - arbigent_dev
-      - scNOVA
-      - multistep_normalisation
+      - '*'
+      - '!master'
+
 
 jobs:
   # WORK

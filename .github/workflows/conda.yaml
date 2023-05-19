@@ -1,13 +1,16 @@
 name: MosaiCatcher conda checks
 
 on:
+  schedule:
+    # Run every Sunday at 00:00 UTC on the master branch
+    - cron:  '0 0 * * 0'
+      branches:
+        - master
   push:
     branches:
-      - dev
-      - mm10
-      - arbigent_dev
-      - scNOVA
-      - multistep_normalisation
+      - '*'
+      - '!master'
+
 
 jobs:
   # WORK
@@ -225,26 +228,7 @@ jobs:
           directory: .
           snakefile: ./workflow/Snakefile
           args: "--cores 1 --use-conda --latency-wait 60 --config ashleys_pipeline=True use_light_data=True chromosomes=[chr17] hgsvc_based_normalized_counts=True reference=T2T --conda-frontend mamba --report report.zip"
-  Testing_ashleys_norm_enabled_mm10:
-    runs-on: ubuntu-latest
-    # needs:
-    #   - Linting
-    #   - Formatting
-    steps:
-      - uses: actions/checkout@v3.3.0
-      - name: Testing data
-        uses: snakemake/snakemake-github-action@v1.24.0
-        with:
-          directory: .
-          snakefile: ./workflow/Snakefile
-          stagein: "conda config --set channel_priority flexible"
-          args: "--cores 1 --use-conda --latency-wait 60 --config ashleys_pipeline=True use_light_data=True chromosomes=[chr17] hgsvc_based_normalized_counts=True reference=mm10 --conda-frontend mamba -p --verbose --debug"
-      - name: Testing report
-        uses: snakemake/snakemake-github-action@v1.24.0
-        with:
-          directory: .
-          snakefile: ./workflow/Snakefile
-          args: "--cores 1 --use-conda --latency-wait 60 --config ashleys_pipeline=True use_light_data=True chromosomes=[chr17] hgsvc_based_normalized_counts=True reference=mm10 --conda-frontend mamba --report report.zip"
+  # Testing_ashleys_norm_enabled_mmconda --latency-wait 60 --config ashleys_pipeline=True use_light_data=True chromosomes=[chr17] hgsvc_based_normalized_counts=True reference=mm10 --conda-frontend mamba --report report.zip"
   Linting_arbigent:
     runs-on: ubuntu-latest
     steps:
