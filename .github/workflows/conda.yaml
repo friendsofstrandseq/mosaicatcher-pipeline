@@ -4,8 +4,8 @@ on:
   schedule:
     # Run every Sunday at 00:00 UTC on the master branch
     - cron:  '0 0 * * 0'
-      branches:
-        - master
+      # branches:
+      #   - master
   push:
     branches:
       - '*'
