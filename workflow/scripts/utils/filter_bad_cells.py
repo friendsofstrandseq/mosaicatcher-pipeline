@@ -19,8 +19,8 @@ print(df)
 print(labels)
 
 
-if snakemake.config["use_light_data"] is True and snakemake.wildcards.sample == "RPE-BM510":
-    df = pd.concat([df, pd.DataFrame([{"sample": "RPE-BM510", "cell": "BM510x04_PE20320.sort.mdup.bam", "pass1": 0}])])
+# if snakemake.config["use_light_data"] is True and snakemake.wildcards.sample == "RPE-BM510":
+#     df = pd.concat([df, pd.DataFrame([{"sample": "RPE-BM510", "cell": "BM510x04_PE20320.sort.mdup.bam", "pass1": 0}])])
 
 # snakemake_log.write(labels.to_str())
 
