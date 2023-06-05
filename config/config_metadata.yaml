@@ -18,13 +18,18 @@ hand_selection:
   type: bool
   required: False
   default: False
-FastQC_analysis:
-  desc: "Enable / Disable FastQC analysis"
+MultiQC:
+  desc: "Enable / Disable MultiQC aggregation"
   type: bool
   required: False
   default: False
 multistep_normalisation_analysis:
   desc: "Enable / Disable multistep normalisation"
+  type: bool
+  required: False
+  default: False
+multistep_normalisation_for_SV_calling:
+  desc: "Enable / Disable multistep normalisation to be used in SV calling"
   type: bool
   required: False
   default: False

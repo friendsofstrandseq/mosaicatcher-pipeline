@@ -1,5 +1,5 @@
-version: 2.0.1
-ashleys_pipeline_version: 2.0.0
+version: 2.1.1
+ashleys_pipeline_version: 2.1.1
 #######################################
 #   MOSAICATCHER CONFIGURATION FILE   #
 #######################################
@@ -13,12 +13,14 @@ data_location: ".tests/data_CHR17"
 reference: "hg38"
 # Enable / Disable multistep normalisation analysis
 multistep_normalisation: False
+# Enable / Disable multistep normalisation output for SV calling
+multistep_normalisation_for_SV_calling: False
 # ArbiGent (Arbitrary-segments genotyping) mode of execution
 arbigent: False
 # Arbigent default BED file, can be changed and adapted based on user question
 arbigent_bed_file: "workflow/data/arbigent/manual_segmentation.bed"
-# Enable / Disable FastQC analysis
-FastQC_analysis: False
+# Enable / Disable MultiQC aggregation
+MultiQC: False
 # Plate orientation for GC analysis
 plate_orientation: landscape
 # Normalize or not mosaic counts
@@ -64,7 +66,8 @@ chromosomes_to_exclude: []
 genecore: False
 samples_to_process: []
 genecore_date_folder: ""
-genecore_prefix: "/g/korbel/shared/genecore"
+# genecore_prefix: "/g/korbel/shared/genecore"
+genecore_prefix: "/g/korbel/STOCKS/Data/Assay/sequencing/2023"
 ## Mosaic bin window size
 window: 200000
 ##############################
@@ -100,6 +103,15 @@ references_data:
     snv_sites_to_genotype: ""
     reference_file_location: https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/CHM13/assemblies/analysis_set/chm13v2.0.fa.gz
     # snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/ALL.chr1-22plusXY_T2T_sites.20170504.renamedCHR.vcf.gz"
+  "mm10":
+    reference_fasta: "workflow/data/ref_genomes/mm10.fa"
+    R_reference: "BSgenome.Mmusculus.UCSC.mm10"
+    # TO CHANGE
+    # R_reference_tarball: "/g/korbel2/weber/MosaiCatcher_files/EXTERNAL_DATA/R_reference//BSgenome.T2T.CHM13.V2_1.0.0.tar.gz"
+    segdups: "workflow/data/segdups/segDups_mm10_UCSCtrack.bed.gz"
+    snv_sites_to_genotype: ""
+    reference_file_location: https://hgdownload.soe.ucsc.edu/goldenPath/mm10/bigZips/mm10.fa.gz
+    # snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/ALL.chr1-22plusXY_T2T_sites.20170504.renamedCHR.vcf.gz"
 
 ## Methods dictionnary
 methods:
@@ -122,8 +134,8 @@ methods:
     filter: "TRUE"
 
 plottype_counts:
-  - "classic"
-  - "GC_corrected"
+  - "raw"
+  - "normalised"
 
 plottype_consistency:
   - "byaf"

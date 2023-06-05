@@ -9,10 +9,21 @@ library(RColorBrewer)
 library(dplyr)
 library(tidyr)
 
+args <- commandArgs(trailingOnly = T)
 
+data_file <- args[1]
+output_file <- args[2]
+stringent_lenient <- args[3]
+filter <- args[4]
+sample_name <- args[5]
+
+print(data_file)
+print(output_file)
+print(stringent_lenient)
+print(filter)
 
 # pdf("TEST_R_dev.pdf", width = 20, height = 10)
-pdf("/scratch/tweber/SCO_COURSE/HJ_MIXTURE_RPE1_Mix/RPE1_Mix/plots/sv_clustering_dev/stringent-filterTRUE-position.pdf", width = 20, height = 10)
+pdf(output_file, width = 20, height = 10)
 
 # Chromosome order
 chrOrder <-
@@ -21,7 +32,7 @@ chrOrder <-
 # Load SV data
 
 # data_file = "../stringent_filterTRUE.tsv"
-data_file = "/scratch/tweber/SCO_COURSE/HJ_MIXTURE_RPE1_Mix/RPE1_Mix/mosaiclassifier/sv_calls/stringent_filterTRUE.tsv"
+# data_file <- "/scratch/tweber/SCO_COURSE/HJ_MIXTURE_RPE1_Mix/RPE1_Mix/mosaiclassifier/sv_calls/stringent_filterTRUE.tsv"
 # data1 <- read.table("../lenient_filterFALSE.tsv",
 data1 <- read.table(data_file,
     sep = "\t",
@@ -139,6 +150,10 @@ col_annotation <- sapply(strsplit(lite_data_pivot_clustering$pos, "_"), `[`, 1)
 
 col_test <- factor(sapply(strsplit(colnames(t_lite_data_pivot_clustering_num), "_"), `[`, 1), levels = unique(sapply(strsplit(colnames(t_lite_data_pivot_clustering_num), "_"), `[`, 1)))
 
+# print(paste0("Chromosome size unscaled LLR heatmap (Sample : ", sample, ", Methods used: ", stringent_lenient, ", Filter used: ", filter, ")"))
+
+# print(t_lite_data_pivot_clustering_num)
+
 cl_h <- Heatmap(as.matrix(t_lite_data_pivot_clustering_num),
     name = "LLR", col = RColorBrewer::brewer.pal(name = "Reds", n = 9),
     # column_title = "a discrete numeric matrix",
@@ -157,10 +172,11 @@ cl_h <- Heatmap(as.matrix(t_lite_data_pivot_clustering_num),
     column_title_rot = 90,
 )
 ht_opt$TITLE_PADDING <- unit(c(8.5, 8.5), "points")
-draw(cl_h,
+draw(
+    cl_h,
     # row_title = "Three heatmaps, row title", row_title_gp = gpar(col = "red"),
     # column_title = paste0("Chromosome size unscaled LLR heatmap (Sample : ", snakemake@wildcards[["sample"]], ", Methods used: ", snakemake@wildcards[["method"]], ", Filter used: ", snakemake@wildcards[["filter"]], ")"), column_title_gp = gpar(fontsize = 16)
-    column_title = paste0("Chromosome size unscaled LLR heatmap (Sample : RPE1-Mix, Methods used: Stringent, Filter used: TRUE)"), column_title_gp = gpar(fontsize = 16)
+    column_title = paste0("Chromosome size unscaled LLR heatmap (Sample : ", sample_name, ", Methods used: ", stringent_lenient, ", Filter used: ", filter, ")"), column_title_gp = gpar(fontsize = 16)
 )
 
 ## CATEGORICAL
@@ -244,10 +260,11 @@ cat_h <- Heatmap(as.matrix(t_lite_data_pivot),
     # use_raster = TRUE, raster_by_magick = TRUE, raster_quality=10
 )
 ht_opt$TITLE_PADDING <- unit(c(8.5, 8.5), "points")
-draw(cat_h,
+draw(
+    cat_h,
     # row_title = "Three heatmaps, row title", row_title_gp = gpar(col = "red"),
     # column_title = paste0("Chromosome size unscaled categorical heatmap (Sample : ", snakemake@wildcards[["sample"]], ", Methods used: ", snakemake@wildcards[["method"]], ", Filter used: ", snakemake@wildcards[["filter"]], ")"), column_title_gp = gpar(fontsize = 16)
-    column_title = paste0("Chromosome size unscaled categorical heatmap (Sample : RPE1-Mix, Methods used: Stringent, Filter used: TRUE)"), column_title_gp = gpar(fontsize = 16)
+    column_title = paste0("Chromosome size unscaled categorical heatmap (Sample : ", sample_name, ", Methods used: ", stringent_lenient, ", Filter used: ", filter, ")"), column_title_gp = gpar(fontsize = 16)
 )
 
 
@@ -257,4 +274,4 @@ cell <- rownames(t_lite_data_pivot)[row_order]
 index <- seq(1, length(cell))
 cluster_order_df <- data.frame(index, row_order, cell)
 # write.table(cluster_order_df, file = "test.tsv", sep = "\t", row.names = FALSE, quote = FALSE)
-write.table(cluster_order_df, file = "/scratch/tweber/SCO_COURSE/HJ_MIXTURE_RPE1_Mix/RPE1_Mix/plots/sv_clustering_dev/cluster_order_df.tsv", sep = "\t", row.names = FALSE, quote = FALSE)
+write.table(cluster_order_df, file = "TEST_cluster_order_df.tsv", sep = "\t", row.names = FALSE, quote = FALSE)

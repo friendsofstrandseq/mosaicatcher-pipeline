@@ -31,6 +31,37 @@ onstart:
 
 
 
+exclude = [
+    "._.DS_Store",
+    ".DS_Store",
+    "all",
+    "ashleys_counts",
+    "bam",
+    "cell_selection",
+    "config",
+    "counts",
+    "fastq",
+    "fastqc",
+    "haplotag",
+    "log",
+    "merged_bam",
+    "mosaiclassifier",
+    "normalizations",
+    "ploidy",
+    "plots",
+    "predictions",
+    "segmentation",
+    "snv_calls",
+    "stats",
+    "strandphaser",
+]
+
+if config["reference"] == "mm10":
+    config["chromosomes"] = [
+        "chr{e}".format(e=str(e)) for e in list(range(1, 20)) + ["X", "Y"]
+    ]
+
+
 if config["chromosomes_to_exclude"]:
     chroms_init = config["chromosomes"]
     chroms = [e for e in chroms_init if e not in config["chromosomes_to_exclude"]]
@@ -46,9 +77,25 @@ if config["chromosomes_to_exclude"]:
 # #     )
 
 if config["ashleys_pipeline"] is True:
+    for sample in [e for e in os.listdir(config["data_location"]) if e not in exclude]:
+        if len(sample.split("_")) == 4:
+            assert (
+                len(sample.split("_")) != 4
+            ), "Your sample name is using 4 times the '_' character, which is currently not supported by ashleys-qc"
+
     assert (
         config["ashleys_pipeline"] != config["input_bam_legacy"]
     ), "ashleys_pipeline and input_bam_legacy parameters cannot both be set to True"
+
+
+if (
+    config["hgsvc_based_normalized_counts"] is True
+    and config["multistep_normalisation_for_SV_calling"] is True
+):
+    assert (
+        config["hgsvc_based_normalized_counts"]
+        != config["multistep_normalisation_for_SV_calling"]
+    ), "hgsvc_based_normalized_counts and multistep_normalisation_for_SV_calling parameters cannot both be set to True, parameters are mutually exclusive"
 
 
 # Configure if handle_input needs to be based on bam or fastq
@@ -118,8 +165,16 @@ class HandleInput:
                 # print(l_elems[1].split("{regex_element}".format(regex_element=config["genecore_regex_element"]))
                 prefix = l_elems[0]
                 # technician_name = l_elems[0].split("_")[-2]
-                sample = l_elems[1].split("{regex_element}".format(regex_element=config["genecore_regex_element"]))[0]
-                index = l_elems[1].split("{regex_element}".format(regex_element=config["genecore_regex_element"]))[1]
+                sample = l_elems[1].split(
+                    "{regex_element}".format(
+                        regex_element=config["genecore_regex_element"]
+                    )
+                )[0]
+                index = l_elems[1].split(
+                    "{regex_element}".format(
+                        regex_element=config["genecore_regex_element"]
+                    )
+                )[1]
                 # pe_index = common_element[-1]
                 sub_l = list()
 
@@ -148,7 +203,7 @@ class HandleInput:
                 sample=sample,
                 regex_element=config["genecore_regex_element"],
                 index=d_master[sample]["index"],
-                cell_nb=[str(e).zfill(2) for e in list(range(1,97))],
+                cell_nb=[str(e).zfill(2) for e in list(range(1, 97))],
                 pair=["1", "2"],
             )
             for sample in d_master
@@ -210,30 +265,6 @@ class HandleInput:
         folder = "bam" if bam is True else "fastq"
         complete_df_list = list()
         # List of folders/files to not consider (restrict to samples only)
-        exclude = [
-            "._.DS_Store",
-            ".DS_Store",
-            "all",
-            "ashleys_counts",
-            "bam",
-            "cell_selection",
-            "config",
-            "counts",
-            "fastq",
-            "fastqc",
-            "haplotag",
-            "log",
-            "merged_bam",
-            "mosaiclassifier",
-            "normalizations",
-            "ploidy",
-            "plots",
-            "predictions",
-            "segmentation",
-            "snv_calls",
-            "stats",
-            "strandphaser",
-        ]
 
         for sample in [e for e in os.listdir(thisdir) if e not in exclude]:
             # Create a list of  files to process for each sample
@@ -333,35 +364,55 @@ df_config_files["Selected"] = True
 samples = list(sorted(list(df_config_files.Sample.unique().tolist())))
 
 
-
 # scNOVA dedicated - to handle only selected cells labeled by the user /& ashleys
 if config["scNOVA"] is True:
     l = list()
 
     for sample in samples:
         # Path of the labels file
-        labels_path = "{folder}/{sample}/cell_selection/labels.tsv".format(folder=config["data_location"], sample=sample)
+        labels_path = "{folder}/{sample}/cell_selection/labels.tsv".format(
+            folder=config["data_location"], sample=sample
+        )
         if os.path.exists(labels_path):
             # Read df
-            tmp_df_labels_selected = pd.read_csv(labels_path, sep="\t")[["cell", "prediction"]]
+            tmp_df_labels_selected = pd.read_csv(labels_path, sep="\t")[
+                ["cell", "prediction"]
+            ]
             # Reformat to match #df_config_files
-            tmp_df_labels_selected = tmp_df_labels_selected.rename({"cell" : "Cell", "prediction": "Selected"}, axis=1)
-            tmp_df_labels_selected["Cell"] = tmp_df_labels_selected["Cell"].str.replace(".sort.mdup.bam", "", regex=False)
-            tmp_df_labels_selected["Selected"] = tmp_df_labels_selected["Selected"].astype(bool)
+            tmp_df_labels_selected = tmp_df_labels_selected.rename(
+                {"cell": "Cell", "prediction": "Selected"}, axis=1
+            )
+            tmp_df_labels_selected["Cell"] = tmp_df_labels_selected["Cell"].str.replace(
+                ".sort.mdup.bam", "", regex=False
+            )
+            tmp_df_labels_selected["Selected"] = tmp_df_labels_selected[
+                "Selected"
+            ].astype(bool)
             # Merge dfs
-            tmp_merge_df = pd.merge(tmp_df_labels_selected,df_config_files.drop(["Selected"], axis=1), on=["Cell"])
+            tmp_merge_df = pd.merge(
+                tmp_df_labels_selected,
+                df_config_files.drop(["Selected"], axis=1),
+                on=["Cell"],
+            )
             # Handle use-case if df don't have the same shapes
-            if tmp_merge_df.shape[0] < df_config_files.loc[df_config_files["Sample"] == sample].shape[0]:
+            if (
+                tmp_merge_df.shape[0]
+                < df_config_files.loc[df_config_files["Sample"] == sample].shape[0]
+            ):
                 print("WARNING: shape error when merging labels TSV & config TSV")
-                tmp_merge_df = df_config_files.loc[df_config_files["Sample"] == sample, ["Cell"]]
+                tmp_merge_df = df_config_files.loc[
+                    df_config_files["Sample"] == sample, ["Cell"]
+                ]
                 tmp_merge_df["Selected"] = True
             l.append(tmp_merge_df)
 
     # Concat df to create a new one
     df_config_files_with_labels = pd.concat(l).reset_index(drop=True)
-    df_config_files_with_labels.to_csv("{data_location}/config/config_df_scNOVA.tsv".format(
-        data_location=config["data_location"]
-    ))
+    df_config_files_with_labels.to_csv(
+        "{data_location}/config/config_df_scNOVA.tsv".format(
+            data_location=config["data_location"]
+        )
+    )
 
     bam_per_sample_selected = (
         df_config_files_with_labels.loc[df_config_files_with_labels["Selected"] == True]
@@ -370,11 +421,6 @@ if config["scNOVA"] is True:
         .apply(list)
         .to_dict()
     )
-
-    
-
-
-
 
 
 # Creation of dicts to be used in the rules
@@ -410,8 +456,6 @@ bam_per_sample = (
 )
 
 
-
-
 plottype_counts = (
     config["plottype_counts"]
     if config["multistep_normalisation"] is True
@@ -419,7 +463,7 @@ plottype_counts = (
 )
 
 if config["scNOVA"] is True:
-    clones = collections.defaultdict(dict)
+    clones = collections.defaultdict(list)
     for sample in samples:
         subclonality_file = pd.read_csv(
             "{}/{}/scNOVA_input_user/input_subclonality.txt".format(
@@ -428,6 +472,7 @@ if config["scNOVA"] is True:
             sep="\t",
         )
         clones[sample] = list(sorted(subclonality_file.Subclonality.unique().tolist()))
+    # print(clones)
 
 
 def get_mem_mb(wildcards, attempt):
@@ -460,9 +505,6 @@ def onerror_fct(log):
 
 def get_scnova_final_output(wildcards):
     # WARNING
-
-
-
 
     # subclonality_file = pd.read_csv(config["scnova_subclonality"], sep="\t")
     # clones = ["clone1", "clone2"]
@@ -853,13 +895,26 @@ def get_all_plots(wildcards):
             "{folder}/{sample}/plots/counts_{plottype}/{cell}.{i}.pdf",
             folder=config["data_location"],
             sample=sample,
-            plottype=plottype_counts,
+            plottype=["raw"],
+            # plottype=plottype_counts,
             cell=tmp_dict[sample][i],
             i=i,
         )
         for sample in samples
         for i in range(dict_cells_nb_per_sample[sample] + 1)
     ]
+    tmp_l_divide.extend(
+        [
+            expand(
+                "{folder}/{sample}/plots/counts/CountComplete.{plottype}.pdf",
+                folder=config["data_location"],
+                sample=sample,
+                # plottype=["raw"],
+                plottype=plottype_counts,
+            )
+            for sample in samples
+        ]
+    )
 
     if config["split_qc_plot"] is True:
         l_outputs.extend([sub_e for e in tmp_l_divide for sub_e in e])
@@ -980,4 +1035,6 @@ def get_all_plots(wildcards):
             ),
         )
 
+    # from pprint import pprint
+    # pprint(l_outputs)
     return l_outputs
