@@ -15,9 +15,13 @@ library(tidyr)
 pdf(snakemake@output[["pdf"]], width = 20, height = 10)
 
 # Chromosome order
-chrOrder <-
-    c(paste("chr", 1:22, sep = ""), "chrX", "chrY")
-
+if (snakemake@config[["reference"]] != "mm10") {
+    chrOrder <-
+        c(paste("chr", 1:22, sep = ""), "chrX", "chrY")
+} else {
+    chrOrder <-
+        c(paste("chr", 1:19, sep = ""), "chrX", "chrY")
+}
 # Load SV data
 
 # data_file = "../stringent_filterTRUE.tsv"

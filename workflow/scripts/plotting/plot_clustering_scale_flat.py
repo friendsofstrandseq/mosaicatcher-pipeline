@@ -4,6 +4,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 from matplotlib.backends.backend_pdf import PdfPages
+import sys, os
 
 # log = open(snakemake.log[0], "w")
 # sys.stderr = sys.stdout = log
@@ -43,7 +44,8 @@ colors = {
 }
 
 # Read SV file
-df = pd.read_csv("/scratch/tweber/SCO_COURSE/HJ_MIXTURE_RPE1_Mix/RPE1_Mix/mosaiclassifier/sv_calls/stringent_filterTRUE.tsv", sep="\t")
+df = pd.read_csv(sys.argv[1], sep="\t")
+# df = pd.read_csv("/scratch/tweber/SCO_COURSE/HJ_MIXTURE_RPE1_Mix/RPE1_Mix/mosaiclassifier/sv_calls/stringent_filterTRUE.tsv", sep="\t")
 # df = pd.read_csv("../stringent_filterTRUE.tsv", sep="\t")
 df["ID"] = df["chrom"] + "_" + df["start"].astype(str) + "_" + df["end"].astype(str)
 
@@ -65,7 +67,7 @@ binbed["chrom"] = pd.Categorical(
 
 # Sort & filter out chrY #TMP / can be changed
 binbed = binbed.sort_values(by=["chrom", "start", "end"]).reset_index(drop=True)
-binbed = binbed.loc[~binbed["chrom"].isin(["chrY"])]
+# binbed = binbed.loc[~binbed["chrom"].isin(["chrY"])]
 
 # Instanciate final list
 l = list()
@@ -126,9 +128,7 @@ pivot_concat_df = (
 
 # Read clustering index file produced from previous clustering using R ComplexHeatmap
 # clustering_index_df = pd.read_csv("test.tsv", sep="\t")
-clustering_index_df = pd.read_csv(
-    "/scratch/tweber/SCO_COURSE/HJ_MIXTURE_RPE1_Mix/RPE1_Mix/plots/sv_clustering_dev/cluster_order_df.tsv", sep="\t"
-)
+clustering_index_df = pd.read_csv(sys.argv[2], sep="\t")
 
 
 ## LLR
@@ -143,12 +143,12 @@ pivot_concat_df = pd.concat([pivot_concat_df.reset_index(), tmp], axis=1).drop(p
 
 pivot_concat_df["chrom"] = pd.Categorical(
     pivot_concat_df["chrom"],
-    categories=["chr{}".format(e) for e in range(1, 23)] + ["chrX"],
+    categories=["chr{}".format(e) for e in range(1, 23)] + ["chrX", "chrY"],
     ordered=True,
 )
 pivot_concat_df = pivot_concat_df.sort_values(by=["chrom", "start", "end"]).reset_index(drop=True)
 
-chroms = ["chr{}".format(e) for e in range(1, 23)] + ["chrX"]
+chroms = ["chr{}".format(e) for e in range(1, 23)] + ["chrX", "chrY"]
 # chroms = chroms[:2]
 # chroms = ["chr10", "chr13", "chr22"]
 
@@ -157,7 +157,7 @@ widths = binbed.loc[binbed["chrom"].isin(chroms)].groupby("chrom")["end"].max().
 
 
 # pdf = PdfPages("multipage_pdf2.pdf")
-pdf = PdfPages("/scratch/tweber/SCO_COURSE/HJ_MIXTURE_RPE1_Mix/RPE1_Mix/plots/sv_clustering_dev/stringent-filterTRUE-chromosome.pdf")
+pdf = PdfPages(sys.argv[3])
 
 # Create subplots
 f, axs = plt.subplots(ncols=len(chroms), figsize=(40, 20), gridspec_kw={"width_ratios": widths})
@@ -198,12 +198,12 @@ for j, (chrom, ax) in enumerate(zip(chroms, axs)):
     ax.set_xlabel("{}".format(chrom), fontsize=12, rotation=90)
     ax.set_xticklabels([])
 
-# plt.suptitle(
-# f"Chromosome size scaled LLR heatmap (Sample : {snakemake.wildcards.sample}, Methods used: {snakemake.wildcards.method}, Filter used: {snakemake.wildcards.filter})",
-#     x=0.4,
-#     y=1.02,
-#     fontsize=18,
-# )
+plt.suptitle(
+    f"Chromosome size scaled LLR heatmap (Sample : {sys.argv[4]}, Methods used: {sys.argv[5]}, Filter used: {sys.argv[6]})",
+    x=0.4,
+    y=1.02,
+    fontsize=18,
+)
 
 pdf.savefig(f)
 plt.close()
@@ -223,13 +223,13 @@ pivot_concat_df = pd.concat([pivot_concat_df.reset_index(), tmp], axis=1).drop(p
 
 pivot_concat_df["chrom"] = pd.Categorical(
     pivot_concat_df["chrom"],
-    categories=["chr{}".format(e) for e in range(1, 23)] + ["chrX"],
+    categories=["chr{}".format(e) for e in range(1, 23)] + ["chrX", "chrY"],
     ordered=True,
 )
 pivot_concat_df = pivot_concat_df.sort_values(by=["chrom", "start", "end"]).reset_index(drop=True)
 
 
-chroms = ["chr{}".format(e) for e in range(1, 23)] + ["chrX"]
+chroms = ["chr{}".format(e) for e in range(1, 23)] + ["chrX", "chrY"]
 # chroms = ["chr10", "chr13"]
 # chroms = chroms[:2]
 
@@ -264,12 +264,12 @@ axs[-1].legend(
 )
 plt.tight_layout(rect=[0, 0, 0.95, 1])
 
-# plt.suptitle(
-# f"Chromosome size scaled categorical heatmap (Sample : {snakemake.wildcards.sample}, Methods used: {snakemake.wildcards.method}, Filter used: {snakemake.wildcards.filter})",
-#     x=0.4,
-#     y=1.02,
-#     fontsize=18,
-# )
+plt.suptitle(
+    f"Chromosome size scaled categorical heatmap (Sample : {sys.argv[4]}, Methods used: {sys.argv[5]}, Filter used: {sys.argv[6]})",
+    x=0.4,
+    y=1.02,
+    fontsize=18,
+)
 
 pdf.savefig(f)
 plt.close()

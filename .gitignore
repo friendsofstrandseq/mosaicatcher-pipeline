@@ -125,10 +125,25 @@ workflow/test.txt
 .tests/data_CHR17/RPE-BM510/ashleys_counts/
 .tests/data_CHR17/RPE-BM510/config/
 .tests/data_CHR17/RPE-BM510/predictions/
+.tests/data_CHR17/RPE-BM510/normalizations/
+.tests/data_CHR17/RPE-BM510/stats/
+.tests/data_CHR17/RPE-BM510/fastqc/
+.tests/data_CHR17/RPE-BM510/haplotag/
 .tests/data_CHR17/RPE-BM510/merged_bam/
+.tests/data_CHR17/RPE-BM510/merged_bam/*.raw.bam
+.tests/data_CHR17/RPE-BM510/alfred/
+.tests/data_CHR17/RPE-BM510/ploidy/
+.tests/data_CHR17/RPE-BM510/selected/
+.tests/data_CHR17/RPE-BM510/strandphaser/
+.tests/data_CHR17/RPE-BM510/mosaiclassifier/
+.tests/data_CHR17/RPE-BM510/haplotag/
+# .tests/data_CHR17/RPE-BM510/
 
-.tests/data_CHR17/RPE-BM510/
-
+.tests/data_CHR21/RPE-BM510/alfred/
+.tests/data_CHR21/RPE-BM510/ploidy/
+.tests/data_CHR21/RPE-BM510/selected/
+.tests/data_CHR21/RPE-BM510/strandphaser/
+.tests/data_CHR21/RPE-BM510/haplotag/
 .tests/data_CHR21/RPE-BM510/predictions/
 .tests/data_CHR21/RPE-BM510/cell_selection/
 
@@ -168,7 +183,7 @@ TMP/
 # git
 
 ## Others
-# afac/
+afac/paper_related/
 # workflow/.snakemake
 # bam/
 
@@ -192,3 +207,4 @@ workflow/data/zenodo_filelist.txt
 workflow/data/scNOVA_zenodo_filelist.txt
 workflow/data/mapping_counts_allchrs_hg38.txt
 workflow/data/arbigent/scTRIP_segmentation.bed
+!workflow/data/GC/*.txt.gz

@@ -9,20 +9,36 @@ log = open(snakemake.log[0], "w")
 sys.stderr = sys.stdout = log
 
 # Categorical mapping
+# d = {
+#     "none": 0,
+#     "del_h1": 1,
+#     "del_h2": 2,
+#     "del_hom": 3,
+#     "dup_h1": 4,
+#     "dup_h2": 5,
+#     "dup_hom": 6,
+#     "inv_h1": 7,
+#     "inv_h2": 8,
+#     "inv_hom": 9,
+#     "idup_h1": 10,
+#     "idup_h2": 11,
+#     "complex": 12,
+# }
+
 d = {
-    "none": 0,
-    "del_h1": 1,
-    "del_h2": 2,
-    "del_hom": 3,
-    "dup_h1": 4,
-    "dup_h2": 5,
-    "dup_hom": 6,
-    "inv_h1": 7,
-    "inv_h2": 8,
-    "inv_hom": 9,
-    "idup_h1": 10,
-    "idup_h2": 11,
-    "complex": 12,
+    "none": 1,
+    "del_h1": 2,
+    "del_h2": 3,
+    "del_hom": 4,
+    "dup_h1": 5,
+    "dup_h2": 6,
+    "dup_hom": 7,
+    "inv_h1": 8,
+    "inv_h2": 9,
+    "inv_hom": 10,
+    "idup_h1": 11,
+    "idup_h2": 12,
+    "complex": 13,
 }
 
 # Colors
@@ -47,19 +63,33 @@ df = pd.read_csv(snakemake.input.sv_calls, sep="\t")
 # df = pd.read_csv("../stringent_filterTRUE.tsv", sep="\t")
 df["ID"] = df["chrom"] + "_" + df["start"].astype(str) + "_" + df["end"].astype(str)
 
+
+if snakemake.config["reference"] != "mm10":
+    names = ["chrom", "start", "end", "bin_id"]
+else:
+    names = ["chrom", "start", "end"]
+
 # Read 200kb bins file
 binbed = pd.read_csv(
     # "../bin_200kb_all.bed",
     snakemake.input.binbed,
     sep="\t",
-    names=["chrom", "start", "end", "bin_id"],
+    names=names,
 )
+
+
 binbed["ID"] = binbed["chrom"] + "_" + binbed["start"].astype(str) + "_" + binbed["end"].astype(str)
+
+cats = (
+    ["chr{}".format(e) for e in range(1, 23)] + ["chrX", "chrY"]
+    if snakemake.config["reference"] != "mm10"
+    else ["chr{}".format(e) for e in range(1, 20)] + ["chrX", "chrY"]
+)
 
 # Turn chrom into categorical
 binbed["chrom"] = pd.Categorical(
     binbed["chrom"],
-    categories=["chr{}".format(e) for e in range(1, 23)] + ["chrX", "chrY"],
+    categories=cats,
     ordered=True,
 )
 
@@ -141,12 +171,12 @@ pivot_concat_df = pd.concat([pivot_concat_df.reset_index(), tmp], axis=1).drop(p
 
 pivot_concat_df["chrom"] = pd.Categorical(
     pivot_concat_df["chrom"],
-    categories=["chr{}".format(e) for e in range(1, 23)] + ["chrX", "chrY"],
+    categories=cats,
     ordered=True,
 )
 pivot_concat_df = pivot_concat_df.sort_values(by=["chrom", "start", "end"]).reset_index(drop=True)
 
-chroms = ["chr{}".format(e) for e in range(1, 23)] + ["chrX", "chrY"]
+chroms = cats
 # chroms = chroms[:2]
 # chroms = ["chr10", "chr13", "chr22"]
 
@@ -221,13 +251,14 @@ pivot_concat_df = pd.concat([pivot_concat_df.reset_index(), tmp], axis=1).drop(p
 
 pivot_concat_df["chrom"] = pd.Categorical(
     pivot_concat_df["chrom"],
-    categories=["chr{}".format(e) for e in range(1, 23)] + ["chrX", "chrY"],
+    categories=cats,
     ordered=True,
 )
 pivot_concat_df = pivot_concat_df.sort_values(by=["chrom", "start", "end"]).reset_index(drop=True)
 
 
-chroms = ["chr{}".format(e) for e in range(1, 23)] + ["chrX", "chrY"]
+# chroms = ["chr{}".format(e) for e in range(1, 23)] + ["chrX", "chrY"]
+chroms = cats
 # chroms = ["chr10", "chr13"]
 # chroms = chroms[:2]
 
