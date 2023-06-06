@@ -295,3 +295,19 @@ rule plot_ploidy:
         mem_mb=get_mem_mb,
     script:
         "../scripts/plotting/ploidy_plot.py"
+
+rule ucsc_genome_browser_file:
+    input:
+        counts="{folder}/{sample}/counts/{sample}.txt.gz",
+        stringent_calls="{folder}/{sample}/mosaiclassifier/sv_calls/stringent_filterTRUE.tsv",
+        lenient_calls="{folder}/{sample}/mosaiclassifier/sv_calls/lenient_filterFALSE.tsv",
+    output:
+        "{folder}/{sample}/plots/UCSC/{sample}.bedUCSC.gz"
+    log:
+        "{folder}/log/ucsc_genome_browser_file/{sample}.bedUCSC.gz"
+    conda:
+        "../envs/mc_base.yaml"
+    resources:
+        mem_mb=get_mem_mb,
+    shell:
+        "python workflow/scripts/plotting/ucsc_vizu.py {input.counts} {input.stringent_calls} {input.lenient_calls} {output} > {log}"
