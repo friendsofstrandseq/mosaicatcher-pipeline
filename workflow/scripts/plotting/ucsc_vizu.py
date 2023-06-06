@@ -75,11 +75,11 @@ def main(input_counts, input_sv_file_stringent, input_sv_file_lenient, output):
             )
             df_c.to_csv(output_file, compression="gzip", sep="\t", header=False, index=False, mode="a")
 
-            output_file.write(f'track name="{cell_name}_SV" description="Stringent - SV_call_name for cell {cell_name}" visibility=squish itemRgb="On"\n')
+            output_file.write(f'track name="{cell_name}_SV_stringent" description="Stringent - SV_call_name for cell {cell_name}" visibility=squish itemRgb="On"\n')
             for _, row in df_sv_cell_stringent.iterrows():
                 bed_row = create_bed_row(row, row["sv_call_name"], row["color"])
                 output_file.write(bed_row)
-            output_file.write(f'track name="{cell_name}_SV" description="Lenient - SV_call_name for cell {cell_name}" visibility=squish itemRgb="On"\n')
+            output_file.write(f'track name="{cell_name}_SV_lenient" description="Lenient - SV_call_name for cell {cell_name}" visibility=squish itemRgb="On"\n')
             for _, row in df_sv_cell_lenient.iterrows():
                 bed_row = create_bed_row(row, row["sv_call_name"], row["color"])
                 output_file.write(bed_row)
