@@ -1015,6 +1015,16 @@ def get_all_plots(wildcards):
             ),
         )
 
+        # UCSC section
+
+        l_outputs.extend(
+            expand(
+                "{folder}/{sample}/plots/UCSC/{sample}.bedUCSC.gz",
+                folder=config["data_location"],
+                sample=wildcards.sample,
+            ),
+        )
+
         # Stats section
 
         l_outputs.extend(
