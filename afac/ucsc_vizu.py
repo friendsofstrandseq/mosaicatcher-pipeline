@@ -79,19 +79,21 @@ def main(input_counts, input_sv_file_stringent, input_sv_file_lenient, output):
             for _, row in df_sv_cell_stringent.iterrows():
                 bed_row = create_bed_row(row, row["sv_call_name"], row["color"])
                 output_file.write(bed_row)
-            output_file.write(f'track name="{cell_name}_SV_lenient" description="Lenient - SV_call_name for cell {cell_name}" visibility=squish itemRgb="On"\n')
-            for _, row in df_sv_cell_lenient.iterrows():
-                bed_row = create_bed_row(row, row["sv_call_name"], row["color"])
-                output_file.write(bed_row)
+            # output_file.write(f'track name="{cell_name}_SV_lenient" description="Lenient - SV_call_name for cell {cell_name}" visibility=squish itemRgb="On"\n')
+            # for _, row in df_sv_cell_lenient.iterrows():
+            #     bed_row = create_bed_row(row, row["sv_call_name"], row["color"])
+            #     output_file.write(bed_row)
 
 
 if __name__ == "__main__":
     if len(sys.argv) != 5:
         print("Usage: python script.py <input_counts>  <input_sv_stringent_file> <input_sv_lenient_file> <output_file>")
+        # print("Usage: python script.py <input_counts>  <input_sv_stringent_file>  <output_file>")
         sys.exit(1)
 
     input_counts = sys.argv[1]
     input_sv_stringent_file = sys.argv[2]
     input_sv_lenient_file = sys.argv[3]
     output_file = sys.argv[4]
+    # main(input_counts, input_sv_stringent_file, output_file)
     main(input_counts, input_sv_stringent_file, input_sv_lenient_file, output_file)
