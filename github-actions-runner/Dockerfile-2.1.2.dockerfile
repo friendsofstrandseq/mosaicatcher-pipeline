@@ -1,6 +1,6 @@
 FROM condaforge/mambaforge:latest
 LABEL io.github.snakemake.containerized="true"
-LABEL io.github.snakemake.conda_env_hash="55c177ec267b6cafb7c46af6bd81eceaffe243d4e28a2a2434e5abddc1e8cff0"
+LABEL io.github.snakemake.conda_env_hash="b7d5e2bcd141dad41821c6a0d68901d31b2eb5a6bf07407e123bc6eae70af0e8"
 
 # Step 1: Retrieve conda environments
 
@@ -154,7 +154,7 @@ COPY workflow/envs/mc_bioinfo_tools.yaml /conda-envs/f251d84cdc9f25d0e14b48e7802
 
 # Conda environment:
 #   source: workflow/envs/rtools.yaml
-#   prefix: /conda-envs/5eb5026d8b42b407b8711e037d9cc4ff
+#   prefix: /conda-envs/261d620cc100b901beec2634c6032c4f
 #   name: rtools
 #   channels:
 #     - bioconda
@@ -167,9 +167,7 @@ COPY workflow/envs/mc_bioinfo_tools.yaml /conda-envs/f251d84cdc9f25d0e14b48e7802
 #     # ###############
 #     - bioconductor-biocparallel
 #     - bioconductor-bsgenome
-#     - bioconductor-bsgenome.hsapiens.ucsc.hg19
 #     - bioconductor-bsgenome.hsapiens.ucsc.hg38
-#     - bioconductor-bsgenome.mmusculus.ucsc.mm10
 #     - bioconductor-complexheatmap
 #     # - bioconductor-fastseg
 #     - bioconductor-genomicalignments
@@ -207,8 +205,8 @@ COPY workflow/envs/mc_bioinfo_tools.yaml /conda-envs/f251d84cdc9f25d0e14b48e7802
 #     - r-tidyr
 #     - r-ggbeeswarm
 #     - r-pheatmap
-RUN mkdir -p /conda-envs/5eb5026d8b42b407b8711e037d9cc4ff
-COPY workflow/envs/rtools.yaml /conda-envs/5eb5026d8b42b407b8711e037d9cc4ff/environment.yaml
+RUN mkdir -p /conda-envs/261d620cc100b901beec2634c6032c4f
+COPY workflow/envs/rtools.yaml /conda-envs/261d620cc100b901beec2634c6032c4f/environment.yaml
 
 # Step 2: Generate conda environments
 
@@ -218,10 +216,5 @@ RUN mamba env create --prefix /conda-envs/d7ae7fcf4adb54129dbf1b1e84ef888a --fil
     mamba env create --prefix /conda-envs/08d4368302a4bdf7eda6b536495efe7d --file /conda-envs/08d4368302a4bdf7eda6b536495efe7d/environment.yaml && \
     mamba env create --prefix /conda-envs/c80307395eddf442c2fb6870f40d822b --file /conda-envs/c80307395eddf442c2fb6870f40d822b/environment.yaml && \
     mamba env create --prefix /conda-envs/f251d84cdc9f25d0e14b48e780261d66 --file /conda-envs/f251d84cdc9f25d0e14b48e780261d66/environment.yaml && \
-    mamba env create --prefix /conda-envs/5eb5026d8b42b407b8711e037d9cc4ff --file /conda-envs/5eb5026d8b42b407b8711e037d9cc4ff/environment.yaml && \
+    mamba env create --prefix /conda-envs/261d620cc100b901beec2634c6032c4f --file /conda-envs/261d620cc100b901beec2634c6032c4f/environment.yaml && \
     mamba clean --all -y
-
-
-# # Custom Bsgenome R install
-# COPY github-actions-runner/bioconductor_install.R /conda-envs/
-# RUN chmod -R 0777 /conda-envs/91d5ffe2d429bcebd6bab78e9ca3a1d4/lib/R/library && /conda-envs/91d5ffe2d429bcebd6bab78e9ca3a1d4/bin/Rscript /conda-envs/bioconductor_install.R
