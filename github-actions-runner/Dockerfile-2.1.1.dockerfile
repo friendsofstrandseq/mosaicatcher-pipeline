@@ -1,11 +1,11 @@
 FROM condaforge/mambaforge:latest
 LABEL io.github.snakemake.containerized="true"
-LABEL io.github.snakemake.conda_env_hash="9b4f1558e7b859ce72b2ab5301f6cd09c3e00c6d3b05f71ad551ec2b16180f84"
+LABEL io.github.snakemake.conda_env_hash="f26d158ef605d3d70371155d9090a3c58ef6bd9e8f8e6b73731d17192f7e70ab"
 
 # Step 1: Retrieve conda environments
 
 # Conda environment:
-#   source: https://github.com/friendsofstrandseq/ashleys-qc-pipeline/raw/dev/workflow/envs/ashleys_base.yaml
+#   source: https://github.com/friendsofstrandseq/ashleys-qc-pipeline/raw/2.1.1/workflow/envs/ashleys_base.yaml
 #   prefix: /conda-envs/d7ae7fcf4adb54129dbf1b1e84ef888a
 #   name: ashleys_base
 #   channels:
@@ -25,10 +25,10 @@ LABEL io.github.snakemake.conda_env_hash="9b4f1558e7b859ce72b2ab5301f6cd09c3e00c
 #     # MULTIQC
 #     - multiqc
 RUN mkdir -p /conda-envs/d7ae7fcf4adb54129dbf1b1e84ef888a
-ADD https://github.com/friendsofstrandseq/ashleys-qc-pipeline/raw/dev/workflow/envs/ashleys_base.yaml /conda-envs/d7ae7fcf4adb54129dbf1b1e84ef888a/environment.yaml
+ADD https://github.com/friendsofstrandseq/ashleys-qc-pipeline/raw/2.1.1/workflow/envs/ashleys_base.yaml /conda-envs/d7ae7fcf4adb54129dbf1b1e84ef888a/environment.yaml
 
 # Conda environment:
-#   source: https://github.com/friendsofstrandseq/ashleys-qc-pipeline/raw/dev/workflow/envs/ashleys_rtools.yaml
+#   source: https://github.com/friendsofstrandseq/ashleys-qc-pipeline/raw/2.1.1/workflow/envs/ashleys_rtools.yaml
 #   prefix: /conda-envs/9b847fc31baae8e01dfb7ce438a56b71
 #   name: rtools
 #   channels:
@@ -81,7 +81,7 @@ ADD https://github.com/friendsofstrandseq/ashleys-qc-pipeline/raw/dev/workflow/e
 #     # SOLVE R lib issue
 #     - r-stringi=1.7.12
 RUN mkdir -p /conda-envs/9b847fc31baae8e01dfb7ce438a56b71
-ADD https://github.com/friendsofstrandseq/ashleys-qc-pipeline/raw/dev/workflow/envs/ashleys_rtools.yaml /conda-envs/9b847fc31baae8e01dfb7ce438a56b71/environment.yaml
+ADD https://github.com/friendsofstrandseq/ashleys-qc-pipeline/raw/2.1.1/workflow/envs/ashleys_rtools.yaml /conda-envs/9b847fc31baae8e01dfb7ce438a56b71/environment.yaml
 
 # Conda environment:
 #   source: https://github.com/snakemake/snakemake-wrappers/raw/v1.7.0/bio/bwa/index/environment.yaml
@@ -152,6 +152,63 @@ COPY workflow/envs/mc_base.yaml /conda-envs/c80307395eddf442c2fb6870f40d822b/env
 RUN mkdir -p /conda-envs/f251d84cdc9f25d0e14b48e780261d66
 COPY workflow/envs/mc_bioinfo_tools.yaml /conda-envs/f251d84cdc9f25d0e14b48e780261d66/environment.yaml
 
+# Conda environment:
+#   source: workflow/envs/rtools.yaml
+#   prefix: /conda-envs/91d5ffe2d429bcebd6bab78e9ca3a1d4
+#   name: rtools
+#   channels:
+#     - bioconda
+#     - conda-forge
+#     - r
+#     - anaconda
+#   dependencies:
+#     # # NEW
+#     - strandphaser
+#     # ###############
+#     - bioconductor-biocparallel
+#     - bioconductor-bsgenome
+#     # - bioconductor-bsgenome.hsapiens.ucsc.hg19
+#     # - bioconductor-bsgenome.hsapiens.ucsc.hg38
+#     - bioconductor-complexheatmap
+#     # - bioconductor-fastseg
+#     - bioconductor-genomicalignments
+#     - bioconductor-genomicranges
+#     - bioconductor-rsamtools
+#     # - bioconductor-s4vectors
+#     - fonts-anaconda
+#     - r-assertthat
+#     - r-base
+#     - r-biocmanager
+#     - r-cairo
+#     - r-cowplot
+#     - r-data.table
+#     - r-devtools
+#     - r-doparallel
+#     - r-dplyr
+#     - r-foreach
+#     - r-ggplot2
+#     - r-gplots
+#     - r-gtools
+#     - r-mc2d
+#     - r-rcolorbrewer
+#     - r-reshape2
+#     - r-scales
+#     - r-stringr
+#     # SV_CALLS_DEV
+#     # - r-zoo
+#     - r-r.utils
+#     - r-ggnewscale
+#     # HEATMAP
+#     - r-tidyr
+#     # ARBIGENT
+#     - r-reshape
+#     - r-optparse
+#     - r-tidyr
+#     - r-ggbeeswarm
+#     - r-pheatmap
+RUN mkdir -p /conda-envs/91d5ffe2d429bcebd6bab78e9ca3a1d4
+COPY workflow/envs/rtools.yaml /conda-envs/91d5ffe2d429bcebd6bab78e9ca3a1d4/environment.yaml
+
 # Step 2: Generate conda environments
 
 RUN mamba env create --prefix /conda-envs/d7ae7fcf4adb54129dbf1b1e84ef888a --file /conda-envs/d7ae7fcf4adb54129dbf1b1e84ef888a/environment.yaml && \
@@ -160,4 +217,10 @@ RUN mamba env create --prefix /conda-envs/d7ae7fcf4adb54129dbf1b1e84ef888a --fil
     mamba env create --prefix /conda-envs/08d4368302a4bdf7eda6b536495efe7d --file /conda-envs/08d4368302a4bdf7eda6b536495efe7d/environment.yaml && \
     mamba env create --prefix /conda-envs/c80307395eddf442c2fb6870f40d822b --file /conda-envs/c80307395eddf442c2fb6870f40d822b/environment.yaml && \
     mamba env create --prefix /conda-envs/f251d84cdc9f25d0e14b48e780261d66 --file /conda-envs/f251d84cdc9f25d0e14b48e780261d66/environment.yaml && \
+    mamba env create --prefix /conda-envs/91d5ffe2d429bcebd6bab78e9ca3a1d4 --file /conda-envs/91d5ffe2d429bcebd6bab78e9ca3a1d4/environment.yaml && \
     mamba clean --all -y
+
+
+# Custom Bsgenome R install
+COPY github-actions-runner/bioconductor_install.R /conda-envs/
+RUN chmod -R 0777 /conda-envs/91d5ffe2d429bcebd6bab78e9ca3a1d4/lib/R/library && /conda-envs/91d5ffe2d429bcebd6bab78e9ca3a1d4/bin/Rscript /conda-envs/bioconductor_install.R
