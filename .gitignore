@@ -102,6 +102,7 @@ workflow/test.txt
 
 .tests/data/RPE-BM510/all_bak/
 .tests/data/RPE-BM510/fastq/
+.tests/data/RPE-BM510/multiqc/
 .tests/data/RPE-BM510/predictions/
 .tests/data/RPE-BM510/cell_selection/
 .tests/data/RPE-BM510/all_BM/
@@ -208,3 +209,5 @@ workflow/data/scNOVA_zenodo_filelist.txt
 workflow/data/mapping_counts_allchrs_hg38.txt
 workflow/data/arbigent/scTRIP_segmentation.bed
 !workflow/data/GC/*.txt.gz
+.tests/data_CHR17/RPE-BM510/multiqc/
+.tests/data_CHR17/RPE-BM510/bam_ashleys/
