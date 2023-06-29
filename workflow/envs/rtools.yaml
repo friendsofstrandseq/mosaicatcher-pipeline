@@ -10,9 +10,7 @@ dependencies:
   # ###############
   - bioconductor-biocparallel
   - bioconductor-bsgenome
-  - bioconductor-bsgenome.hsapiens.ucsc.hg19
   - bioconductor-bsgenome.hsapiens.ucsc.hg38
-  - bioconductor-bsgenome.mmusculus.ucsc.mm10
   - bioconductor-complexheatmap
   # - bioconductor-fastseg
   - bioconductor-genomicalignments
