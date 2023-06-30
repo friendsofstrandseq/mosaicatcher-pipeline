@@ -31,7 +31,7 @@ jobs:
         with:
           directory: "ashleys-qc-pipeline"
           snakefile: "ashleys-qc-pipeline/workflow/Snakefile"
-          stagein: "conda config --set channel_priority flexible"
+          stagein: "conda config --set channel_priority flexible && pwd && ls ${{ github.workspace }}/strandseq-example-data"
           args: "--cores 1 --use-conda --latency-wait 60 --configfile ashleys-qc-pipeline/.tests/config/simple_config.yaml --config ashleys_pipeline=True data_location=${{ github.workspace }}/strandseq-example-data --conda-frontend mamba -p --rerun-triggers mtime --verbose --debug"
 
       - name: Run awk command
