@@ -1,0 +1,52 @@
+name: Ashleys + MosaiCatcher two-steps conda checks
+
+on:
+  schedule:
+    # Run every Sunday at 00:00 UTC on the master branch
+    - cron: "0 0 * * 0"
+      # branches:
+      #   - master
+  push:
+    branches:
+      - "*"
+      - "!master"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout pipeline repository
+        uses: actions/checkout@v2
+        with:
+          repository: "friendsofstrandseq/ashleys-qc-pipeline"
+          path: "ashleys-qc-pipeline"
+
+      - name: Run cp command
+        run: |
+          cp -r .tests/data_CHR17 strandseq-example-data
+
+      - name: Run snakemake
+        uses: snakemake/snakemake-github-action@v1.24.0
+        with:
+          directory: "ashleys-qc-pipeline"
+          snakefile: "./workflow/Snakefile"
+          stagein: "conda config --set channel_priority flexible"
+          args: "--cores 1 --use-conda --latency-wait 60 --configfile .tests/config/simple_config.yaml --config ashleys_pipeline=True data_location=${{ github.workspace }}/strandseq-example-data --conda-frontend mamba -p --rerun-triggers mtime --verbose --debug"
+
+      - name: Run awk command
+        run: |
+          awk 'NR==5 || NR==7 || NR==10 {$0 = "0"} 1' strandseq-example-data/RPE-BM510/cell_selection/labels.tsv > tmp.tsv && mv tmp.tsv strandseq-example-data/RPE-BM510/cell_selection/labels.tsv
+
+      - name: Checkout current repository
+        uses: actions/checkout@v2
+        with:
+          path: "mosaicatcher-pipeline"
+
+      - name: Run snakemake
+        uses: snakemake/snakemake-github-action@v1.24.0
+        with:
+          directory: "mosaicatcher-pipeline"
+          snakefile: "./workflow/Snakefile"
+          stagein: "conda config --set channel_priority flexible"
+          args: "--cores 1 --use-conda --latency-wait 60 --configfile .tests/config/simple_config.yaml --config ashleys_pipeline=True data_location=${{ github.workspace }}/strandseq-example-data --conda-frontend mamba -p --rerun-triggers mtime --verbose --debug"
