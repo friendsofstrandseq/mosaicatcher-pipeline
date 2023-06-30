@@ -26,7 +26,7 @@ jobs:
           directory: "./ashleys-qc-pipeline"
           snakefile: "./ashleys-qc-pipeline/workflow/Snakefile"
           stagein: "conda config --set channel_priority flexible"
-          args: "--cores 1 --use-conda --latency-wait 60 --configfile ./ashleys-qc-pipeline/.tests/config/simple_config.yaml --config ashleys_pipeline=True data_location=./ashleys-qc-pipeline/.tests/data_CHR17 --conda-frontend mamba -p --rerun-triggers mtime --verbose --debug"
+          args: "--cores 1 --use-conda --latency-wait 60 --configfile ./ashleys-qc-pipeline/.tests/config/simple_config.yaml --config ashleys_pipeline=True data_location=${{ GITHUB.WORKSPACE }}/ashleys-qc-pipeline/.tests/data_CHR17 --conda-frontend mamba -p --rerun-triggers mtime --verbose --debug"
 
       - name: Display file
         run: cat ./.tests/data_CHR17/RPE-BM510/cell_selection/labels.tsv
