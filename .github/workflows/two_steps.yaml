@@ -30,9 +30,9 @@ jobs:
         uses: snakemake/snakemake-github-action@v1.24.0
         with:
           directory: "ashleys-qc-pipeline"
-          snakefile: "./workflow/Snakefile"
+          snakefile: "ashleys-qc-pipeline/workflow/Snakefile"
           stagein: "conda config --set channel_priority flexible"
-          args: "--cores 1 --use-conda --latency-wait 60 --configfile .tests/config/simple_config.yaml --config ashleys_pipeline=True data_location=${{ github.workspace }}/strandseq-example-data --conda-frontend mamba -p --rerun-triggers mtime --verbose --debug"
+          args: "--cores 1 --use-conda --latency-wait 60 --configfile ashleys-qc-pipeline/.tests/config/simple_config.yaml --config ashleys_pipeline=True data_location=${{ github.workspace }}/strandseq-example-data --conda-frontend mamba -p --rerun-triggers mtime --verbose --debug"
 
       - name: Run awk command
         run: |
@@ -47,6 +47,6 @@ jobs:
         uses: snakemake/snakemake-github-action@v1.24.0
         with:
           directory: "mosaicatcher-pipeline"
-          snakefile: "./workflow/Snakefile"
+          snakefile: "mosaicatcher-pipeline/workflow/Snakefile"
           stagein: "conda config --set channel_priority flexible"
-          args: "--cores 1 --use-conda --latency-wait 60 --configfile .tests/config/simple_config.yaml --config ashleys_pipeline=True data_location=${{ github.workspace }}/strandseq-example-data --conda-frontend mamba -p --rerun-triggers mtime --verbose --debug"
+          args: "--cores 1 --use-conda --latency-wait 60 --configfile mosaicatcher-pipeline/.tests/config/simple_config.yaml --config ashleys_pipeline=True data_location=${{ github.workspace }}/strandseq-example-data --conda-frontend mamba -p --rerun-triggers mtime --verbose --debug"
