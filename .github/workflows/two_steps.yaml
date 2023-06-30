@@ -24,7 +24,7 @@ jobs:
 
       - name: Run cp command
         run: |
-          cp -r .tests/data_CHR17 strandseq-example-data
+          cp -r ${{ github.workspace }}/ashleys-qc-pipeline/.tests/data_CHR17 ${{ github.workspace }}/strandseq-example-data
 
       - name: Run snakemake
         uses: snakemake/snakemake-github-action@v1.24.0
