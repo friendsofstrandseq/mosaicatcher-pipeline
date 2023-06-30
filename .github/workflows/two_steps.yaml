@@ -57,7 +57,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: ashleys-data
-          path: "./.tests/data_CHR17
+          path: ./.tests/data_CHR17
 
       - name: Run snakemake
         uses: snakemake/snakemake-github-action@v1.24.0
