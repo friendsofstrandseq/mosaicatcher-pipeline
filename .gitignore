@@ -211,3 +211,6 @@ workflow/data/arbigent/scTRIP_segmentation.bed
 !workflow/data/GC/*.txt.gz
 .tests/data_CHR17/RPE-BM510/multiqc/
 .tests/data_CHR17/RPE-BM510/bam_ashleys/
+.tests/data_CHR17/RPE-BM510/bam/*.bam.raw
+.tests/data_CHR17/RPE-BM510/bam/*.bam.sort
+.tests/external_data/chr17.fa.log
