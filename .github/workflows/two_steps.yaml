@@ -4,8 +4,6 @@ on:
   schedule:
     # Run every Sunday at 00:00 UTC on the master branch
     - cron: "0 0 * * 0"
-      # branches:
-      #   - master
   push:
     branches:
       - "*"
@@ -22,26 +20,38 @@ jobs:
           repository: "friendsofstrandseq/ashleys-qc-pipeline"
           path: "ashleys-qc-pipeline"
 
-      - name: Run cp command
-        run: |
-          cp -r ${{ github.workspace }}/ashleys-qc-pipeline/.tests/data_CHR17 ${{ github.workspace }}/strandseq-example-data
-
       - name: Run snakemake
         uses: snakemake/snakemake-github-action@v1.24.0
         with:
           directory: "ashleys-qc-pipeline"
           snakefile: "ashleys-qc-pipeline/workflow/Snakefile"
-          stagein: "conda config --set channel_priority flexible && pwd && ls ${{ github.workspace }}/strandseq-example-data"
-          args: "--cores 1 --use-conda --latency-wait 60 --configfile ashleys-qc-pipeline/.tests/config/simple_config.yaml --config ashleys_pipeline=True data_location=${{ github.workspace }}/strandseq-example-data --conda-frontend mamba -p --rerun-triggers mtime --verbose --debug"
+          stagein: "conda config --set channel_priority flexible"
+          args: "--cores 1 --use-conda --latency-wait 60 --configfile ashleys-qc-pipeline/.tests/config/simple_config.yaml --config ashleys_pipeline=True data_location=ashleys-qc-pipeline/.tests/data_CHR17 --conda-frontend mamba -p --rerun-triggers mtime --verbose --debug"
 
+      - name: Display file
+        run: cat ashleys-qc-pipeline/.tests/data_CHR17/RPE-BM510/cell_selection/labels.tsv
       - name: Run awk command
         run: |
-          awk 'NR==5 || NR==7 || NR==10 {$0 = "0"} 1' strandseq-example-data/RPE-BM510/cell_selection/labels.tsv > tmp.tsv && mv tmp.tsv strandseq-example-data/RPE-BM510/cell_selection/labels.tsv
+          awk 'NR==5 || NR==7 || NR==10 {$0 = "0"} 1' ashleys-qc-pipeline/.tests/data_CHR17/RPE-BM510/cell_selection/labels.tsv > tmp.tsv && mv tmp.tsv ashleys-qc-pipeline/.tests/data_CHR17/RPE-BM510/cell_selection/labels.tsv
+      - name: Display file
+        run: cat ashleys-qc-pipeline/.tests/data_CHR17/RPE-BM510/cell_selection/labels.tsv
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ashleys-data
+          path: ashleys-qc-pipeline/.tests/data_CHR17
 
       - name: Checkout current repository
         uses: actions/checkout@v2
         with:
           path: "mosaicatcher-pipeline"
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: ashleys-data
+          path: "${{ github.workspace }}/ashleys-qc-pipeline/.tests/data_CHR17"
 
       - name: Run snakemake
         uses: snakemake/snakemake-github-action@v1.24.0
@@ -49,4 +59,4 @@ jobs:
           directory: "mosaicatcher-pipeline"
           snakefile: "mosaicatcher-pipeline/workflow/Snakefile"
           stagein: "conda config --set channel_priority flexible"
-          args: "--cores 1 --use-conda --latency-wait 60 --configfile mosaicatcher-pipeline/.tests/config/simple_config.yaml --config ashleys_pipeline=True data_location=${{ github.workspace }}/strandseq-example-data --conda-frontend mamba -p --rerun-triggers mtime --verbose --debug"
+          args: "--cores 1 --use-conda --latency-wait 60 --configfile mosaicatcher-pipeline/.tests/config/simple_config.yaml --config ashleys_pipeline=True data_location=${{ github.workspace }}/ashleys-qc-pipeline/.tests/data_CHR17 --conda-frontend mamba -p --rerun-triggers mtime --verbose --debug"
