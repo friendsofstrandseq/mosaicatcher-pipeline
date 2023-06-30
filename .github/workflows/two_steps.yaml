@@ -10,7 +10,7 @@ on:
       - "!master"
 
 jobs:
-  build:
+  ashleys:
     runs-on: ubuntu-latest
 
     steps:
@@ -26,22 +26,26 @@ jobs:
           directory: "ashleys-qc-pipeline"
           snakefile: "ashleys-qc-pipeline/workflow/Snakefile"
           stagein: "conda config --set channel_priority flexible"
-          args: "--cores 1 --use-conda --latency-wait 60 --configfile ashleys-qc-pipeline/.tests/config/simple_config.yaml --config ashleys_pipeline=True data_location=ashleys-qc-pipeline/.tests/data_CHR17 --conda-frontend mamba -p --rerun-triggers mtime --verbose --debug"
+          args: "--cores 1 --use-conda --latency-wait 60 --configfile ashleys-qc-pipeline/.tests/config/simple_config.yaml --config ashleys_pipeline=True data_location=${{ github.workspace }}/ashleys-qc-pipeline/.tests/data_CHR17 --conda-frontend mamba -p --rerun-triggers mtime --verbose --debug"
 
       - name: Display file
-        run: cat ashleys-qc-pipeline/.tests/data_CHR17/RPE-BM510/cell_selection/labels.tsv
+        run: cat ${{ github.workspace }}/ashleys-qc-pipeline/.tests/data_CHR17/RPE-BM510/cell_selection/labels.tsv
       - name: Run awk command
         run: |
-          awk 'NR==5 || NR==7 || NR==10 {$0 = "0"} 1' ashleys-qc-pipeline/.tests/data_CHR17/RPE-BM510/cell_selection/labels.tsv > tmp.tsv && mv tmp.tsv ashleys-qc-pipeline/.tests/data_CHR17/RPE-BM510/cell_selection/labels.tsv
+          awk 'NR==5 || NR==7 || NR==10 {$0 = "0"} 1' ${{ github.workspace }}/ashleys-qc-pipeline/.tests/data_CHR17/RPE-BM510/cell_selection/labels.tsv > tmp.tsv && mv tmp.tsv ${{ github.workspace }}/ashleys-qc-pipeline/.tests/data_CHR17/RPE-BM510/cell_selection/labels.tsv
       - name: Display file
-        run: cat ashleys-qc-pipeline/.tests/data_CHR17/RPE-BM510/cell_selection/labels.tsv
+        run: cat ${{ github.workspace }}/ashleys-qc-pipeline/.tests/data_CHR17/RPE-BM510/cell_selection/labels.tsv
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
           name: ashleys-data
-          path: ashleys-qc-pipeline/.tests/data_CHR17
+          path: ${{ github.workspace }}/ashleys-qc-pipeline/.tests/data_CHR17
 
+  mosaicatcher:
+    runs-on: ubuntu-latest
+
+    steps:
       - name: Checkout current repository
         uses: actions/checkout@v2
         with:
