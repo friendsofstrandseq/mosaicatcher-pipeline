@@ -1,7 +1,7 @@
 import pandas as pd
 import pysam
 
-# import parmap
+import parmap
 import multiprocessing as mp
 import logging
 
