@@ -6,10 +6,10 @@ on:
     - cron: "0 0 * * 0"
       # branches:
       #   - master
-  # push:
-  #   branches:
-  #     - '*'
-  #     - '!master'
+  push:
+    branches:
+      - "*"
+      - "!master"
 
 jobs:
   # WORK
