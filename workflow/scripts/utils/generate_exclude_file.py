@@ -1,21 +1,18 @@
 import pandas as pd
 import pysam
-import os, sys
+
 import parmap
 import multiprocessing as mp
+import logging
 
-# df_config_files = pd.read_csv(, sep="\t")
+# Set up logging
+logging.basicConfig(filename=snakemake.log[0], level=logging.INFO, format="%(asctime)s %(levelname)s:%(message)s")
+# logging.basicConfig(filename="/Users/frank/mosaicatcher-pipeline/debug.log", level=logging.INFO, format="%(asctime)s %(levelname)s:%(message)s")
+
+
 m = mp.Manager()
 l_df = m.list()
-
-# bam_list = [
-#     "/g/korbel2/weber/MosaiCatcher_files/POOLING/PSEUDOPOOL/pseudopool/all/HG00268x01PE20401.sort.mdup.bam",
-#     "/g/korbel2/weber/MosaiCatcher_files/POOLING/PSEUDOPOOL/pseudopool/all/HG00512_I_015.sort.mdup.bam",
-#     "/g/korbel2/weber/MosaiCatcher_files/POOLING/PSEUDOPOOL/pseudopool/all/HG00514_IV_008.sort.mdup.bam",
-#     "/g/korbel2/weber/MosaiCatcher_files/POOLING/PSEUDOPOOL/pseudopool/all/HG01352x02PE20402.sort.mdup.bam",
-#     "/g/korbel2/weber/MosaiCatcher_files/POOLING/PSEUDOPOOL/pseudopool/all/NA12878_cell113.sort.mdup.bam",
-#     "/g/korbel2/weber/MosaiCatcher_files/POOLING/PSEUDOPOOL/pseudopool/all/NA19239_III_066.sort.mdup.bam",
-# ]
+# l_df = list()
 
 
 def filter_chrom(bam, l):
@@ -27,22 +24,35 @@ def filter_chrom(bam, l):
     l.extend(h)
 
 
-# parmap.starmap(filter_chrom, list(zip(list(bam_list))), l_df, pm_pbar=True, pm_processes=10)
 parmap.starmap(filter_chrom, list(zip(list(snakemake.input.bam))), l_df, pm_pbar=False, pm_processes=10)
+# for file in list(snakemake.input.bam):
+#     filter_chrom(file, l_df)
+
 
 # CONVERT TO PANDAS DF
 df_h = pd.DataFrame((list(l_df)), columns=["TAG", "Contig", "LN"])
 
+logging.info(f"Processed raw DataFrame: \n {df_h.to_string()}")
+
+
 # PROCESS CONTIGS
 output_h = pd.DataFrame(df_h["Contig"].str.replace("SN:", ""))
-# print(snakemake.params["chroms"], type(snakemake.params["chroms"]))
-# chroms = ["chr{}".format(str(c)) for c in list(range(1, 23))] + ["chrX"]
+
+
+logging.info(f'List of chromosomes provided in the configuration: \n {snakemake.params["chroms"]}')
+
 
 output_h = output_h.loc[~output_h["Contig"].isin(snakemake.params["chroms"])]
 
-# output_h = output_h.loc[~output_h["Contig"].isin(chroms)]
 
-# print(output_h)
+# Log the content of the output_h DataFrame
+logging.info(f"Processed list of chromosomes to be removed: \n {output_h.to_string()}")
+
 
 # EXPORT
-output_h["Contig"].drop_duplicates().to_csv(snakemake.output[0], index=False, sep="\t", header=False)
+output_h = output_h["Contig"].drop_duplicates()
+
+logging.info(f"Processed list of chromosomes to be removed without duplicates: \n {output_h.to_string()}")
+
+
+output_h.to_csv(snakemake.output[0], index=False, sep="\t", header=False)

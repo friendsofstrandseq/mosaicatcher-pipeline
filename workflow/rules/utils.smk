@@ -105,8 +105,6 @@ rule index_merged_strandphaser_vcf:
         "tabix -p vcf {input.vcf} > {log} 2>&1"
 
 
-
-
 rule samtools_faindex:
     input:
         ancient("{file}.fa"),

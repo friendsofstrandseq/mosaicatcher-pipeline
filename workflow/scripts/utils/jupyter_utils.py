@@ -2,6 +2,7 @@
 from ipysheet import sheet, column, to_dataframe
 import ipywidgets as w
 import pandas as pd
+import numpy as np
 
 
 def get_ipysheet(cell_per_sample, sample, mosaic_info, ashleys_labels):
@@ -19,9 +20,20 @@ def get_ipysheet(cell_per_sample, sample, mosaic_info, ashleys_labels):
 
     # Retrieve low-coverage information from mosaic count "info" file
     mosaic_info_df = pd.read_csv(mosaic_info, sep="\t", skiprows=13)
-    mosaic_info_df["%dupl"] = 100 * (mosaic_info_df["dupl"] / mosaic_info_df["mapped"])
+    print(mosaic_info_df)
+
+    # mosaic_info_df.loc[~np.isfinite(mosaic_info_df["dupl"])]["dupl"]
+
+    mosaic_info_df["%dupl"] = 100 * (
+        mosaic_info_df.loc[np.isfinite(mosaic_info_df["dupl"])]["dupl"]
+        / mosaic_info_df.loc[np.isfinite(mosaic_info_df["mapped"])]["mapped"]
+    )
+    mosaic_info_df["%dupl"] = mosaic_info_df["%dupl"].fillna(0)
+    # mosaic_info_df["%dupl"] = 100 * (mosaic_info_df["dupl"] / mosaic_info_df["mapped"])
     mosaic_info_df["%dupl"] = mosaic_info_df["%dupl"].round(0)
     mosaic_info_df["good"] = mosaic_info_df["good"].astype(str)
+    print(mosaic_info_df)
+
     mosaic_info_df["%dupl"] = mosaic_info_df["%dupl"].astype(int).astype(str)
     mosaic_info_df["pass1"] = mosaic_info_df["pass1"].astype(bool)
     mosaic_info_cells = mosaic_info_df["pass1"].values.tolist()
