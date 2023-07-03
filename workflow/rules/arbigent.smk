@@ -18,6 +18,8 @@ if config["arbigent"] is True:
             sv_calls_bulk="{folder}/{sample}/arbigent/regenotyper_samplewise_bulk/sv_calls/all/sv_calls_bulk.txt",
         log:
             "{folder}/log/run_regenotypeR_samplewise_bulk/{sample}.log",
+        resources:
+            mem_mb=get_mem_mb,
         conda:
             "../envs/rtools.yaml"
         shell:
@@ -40,6 +42,8 @@ if config["arbigent"] is True:
             "{folder}/{sample}/arbigent/regenotyper_allsamples_bulk/all_sv_calls_unphased.txt",
         log:
             "{folder}/log/regenotyper_allsamples_bulk/{sample}.log",
+        resources:
+            mem_mb=get_mem_mb,
         conda:
             "../envs/mc_base.yaml"
         shell:
@@ -57,6 +61,8 @@ if config["arbigent"] is True:
             all_txt_rephased="{folder}/{sample}/arbigent/regenotyper_allsamples_bulk/all_sv_calls_phased.txt",
         log:
             "{folder}/log/rephase_all_txt/{sample}.log",
+        resources:
+            mem_mb=get_mem_mb,
         conda:
             "../envs/mc_base.yaml"
         shell:
@@ -82,6 +88,8 @@ if config["arbigent"] is True:
             ),
         log:
             "{folder}/log/make_output_vcfs/{sample}.log",
+        resources:
+            mem_mb=get_mem_mb,
         conda:
             "../envs/rtools.yaml"
         shell:
@@ -104,6 +112,8 @@ if config["arbigent"] is True:
             "{folder}/log/add_verdict/{sample}.log",
         params:
             names_gm_to_na=1,
+        resources:
+            mem_mb=get_mem_mb,
         conda:
             "../envs/rtools.yaml"
         shell:
@@ -126,6 +136,8 @@ if config["arbigent"] is True:
             "{folder}/log/qc_result/{sample}.log",
         conda:
             "../envs/rtools.yaml"
+        resources:
+            mem_mb=get_mem_mb,
         shell:
             """
             Rscript workflow/scripts/arbigent/qc_res_verdicted.R \

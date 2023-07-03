@@ -103,6 +103,7 @@ mosaiClassifierPrepare <- function(counts, info, strand, segs, normVector = NULL
     print(probs)
     print(strand)
 		message("[MosaiClassifier] Annotating strand-state")
+    
 		probs = addStrandStates(probs, strand)
 		probs[, expected:=mean*(end-start)/bin.size, by=.(sample, cell)]
 	}

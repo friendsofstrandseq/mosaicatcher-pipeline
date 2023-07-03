@@ -14,7 +14,7 @@ if config["ashleys_pipeline"] is False:
             counts="{folder}/{sample}/counts/{sample}.txt.populated.gz",
             info="{folder}/{sample}/counts/{sample}.info_raw",
         output:
-            "{folder}/{sample}/plots/counts/CountComplete.classic.pdf",
+            "{folder}/{sample}/plots/counts/CountComplete.raw.pdf",
         log:
             "{folder}/log/plot_mosaic_counts/{sample}.log",
         conda:
@@ -29,23 +29,44 @@ if config["ashleys_pipeline"] is False:
 
 rule divide_pdf:
     input:
-        "{folder}/{sample}/plots/counts/CountComplete.{plottype}.pdf",
+        "{folder}/{sample}/plots/counts/CountComplete.raw.pdf",
     output:
         report(
-            "{folder}/{sample}/plots/counts_{plottype}/{cell}.{i, \d+}.pdf",
+            "{folder}/{sample}/plots/counts_raw/{cell}.{i, \d+}.pdf",
             caption="../report/mosaic_counts.rst",
             category="Mosaic counts",
             subcategory="{sample}",
-            labels={"Cell": "{cell}", "Nb": "{i}", "Type": "{plottype}"},
+            labels={"Cell": "{cell}", "Nb": "{i}", "Type": "raw"},
         ),
     log:
-        "{folder}/log/{sample}/plots/counts_{plottype}/{cell}.{i, \d+}.log",
+        "{folder}/log/{sample}/plots/counts_raw/{cell}.{i, \d+}.log",
     conda:
         "../envs/mc_base.yaml"
     resources:
         mem_mb=get_mem_mb,
     script:
         "../scripts/plotting/dividing_pdf.py"
+
+
+# rule divide_pdf:
+#     input:
+#         "{folder}/{sample}/plots/counts/CountComplete.{plottype}.pdf",
+#     output:
+#         report(
+#             "{folder}/{sample}/plots/counts_{plottype}/{cell}.{i, \d+}.pdf",
+#             caption="../report/mosaic_counts.rst",
+#             category="Mosaic counts",
+#             subcategory="{sample}",
+#             labels={"Cell": "{cell}", "Nb": "{i}", "Type": "{plottype}"},
+#         ),
+#     log:
+#         "{folder}/log/{sample}/plots/counts_{plottype}/{cell}.{i, \d+}.log",
+#     conda:
+#         "../envs/mc_base.yaml"
+#     resources:
+#         mem_mb=get_mem_mb,
+#     script:
+#         "../scripts/plotting/dividing_pdf.py"
 
 
 rule final_results:
@@ -100,7 +121,7 @@ rule plot_SV_consistency_barplot:
 rule plot_clustering:
     input:
         sv_calls="{folder}/{sample}/mosaiclassifier/sv_calls/{method}_filter{filter}.tsv",
-        binbed="workflow/data/bin_200kb_all.bed",
+        binbed=ancient("workflow/data/bin_200kb_all.bed"),
     output:
         position=report(
             "{folder}/{sample}/plots/sv_clustering/{method}-filter{filter}-position.pdf",
@@ -150,7 +171,7 @@ rule plot_clustering_position_dev:
 rule plot_clustering_chromosome_dev:
     input:
         sv_calls="{folder}/{sample}/mosaiclassifier/sv_calls/{method}_filter{filter}.tsv",
-        binbed="workflow/data/bin_200kb_all.bed",
+        binbed=ancient(select_binbed),
         cluster_order_df="{folder}/{sample}/plots/sv_clustering_dev/clustering_{method}-filter{filter}-position.tsv",
     output:
         pdf=report(
@@ -274,3 +295,19 @@ rule plot_ploidy:
         mem_mb=get_mem_mb,
     script:
         "../scripts/plotting/ploidy_plot.py"
+
+rule ucsc_genome_browser_file:
+    input:
+        counts="{folder}/{sample}/counts/{sample}.txt.gz",
+        stringent_calls="{folder}/{sample}/mosaiclassifier/sv_calls/stringent_filterTRUE.tsv",
+        lenient_calls="{folder}/{sample}/mosaiclassifier/sv_calls/lenient_filterFALSE.tsv",
+    output:
+        "{folder}/{sample}/plots/UCSC/{sample}.bedUCSC.gz"
+    log:
+        "{folder}/log/ucsc_genome_browser_file/{sample}.bedUCSC.gz"
+    conda:
+        "../envs/mc_base.yaml"
+    resources:
+        mem_mb=get_mem_mb,
+    shell:
+        "python workflow/scripts/plotting/ucsc_vizu.py {input.counts} {input.stringent_calls} {input.lenient_calls} {output} > {log}"
