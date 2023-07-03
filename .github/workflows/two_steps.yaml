@@ -1,0 +1,68 @@
+# name: Ashleys + MosaiCatcher two-steps conda checks
+
+# on:
+#   schedule:
+#     # Run every Sunday at 00:00 UTC on the master branch
+#     - cron: "0 0 * * 0"
+#   push:
+#     branches:
+#       - "*"
+#       - "!master"
+
+# jobs:
+#   ashleys:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout pipeline repository
+#         uses: actions/checkout@v2
+#         with:
+#           repository: "friendsofstrandseq/ashleys-qc-pipeline"
+#           path: "ashleys-qc-pipeline"
+
+#       - name: Run snakemake
+#         uses: snakemake/snakemake-github-action@v1.24.0
+#         with:
+#           directory: "./ashleys-qc-pipeline"
+#           snakefile: "./ashleys-qc-pipeline/workflow/Snakefile"
+#           stagein: "conda config --set channel_priority flexible"
+#           args: "--cores 1 --use-conda --latency-wait 60 --configfile ./ashleys-qc-pipeline/.tests/config/simple_config.yaml --config ashleys_pipeline=True data_location=${{ GITHUB.WORKSPACE }}/ashleys-qc-pipeline/.tests/data_CHR17 --conda-frontend mamba -p --rerun-triggers mtime --verbose --debug"
+
+#       - name: Display file
+#         run: cat ./.tests/data_CHR17/RPE-BM510/cell_selection/labels.tsv
+#       - name: Run awk command
+#         run: |
+#           awk 'NR==5 || NR==7 || NR==10 {$0 = "0"} 1' ./.tests/data_CHR17/RPE-BM510/cell_selection/labels.tsv > tmp.tsv && mv tmp.tsv ./.tests/data_CHR17/RPE-BM510/cell_selection/labels.tsv
+#       - name: Display file
+#         run: cat ./.tests/data_CHR17/RPE-BM510/cell_selection/labels.tsv
+
+#       - name: Upload artifacts
+#         uses: actions/upload-artifact@v2
+#         with:
+#           name: ashleys-data
+#           path: ./.tests/data_CHR17
+
+#   mosaicatcher:
+#     runs-on: ubuntu-latest
+#     needs:
+#       - ashleys
+
+#     steps:
+#       - name: Checkout current repository
+#         uses: actions/checkout@v2
+#         with:
+#           path: "mosaicatcher-pipeline"
+
+#       - name: Download artifacts
+#         uses: actions/download-artifact@v2
+#         with:
+#           name: ashleys-data
+#           path: ./.tests/data_CHR17
+
+#       - name: Run snakemake
+#         uses: snakemake/snakemake-github-action@v1.24.0
+#         with:
+#           directory: "."
+#           snakefile: "./workflow/Snakefile"
+#           stagein: "conda config --set channel_priority flexible"
+#           args: "--cores 1 --use-conda --latency-wait 60 --configfile .tests/config/simple_config.yaml --config ashleys_pipeline=True data_location=./.tests/data_CHR17 --conda-frontend mamba -p --rerun-triggers mtime --verbose --debug"

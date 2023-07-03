@@ -19,7 +19,7 @@ if config["ashleys_pipeline"] is False:
         script:
             "../scripts/utils/generate_exclude_file.py"
 
-    rule mosaic_count:
+    checkpoint mosaic_count:
         input:
             bam=lambda wc: expand(
                 "{folder}/{sample}/bam/{cell}.sort.mdup.bam",
@@ -60,7 +60,7 @@ if config["ashleys_pipeline"] is False:
 
     rule populate_counts:
         input:
-            bin_bed="workflow/data/bin_200kb_all.bed",
+            bin_bed=ancient("workflow/data/bin_200kb_all.bed"),
             counts="{folder}/{sample}/counts/{sample}.txt.raw.gz",
         output:
             populated_counts="{folder}/{sample}/counts/{sample}.txt.populated.gz",
@@ -167,7 +167,9 @@ rule remove_unselected_bam_empty:
 checkpoint filter_bad_cells_from_mosaic_count:
     input:
         info_raw="{folder}/{sample}/counts/{sample}.info_raw",
-        counts_sort="{folder}/{sample}/counts/{sample}.txt.raw.gz",
+        # counts_sort="{folder}/{sample}/counts/multistep_normalisation/{sample}.txt.scaled.GC.VST.reformat.gz",
+        # counts_sort="{folder}/{sample}/counts/{sample}.txt.raw.gz",
+        counts_sort=select_counts_for_SV_calling,
         labels="{folder}/{sample}/config/labels.tsv",
     output:
         info="{folder}/{sample}/counts/{sample}.info",
@@ -183,6 +185,8 @@ checkpoint filter_bad_cells_from_mosaic_count:
         "../scripts/utils/filter_bad_cells.py"
 
 
+# if config["multistep_normalisation"] == False:
+
 if (
     config["hgsvc_based_normalized_counts"] is True
     and (config["window"] in [50000, 100000, 200000])
@@ -191,8 +195,8 @@ if (
 
     rule merge_blacklist_bins_for_norm:
         input:
-            norm="workflow/data/normalization/{reference}/HGSVC.{window}.txt",
-            whitelist="workflow/data/normalization/inversion-whitelist.tsv",
+            norm=ancient("workflow/data/normalization/{reference}/HGSVC.{window}.txt"),
+            whitelist=ancient("workflow/data/normalization/inversion-whitelist.tsv"),
         output:
             merged="{folder}/{sample}/normalizations/{reference}/HGSVC.{window}.merged.tsv",
         log:
@@ -210,7 +214,9 @@ else:
 
     rule merge_blacklist_bins:
         input:
-            norm="workflow/data/arbigent/normalization/{reference}/HGSVC.{window}.txt",
+            norm=ancient(
+                "workflow/data/arbigent/normalization/{reference}/HGSVC.{window}.txt"
+            ),
         output:
             merged="{folder}/{sample}/normalizations/{reference}/HGSVC.{window}.merged.tsv",
         log:
@@ -241,23 +247,28 @@ rule normalize_counts:
         "../envs/rtools.yaml"
     resources:
         mem_mb=get_mem_mb,
+    params:
+        normalisation_type=config["hgsvc_based_normalized_counts"],
     shell:
         """
-        Rscript workflow/scripts/normalization/normalize.R {input.counts} {input.norm} {output} 2>&1 > {log}
+        Rscript workflow/scripts/normalization/normalize.R {input.counts} {input.norm} {output} {params.normalisation_type} 2>&1 > {log}
         """
 
 
-# rule cp_mosaic_count:
-#     input:
-#         "{folder}/{sample}/counts/{sample}.txt.filter.gz",
-#     output:
-#         "{folder}/{sample}/counts/{sample}.txt.gz",
-#     log:
-#         "{folder}/log/counts/{sample}.log",
-#     conda:
-#         "../envs/mc_base.yaml"
-#     shell:
-#         "cp {input} {output}"
+# else:
+
+
+#     rule cp_mosaic_count:
+#         input:
+#             "{folder}/{sample}/counts/{sample}.txt.filter.gz",
+#         output:
+#             "{folder}/{sample}/counts/{sample}.txt.gz",
+#         log:
+#             "{folder}/log/counts/{sample}.log",
+#         conda:
+#             "../envs/mc_base.yaml"
+#         shell:
+#             "cp {input} {output}"
 
 
 rule sort_counts:

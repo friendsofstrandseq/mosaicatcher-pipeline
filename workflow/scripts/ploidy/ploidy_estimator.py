@@ -267,6 +267,7 @@ def compute_watson_fractions(input_file, window_size, shift_size, not_sorted, jo
         sorted(cells_in_data - set(sanity_checks.keys()))
     )
     for cell, chroms in sanity_checks.items():
+        print(cell, chroms, len(chroms), chrom_in_data, len(chrom_in_data))
         assert len(chroms) == len(chrom_in_data), "Missing chromosome(s) for cell {}: {}".format(cell, chrom_in_data - chroms)
     logger.debug("Begin data merging...")
     fraction_dataset = merge_chromosome_subsets(fraction_dataset)

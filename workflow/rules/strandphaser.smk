@@ -51,7 +51,9 @@ rule run_strandphaser_per_chrom:
         wcregions="{folder}/{sample}/strandphaser/strandphaser_input.txt",
         snppositions=locate_snv_vcf,
         configfile="{folder}/{sample}/strandphaser/StrandPhaseR.{chrom}.config",
-        bsgenome="workflow/data/ref_genomes/config/BSgenome_{}.ok".format(config['reference']),
+        bsgenome="workflow/data/ref_genomes/config/BSgenome_{}.ok".format(
+            config["reference"]
+        ),
         # bsgenome=bsgenome_install,
     output:
         "{folder}/{sample}/strandphaser/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt",
@@ -62,6 +64,7 @@ rule run_strandphaser_per_chrom:
         "../envs/rtools.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
+        time="10:00:00",
     params:
         # input_bam=lambda wc: "{}/{}/bam".format(config["data_location"], wc.sample),
         input_bam=lambda wc: "{}/{}/selected".format(config["data_location"], wc.sample),
@@ -69,6 +72,7 @@ rule run_strandphaser_per_chrom:
             config["data_location"], wc.sample, wc.chrom
         ),
     shell:
+        # Rscript afac/StrandPhaseR_pipeline.R \
         """
         Rscript workflow/scripts/strandphaser_scripts/StrandPhaseR_pipeline.R \
                 {params.input_bam} \
