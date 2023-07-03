@@ -208,6 +208,7 @@ By using these heatmaps, the user can easily identify subclones based on the SV 
 
 ---
 
+
 File path: `<OUTPUT_FOLDER>/<SAMPLE>/stats/stats-merged.tsv`
 
 Report category: `Stats`
