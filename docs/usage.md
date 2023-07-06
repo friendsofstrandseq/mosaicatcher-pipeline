@@ -61,7 +61,7 @@ snakemake \
 
 **ℹ️ Note for 🇪🇺 EMBL users**
 
-- You can load already installed snakemake modusl on the HPC (by connecting to login01 & login02) using the following `module load snakemake/7.14.0-foss-2022a`
+- You can load already installed snakemake modules on the HPC (by connecting to login01 & login02) using the following `module load snakemake/7.14.0-foss-2022a`
 - Use the following command for singularity-args parameter: `--singularity-args "-B /g:/g -B /scratch:/scratch"`
 
 ---

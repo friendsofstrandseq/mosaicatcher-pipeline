@@ -33,8 +33,9 @@ All these arguments can be specified in two ways:
 | ---------------------------------------- | --------------------------------------------------------------------------------------------------- | ------- | ------------ |
 | `multistep_normalisation_analysis`       | Allow to perform multistep normalisation including GC correction for visualization (Marco Cosenza). | False   | False        |
 | `multistep_normalisation_for_SV_calling` | Allow to use multistep normalisation count file during SV calling (Marco Cosenza).                  | False   | False        |
-| `arbigent`                               | Enable ArbiGent mode of execution to genotype SV based on arbitrary segments                        | False   | True         |
-| `scNOVA`                                 | Enable scNOVA mode of execution to compute Nucleosome Occupancy (NO) of detected SV                 | False   | True         |
+| `hgsvc_based_normalized_counts`          | Use HGSVC based normalisation .                                                                     | True    | False        |
+| `arbigent`                               | Enable ArbiGent mode of execution to genotype SV based on arbitrary segments                        | False   | False        |
+| `scNOVA`                                 | Enable scNOVA mode of execution to compute Nucleosome Occupancy (NO) of detected SV                 | False   | False        |
 
 ### External files
 
@@ -66,10 +67,12 @@ All these arguments can be specified in two ways:
 
 ### EMBL specific options
 
-| Parameter              | Comment                                                                                               | Default |
-| ---------------------- | ----------------------------------------------------------------------------------------------------- | ------- |
-| `genecore`             | Enable/disable genecore mode to give as input the genecore shared folder in /g/korbel/shared/genecore | False   |
-| `genecore_date_folder` | Specify folder to be processed                                                                        |         |
+| Parameter                 | Comment                                                                                               | Default                                     |
+| ------------------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| `genecore`                | Enable/disable genecore mode to give as input the genecore shared folder in /g/korbel/shared/genecore | False                                       |
+| `genecore_date_folder`    | Specify folder to be processed                                                                        |                                             |
+| `genecore_prefix`         | Specify genecore prefix folder                                                                        | /g/korbel/STOCKS/Data/Assay/sequencing/2023 |
+| `genecore_regex_elements` | Specify genecore regex element to be used to distinguish sample from well number                      | PE20                                        |
 
 If `genecore` and `genecore_date_folder` are correctly specified, each plate will be processed independently by creating a specific folder in the `data_location` folder.
 

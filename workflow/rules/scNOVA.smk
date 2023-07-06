@@ -85,7 +85,7 @@ rule remove_low_quality_reads:
         None
     input:
         bam="{folder}/{sample}/selected/{cell}.sort.mdup.bam",
-        check="workflow/data/scNOVA/log/dl.ok",
+        # check="workflow/data/scNOVA/log/dl.ok",
     output:
         bam_pre="{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono.bam",
         bam_header="{folder}/{sample}/scNOVA_bam_modified/{cell}.header_test.sam",
