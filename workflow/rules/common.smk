@@ -98,6 +98,13 @@ if (
     ), "hgsvc_based_normalized_counts and multistep_normalisation_for_SV_calling parameters cannot both be set to True, parameters are mutually exclusive"
 
 
+if (config["multistep_normalisation_for_SV_calling"] is True):
+    assert config["multistep_normalisation_for_SV_calling"] == config["multistep_normalisation"], "multistep_normalisation parameter should be set to True"
+
+if (config["multistep_normalisation_for_SV_calling"] is True):
+    assert config["multistep_normalisation_for_SV_calling"] == config["ashleys_pipeline"], "ashleys_pipeline parameter should be set to True when multistep_normalisation_for_SV_calling is used"
+
+
 # Configure if handle_input needs to be based on bam or fastq
 bam = True if config["ashleys_pipeline"] is False else False
 
