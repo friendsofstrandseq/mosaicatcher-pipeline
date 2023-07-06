@@ -1,84 +1,8 @@
-# Outputs (ongoing)
+# Outputs
 
 This document describes the final outputs produced by the pipeline. Most of the plots are taken from report generated from the [full-sized test dataset](https://sandbox.zenodo.org/record/1074721) for the pipeline.
 
 The files listed below will be created in the selected results directory (`output_location` parameter). All paths are relative to the top-level results directory.
-
-## Directory structure (example for `<SAMPLE>`=_RPE-BM510_)
-
-```bash
-<DATA_LOCATION>/<SAMPLE>
-|-- alfred
-|   |-- Celln.tsv.gz
-|   `-- Celln.json.gz
-|-- bam
-|   |-- Cell1.sort.mdup.bam
-|   |-- Cell2.sort.mdup.bam
-|   `-- Celln.sort.mdup.bam
-|-- cell_selection
-|   |-- labels_raw.tsv
-|   `-- labels.tsv
-|-- config
-|   |-- chroms_to_exclude.txt
-|   `-- single_paired_end_detection.txt
-|-- counts
-|   `-- RPE-BM510
-|       `-- counts-per-cell
-|-- fastq
-|   |-- Cell1.1.fastq.gz
-|   |-- Cell1.2.fastq.gz
-|   |-- Cell2.1.fastq.gz
-|   `-- Cell2.2.fastq.gz
-|-- haplotag
-|   |-- bam
-|   |   `-- RPE-BM510
-|   |-- bed
-|   `-- table
-|       `-- RPE-BM510
-|           `-- by-cell
-|-- log
-|   |-- ...
-|   `-- ...
-|-- merged_bam
-|   `-- merged_bam.bam
-|-- mosaiclassifier
-|   |-- haplotag_likelihoods
-|   |-- postprocessing
-|   |   |-- filter
-|   |   |   `-- RPE-BM510
-|   |   |-- group-table
-|   |   |   `-- RPE-BM510
-|   |   `-- merge
-|   |       `-- RPE-BM510
-|   |-- sv_calls
-|   |   `-- RPE-BM510
-|   `-- sv_probabilities
-|       `-- RPE-BM510
-|-- plots
-|   `-- RPE-BM510
-|       |-- counts
-|       |-- final_results
-|       |-- sv_calls
-|       |-- sv_clustering
-|       `-- sv_consistency
-|-- segmentation
-|   `-- RPE-BM510
-|       `-- segmentation-per-cell
-|-- snv_genotyping
-|   `-- RPE-BM510
-|-- stats
-|   `-- RPE-BM510
-`-- strandphaser
-    |-- phased-snvs
-    |-- RPE-BM510
-    |   `-- StrandPhaseR_analysis.chr21
-    |       |-- browserFiles
-    |       |-- data
-    |       |-- Phased
-    |       |-- SingleCellHaps
-    |       `-- VCFfiles
-    `-- R_setup
-```
 
 ## Plots folder
 
@@ -207,7 +131,6 @@ By using these heatmaps, the user can easily identify subclones based on the SV 
 ## Statistics
 
 ---
-
 
 File path: `<OUTPUT_FOLDER>/<SAMPLE>/stats/stats-merged.tsv`
 
