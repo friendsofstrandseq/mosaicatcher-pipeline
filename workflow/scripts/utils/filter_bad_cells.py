@@ -27,16 +27,20 @@ print(labels)
 b_ashleys = "ENABLED" if snakemake.config["ashleys_pipeline"] is True else "DISABLED"
 b_old = "ENABLED" if snakemake.config["input_bam_legacy"] is True else "DISABLED"
 
-# snakemake_log.write("ASHLEYS preprocessing module: {}".format(b_ashleys))
-# snakemake_log.write("input_bam_legacy parameter: {}".format(b_old))
-# snakemake_log.write("Computing intersection between lists ...")
+snakemake_log.write("ASHLEYS preprocessing module: {}".format(b_ashleys))
+snakemake_log.write("input_bam_legacy parameter: {}".format(b_old))
+snakemake_log.write("Computing intersection between lists ...")
 
 # IF BOTH MOSAIC INFO FILE & LABELS DF ARE AVAILABLE + SAME SIZE
 if labels.shape[0] == df.shape[0]:
-    print("labels.shape[0] == df.shape[0]")
-    cells_to_keep_labels = labels.loc[labels["prediction"] == 1]["cell"].str.replace(".sort.mdup.bam", "").sort_values().tolist()
-    cells_to_keep_mosaic = df.loc[df["pass1"] == 1]["cell"].unique().tolist()
-    cells_to_keep = list(sorted(list(set(cells_to_keep_labels).intersection(cells_to_keep_mosaic))))
+    if len(set(labels.cell.values.tolist()).intersection(set(df.cell.values.tolist()))) == labels.shape[0]:
+        print("labels.shape[0] == df.shape[0]")
+        cells_to_keep_labels = labels.loc[labels["prediction"] == 1]["cell"].str.replace(".sort.mdup.bam", "").sort_values().tolist()
+        cells_to_keep_mosaic = df.loc[df["pass1"] == 1]["cell"].unique().tolist()
+        cells_to_keep = list(sorted(list(set(cells_to_keep_labels).intersection(cells_to_keep_mosaic))))
+    else:
+        sys.exit("Ashleys labels & Mosaicatcher count info file do not share the same cell naming format")
+
 
 else:
     # CATCH ERROR IF DIFFERENT SIZES AND CONFIG ENABLED
@@ -47,7 +51,7 @@ else:
     # ELSE NORMAL MODE
     else:
         print("df.shape[0] only")
-        # snakemake_log.write("Standard mode using only 'mosaic count info' file")
+        snakemake_log.write("Standard mode using only 'mosaic count info' file")
         cells_to_keep = df.loc[df["pass1"] == 1]["cell"].unique().tolist()
 
 
@@ -55,13 +59,13 @@ else:
 df_kept = df.loc[df["cell"].isin(cells_to_keep)]
 df_removed = df.loc[~df["cell"].isin(cells_to_keep)]
 
-# snakemake_log.write("List of cells kept: ")
-# for cell in sorted(cells_to_keep):
-#     snakemake_log.write("- {cell}".format(cell=cell))
+snakemake_log.write("List of cells kept: ")
+for cell in sorted(cells_to_keep):
+    snakemake_log.write("- {cell}".format(cell=cell))
 
-# snakemake_log.write("List of cells removed:")
-# for cell in sorted(df_removed["cell"].values.tolist()):
-#     snakemake_log.write("- {cell}".format(cell=cell))
+snakemake_log.write("List of cells removed:")
+for cell in sorted(df_removed["cell"].values.tolist()):
+    snakemake_log.write("- {cell}".format(cell=cell))
 
 
 df_counts = pd.read_csv(snakemake.input.counts_sort, compression="gzip", sep="\t")

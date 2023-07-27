@@ -77,11 +77,6 @@ if config["chromosomes_to_exclude"]:
 # #     )
 
 if config["ashleys_pipeline"] is True:
-    for sample in [e for e in os.listdir(config["data_location"]) if e not in exclude]:
-        if len(sample.split("_")) == 4:
-            assert (
-                len(sample.split("_")) != 4
-            ), "Your sample name is using 4 times the '_' character, which is currently not supported by ashleys-qc"
 
     assert (
         config["ashleys_pipeline"] != config["input_bam_legacy"]
@@ -101,8 +96,11 @@ if (
 if (config["multistep_normalisation_for_SV_calling"] is True):
     assert config["multistep_normalisation_for_SV_calling"] == config["multistep_normalisation"], "multistep_normalisation parameter should be set to True"
 
-if (config["multistep_normalisation_for_SV_calling"] is True):
-    assert config["multistep_normalisation_for_SV_calling"] == config["ashleys_pipeline"], "ashleys_pipeline parameter should be set to True when multistep_normalisation_for_SV_calling is used"
+# if (config["multistep_normalisation_for_SV_calling"] is True):
+#     assert config["multistep_normalisation_for_SV_calling"] == config["ashleys_pipeline"], "ashleys_pipeline parameter should be set to True when multistep_normalisation_for_SV_calling is used"
+
+if (config["ashleys_pipeline_only"] is True):
+    assert config["ashleys_pipeline_only"] == config["ashleys_pipeline"], "ashleys_pipeline parameter should be set to True when ashleys_pipeline_only is also set to True"
 
 
 # Configure if handle_input needs to be based on bam or fastq
@@ -284,6 +282,13 @@ class HandleInput:
                 )
                 if f.endswith(ext)
             ]
+            # print(l_files_all)
+
+            for f in l_files_all:
+                if len(f.split("_")) == 4:
+                    assert (
+                        len(f.split("_")) != 4
+                    ), "Your file name is using 4 times the '_' character, which is currently not supported by ashleys-qc, please rename your files"
 
             # Dataframe creation
             df = pd.DataFrame([{"File": f} for f in l_files_all])
@@ -846,8 +851,8 @@ def get_final_output():
     if config["scNOVA"] is True:
         # print("TOTO")
         final_list.extend(get_final_output_scnova())
-    # from pprint import pprint
-    # pprint(final_list)
+    from pprint import pprint
+    pprint(final_list)
 
     return final_list
 
@@ -897,21 +902,8 @@ def get_all_plots(wildcards):
 
     l_outputs = list()
 
-    tmp_l_divide = [
-        expand(
-            "{folder}/{sample}/plots/counts_{plottype}/{cell}.{i}.pdf",
-            folder=config["data_location"],
-            sample=sample,
-            plottype=["raw"],
-            # plottype=plottype_counts,
-            cell=tmp_dict[sample][i],
-            i=i,
-        )
-        for sample in samples
-        for i in range(dict_cells_nb_per_sample[sample] + 1)
-    ]
-    tmp_l_divide.extend(
-        [
+
+    tmp_l_divide_count_plots =   [
             expand(
                 "{folder}/{sample}/plots/counts/CountComplete.{plottype}.pdf",
                 folder=config["data_location"],
@@ -921,10 +913,28 @@ def get_all_plots(wildcards):
             )
             for sample in samples
         ]
-    )
+    l_outputs.extend([sub_e for e in tmp_l_divide_count_plots for sub_e in e])
+
+    
 
     if config["split_qc_plot"] is True:
+        # print("OK")
+
+        tmp_l_divide = [
+            expand(
+                "{folder}/{sample}/plots/counts_{plottype}/{cell}.{i}.pdf",
+                folder=config["data_location"],
+                sample=sample,
+                # plottype=["raw"],
+                plottype=plottype_counts,
+                cell=tmp_dict[sample][i],
+                i=i,
+            )
+            for sample in samples
+            for i in range(dict_cells_nb_per_sample[sample] + 1)
+        ]
         l_outputs.extend([sub_e for e in tmp_l_divide for sub_e in e])
+
 
     if config["arbigent"] is True:
         l_outputs.extend(
@@ -1052,6 +1062,6 @@ def get_all_plots(wildcards):
             ),
         )
 
-    # from pprint import pprint
-    # pprint(l_outputs)
+    from pprint import pprint
+    pprint(l_outputs)
     return l_outputs

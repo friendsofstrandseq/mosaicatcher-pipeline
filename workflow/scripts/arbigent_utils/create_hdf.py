@@ -64,7 +64,7 @@ def convert_mapping_counts(raw_counts, process_chrom):
     process_genome = process_chrom == "genome"
 
     with xopen.xopen(raw_counts, mode="rt") as bedfile:
-        columns = bedfile.readline().strip().split()
+        columns = bedfile.readline().strip().split(" ")
         if not int(columns[1]) == 0:
             raise ValueError("Mapping counts track does not start at beginning of chromosome: {}".format("\t".join(columns)))
         bin_size = int(columns[2]) - int(columns[1])
@@ -77,7 +77,7 @@ def convert_mapping_counts(raw_counts, process_chrom):
         chroms_seen = set()
 
         for line in bedfile:
-            chrom, start, _, correct_reads, incorrect_reads = line.split()
+            chrom, start, _, correct_reads, incorrect_reads = line.split(" ")
             if not process_genome:
                 if process_chrom != chrom:
                     continue
@@ -116,7 +116,6 @@ def convert_mapping_counts(raw_counts, process_chrom):
 
 
 def main():
-
     # args = parse_command_line()
 
     map_counts_file = convert_mapping_counts(snakemake.input.mapping_track, "genome")
