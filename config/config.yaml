@@ -1,4 +1,4 @@
-version: 2.1.3
+version: 2.2.0
 ashleys_pipeline_version: 2.1.3
 #######################################
 #   MOSAICATCHER CONFIGURATION FILE   #
@@ -29,6 +29,10 @@ hgsvc_based_normalized_counts: True
 input_bam_legacy: False
 # Enable/Disable ashleys-qc-pipeline module loading to start pipeline from FASTQ files
 ashleys_pipeline: False
+# Target only output of ashleys-qc-pipeline
+ashleys_pipeline_only: False
+# Enable / Disable blacklisting of difficult mappable regions
+blacklist_regions: True
 # Enable / Disable comparison for each BAM file between folder name & SM tag
 check_sm_tag: True
 # Split / Do not split QC counts plot into single individual images (limit jobs)

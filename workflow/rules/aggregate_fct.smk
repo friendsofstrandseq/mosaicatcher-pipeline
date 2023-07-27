@@ -265,15 +265,14 @@ def remove_unselected_fct(wildcards):
     # print(cell_list)
     # print(len(cell_list))
     if len(cell_list) == 0:
+    # if len(cell_list) == 0 or config["input_bam_legacy"] is True:
         return "{folder}/{sample}/config/remove_unselected_bam_empty.ok"
     else:
         return "{folder}/{sample}/config/remove_unselected_bam.ok"
 
 
 def select_counts_for_SV_calling(wildcards):
-    if (config["ashleys_pipeline"] == True) and (
-        config["multistep_normalisation_for_SV_calling"] == True
-    ):
+    if config["multistep_normalisation_for_SV_calling"] == True:
         return "{folder}/{sample}/counts/multistep_normalisation/{sample}.txt.scaled.GC.VST.reformat.gz"
     else:
         return "{folder}/{sample}/counts/{sample}.txt.raw.gz"
