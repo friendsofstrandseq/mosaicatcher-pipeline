@@ -88,6 +88,16 @@ ashleys_pipeline:
   type: bool
   required: False
   default: False
+ashleys_pipeline_only:
+  desc: Stop execution at the output of ashleys-pipeline in order to procede to manual & additional selection of cells
+  type: bool
+  required: False
+  default: False
+blacklist_regions:
+  desc: Enable/Disable blacklisting during counting step
+  type: bool
+  required: False
+  default: False
 arbigent:
   desc: Enable ArbiGent mode of execution to genotype specific regions of Strand Seq libraries
   type: bool

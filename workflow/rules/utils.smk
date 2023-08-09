@@ -1,3 +1,24 @@
+rule check_sm_tag:
+    input:
+        "{folder}/{sample}/bam/{cell}.sort.mdup.bam",
+    output:
+        "{folder}/{sample}/checks/{cell}.sm_check.ok",
+    log:
+        "{folder}/log/{sample}/checks/{cell}.sm_check.log",
+    conda:
+        "../envs/mc_bioinfo_tools.yaml"
+    shell:
+        """
+        sample_name="{wildcards.sample}"
+        sm_tag=$(samtools view -H {input} | grep '^@RG' | sed "s/.*SM:\([^\\t]*\).*/\\1/g")
+        
+        if [[ $sample_name == $sm_tag ]]; then 
+            echo "{input}: $sm_tag $sample_name OK" > {output}
+            echo "{input}: $sm_tag $sample_name OK" > {log}
+        else
+            echo "{input}: $sm_tag $sample_name MISMATCH" > {log}
+        fi
+        """
 
 
 rule index_input_bam:

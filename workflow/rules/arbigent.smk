@@ -1,5 +1,4 @@
 if config["arbigent"] is True:
-
     ################ RULES FOR PART 1:
     ############### RUNNING REGENOTYPER MAIN PART, up to Phasing
 

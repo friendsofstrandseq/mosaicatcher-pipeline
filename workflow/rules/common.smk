@@ -56,6 +56,7 @@ exclude = [
     "strandphaser",
 ]
 
+
 if config["reference"] == "mm10":
     config["chromosomes"] = [
         "chr{e}".format(e=str(e)) for e in list(range(1, 20)) + ["X", "Y"]
@@ -77,12 +78,6 @@ if config["chromosomes_to_exclude"]:
 # #     )
 
 if config["ashleys_pipeline"] is True:
-    for sample in [e for e in os.listdir(config["data_location"]) if e not in exclude]:
-        if len(sample.split("_")) == 4:
-            assert (
-                len(sample.split("_")) != 4
-            ), "Your sample name is using 4 times the '_' character, which is currently not supported by ashleys-qc"
-
     assert (
         config["ashleys_pipeline"] != config["input_bam_legacy"]
     ), "ashleys_pipeline and input_bam_legacy parameters cannot both be set to True"
@@ -98,15 +93,30 @@ if (
     ), "hgsvc_based_normalized_counts and multistep_normalisation_for_SV_calling parameters cannot both be set to True, parameters are mutually exclusive"
 
 
-if (config["multistep_normalisation_for_SV_calling"] is True):
-    assert config["multistep_normalisation_for_SV_calling"] == config["multistep_normalisation"], "multistep_normalisation parameter should be set to True"
+if config["multistep_normalisation_for_SV_calling"] is True:
+    assert (
+        config["multistep_normalisation_for_SV_calling"]
+        == config["multistep_normalisation"]
+    ), "multistep_normalisation parameter should be set to True"
 
-if (config["multistep_normalisation_for_SV_calling"] is True):
-    assert config["multistep_normalisation_for_SV_calling"] == config["ashleys_pipeline"], "ashleys_pipeline parameter should be set to True when multistep_normalisation_for_SV_calling is used"
+# if (config["multistep_normalisation_for_SV_calling"] is True):
+#     assert config["multistep_normalisation_for_SV_calling"] == config["ashleys_pipeline"], "ashleys_pipeline parameter should be set to True when multistep_normalisation_for_SV_calling is used"
+
+if config["ashleys_pipeline_only"] is True:
+    assert (
+        config["ashleys_pipeline_only"] == config["ashleys_pipeline"]
+    ), "ashleys_pipeline parameter should be set to True when ashleys_pipeline_only is also set to True"
+
+
+if config["scNOVA"] is True:
+    assert (
+        "chrY" not in config["chromosomes"]
+    ), "chrY is not handled by scNOVA yet, please remove it for config['chromosomes'] and add it in config['chomosomes_to_exclude']"
 
 
 # Configure if handle_input needs to be based on bam or fastq
 bam = True if config["ashleys_pipeline"] is False else False
+
 
 # Simple class to retrieve automatically files in the fastq/bam folder and create a config dataframe
 class HandleInput:
@@ -273,7 +283,11 @@ class HandleInput:
         complete_df_list = list()
         # List of folders/files to not consider (restrict to samples only)
 
-        for sample in [e for e in os.listdir(thisdir) if e not in exclude]:
+        l_to_process = [e for e in os.listdir(thisdir) if e not in exclude]
+        if config["samples_to_process"]:
+            l_to_process = [e for e in l_to_process if e in config["samples_to_process"]]
+
+        for sample in l_to_process:
             # Create a list of  files to process for each sample
             l_files_all = [
                 f
@@ -284,6 +298,13 @@ class HandleInput:
                 )
                 if f.endswith(ext)
             ]
+            # print(l_files_all)
+
+            for f in l_files_all:
+                if len(f.split("_")) == 4:
+                    assert (
+                        len(f.split("_")) != 4
+                    ), "Your file name is using 4 times the '_' character, which is currently not supported by ashleys-qc, please rename your files"
 
             # Dataframe creation
             df = pd.DataFrame([{"File": f} for f in l_files_all])
@@ -295,6 +316,7 @@ class HandleInput:
                 thisdir=thisdir, sample=sample, folder=folder
             )
             df["Full_path"] = df["Full_path"] + df["File"] + ext
+            # print(df)
 
             complete_df_list.append(df)
 
@@ -310,7 +332,6 @@ class HandleInput:
 
 
 def findstem(arr):
-
     # Determine size of the array
     n = len(arr)
 
@@ -323,13 +344,11 @@ def findstem(arr):
 
     for i in range(l):
         for j in range(i + 1, l + 1):
-
             # generating all possible substrings
             # of our reference string arr[0] i.e s
             stem = s[i:j]
             k = 1
             for k in range(1, n):
-
                 # Check if the generated stem is
                 # common to all words
                 if stem not in arr[k]:
@@ -897,33 +916,34 @@ def get_all_plots(wildcards):
 
     l_outputs = list()
 
-    tmp_l_divide = [
+    tmp_l_divide_count_plots = [
         expand(
-            "{folder}/{sample}/plots/counts_{plottype}/{cell}.{i}.pdf",
+            "{folder}/{sample}/plots/counts/CountComplete.{plottype}.pdf",
             folder=config["data_location"],
             sample=sample,
-            plottype=["raw"],
-            # plottype=plottype_counts,
-            cell=tmp_dict[sample][i],
-            i=i,
+            # plottype=["raw"],
+            plottype=plottype_counts,
         )
         for sample in samples
-        for i in range(dict_cells_nb_per_sample[sample] + 1)
     ]
-    tmp_l_divide.extend(
-        [
-            expand(
-                "{folder}/{sample}/plots/counts/CountComplete.{plottype}.pdf",
-                folder=config["data_location"],
-                sample=sample,
-                # plottype=["raw"],
-                plottype=plottype_counts,
-            )
-            for sample in samples
-        ]
-    )
+    l_outputs.extend([sub_e for e in tmp_l_divide_count_plots for sub_e in e])
 
     if config["split_qc_plot"] is True:
+        # print("OK")
+
+        tmp_l_divide = [
+            expand(
+                "{folder}/{sample}/plots/counts_{plottype}/{cell}.{i}.pdf",
+                folder=config["data_location"],
+                sample=sample,
+                plottype=["raw"],
+                # plottype=plottype_counts,
+                cell=tmp_dict[sample][i],
+                i=i,
+            )
+            for sample in samples
+            for i in range(dict_cells_nb_per_sample[sample] + 1)
+        ]
         l_outputs.extend([sub_e for e in tmp_l_divide for sub_e in e])
 
     if config["arbigent"] is True:
@@ -936,7 +956,6 @@ def get_all_plots(wildcards):
         )
 
     else:
-
         # SV_consistency section
 
         l_outputs.extend(

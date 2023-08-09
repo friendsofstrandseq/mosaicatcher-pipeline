@@ -1,39 +1,94 @@
-version: 2.1.3
-ashleys_pipeline_version: 2.1.3
-#######################################
-#   MOSAICATCHER CONFIGURATION FILE   #
-#######################################
-# Option to display all potential options - listed in config_metadata.yaml
-list_commands: False
-# To be informed of pipeline status
+# --------------------------------------------------------
+# MosaiCatcher pipeline Configuration
+# --------------------------------------------------------
+
+# MosaiCatcher version
+version: 2.2.0
+
+# Ashleys-QC pipeline version
+ashleys_pipeline_version: 2.2.0
+
+# Email for notifications about the pipeline's status
 email: ""
-# Input BAM location
+
+# List of samples to process if multiple are specified
+samples_to_process: []
+
+# --------------------------------------------------------
+# Data location & I/O
+# --------------------------------------------------------
+
+# Absolute path to the data location (modify as needed)
 data_location: ".tests/data_CHR17"
-# Reference assembly selected
-reference: "hg38"
-# Enable / Disable multistep normalisation analysis
-multistep_normalisation: False
-# Enable / Disable multistep normalisation output for SV calling
-multistep_normalisation_for_SV_calling: False
-# ArbiGent (Arbitrary-segments genotyping) mode of execution
-arbigent: False
-# Arbigent default BED file, can be changed and adapted based on user question
-arbigent_bed_file: "workflow/data/arbigent/manual_segmentation.bed"
-# Enable / Disable MultiQC aggregation
-MultiQC: False
-# Plate orientation for GC analysis
-plate_orientation: landscape
-# Normalize or not mosaic counts
-hgsvc_based_normalized_counts: True
-# Mutually exclusive with ashleys_pipeline
+
+# Directory to publish important data (e.g., stats, plots, counts). Leave empty if not required.
+publishdir: ""
+
+# --------------------------------------------------------
+# Ashleys-QC upstream pipeline
+# --------------------------------------------------------
+
+# Legacy folder organisation: bam/ and selected/ folder - Mutually exclusive with ashleys_pipeline
 input_bam_legacy: False
+
 # Enable/Disable ashleys-qc-pipeline module loading to start pipeline from FASTQ files
 ashleys_pipeline: False
-# Enable / Disable comparison for each BAM file between folder name & SM tag
-check_sm_tag: True
-# Split / Do not split QC counts plot into single individual images (limit jobs)
-split_qc_plot: True
-# Chromosomes list to process
+
+# Target only output of ashleys-qc-pipeline
+ashleys_pipeline_only: False
+
+# Threshold for Ashleys-qc binary classification
+ashleys_threshold: 0.5
+
+# Enable or disable FastQC analysis
+MultiQC: False
+
+# --------------------------------------------------------
+# GENECORE Configuration
+# --------------------------------------------------------
+
+genecore: False
+genecore_date_folder: ""
+genecore_prefix: "/g/korbel/STOCKS/Data/Assay/sequencing/2023"
+genecore_regex_element: "PE20"
+
+# --------------------------------------------------------
+# Reference Data Configuration
+# --------------------------------------------------------
+
+# Reference genome used by BWA to map FASTQ files
+reference: "hg38"
+
+# Reference assemblies data
+references_data:
+  "hg38":
+    reference_fasta: "workflow/data/ref_genomes/hg38.fa"
+    R_reference: "BSgenome.Hsapiens.UCSC.hg38"
+    segdups: "workflow/data/segdups/segDups_hg38_UCSCtrack.bed.gz"
+    snv_sites_to_genotype: ""
+    reference_file_location: https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/analysisSet/hg38.analysisSet.fa.gz
+
+  "hg19":
+    reference_fasta: "workflow/data/ref_genomes/hg19.fa"
+    R_reference: "BSgenome.Hsapiens.UCSC.hg19"
+    segdups: "workflow/data/segdups/segDups_hg19_UCSCtrack.bed.gz"
+    snv_sites_to_genotype: ""
+    reference_file_location: https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/analysisSet/hg19.p13.plusMT.no_alt_analysis_set.fa.gz
+  "T2T":
+    reference_fasta: "workflow/data/ref_genomes/T2T.fa"
+    R_reference: "BSgenome.T2T.CHM13.V2"
+    # R_reference_tarball: "/g/korbel2/weber/MosaiCatcher_files/EXTERNAL_DATA/R_reference//BSgenome.T2T.CHM13.V2_1.0.0.tar.gz"
+    segdups: "workflow/data/segdups/segDups_T2T_UCSCtrack.bed.gz"
+    snv_sites_to_genotype: ""
+    reference_file_location: https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/CHM13/assemblies/analysis_set/chm13v2.0.fa.gz
+  "mm10":
+    reference_fasta: "workflow/data/ref_genomes/mm10.fa"
+    R_reference: "BSgenome.Mmusculus.UCSC.mm10"
+    segdups: "workflow/data/segdups/segDups_mm10_UCSCtrack.bed.gz"
+    snv_sites_to_genotype: ""
+    reference_file_location: https://hgdownload.soe.ucsc.edu/goldenPath/mm10/bigZips/mm10.fa.gz
+
+# List of chromosomes to process
 chromosomes:
   - chr1
   - chr2
@@ -60,60 +115,41 @@ chromosomes:
   - chrX
   - chrY
 
+# Specify any chromosomes to exclude from processing
 chromosomes_to_exclude: []
 
-# GENECORE
-genecore: False
-samples_to_process: []
-genecore_date_folder: ""
-# genecore_prefix: "/g/korbel/shared/genecore"
-genecore_prefix: "/g/korbel/STOCKS/Data/Assay/sequencing/2023"
-## Mosaic bin window size
+# --------------------------------------------------------
+# Counts Configuration
+# --------------------------------------------------------
+
+# Enable or disable multistep normalization analysis
+multistep_normalisation: False
+
+# Advanced parameters for multi-step normalisation
+multistep_normalisation_options:
+  min_reads_bin: 5
+  n_subsample: 1000
+  min_reads_cell: 100000
+
+# Normalize or not mosaic counts using HGSVC-based reference file
+hgsvc_based_normalized_counts: True
+
+# Window size used by the mosaic binning algorithm
 window: 200000
-##############################
-# Advanced configuration.    #
-##############################
-alfred_plots:
-  - "dist"
-  - "devi"
 
-## Reference assembly data
-references_data:
-  "hg38":
-    reference_fasta: "workflow/data/ref_genomes/hg38.fa"
-    R_reference: "BSgenome.Hsapiens.UCSC.hg38"
-    segdups: "workflow/data/segdups/segDups_hg38_UCSCtrack.bed.gz"
-    snv_sites_to_genotype: ""
-    reference_file_location: https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/analysisSet/hg38.analysisSet.fa.gz
-    # snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/ALL.chr1-22plusXY_GRCh38_sites.20170504.renamedCHR.vcf.gz"
+# Enable / Disable blacklisting of difficult mappable regions
+blacklist_regions: True
 
-  "hg19":
-    reference_fasta: "workflow/data/ref_genomes/hg19.fa"
-    R_reference: "BSgenome.Hsapiens.UCSC.hg19"
-    segdups: "workflow/data/segdups/segDups_hg19_UCSCtrack.bed.gz"
-    snv_sites_to_genotype: ""
-    reference_file_location: https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/analysisSet/hg19.p13.plusMT.no_alt_analysis_set.fa.gz
-    # snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/ALL.chr1-22plusXY_hg19_sites.20170504.renamedCHR.vcf.gz"
-  "T2T":
-    reference_fasta: "workflow/data/ref_genomes/T2T.fa"
-    R_reference: "BSgenome.T2T.CHM13.V2"
-    # TO CHANGE
-    R_reference_tarball: "/g/korbel2/weber/MosaiCatcher_files/EXTERNAL_DATA/R_reference//BSgenome.T2T.CHM13.V2_1.0.0.tar.gz"
-    segdups: "workflow/data/segdups/segDups_T2T_UCSCtrack.bed.gz"
-    snv_sites_to_genotype: ""
-    reference_file_location: https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/CHM13/assemblies/analysis_set/chm13v2.0.fa.gz
-    # snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/ALL.chr1-22plusXY_T2T_sites.20170504.renamedCHR.vcf.gz"
-  "mm10":
-    reference_fasta: "workflow/data/ref_genomes/mm10.fa"
-    R_reference: "BSgenome.Mmusculus.UCSC.mm10"
-    # TO CHANGE
-    # R_reference_tarball: "/g/korbel2/weber/MosaiCatcher_files/EXTERNAL_DATA/R_reference//BSgenome.T2T.CHM13.V2_1.0.0.tar.gz"
-    segdups: "workflow/data/segdups/segDups_mm10_UCSCtrack.bed.gz"
-    snv_sites_to_genotype: ""
-    reference_file_location: https://hgdownload.soe.ucsc.edu/goldenPath/mm10/bigZips/mm10.fa.gz
-    # snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/ALL.chr1-22plusXY_T2T_sites.20170504.renamedCHR.vcf.gz"
+# Enable or disable hand selection through the Jupyter Notebook
+hand_selection: False
 
-## Methods dictionnary
+# --------------------------------------------------------
+# SV Calling Configuration
+# --------------------------------------------------------
+
+# Enable / Disable multistep normalisation output for SV calling
+multistep_normalisation_for_SV_calling: False
+
 methods:
   lenient:
     method_name: "simpleCalls_llr4_poppriorsTRUE_haplotagsTRUE_gtcutoff0_regfactor6_filterFALSE"
@@ -133,51 +169,40 @@ methods:
     regfactor: 6
     filter: "TRUE"
 
-plottype_counts:
-  - "raw"
-  - "normalised"
-
-plottype_consistency:
-  - "byaf"
-  - "bypos"
-
-plottype_clustering:
-  - "position"
-  - "chromosome"
-
-## Breakpoint density
 # joint segmentation
 min_diff_jointseg: 0.1
+
 # single segmentation
 min_diff_singleseg: 0.5
+
 # SCE cutoff
 additional_sce_cutoff: 20000000
+
 # SCE min distance
 sce_min_distance: 500000
 
-# ashleys-qc pipeline arguments
-mosaicatcher_pipeline: True
-hand_selection: False
-use_light_data: False
-ashleys_threshold: 0.5
+# --------------------------------------------------------
+# Downstream modules configuration - ArbiGent
+# --------------------------------------------------------
 
-# Others
-abs_path: "/"
-# CURRENTLY DISABLED
+# ArbiGent (Arbitrary-segments genotyping) mode of execution
+arbigent: False
+# Arbigent default BED file, can be changed and adapted based on user question
+arbigent_bed_file: "workflow/data/arbigent/manual_segmentation.bed"
 
-### Modes ["count", "segmentation", "mosaiclassifier"] [CURRENTLY DISABLED]
-# mode: "mosaiclassifier"
-### Plot enabled [True] or disabled [False]
-# plot: False [CURRENTLY DISABLED]
-
+# Arbigent Data
 arbigent_data:
   arbigent_mapability_track: workflow/data/arbigent/mapping_counts_allchrs_hg38.txt
   arbigent_mapability_track_h5: workflow/data/arbigent/mapping_counts_allchrs_hg38.h5
 
-# If specified, will copy important data (stats, plots, counts file) to a second place
-publishdir: ""
+# --------------------------------------------------------
+# Downstream modules configuration - scNOVA
+# --------------------------------------------------------
 
+# Enable / Disable scNOVA - require scNOVA_input_user/input_subclonality.txt file
 scNOVA: False
+
+# Scripts location
 scNOVA_scripts:
   generate_CN_for_CNN: "workflow/scripts/scNOVA_scripts/generate_CN_for_CNN.R"
   generate_CN_for_chromVAR: "workflow/scripts/scNOVA_scripts/generate_CN_for_chromVAR.R"
@@ -191,8 +216,37 @@ scNOVA_scripts:
   count_sort_annotate_chrid_CREs: "workflow/scripts/scNOVA_scripts/count_sort_annotate_chrid_CREs.R"
   infer_diff_gene_expression_alt: "workflow/scripts/scNOVA_scripts/infer_diff_gene_expression_alt.R"
 
-# Multi-step normalisation advanced parameters
-multistep_normalisation_options:
-  min_reads_bin: 5
-  n_subsample: 1000
-  min_reads_cell: 100000
+# --------------------------------------------------------
+# Plotting options
+# --------------------------------------------------------
+
+# Split / Do not split QC counts plot into single individual images (limit jobs)
+split_qc_plot: False
+
+plottype_counts:
+  - "raw"
+  - "normalised"
+
+plottype_consistency:
+  - "byaf"
+  - "bypos"
+
+plottype_clustering:
+  - "position"
+  - "chromosome"
+
+# --------------------------------------------------------
+# Internal Parameters
+# --------------------------------------------------------
+
+# Is the pipeline used as a submodule in mosaicatcher-pipeline?
+mosaicatcher_pipeline: True
+
+# Overwrite ASHLEYS PREDICTIONS for GitHub & smoke dataset purpose
+use_light_data: False
+
+# For snakemake linting
+abs_path: "/"
+
+# Option to display all potential options - listed in config_metadata.yaml
+list_commands: False

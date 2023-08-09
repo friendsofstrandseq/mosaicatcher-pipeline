@@ -17,7 +17,7 @@ if (
         resources:
             mem_mb=get_mem_mb,
         conda:
-            "../envs/ashleys_rtools.yaml"
+            "../envs/rtools.yaml"
         script:
             "../scripts/GC/library_size_normalisation.R"
 
@@ -49,7 +49,7 @@ if (
         resources:
             mem_mb=get_mem_mb,
         conda:
-            "../envs/ashleys_rtools.yaml"
+            "../envs/rtools.yaml"
         script:
             "../scripts/GC/GC_correction.R"
 
@@ -72,7 +72,7 @@ if (
         resources:
             mem_mb=get_mem_mb,
         conda:
-            "../envs/ashleys_rtools.yaml"
+            "../envs/rtools.yaml"
         script:
             "../scripts/GC/variance_stabilizing_transformation.R"
 
@@ -85,7 +85,7 @@ if (
         log:
             "{folder}/log/plot_mosaic_counts/{sample}.log",
         conda:
-            "../envs/ashleys_base.yaml"
+            "../envs/mc_base.yaml"
         resources:
             mem_mb=get_mem_mb,
         script:
@@ -108,11 +108,16 @@ if (
             counts="{folder}/{sample}/counts/multistep_normalisation/{sample}.txt.scaled.GC.VST.populated.gz",
             info="{folder}/{sample}/counts/{sample}.info_raw",
         output:
-            "{folder}/{sample}/plots/counts/CountComplete.normalised.pdf",
+            report(
+                "{folder}/{sample}/plots/counts/CountComplete.normalised.pdf",
+                category="Mosaic Counts",
+                subcategory="{sample}",
+                labels={"Cell": "ALL", "Type": "normalised"},
+            ),
         log:
             "{folder}/{sample}/log/plot_mosaic_counts/{sample}.log",
         conda:
-            "../envs/ashleys_rtools.yaml"
+            "../envs/rtools.yaml"
         resources:
             mem_mb=get_mem_mb,
         shell:

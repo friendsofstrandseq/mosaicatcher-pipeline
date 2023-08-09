@@ -148,11 +148,11 @@ rule download_scnova_data:
         ),
     output:
         "workflow/data/scNOVA/utils/bin_chr_length.bed",
-        "workflow/data/scNOVA/utils/bin_Genebody_all.bed ",
+        "workflow/data/scNOVA/utils/bin_Genebody_all.bed",
         "workflow/data/scNOVA/utils/bin_Genes_for_CNN_num_sort_ann_sort_GC_ensemble.txt",
         "workflow/data/scNOVA/utils/bin_Genes_for_CNN_num_sort.txt",
         "workflow/data/scNOVA/utils/bin_Genes_for_CNN_reshape_annot.txt",
-        "workflow/data/scNOVA/utils/bin_Genes_for_CNN_sort.txt.corrected ",
+        "workflow/data/scNOVA/utils/bin_Genes_for_CNN_sort.txt.corrected",
         "workflow/data/scNOVA/utils/Deeptool_Genes_for_CNN_merge_sort_lab_final.txt",
         "workflow/data/scNOVA/utils/Features_reshape_CpG_orientation_impute.txt",
         "workflow/data/scNOVA/utils/Features_reshape_CpG_orientation.txt",
@@ -162,7 +162,7 @@ rule download_scnova_data:
         "workflow/data/scNOVA/utils/Features_reshape_size_orientation.txt",
         "workflow/data/scNOVA/utils/FPKM_sort_LCL_RPE_19770_renamed.txt",
         "workflow/data/scNOVA/utils/regions_all_hg38_v2_resize_2kb_sort_num_sort_for_chromVAR.bed",
-        "workflow/data/scNOVA/utils/regions_all_hg38_v2_resize_2kb_sort.bed ",
+        "workflow/data/scNOVA/utils/regions_all_hg38_v2_resize_2kb_sort.bed",
         "workflow/data/scNOVA/utils/Strand_seq_matrix_Genebody_for_SCDE.txt",
         "workflow/data/scNOVA/utils/Strand_seq_matrix_Genebody_for_SVM.txt",
         "workflow/data/scNOVA/utils/Strand_seq_matrix_TES_for_SVM.txt",
@@ -171,7 +171,8 @@ rule download_scnova_data:
         touch("log/config/dl_arbigent_mappability_track.ok"),
     conda:
         "../envs/scNOVA/scNOVA_DL.yaml"
-    container: None
+    container:
+        None
     shell:
         """
         directory="workflow/data/ref_genomes/"

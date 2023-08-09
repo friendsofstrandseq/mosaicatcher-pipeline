@@ -85,7 +85,6 @@ rule remove_low_quality_reads:
         None
     input:
         bam="{folder}/{sample}/selected/{cell}.sort.mdup.bam",
-        # check="workflow/data/scNOVA/log/dl.ok",
     output:
         bam_pre="{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono.bam",
         bam_header="{folder}/{sample}/scNOVA_bam_modified/{cell}.header_test.sam",
@@ -220,6 +219,7 @@ rule count_reads_split_aggr:
         "../envs/mc_base.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
+        time="10:00:00",
     script:
         "../scripts/scNOVA_scripts/dev_aggr.py"
 
@@ -354,6 +354,7 @@ rule count_reads_for_DNN_aggr:
         "../envs/mc_base.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
+        time="10:00:00",
     script:
         "../scripts/scNOVA_scripts/dev_aggr.py"
 
@@ -398,6 +399,7 @@ rule count_reads_for_DNN_sc_aggr:
         "../envs/mc_base.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
+        time="10:00:00",
     script:
         "../scripts/scNOVA_scripts/dev_aggr.py"
 
@@ -444,6 +446,7 @@ rule count_reads_chr_length_aggr:
         "../envs/mc_base.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
+        time="10:00:00",
     script:
         "../scripts/scNOVA_scripts/dev_aggr.py"
 
@@ -488,6 +491,7 @@ rule count_reads_chr_length_sc_aggr:
         "../envs/mc_base.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
+        time="10:00:00",
     script:
         "../scripts/scNOVA_scripts/dev_aggr.py"
 
@@ -896,6 +900,7 @@ rule count_reads_CREs_aggr:
         tab="{folder}/{sample}/scNOVA_result/{sample}_CREs_2kb.tab",
     resources:
         mem_mb=get_mem_mb_heavy,
+        time="10:00:00",
     conda:
         "../envs/mc_base.yaml"
     script:
