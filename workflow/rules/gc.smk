@@ -108,7 +108,12 @@ if (
             counts="{folder}/{sample}/counts/multistep_normalisation/{sample}.txt.scaled.GC.VST.populated.gz",
             info="{folder}/{sample}/counts/{sample}.info_raw",
         output:
-            "{folder}/{sample}/plots/counts/CountComplete.normalised.pdf",
+            report(
+                "{folder}/{sample}/plots/counts/CountComplete.normalised.pdf",
+                category="Mosaic Counts",
+                subcategory="{sample}",
+                labels={"Cell": "ALL", "Type": "normalised"},
+            ),
         log:
             "{folder}/{sample}/log/plot_mosaic_counts/{sample}.log",
         conda:
