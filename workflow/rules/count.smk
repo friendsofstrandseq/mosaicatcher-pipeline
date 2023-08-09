@@ -34,6 +34,12 @@ if config["ashleys_pipeline"] is False:
                 cell=bam_per_sample_local[str(wc.sample)],
             ),
             excl="{folder}/{sample}/config/chroms_to_exclude.txt",
+            checks=lambda wc: expand(
+                "{folder}/{sample}/checks/{cell}.sm_check.ok",
+                folder=config["data_location"],
+                sample=wc.sample,
+                cell=bam_per_sample_local[str(wc.sample)],
+            ),
         output:
             counts="{folder}/{sample}/counts/{sample}.txt.raw.gz",
             info="{folder}/{sample}/counts/{sample}.info_raw",
@@ -132,15 +138,6 @@ rule symlink_selected_bam:
         "../scripts/utils/symlink_selected_bam.py"
 
 
-# run:
-#     if config["use_light_data"] is False:
-#         shell("ln -s {input.bam} {output.bam}")
-#         shell("ln -s {input.bai} {output.bai}")
-#     else:
-#         shell("cp {input.bam} {output.bam}")
-#         shell("cp {input.bai} {output.bai}")
-
-
 rule remove_unselected_bam:
     input:
         bam=unselected_input_bam,
@@ -167,8 +164,6 @@ rule remove_unselected_bam_empty:
 checkpoint filter_bad_cells_from_mosaic_count:
     input:
         info_raw="{folder}/{sample}/counts/{sample}.info_raw",
-        # counts_sort="{folder}/{sample}/counts/multistep_normalisation/{sample}.txt.scaled.GC.VST.reformat.gz",
-        # counts_sort="{folder}/{sample}/counts/{sample}.txt.raw.gz",
         counts_sort=select_counts_for_SV_calling,
         labels="{folder}/{sample}/config/labels.tsv",
     output:
@@ -184,8 +179,6 @@ checkpoint filter_bad_cells_from_mosaic_count:
     script:
         "../scripts/utils/filter_bad_cells.py"
 
-
-# if config["multistep_normalisation"] == False:
 
 if (
     config["hgsvc_based_normalized_counts"] is True
@@ -229,46 +222,46 @@ else:
             """
 
 
-rule normalize_counts:
-    input:
-        counts="{folder}/{sample}/counts/{sample}.txt.filter.gz",
-        norm=lambda wc: expand(
-            "{folder}/{sample}/normalizations/{reference}/HGSVC.{window}.merged.tsv",
-            folder=config["data_location"],
-            sample=wc.sample,
-            reference=config["reference"],
-            window=config["window"],
-        ),
-    output:
-        "{folder}/{sample}/counts/{sample}.txt.gz",
-    log:
-        "{folder}/log/normalize_counts/{sample}.log",
-    conda:
-        "../envs/rtools.yaml"
-    resources:
-        mem_mb=get_mem_mb,
-    params:
-        normalisation_type=config["hgsvc_based_normalized_counts"],
-    shell:
-        """
-        Rscript workflow/scripts/normalization/normalize.R {input.counts} {input.norm} {output} {params.normalisation_type} 2>&1 > {log}
-        """
+if config["blacklist_regions"] is True:
 
+    rule normalize_counts:
+        input:
+            counts="{folder}/{sample}/counts/{sample}.txt.filter.gz",
+            norm=lambda wc: expand(
+                "{folder}/{sample}/normalizations/{reference}/HGSVC.{window}.merged.tsv",
+                folder=config["data_location"],
+                sample=wc.sample,
+                reference=config["reference"],
+                window=config["window"],
+            ),
+        output:
+            "{folder}/{sample}/counts/{sample}.txt.gz",
+        log:
+            "{folder}/log/normalize_counts/{sample}.log",
+        conda:
+            "../envs/rtools.yaml"
+        resources:
+            mem_mb=get_mem_mb,
+        params:
+            normalisation_type=config["hgsvc_based_normalized_counts"],
+        shell:
+            """
+            Rscript workflow/scripts/normalization/normalize.R {input.counts} {input.norm} {output} {params.normalisation_type} 2>&1 > {log}
+            """
 
-# else:
+else:
 
-
-#     rule cp_mosaic_count:
-#         input:
-#             "{folder}/{sample}/counts/{sample}.txt.filter.gz",
-#         output:
-#             "{folder}/{sample}/counts/{sample}.txt.gz",
-#         log:
-#             "{folder}/log/counts/{sample}.log",
-#         conda:
-#             "../envs/mc_base.yaml"
-#         shell:
-#             "cp {input} {output}"
+    rule cp_mosaic_count:
+        input:
+            "{folder}/{sample}/counts/{sample}.txt.filter.gz",
+        output:
+            "{folder}/{sample}/counts/{sample}.txt.gz",
+        log:
+            "{folder}/log/counts/{sample}.log",
+        conda:
+            "../envs/mc_base.yaml"
+        shell:
+            "cp {input} {output}"
 
 
 rule sort_counts:

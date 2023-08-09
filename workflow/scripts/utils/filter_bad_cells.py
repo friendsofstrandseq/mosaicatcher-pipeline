@@ -14,9 +14,11 @@ df["pass1"] = df["pass1"].astype(int)
 
 labels_path = snakemake.input.labels
 labels = pd.read_csv(labels_path, sep="\t")
+labels["cell"] = labels["cell"].str.replace(".sort.mdup.bam", "")
+df["cell"] = df["cell"].str.replace(".sort.mdup.bam", "")
 
-print(df)
-print(labels)
+# print(df)
+# print(labels)
 
 
 # if snakemake.config["use_light_data"] is True and snakemake.wildcards.sample == "RPE-BM510":
@@ -24,8 +26,8 @@ print(labels)
 
 # snakemake_log.write(labels.to_str())
 
-b_ashleys = "ENABLED" if snakemake.config["ashleys_pipeline"] is True else "DISABLED"
-b_old = "ENABLED" if snakemake.config["input_bam_legacy"] is True else "DISABLED"
+# b_ashleys = "ENABLED" if snakemake.config["ashleys_pipeline"] is True else "DISABLED"
+# b_old = "ENABLED" if snakemake.config["input_bam_legacy"] is True else "DISABLED"
 
 # snakemake_log.write("ASHLEYS preprocessing module: {}".format(b_ashleys))
 # snakemake_log.write("input_bam_legacy parameter: {}".format(b_old))
@@ -33,10 +35,14 @@ b_old = "ENABLED" if snakemake.config["input_bam_legacy"] is True else "DISABLED
 
 # IF BOTH MOSAIC INFO FILE & LABELS DF ARE AVAILABLE + SAME SIZE
 if labels.shape[0] == df.shape[0]:
-    print("labels.shape[0] == df.shape[0]")
-    cells_to_keep_labels = labels.loc[labels["prediction"] == 1]["cell"].str.replace(".sort.mdup.bam", "").sort_values().tolist()
-    cells_to_keep_mosaic = df.loc[df["pass1"] == 1]["cell"].unique().tolist()
-    cells_to_keep = list(sorted(list(set(cells_to_keep_labels).intersection(cells_to_keep_mosaic))))
+    if len(set(labels.cell.values.tolist()).intersection(set(df.cell.values.tolist()))) == labels.shape[0]:
+        print("labels.shape[0] == df.shape[0]")
+        cells_to_keep_labels = labels.loc[labels["prediction"] == 1]["cell"].str.replace(".sort.mdup.bam", "").sort_values().tolist()
+        cells_to_keep_mosaic = df.loc[df["pass1"] == 1]["cell"].unique().tolist()
+        cells_to_keep = list(sorted(list(set(cells_to_keep_labels).intersection(cells_to_keep_mosaic))))
+    else:
+        sys.exit("Ashleys labels & Mosaicatcher count info file do not share the same cell naming format")
+
 
 else:
     # CATCH ERROR IF DIFFERENT SIZES AND CONFIG ENABLED
@@ -57,11 +63,11 @@ df_removed = df.loc[~df["cell"].isin(cells_to_keep)]
 
 # snakemake_log.write("List of cells kept: ")
 # for cell in sorted(cells_to_keep):
-#     snakemake_log.write("- {cell}".format(cell=cell))
+# snakemake_log.write("- {cell}".format(cell=cell))
 
 # snakemake_log.write("List of cells removed:")
 # for cell in sorted(df_removed["cell"].values.tolist()):
-#     snakemake_log.write("- {cell}".format(cell=cell))
+# snakemake_log.write("- {cell}".format(cell=cell))
 
 
 df_counts = pd.read_csv(snakemake.input.counts_sort, compression="gzip", sep="\t")

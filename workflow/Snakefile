@@ -102,14 +102,21 @@ include: "rules/gc.smk"
 
 
 if config["list_commands"] is False:
-
     if config["ashleys_pipeline"] is True:
+        if config["ashleys_pipeline_only"] is False:
 
-        rule all:
-            input:
-                rules.ashleys_all.input,
-                get_final_output(),
-            default_target: True
+            rule all:
+                input:
+                    rules.ashleys_all.input,
+                    get_final_output(),
+                default_target: True
+
+        else:
+
+            rule all:
+                input:
+                    rules.ashleys_all.input,
+                default_target: True
 
     else:
 
