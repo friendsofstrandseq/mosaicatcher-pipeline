@@ -1,5 +1,13 @@
 # Usage
 
+---
+
+**ℹ️ Important Note**
+
+From 2.2.0, you don't need to clone both [ashleys-qc-pipeline preprocessing module](https://github.com/friendsofstrandseq/ashleys-qc-pipeline) and [mosaicatcher-pipeline](https://github.com/friendsofstrandseq/mosaicatcher-pipeline). By using `ashleys_pipeline_only=True` combined with `ashleys_pipeline=True` in the configuration of MosaiCatcher, this will stop the execution after the generation of the files related to ashleys-qc-pipeline. This allow you to use a single pipeline, repository and container and limit the potential conflicts by processing the same folder (data_location) by different repositories and set of files (including the workflow/data/ref_genomes references files).
+
+---
+
 ## Quick Start
 
 0. [Optional] Install [Singularity](https://www.sylabs.io/guides/3.0/user-guide/)
@@ -25,6 +33,18 @@ git clone --recurse-submodules https://github.com/friendsofstrandseq/mosaicatche
 ```
 
 3. Run on example data on only one small chromosome (`<disk>` must be replaced by your disk letter/name)
+
+First using the `--dry-run` option of snakemake to make sure the Graph of Execution is properly connected. (In combination with `--dry-run`, we use the `local/conda` profile as snakemake still present a bug by looking for the singularity container).
+
+```bash
+snakemake \
+    --cores 6 \
+    --configfile .tests/config/simple_config.yaml \
+    --profile workflow/snakemake_profiles/local/conda/ \
+    --dry-run
+```
+
+If no error message, you are good to go!
 
 ```bash
 # Snakemake Profile: if singularity installed: workflow/snakemake_profiles/local/conda_singularity/

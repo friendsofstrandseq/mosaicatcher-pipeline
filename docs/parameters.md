@@ -13,57 +13,72 @@ All these arguments can be specified in two ways:
 
 ---
 
-### Input/output options
+### General parameters
 
-| Parameter          | Comment                                                                                                           | Parameter type | Default            |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------- | -------------- | ------------------ |
-| `data_location`    | Path to parent folder containing samples                                                                          | String         | .tests/data_CHR17/ |
-| `ashleys_pipeline` | Allow to load and use ashleys-qc-pipeline snakemake preprocessing module and to start from FASTQ inputs           | Boolean        | False              |
-| `input_bam_legacy` | Mutualy exclusive with ashleys_pipeline. Will use `selected` folder to identify high-quality libraries to process | Boolean        | False              |
+| Parameter            | Comment                                                                                           | Default | Example             |
+| -------------------- | ------------------------------------------------------------------------------------------------- | ------- | ------------------- |
+| `email`              | Email address for completion summary                                                              | None    | None                |
+| `samples_to_process` | If multiple plates in the data_location parent folder, specify one or a comma-sep list of samples | None    | "[SampleA,SampleB]" |
 
-### Other parameters
+### Data location & Input/output options
 
-| Parameter | Comment                              | Default |
-| --------- | ------------------------------------ | ------- |
-| `email`   | Email address for completion summary | None    |
+| Parameter       | Comment                                                | Parameter type | Default            |
+| --------------- | ------------------------------------------------------ | -------------- | ------------------ |
+| `data_location` | Path to parent folder containing samples               | String         | .tests/data_CHR17/ |
+| `publishdir`    | Path to backup location where important data is copied | String         |                    |
 
-### Execution boolean parameters
+### Ashleys-QC upstream pipeline
 
-| Parameter                                | Comment                                                                                             | Default | Experimental |
-| ---------------------------------------- | --------------------------------------------------------------------------------------------------- | ------- | ------------ |
-| `multistep_normalisation_analysis`       | Allow to perform multistep normalisation including GC correction for visualization (Marco Cosenza). | False   | False        |
-| `multistep_normalisation_for_SV_calling` | Allow to use multistep normalisation count file during SV calling (Marco Cosenza).                  | False   | False        |
-| `hgsvc_based_normalized_counts`          | Use HGSVC based normalisation .                                                                     | True    | False        |
-| `arbigent`                               | Enable ArbiGent mode of execution to genotype SV based on arbitrary segments                        | False   | False        |
-| `scNOVA`                                 | Enable scNOVA mode of execution to compute Nucleosome Occupancy (NO) of detected SV                 | False   | False        |
+| Parameter               | Comment                                                                                                           | Parameter type | Default |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------- | ------- |
+| `input_bam_legacy`      | Mutualy exclusive with ashleys_pipeline. Will use `selected` folder to identify high-quality libraries to process | Boolean        | False   |
+| `ashleys_pipeline`      | Allow to load and use ashleys-qc-pipeline snakemake preprocessing module and to start from FASTQ inputs           | Boolean        | False   |
+| `ashleys_pipeline_only` | Stop the execution after ashleys-qc-pipeline submodule. Requires `ashleys_pipeline` to be True                    | Boolean        | False   |
+| `ashleys_threshold`     | Threshold for Ashleys-qc binary classification                                                                    | Float          | 0.5     |
+| `MultiQC`               | Enable or disable MultiQC analysis (includes FastQC, samtools flagstats & idxstats)                               | Boolean        | False   |
+| `hand_selection`        | Enable or disable hand selection through the Jupyter Notebook                                                     | Boolean        | False   |
+| `split_qc_plot`         | Enable or disable the split of QC plot into individual pages plots                                                | Boolean        | False   |
 
-### External files
+### Reference data & Chromosomes
 
-| Parameter               | Comment                                                                       | Required                                                                   |
-| ----------------------- | ----------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| `snv_sites_to_genotype` | 1000G SNV sites to genotype file location to allow phasing after regenotyping | No. Default behavior is to call directly _de novo_ het SNPs using bcftools |
-| `reference`             | Reference genome                                                              | X                                                                          |
-| `R_reference`           | Reference genome used by R scripts                                            | X                                                                          |
-| `segdups`               | Segmental duplication file defined for hg38 reference genome                  | X                                                                          |
-| `arbigent_bed_file`     | Allow to specify custom ArbiGent BED file                                     | X                                                                          |
+| Parameter                | Comment                             | Default (options)                            |
+| ------------------------ | ----------------------------------- | -------------------------------------------- |
+| `reference`              | Reference genome                    | hg38 (hg19, T2T, mm10)                       |
+| `chromosomes`            | List of chromosomes to be processed | Human: chr[1..22,X,Y], Mouse: chr[1..20,X,Y] |
+| `chromosomes_to_exclude` | List of chromosomes to exclude      | []                                           |
 
-### Processing options
+### Counts configuration
 
-| Parameter               | Comment                                                                                                    | Default       |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------- | ------------- |
-| `window`                | Window size used for binning by mosaic count (Can be of high importance regarding library coverage)        | 100000        |
-| `min_diff_jointseg`     | Minimum difference in error term to include another breakpoint in the joint segmentation (default=0.5)     | 0.1           |
-| `min_diff_singleseg`    | Minimum difference in error term to include another breakpoint in the single-cell segmentation (default=1) | 0.5           |
-| `additional_sce_cutoff` | Minimum gain in mismatch distance needed to add an additional SCE                                          | 20000000      |
-| `sce_min_distance`      | Minimum distance of an SCE to a break in the joint segmentation                                            | 500000        |
-| `llr`                   | Likelihood ratio used to detect SV calls                                                                   | 4             |
-| `poppriors`             |                                                                                                            |               |
-| `haplotags`             |                                                                                                            |               |
-| `gtcutoff`              |                                                                                                            |               |
-| `regfactor`             |                                                                                                            |               |
-| `filter`                |                                                                                                            |               |
-| `chromosomes`           | List of chromosomes to be processed in the pipeline                                                        | chr1..22,chrX |
-| `plate_orientation`     | List of chromosomes to be processed in the pipeline                                                        | chr1..22,chrX |
+| Parameter                          | Comment                                                                                             | Default |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------- | ------- |
+| `multistep_normalisation_analysis` | Allow to perform multistep normalisation including GC correction for visualization (Marco Cosenza). | False   |
+| `window`                           | Window size used for binning by mosaic count (Can be of high importance regarding library coverage) | 100000  |
+| `blacklist_regions`                | Enable/Disable blacklisting                                                                         | True    |
+
+### SV calling parameters
+
+| Parameter                                | Comment                                                                            | Default |
+| ---------------------------------------- | ---------------------------------------------------------------------------------- | ------- |
+| `multistep_normalisation_for_SV_calling` | Allow to use multistep normalisation count file during SV calling (Marco Cosenza). | False   |
+| `hgsvc_based_normalized_counts`          | Use HGSVC based normalisation .                                                    | True    |
+
+### SV calling algorithm processing options
+
+| Parameter               | Comment                                                                                                    | Default  |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------- | -------- |
+| `min_diff_jointseg`     | Minimum difference in error term to include another breakpoint in the joint segmentation (default=0.5)     | 0.1      |
+| `min_diff_singleseg`    | Minimum difference in error term to include another breakpoint in the single-cell segmentation (default=1) | 0.5      |
+| `additional_sce_cutoff` | Minimum gain in mismatch distance needed to add an additional SCE                                          | 20000000 |
+| `sce_min_distance`      | Minimum distance of an SCE to a break in the joint segmentation                                            | 500000   |
+| `llr`                   | Likelihood ratio used to detect SV calls                                                                   | 4        |
+
+### Downstream analysis
+
+| Parameter           | Comment                                                                             | Default |
+| ------------------- | ----------------------------------------------------------------------------------- | ------- |
+| `arbigent`          | Enable ArbiGent mode of execution to genotype SV based on arbitrary segments        | False   |
+| `arbigent_bed_file` | Allow to specify custom ArbiGent BED file                                           | ""      |
+| `scNOVA`            | Enable scNOVA mode of execution to compute Nucleosome Occupancy (NO) of detected SV | False   |
 
 ### EMBL specific options
 
