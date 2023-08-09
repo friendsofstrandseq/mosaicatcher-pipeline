@@ -14,9 +14,11 @@ df["pass1"] = df["pass1"].astype(int)
 
 labels_path = snakemake.input.labels
 labels = pd.read_csv(labels_path, sep="\t")
+labels["cell"] = labels["cell"].str.replace(".sort.mdup.bam", "")
+df["cell"] = df["cell"].str.replace(".sort.mdup.bam", "")
 
-print(df)
-print(labels)
+# print(df)
+# print(labels)
 
 
 # if snakemake.config["use_light_data"] is True and snakemake.wildcards.sample == "RPE-BM510":
@@ -24,12 +26,12 @@ print(labels)
 
 # snakemake_log.write(labels.to_str())
 
-b_ashleys = "ENABLED" if snakemake.config["ashleys_pipeline"] is True else "DISABLED"
-b_old = "ENABLED" if snakemake.config["input_bam_legacy"] is True else "DISABLED"
+# b_ashleys = "ENABLED" if snakemake.config["ashleys_pipeline"] is True else "DISABLED"
+# b_old = "ENABLED" if snakemake.config["input_bam_legacy"] is True else "DISABLED"
 
-snakemake_log.write("ASHLEYS preprocessing module: {}".format(b_ashleys))
-snakemake_log.write("input_bam_legacy parameter: {}".format(b_old))
-snakemake_log.write("Computing intersection between lists ...")
+# snakemake_log.write("ASHLEYS preprocessing module: {}".format(b_ashleys))
+# snakemake_log.write("input_bam_legacy parameter: {}".format(b_old))
+# snakemake_log.write("Computing intersection between lists ...")
 
 # IF BOTH MOSAIC INFO FILE & LABELS DF ARE AVAILABLE + SAME SIZE
 if labels.shape[0] == df.shape[0]:
@@ -51,7 +53,7 @@ else:
     # ELSE NORMAL MODE
     else:
         print("df.shape[0] only")
-        snakemake_log.write("Standard mode using only 'mosaic count info' file")
+        # snakemake_log.write("Standard mode using only 'mosaic count info' file")
         cells_to_keep = df.loc[df["pass1"] == 1]["cell"].unique().tolist()
 
 
@@ -59,13 +61,13 @@ else:
 df_kept = df.loc[df["cell"].isin(cells_to_keep)]
 df_removed = df.loc[~df["cell"].isin(cells_to_keep)]
 
-snakemake_log.write("List of cells kept: ")
-for cell in sorted(cells_to_keep):
-    snakemake_log.write("- {cell}".format(cell=cell))
+# snakemake_log.write("List of cells kept: ")
+# for cell in sorted(cells_to_keep):
+# snakemake_log.write("- {cell}".format(cell=cell))
 
-snakemake_log.write("List of cells removed:")
-for cell in sorted(df_removed["cell"].values.tolist()):
-    snakemake_log.write("- {cell}".format(cell=cell))
+# snakemake_log.write("List of cells removed:")
+# for cell in sorted(df_removed["cell"].values.tolist()):
+# snakemake_log.write("- {cell}".format(cell=cell))
 
 
 df_counts = pd.read_csv(snakemake.input.counts_sort, compression="gzip", sep="\t")

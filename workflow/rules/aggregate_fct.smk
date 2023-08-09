@@ -265,7 +265,7 @@ def remove_unselected_fct(wildcards):
     # print(cell_list)
     # print(len(cell_list))
     if len(cell_list) == 0:
-    # if len(cell_list) == 0 or config["input_bam_legacy"] is True:
+        # if len(cell_list) == 0 or config["input_bam_legacy"] is True:
         return "{folder}/{sample}/config/remove_unselected_bam_empty.ok"
     else:
         return "{folder}/{sample}/config/remove_unselected_bam.ok"

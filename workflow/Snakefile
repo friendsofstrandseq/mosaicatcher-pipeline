@@ -19,16 +19,15 @@ containerized: docker_container
 
 if config["ashleys_pipeline"] is True:
 
-
     module ashleys_qc:
         snakefile:
             # "../../ashleys-qc-pipeline/workflow/Snakefile"
             github(
                 "friendsofstrandseq/ashleys-qc-pipeline",
                 path="workflow/Snakefile",
-                # tag=str(config["ashleys_pipeline_version"])
+                tag=str(config["ashleys_pipeline_version"])
                 # branch="main",
-                branch="dev",
+                # branch="dev",
             )
         config:
             config
@@ -103,9 +102,7 @@ include: "rules/gc.smk"
 
 
 if config["list_commands"] is False:
-
     if config["ashleys_pipeline"] is True:
-    
         if config["ashleys_pipeline_only"] is False:
 
             rule all:
@@ -119,7 +116,6 @@ if config["list_commands"] is False:
             rule all:
                 input:
                     rules.ashleys_all.input,
-                    # get_final_output(),
                 default_target: True
 
     else:
