@@ -936,8 +936,8 @@ def get_all_plots(wildcards):
                 "{folder}/{sample}/plots/counts_{plottype}/{cell}.{i}.pdf",
                 folder=config["data_location"],
                 sample=sample,
-                # plottype=["raw"],
-                plottype=plottype_counts,
+                plottype=["raw"],
+                # plottype=plottype_counts,
                 cell=tmp_dict[sample][i],
                 i=i,
             )
