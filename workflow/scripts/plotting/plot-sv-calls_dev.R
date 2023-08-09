@@ -363,7 +363,7 @@ if (!is.null(f_segments)) {
 
 
   seg <-
-    merge(seg, bins[, .N, by = chrom][, .(chrom, N = c(0, cumsum(N))[1:(.N - 1)])], by = "chrom")
+    merge(seg, bins[, .N, by = chrom][, .(chrom, N = c(0, cumsum(N)[- .N]))], by = "chrom")
 
   # print(c(1, bps[1:(.N - 1)] + 1))
   # print(bps)
@@ -372,7 +372,7 @@ if (!is.null(f_segments)) {
   # stop()
 
 
-  seg[, `:=`(from = c(1, bps[1:(.N - 1)] + 1), to = bps), by = chrom]
+  seg[, `:=`(from = c(1, bps[-length(bps)] + 1), to = bps), by = chrom]
 
   # print(seg)
 
