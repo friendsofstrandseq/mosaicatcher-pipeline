@@ -14,12 +14,6 @@ rule convert_strandphaser_input:
 
 rule check_single_paired_end:
     input:
-        # bam=lambda wc: expand(
-        #     "{folder}/{sample}/bam/{cell}.sort.mdup.bam",
-        #     folder=config["data_location"],
-        #     sample=wc.sample,
-        #     cell=bam_per_sample_local[str(wc.sample)],
-        # ),
         bam=selected_input_bam,
     output:
         single_paired_end_detect="{folder}/{sample}/config/single_paired_end_detection.txt",
@@ -47,14 +41,12 @@ rule prepare_strandphaser_config_per_chrom:
 
 rule run_strandphaser_per_chrom:
     input:
-        # install_strandphaser=rules.install_rlib_strandphaser.output,
         wcregions="{folder}/{sample}/strandphaser/strandphaser_input.txt",
         snppositions=locate_snv_vcf,
         configfile="{folder}/{sample}/strandphaser/StrandPhaseR.{chrom}.config",
         bsgenome="workflow/data/ref_genomes/config/BSgenome_{}.ok".format(
             config["reference"]
         ),
-        # bsgenome=bsgenome_install,
     output:
         "{folder}/{sample}/strandphaser/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt",
         "{folder}/{sample}/strandphaser/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf",
@@ -66,13 +58,11 @@ rule run_strandphaser_per_chrom:
         mem_mb=get_mem_mb_heavy,
         time="10:00:00",
     params:
-        # input_bam=lambda wc: "{}/{}/bam".format(config["data_location"], wc.sample),
         input_bam=lambda wc: "{}/{}/selected".format(config["data_location"], wc.sample),
         output=lambda wc: "{}/{}/strandphaser/StrandPhaseR_analysis.{}".format(
             config["data_location"], wc.sample, wc.chrom
         ),
     shell:
-        # Rscript afac/StrandPhaseR_pipeline.R \
         """
         Rscript workflow/scripts/strandphaser_scripts/StrandPhaseR_pipeline.R \
                 {params.input_bam} \

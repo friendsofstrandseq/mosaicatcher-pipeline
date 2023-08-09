@@ -251,7 +251,6 @@ if config["blacklist_regions"] is True:
 
 else:
 
-
     rule cp_mosaic_count:
         input:
             "{folder}/{sample}/counts/{sample}.txt.filter.gz",

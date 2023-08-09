@@ -14,7 +14,13 @@ if config["ashleys_pipeline"] is False:
             counts="{folder}/{sample}/counts/{sample}.txt.populated.gz",
             info="{folder}/{sample}/counts/{sample}.info_raw",
         output:
-            "{folder}/{sample}/plots/counts/CountComplete.raw.pdf",
+            # "{folder}/{sample}/plots/counts/CountComplete.raw.pdf",
+            report(
+                "{folder}/{sample}/plots/counts/CountComplete.raw.pdf",
+                category="Mosaic Counts",
+                subcategory="{sample}",
+                labels={"Cell": "ALL", "Type": "raw"},
+            ),
         log:
             "{folder}/log/plot_mosaic_counts/{sample}.log",
         conda:
@@ -296,15 +302,16 @@ rule plot_ploidy:
     script:
         "../scripts/plotting/ploidy_plot.py"
 
+
 rule ucsc_genome_browser_file:
     input:
         counts="{folder}/{sample}/counts/{sample}.txt.gz",
         stringent_calls="{folder}/{sample}/mosaiclassifier/sv_calls/stringent_filterTRUE.tsv",
         lenient_calls="{folder}/{sample}/mosaiclassifier/sv_calls/lenient_filterFALSE.tsv",
     output:
-        "{folder}/{sample}/plots/UCSC/{sample}.bedUCSC.gz"
+        "{folder}/{sample}/plots/UCSC/{sample}.bedUCSC.gz",
     log:
-        "{folder}/log/ucsc_genome_browser_file/{sample}.bedUCSC.gz"
+        "{folder}/log/ucsc_genome_browser_file/{sample}.bedUCSC.gz",
     conda:
         "../envs/mc_base.yaml"
     resources:
