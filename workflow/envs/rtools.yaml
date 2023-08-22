@@ -48,3 +48,8 @@ dependencies:
   - r-tidyr
   - r-ggbeeswarm
   - r-pheatmap
+  # GC_correction
+  - r-ggpubr
+  - bioconductor-edger
+  # SOLVE R lib issue
+  - r-stringi=1.7.12

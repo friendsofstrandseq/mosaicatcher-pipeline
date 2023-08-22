@@ -1,5 +1,6 @@
 import collections
 import pandas as pd
+import yaml
 
 # from scripts.utils import handle_input, make_log_useful, pipeline_aesthetic_start
 from scripts.utils import make_log_useful, pipeline_aesthetic_start
@@ -283,7 +284,8 @@ class HandleInput:
         complete_df_list = list()
         # List of folders/files to not consider (restrict to samples only)
 
-        l_to_process = [e for e in os.listdir(thisdir) if e not in exclude]
+        l_to_process = [e for e in os.listdir(thisdir) if e not in exclude and e.endswith(".zip") is False]
+        print(l_to_process)
         if config["samples_to_process"]:
             l_to_process = [e for e in l_to_process if e in config["samples_to_process"]]
 
@@ -325,6 +327,7 @@ class HandleInput:
         complete_df = complete_df.sort_values(by=["Cell", "File"]).reset_index(
             drop=True
         )
+        print(complete_df)
         return complete_df
 
 
@@ -511,20 +514,22 @@ def get_mem_mb_heavy(wildcards, attempt):
     return mem_avail[attempt - 1] * 1000
 
 
-def onsuccess_fct(log):
-    make_log_useful.make_log_useful(log, "SUCCESS", config)
+def onsuccess_fct(log): 
+    config_metadata = config_definitions = yaml.safe_load(open(configfile_location.replace("config.yaml", "config_metadata.yaml"), "r"))
+    log_path_new = make_log_useful.make_log_useful(log, "SUCCESS", config, config_metadata)
     shell(
-        'mail -s "[Snakemake] smk-wf-catalog/mosacaitcher-pipeline v{} - Run on {} - SUCCESS" {} < {{log}}'.format(
-            config["version"], config["data_location"], config["email"]
+        'mail -s "[Snakemake] smk-wf-catalog/mosacaitcher-pipeline v{} - Run on {} - SUCCESS" {} < {}'.format(
+            config["version"], config["data_location"], config["email"], log_path_new
         )
     )
 
 
 def onerror_fct(log):
-    make_log_useful.make_log_useful(log, "ERROR", config)
+    config_metadata = config_definitions = yaml.safe_load(open(configfile_location.replace("config.yaml", "config_metadata.yaml"), "r"))
+    log_path_new = make_log_useful.make_log_useful(log, "ERROR", config, config_metadata)
     shell(
-        'mail -s "[Snakemake] smk-wf-catalog/mosacaitcher-pipeline v{} - Run on {} - ERRROR" {} < {{log}}'.format(
-            config["version"], config["data_location"], config["email"]
+        'mail -s "[Snakemake] smk-wf-catalog/mosacaitcher-pipeline v{} - Run on {} - ERRROR" {} < {}'.format(
+            config["version"], config["data_location"], config["email"], log_path_new
         )
     )
 
