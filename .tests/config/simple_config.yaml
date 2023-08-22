@@ -77,7 +77,6 @@ references_data:
   "T2T":
     reference_fasta: "workflow/data/ref_genomes/T2T.fa"
     R_reference: "BSgenome.T2T.CHM13.V2"
-    # R_reference_tarball: "/g/korbel2/weber/MosaiCatcher_files/EXTERNAL_DATA/R_reference//BSgenome.T2T.CHM13.V2_1.0.0.tar.gz"
     segdups: "workflow/data/segdups/segDups_T2T_UCSCtrack.bed.gz"
     snv_sites_to_genotype: ""
     reference_file_location: https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/CHM13/assemblies/analysis_set/chm13v2.0.fa.gz
