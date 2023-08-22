@@ -23,7 +23,7 @@ MultiQC:
   type: bool
   required: False
   default: False
-multistep_normalisation_analysis:
+multistep_normalisation:
   desc: "Enable / Disable multistep normalisation"
   type: bool
   required: False
@@ -38,11 +38,6 @@ ashleys_threshold:
   type: bool
   required: False
   default: 0.5
-plate_orientation:
-  desc: "Plate orientation for GC analysis (landscape/portrait)"
-  type: string
-  required: False
-  default: landscape
 window:
   desc: "Mosaic bin window size"
   type: int
@@ -73,7 +68,7 @@ samples_to_process:
   type: list
   required: True
   default: "[]"
-normalized_counts:
+hgsvc_based_normalized_counts:
   desc: Normalize or not mosaic counts
   type: bool
   required: False
@@ -115,4 +110,10 @@ scNOVA:
   type: bool
   required: False
   default: False
+  lint_check: False
+genecore_prefix:
+  desc: ""
+  type: str
+  required: False
+  default: "/g/korbel/shared/genecore"
   lint_check: False
