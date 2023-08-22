@@ -2,8 +2,8 @@ from snakemake.utils import min_version
 
 min_version("7.5.0")
 
-
-configfile: "config/config.yaml"
+configfile_location = "config/config.yaml"
+configfile: configfile_location
 
 
 report: "report/workflow.rst"
@@ -25,9 +25,9 @@ if config["ashleys_pipeline"] is True:
             github(
                 "friendsofstrandseq/ashleys-qc-pipeline",
                 path="workflow/Snakefile",
-                tag=str(config["ashleys_pipeline_version"])
+                # tag=str(config["ashleys_pipeline_version"])
                 # branch="main",
-                # branch="dev",
+                branch="dev",
             )
         config:
             config

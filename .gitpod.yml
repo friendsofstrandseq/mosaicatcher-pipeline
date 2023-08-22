@@ -1,4 +1,65 @@
-image: condaforge/mambaforge:latest
+image:
+  file: .gitpod.Dockerfile
+
+ports:
+  - port: 5000
+    onOpen: ignore
+
 tasks:
+  - name: install pre-commit git hooks
+    init: pre-commit install
+  - name: start up buildkitd
+    command: |
+      sudo /usr/bin/buildkitd --debug  --config ./buildkitd.toml --group gitpod
+  - name: start a local docker registry
+    command: |
+      mkdir -p /workspace/registry
+      docker run -p 5000:5000 --name registry --rm -v /workspace/registry:/var/lib/registry registry:2
+    openMode: split-right
+  - name: dazzle build and test
+    command: |
+      gp ports await 5000
+      REPO=localhost:5000/dazzle
+      echo "To build specific chunks and combine them 'time ./build-chunk.sh  -c chunk1 -c chunk2:variant1.2.3 -n combo'"
+      echo "To build all the chunks and combinations 'time ./build-all.sh'"
+      echo "To build a specific combination 'time ./build-combo.sh combo'"
+      echo "To list image chunks 'dazzle project image-name $REPO'"
+      echo "To list hashes for image chunks 'dazzle project hash $REPO'"
+      echo "To print the combined image maniest 'dazzle project manifest $REPO'"
+
+    openMode: tab-after
+
+    # MOSAICATCHER
+
   - name: Create snakemake env
-    command: mamba create -n snakemake -c bioconda -c conda-forge snakemake=7.18.2 -y
+    command: mamba create -n snakemake -c bioconda -c conda-forge snakemake -y
+
+  # - name: Run mosaicatcher
+  #   command: |
+  #     snakemake --configfile .tests/config/simple_config.yaml \
+  #       --config ashleys_pipeline=True MultiQC=True \
+  #       --profile workflow/snakemake_profiles/local/conda/ \
+  #       --conda-frontend mamba \
+  #       --cores 8 --forceall
+
+  # - name: Generate Dockerfile
+  #   command: |
+  #     snakemake --configfile .tests/config/simple_config.yaml \
+  #       --config ashleys_pipeline=True MultiQC=True \
+  #       --profile workflow/snakemake_profiles/local/conda/ \
+  #       --conda-frontend mamba \
+  #       --cores 8 --containerize
+
+vscode:
+  extensions:
+    - ms-azuretools.vscode-docker
+    - timonwong.shellcheck
+
+github:
+  prebuilds:
+    master: true
+    branches: true
+    pullRequests: true
+    pullRequestsFromForks: true
+    addCheck: true
+    addComment: true
