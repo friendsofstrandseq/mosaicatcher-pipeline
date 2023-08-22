@@ -34,7 +34,16 @@ conda activate snakemake
 snakemake --configfile .tests/config/simple_config.yaml --config ashleys_pipeline=True MultiQC=True --profile workflow/snakemake_profiles/local/conda/ -c 8 --forceall -n
 snakemake --configfile .tests/config/simple_config.yaml --config ashleys_pipeline=True MultiQC=True --profile workflow/snakemake_profiles/local/conda_singularity/ -c 8 --forceall
 
-
-# Solved in 
+# Solved in
 
 https://github.com/weber8thomas/workspace-images/tree/docker-apptainer-mamba
+
+# Dockerfile creation
+
+snakemake --configfile .tests/config/simple_config.yaml --config ashleys_pipeline=True MultiQC=True --profile workflow/snakemake_profiles/local/conda/ -c 8 --containerize > Dockerfile
+
+# Docker commands
+
+docker login -u weber8thomas
+docker build --platform=linux/amd64 -t weber8thomas/mosaicatcher-pipeline:VERSION .
+docker push -t weber8thomas/mosaicatcher-pipeline:VERSION

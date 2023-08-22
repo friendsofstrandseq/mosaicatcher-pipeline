@@ -285,7 +285,7 @@ class HandleInput:
         # List of folders/files to not consider (restrict to samples only)
 
         l_to_process = [e for e in os.listdir(thisdir) if e not in exclude and e.endswith(".zip") is False]
-        print(l_to_process)
+        # print(l_to_process)
         if config["samples_to_process"]:
             l_to_process = [e for e in l_to_process if e in config["samples_to_process"]]
 
@@ -327,7 +327,7 @@ class HandleInput:
         complete_df = complete_df.sort_values(by=["Cell", "File"]).reset_index(
             drop=True
         )
-        print(complete_df)
+        # print(complete_df)
         return complete_df
 
 
