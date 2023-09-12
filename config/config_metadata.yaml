@@ -111,6 +111,12 @@ scNOVA:
   required: False
   default: False
   lint_check: False
+genome_browsing_files_generation:
+  desc: Enable genome browsing files generation (UCSC + IGV)
+  type: bool
+  required: False
+  default: False
+  lint_check: False
 genecore_prefix:
   desc: ""
   type: str
