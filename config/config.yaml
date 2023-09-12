@@ -182,6 +182,11 @@ additional_sce_cutoff: 20000000
 sce_min_distance: 500000
 
 # --------------------------------------------------------
+# Downstream modules configuration - genome browsing
+# --------------------------------------------------------
+genome_browsing_files_generation: False
+
+# --------------------------------------------------------
 # Downstream modules configuration - ArbiGent
 # --------------------------------------------------------
 

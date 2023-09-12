@@ -110,8 +110,9 @@ if config["ashleys_pipeline_only"] is True:
 
 
 if config["scNOVA"] is True:
+    print(config["chromosomes_to_exclude"])
     assert (
-        "chrY" not in config["chromosomes"]
+        "chrY" in config["chromosomes_to_exclude"]
     ), "chrY is not handled by scNOVA yet, please remove it for config['chromosomes'] and add it in config['chomosomes_to_exclude']"
 
 
@@ -284,10 +285,16 @@ class HandleInput:
         complete_df_list = list()
         # List of folders/files to not consider (restrict to samples only)
 
-        l_to_process = [e for e in os.listdir(thisdir) if e not in exclude and e.endswith(".zip") is False]
+        l_to_process = [
+            e
+            for e in os.listdir(thisdir)
+            if e not in exclude and e.endswith(".zip") is False
+        ]
         # print(l_to_process)
         if config["samples_to_process"]:
-            l_to_process = [e for e in l_to_process if e in config["samples_to_process"]]
+            l_to_process = [
+                e for e in l_to_process if e in config["samples_to_process"]
+            ]
 
         for sample in l_to_process:
             # Create a list of  files to process for each sample
@@ -396,12 +403,13 @@ samples = list(sorted(list(df_config_files.Sample.unique().tolist())))
 # scNOVA dedicated - to handle only selected cells labeled by the user /& ashleys
 if config["scNOVA"] is True:
     l = list()
-
+    print(samples)
     for sample in samples:
         # Path of the labels file
         labels_path = "{folder}/{sample}/cell_selection/labels.tsv".format(
             folder=config["data_location"], sample=sample
         )
+        print(labels_path)
         if os.path.exists(labels_path):
             # Read df
             tmp_df_labels_selected = pd.read_csv(labels_path, sep="\t")[
@@ -417,6 +425,8 @@ if config["scNOVA"] is True:
             tmp_df_labels_selected["Selected"] = tmp_df_labels_selected[
                 "Selected"
             ].astype(bool)
+            print(tmp_df_labels_selected)
+            print(df_config_files)
             # Merge dfs
             tmp_merge_df = pd.merge(
                 tmp_df_labels_selected,
@@ -434,7 +444,7 @@ if config["scNOVA"] is True:
                 ]
                 tmp_merge_df["Selected"] = True
             l.append(tmp_merge_df)
-
+    print(l)
     # Concat df to create a new one
     df_config_files_with_labels = pd.concat(l).reset_index(drop=True)
     df_config_files_with_labels.to_csv(
@@ -501,7 +511,7 @@ if config["scNOVA"] is True:
             sep="\t",
         )
         clones[sample] = list(sorted(subclonality_file.Subclonality.unique().tolist()))
-    # print(clones)
+# print(clones)
 
 
 def get_mem_mb(wildcards, attempt):
@@ -514,9 +524,13 @@ def get_mem_mb_heavy(wildcards, attempt):
     return mem_avail[attempt - 1] * 1000
 
 
-def onsuccess_fct(log): 
-    config_metadata = config_definitions = yaml.safe_load(open(configfile_location.replace("config.yaml", "config_metadata.yaml"), "r"))
-    log_path_new = make_log_useful.make_log_useful(log, "SUCCESS", config, config_metadata)
+def onsuccess_fct(log):
+    config_metadata = config_definitions = yaml.safe_load(
+        open(configfile_location.replace("config.yaml", "config_metadata.yaml"), "r")
+    )
+    log_path_new = make_log_useful.make_log_useful(
+        log, "SUCCESS", config, config_metadata
+    )
     shell(
         'mail -s "[Snakemake] smk-wf-catalog/mosacaitcher-pipeline v{} - Run on {} - SUCCESS" {} < {}'.format(
             config["version"], config["data_location"], config["email"], log_path_new
@@ -525,8 +539,12 @@ def onsuccess_fct(log):
 
 
 def onerror_fct(log):
-    config_metadata = config_definitions = yaml.safe_load(open(configfile_location.replace("config.yaml", "config_metadata.yaml"), "r"))
-    log_path_new = make_log_useful.make_log_useful(log, "ERROR", config, config_metadata)
+    config_metadata = config_definitions = yaml.safe_load(
+        open(configfile_location.replace("config.yaml", "config_metadata.yaml"), "r")
+    )
+    log_path_new = make_log_useful.make_log_useful(
+        log, "ERROR", config, config_metadata
+    )
     shell(
         'mail -s "[Snakemake] smk-wf-catalog/mosacaitcher-pipeline v{} - Run on {} - ERRROR" {} < {}'.format(
             config["version"], config["data_location"], config["email"], log_path_new
@@ -1046,15 +1064,17 @@ def get_all_plots(wildcards):
             ),
         )
 
-        # UCSC section
+        # UCSC + IGV
 
-        l_outputs.extend(
-            expand(
-                "{folder}/{sample}/plots/UCSC/{sample}.bedUCSC.gz",
-                folder=config["data_location"],
-                sample=wildcards.sample,
-            ),
-        )
+        if config["genome_browsing_files_generation"] == True:
+
+            l_outputs.extend(
+                expand(
+                    "{folder}/{sample}/plots/IGV/{sample}_IGV_session.xml",
+                    folder=config["data_location"],
+                    sample=wildcards.sample,
+                ),
+            )
 
         # Stats section
 

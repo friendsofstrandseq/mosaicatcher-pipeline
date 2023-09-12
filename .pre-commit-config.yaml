@@ -9,13 +9,13 @@ repos:
         #    id: no-commit-to-branch
     repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v3.4.0
-  - hooks:
-      - id: snakefmt
-    repo: https://github.com/snakemake/snakefmt
-    rev: 0.4.0
-  - hooks:
-      - id: commitizen
-        stages:
-          - commit-msg
-    repo: https://github.com/commitizen-tools/commitizen
-    rev: v2.17.12
+  # - hooks:
+  #     - id: snakefmt
+  #   repo: https://github.com/snakemake/snakefmt
+  #   rev: 0.4.0
+  # - hooks:
+  #     - id: commitizen
+  #       stages:
+  #         - commit-msg
+  #   repo: https://github.com/commitizen-tools/commitizen
+  #   rev: v2.17.12
