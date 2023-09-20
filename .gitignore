@@ -215,3 +215,7 @@ workflow/data/arbigent/scTRIP_segmentation.bed
 .tests/data_CHR17/RPE-BM510/bam/*.bam.sort
 .tests/external_data/chr17.fa.log
 LOGS_DEV/
+
+# scTRIP multiplot
+workflow/scripts/plotting/scTRIP_multiplot/scTRIPmultiplot
+workflow/config/scTRIP_multiplot.ok

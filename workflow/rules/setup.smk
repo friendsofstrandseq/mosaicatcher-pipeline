@@ -31,6 +31,23 @@ rule install_BSgenome_package:
         "../scripts/utils/install_R_package.R"
 
 
+rule install_sctrip_multiplot_package:
+    input:
+        package=bsgenome_install,
+    output:
+        touch("workflow/config/scTRIP_multiplot.ok"),
+    log:
+        "log/install_sctrip_multiplot_package.log",
+    params:
+        selected_package="workflow/scripts/plotting/scTRIP_multiplot/scTRIPmultiplot",
+    conda:
+        "../envs/rtools.yaml"
+    resources:
+        mem_mb=get_mem_mb_heavy,
+    script:
+        "../scripts/utils/install_R_package.R"
+
+
 rule config_run_summary:
     input:
         labels="{folder}/{sample}/config/labels.tsv",

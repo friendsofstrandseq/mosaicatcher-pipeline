@@ -1064,6 +1064,18 @@ def get_all_plots(wildcards):
             ),
         )
 
+        # scTRIP multiplot
+
+        if config["scTRIP_multiplot"] == True:
+            l_outputs.extend(
+                expand(
+                    "{folder}/{sample}/plots/scTRIP_multiplot_aggr.ok",
+                    folder=config["data_location"],
+                    sample=wildcards.sample,
+                )
+            )
+
+
         # UCSC + IGV
 
         if config["genome_browsing_files_generation"] == True:
