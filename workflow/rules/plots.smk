@@ -318,6 +318,38 @@ rule plot_ploidy:
     script:
         "../scripts/plotting/ploidy_plot.py"
 
+rule scTRIP_multiplot:
+    input:
+        install_check="workflow/config/scTRIP_multiplot.ok",
+        counts="{folder}/{sample}/counts/{sample}.txt.gz",
+        haplotag_bam="{folder}/{sample}/haplotag/bam/{cell}.bam.htg",
+        sv_counts="{folder}/{sample}/mosaiclassifier/sv_calls/stringent_filterTRUE.tsv"
+    output:
+        figure=report(
+            "{folder}/{sample}/plots/scTRIP_multiplot/{cell}/{chrom}.png",
+            category="scTRIP multiplot",
+            subcategory="{sample}",
+            labels={"Cell" : "{cell}", "Chrom": "{chrom}"},
+        ),
+    log:
+        "{folder}/log/scTRIP_multiplot/{sample}/{cell}/{chrom}.log",
+    conda:
+        "../envs/rtools.yaml"
+    resources:
+        mem_mb=get_mem_mb,
+    shell:
+        "LC_CTYPE=C Rscript workflow/scripts/plotting/scTRIP_multiplot/scTRIP_multiplot_run.R {input.counts} {input.haplotag_bam} {input.sv_counts} {wildcards.chrom} {wildcards.cell} {output.figure} > {log} 2>&1"
+
+rule scTRIP_multiplot_aggr:
+    input:
+        aggregate_cells_scTRIP_multiplot,
+    output:
+        touch("{folder}/{sample}/plots/scTRIP_multiplot_aggr.ok")
+    log:
+        "{folder}/log/scTRIP_multiplot_aggr/{sample}.log",
+    resources:
+        mem_mb=get_mem_mb,
+
 
 rule ucsc_genome_browser_file:
     input:

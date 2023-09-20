@@ -142,10 +142,10 @@ rule download_arbigent_mappability_track:
 
 rule download_scnova_data:
     input:
-        HTTP.remote(
+        ancient(HTTP.remote(
             "https://zenodo.org/record/7697400/files/scNOVA_data_models.zip",
             keep_local=True,
-        ),
+        )),
     output:
         "workflow/data/scNOVA/utils/bin_chr_length.bed",
         "workflow/data/scNOVA/utils/bin_Genebody_all.bed",

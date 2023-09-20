@@ -216,6 +216,8 @@ plottype_clustering:
   - "position"
   - "chromosome"
 
+scTRIP_multiplot: False
+
 # --------------------------------------------------------
 # Internal Parameters
 # --------------------------------------------------------
