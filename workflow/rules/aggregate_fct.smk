@@ -152,6 +152,29 @@ def aggregate_cells_haplotag_tables(wildcards):
         cell=cell_list,
     )
 
+def aggregate_cells_scTRIP_multiplot(wildcards):
+    """
+    Function based on checkpoint filter_bad_cells_from_mosaic_count
+    to process the segmentation only on cells that were flagged as high-quality
+    Return {cell}.txt
+    """
+    df = pd.read_csv(
+        checkpoints.filter_bad_cells_from_mosaic_count.get(
+            sample=wildcards.sample, folder=config["data_location"]
+        ).output.info,
+        skiprows=13,
+        sep="\t",
+    )
+    cell_list = df.cell.tolist()
+
+    return expand(
+        "{folder}/{sample}/plots/scTRIP_multiplot/{cell}/{chrom}.png",
+        folder=config["data_location"],
+        sample=wildcards.sample,
+        cell=cell_list,
+        chrom=config["chromosomes"]
+    )
+
 
 def unselected_input_bam(wildcards):
     """
