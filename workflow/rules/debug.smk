@@ -6,12 +6,12 @@ rule fastqc_debug:
         labels_strandscape="{folder}/{sample}/cell_selection/labels_strandscape.tsv",
     output:
         html=report(
-            "{folder}/{sample}/debug/mosaicatcher_fastqc/{cell}_{pair}_fastqc.html",
+            "{folder}/{sample}/debug/mosaicatcher_fastqc/{cell}.{pair}_fastqc.html",
             category="FastQC",
             subcategory="{sample}",
             labels={"Sample": "{sample}", "Cell": "{cell}", "Pair": "{pair}"},
         ),
-        zip="{folder}/{sample}/debug/mosaicatcher_fastqc/{cell}_{pair}_fastqc.zip",
+        zip="{folder}/{sample}/debug/mosaicatcher_fastqc/{cell}.{pair}_fastqc.zip",
     log:
         "{folder}/log/fastqc_debug/{sample}/{cell}_{pair}.log",
     threads: 1
@@ -22,4 +22,4 @@ rule fastqc_debug:
     params:
         outdir = lambda wc, output: "/".join(output.zip.split("/")[:-1])
     shell:
-        "fastqc --outdir {params.outdir} --quiet {input.fastq}"
+        "fastqc --outdir {params.outdir} --quiet {input.fastq} "
