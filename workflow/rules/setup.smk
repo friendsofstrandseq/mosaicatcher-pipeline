@@ -27,8 +27,8 @@ rule install_BSgenome_package:
         "../envs/rtools.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
-    script:
-        "../scripts/utils/install_R_package.R"
+    shell:
+        "Rscript workflow/scripts/utils/install_R_package.R {params.selected_package}"
 
 
 rule install_sctrip_multiplot_package:
@@ -44,8 +44,8 @@ rule install_sctrip_multiplot_package:
         "../envs/rtools.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
-    script:
-        "../scripts/utils/install_R_package.R"
+    shell:
+        "Rscript workflow/scripts/utils/install_R_package.R {params.selected_package}"
 
 
 rule config_run_summary:
