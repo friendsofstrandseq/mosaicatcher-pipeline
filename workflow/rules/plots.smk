@@ -54,27 +54,6 @@ rule divide_pdf:
         "../scripts/plotting/dividing_pdf.py"
 
 
-# rule divide_pdf:
-#     input:
-#         "{folder}/{sample}/plots/counts/CountComplete.{plottype}.pdf",
-#     output:
-#         report(
-#             "{folder}/{sample}/plots/counts_{plottype}/{cell}.{i, \d+}.pdf",
-#             caption="../report/mosaic_counts.rst",
-#             category="Mosaic counts",
-#             subcategory="{sample}",
-#             labels={"Cell": "{cell}", "Nb": "{i}", "Type": "{plottype}"},
-#         ),
-#     log:
-#         "{folder}/log/{sample}/plots/counts_{plottype}/{cell}.{i, \d+}.log",
-#     conda:
-#         "../envs/mc_base.yaml"
-#     resources:
-#         mem_mb=get_mem_mb,
-#     script:
-#         "../scripts/plotting/dividing_pdf.py"
-
-
 rule final_results:
     input:
         get_all_plots,
@@ -318,18 +297,19 @@ rule plot_ploidy:
     script:
         "../scripts/plotting/ploidy_plot.py"
 
+
 rule scTRIP_multiplot:
     input:
         install_check="workflow/config/scTRIP_multiplot.ok",
         counts="{folder}/{sample}/counts/{sample}.txt.gz",
         haplotag_bam="{folder}/{sample}/haplotag/bam/{cell}.bam.htg",
-        sv_counts="{folder}/{sample}/mosaiclassifier/sv_calls/stringent_filterTRUE.tsv"
+        sv_counts="{folder}/{sample}/mosaiclassifier/sv_calls/stringent_filterTRUE.tsv",
     output:
         figure=report(
             "{folder}/{sample}/plots/scTRIP_multiplot/{cell}/{chrom}.png",
             category="scTRIP multiplot",
             subcategory="{sample}",
-            labels={"Cell" : "{cell}", "Chrom": "{chrom}"},
+            labels={"Cell": "{cell}", "Chrom": "{chrom}"},
         ),
     log:
         "{folder}/log/scTRIP_multiplot/{sample}/{cell}/{chrom}.log",
@@ -340,11 +320,12 @@ rule scTRIP_multiplot:
     shell:
         "LC_CTYPE=C Rscript workflow/scripts/plotting/scTRIP_multiplot/scTRIP_multiplot_run.R {input.counts} {input.haplotag_bam} {input.sv_counts} {wildcards.chrom} {wildcards.cell} {output.figure} > {log} 2>&1"
 
+
 rule scTRIP_multiplot_aggr:
     input:
         aggregate_cells_scTRIP_multiplot,
     output:
-        touch("{folder}/{sample}/plots/scTRIP_multiplot_aggr.ok")
+        touch("{folder}/{sample}/plots/scTRIP_multiplot_aggr.ok"),
     log:
         "{folder}/log/scTRIP_multiplot_aggr/{sample}.log",
     resources:
@@ -385,7 +366,6 @@ rule split_ucsc_into_individual_tracks:
         mem_mb=get_mem_mb,
     shell:
         "sh workflow/scripts/plotting/split_ucsc_file.sh {input.ucsc_file} {output.output_dir}"
-        # "../scripts/plotting/split_ucsc_file.sh"
 
 
 rule generate_igv_session:
@@ -401,4 +381,3 @@ rule generate_igv_session:
         mem_mb=get_mem_mb,
     shell:
         "sh workflow/scripts/plotting/generate_IGV_session.sh {input.splitted_files_dir} {output.xml_session}"
-        # "../scripts/plotting/generate_IGV_session.sh"
