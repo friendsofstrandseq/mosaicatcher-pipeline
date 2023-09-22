@@ -106,10 +106,9 @@ if config["ashleys_pipeline"] is False:
                 "echo 'cell\tprobability\tprediction' > {output}"
 
 
-
 rule copy_labels:
     input:
-        select_labels
+        select_labels,
     output:
         "{folder}/{sample}/config/labels.tsv",
     log:

@@ -152,6 +152,7 @@ def aggregate_cells_haplotag_tables(wildcards):
         cell=cell_list,
     )
 
+
 def aggregate_cells_scTRIP_multiplot(wildcards):
     """
     Function based on checkpoint filter_bad_cells_from_mosaic_count
@@ -172,7 +173,7 @@ def aggregate_cells_scTRIP_multiplot(wildcards):
         folder=config["data_location"],
         sample=wildcards.sample,
         cell=cell_list,
-        chrom=config["chromosomes"]
+        chrom=config["chromosomes"],
     )
 
 
@@ -313,6 +314,7 @@ def select_binbed(wildcards):
         return "workflow/data/bin_200kb_all.bed"
     else:
         return "workflow/data/mm10.bin_200kb_all.bed"
+
 
 def select_labels(wildcards):
     if config["use_strandscape_labels"]:
