@@ -54,27 +54,6 @@ rule divide_pdf:
         "../scripts/plotting/dividing_pdf.py"
 
 
-# rule divide_pdf:
-#     input:
-#         "{folder}/{sample}/plots/counts/CountComplete.{plottype}.pdf",
-#     output:
-#         report(
-#             "{folder}/{sample}/plots/counts_{plottype}/{cell}.{i, \d+}.pdf",
-#             caption="../report/mosaic_counts.rst",
-#             category="Mosaic counts",
-#             subcategory="{sample}",
-#             labels={"Cell": "{cell}", "Nb": "{i}", "Type": "{plottype}"},
-#         ),
-#     log:
-#         "{folder}/log/{sample}/plots/counts_{plottype}/{cell}.{i, \d+}.log",
-#     conda:
-#         "../envs/mc_base.yaml"
-#     resources:
-#         mem_mb=get_mem_mb,
-#     script:
-#         "../scripts/plotting/dividing_pdf.py"
-
-
 rule final_results:
     input:
         get_all_plots,
@@ -90,7 +69,9 @@ rule final_results:
 
 rule plot_SV_consistency_barplot:
     input:
-        sv_calls="{folder}/{sample}/mosaiclassifier/sv_calls/{method}_filter{filter}.tsv",
+        sv_calls=(
+            "{folder}/{sample}/mosaiclassifier/sv_calls/{method}_filter{filter}.tsv"
+        ),
     output:
         barplot_bypos=report(
             "{folder}/{sample}/plots/sv_consistency/{method}_filter{filter}.consistency-barplot-bypos.pdf",
@@ -126,7 +107,9 @@ rule plot_SV_consistency_barplot:
 
 rule plot_clustering:
     input:
-        sv_calls="{folder}/{sample}/mosaiclassifier/sv_calls/{method}_filter{filter}.tsv",
+        sv_calls=(
+            "{folder}/{sample}/mosaiclassifier/sv_calls/{method}_filter{filter}.tsv"
+        ),
         binbed=ancient("workflow/data/bin_200kb_all.bed"),
     output:
         position=report(
@@ -151,7 +134,9 @@ rule plot_clustering:
 
 rule plot_clustering_position_dev:
     input:
-        sv_calls="{folder}/{sample}/mosaiclassifier/sv_calls/{method}_filter{filter}.tsv",
+        sv_calls=(
+            "{folder}/{sample}/mosaiclassifier/sv_calls/{method}_filter{filter}.tsv"
+        ),
     output:
         pdf=report(
             "{folder}/{sample}/plots/sv_clustering_dev/{method}-filter{filter}-position.pdf",
@@ -176,7 +161,9 @@ rule plot_clustering_position_dev:
 
 rule plot_clustering_chromosome_dev:
     input:
-        sv_calls="{folder}/{sample}/mosaiclassifier/sv_calls/{method}_filter{filter}.tsv",
+        sv_calls=(
+            "{folder}/{sample}/mosaiclassifier/sv_calls/{method}_filter{filter}.tsv"
+        ),
         binbed=ancient(select_binbed),
         cluster_order_df="{folder}/{sample}/plots/sv_clustering_dev/clustering_{method}-filter{filter}-position.tsv",
     output:
@@ -204,11 +191,15 @@ rule plot_SV_calls:
     input:
         counts="{folder}/{sample}/counts/{sample}.txt.gz",
         calls="{folder}/{sample}/mosaiclassifier/sv_calls/{method}_filter{filter}.tsv",
-        complex_calls="{folder}/{sample}/mosaiclassifier/complex/{method}_filter{filter}.tsv",
+        complex_calls=(
+            "{folder}/{sample}/mosaiclassifier/complex/{method}_filter{filter}.tsv"
+        ),
         strand="{folder}/{sample}/strandphaser/StrandPhaseR_final_output.txt",
         segments="{folder}/{sample}/segmentation/Selection_jointseg.txt",
         scsegments="{folder}/{sample}/segmentation/Selection_singleseg.txt",
-        grouptrack="{folder}/{sample}/mosaiclassifier/postprocessing/group-table/{method}.tsv",
+        grouptrack=(
+            "{folder}/{sample}/mosaiclassifier/postprocessing/group-table/{method}.tsv"
+        ),
     output:
         report(
             "{folder}/{sample}/plots/sv_calls/{method}_filter{filter}/{chrom}.pdf",
@@ -246,11 +237,15 @@ rule plot_SV_calls_dev:
     input:
         counts="{folder}/{sample}/counts/{sample}.txt.gz",
         calls="{folder}/{sample}/mosaiclassifier/sv_calls/{method}_filter{filter}.tsv",
-        complex_calls="{folder}/{sample}/mosaiclassifier/complex/{method}_filter{filter}.tsv",
+        complex_calls=(
+            "{folder}/{sample}/mosaiclassifier/complex/{method}_filter{filter}.tsv"
+        ),
         strand="{folder}/{sample}/strandphaser/StrandPhaseR_final_output.txt",
         segments="{folder}/{sample}/segmentation/Selection_jointseg.txt",
         scsegments="{folder}/{sample}/segmentation/Selection_singleseg.txt",
-        grouptrack="{folder}/{sample}/mosaiclassifier/postprocessing/group-table/{method}.tsv",
+        grouptrack=(
+            "{folder}/{sample}/mosaiclassifier/postprocessing/group-table/{method}.tsv"
+        ),
     output:
         report(
             "{folder}/{sample}/plots/sv_calls_dev/{method}_filter{filter}/{chrom}.pdf",
@@ -303,11 +298,49 @@ rule plot_ploidy:
         "../scripts/plotting/ploidy_plot.py"
 
 
+rule scTRIP_multiplot:
+    input:
+        install_check="workflow/config/scTRIP_multiplot.ok",
+        counts="{folder}/{sample}/counts/{sample}.txt.gz",
+        haplotag_bam="{folder}/{sample}/haplotag/bam/{cell}.bam.htg",
+        sv_counts="{folder}/{sample}/mosaiclassifier/sv_calls/stringent_filterTRUE.tsv",
+    output:
+        figure=report(
+            "{folder}/{sample}/plots/scTRIP_multiplot/{cell}/{chrom}.png",
+            category="scTRIP multiplot",
+            subcategory="{sample}",
+            labels={"Cell": "{cell}", "Chrom": "{chrom}"},
+        ),
+    log:
+        "{folder}/log/scTRIP_multiplot/{sample}/{cell}/{chrom}.log",
+    conda:
+        "../envs/rtools.yaml"
+    resources:
+        mem_mb=get_mem_mb,
+    shell:
+        "LC_CTYPE=C Rscript workflow/scripts/plotting/scTRIP_multiplot/scTRIP_multiplot_run.R {input.counts} {input.haplotag_bam} {input.sv_counts} {wildcards.chrom} {wildcards.cell} {output.figure} > {log} 2>&1"
+
+
+rule scTRIP_multiplot_aggr:
+    input:
+        aggregate_cells_scTRIP_multiplot,
+    output:
+        touch("{folder}/{sample}/plots/scTRIP_multiplot_aggr.ok"),
+    log:
+        "{folder}/log/scTRIP_multiplot_aggr/{sample}.log",
+    resources:
+        mem_mb=get_mem_mb,
+
+
 rule ucsc_genome_browser_file:
     input:
         counts="{folder}/{sample}/counts/{sample}.txt.gz",
-        stringent_calls="{folder}/{sample}/mosaiclassifier/sv_calls/stringent_filterTRUE.tsv",
-        lenient_calls="{folder}/{sample}/mosaiclassifier/sv_calls/lenient_filterFALSE.tsv",
+        stringent_calls=(
+            "{folder}/{sample}/mosaiclassifier/sv_calls/stringent_filterTRUE.tsv"
+        ),
+        lenient_calls=(
+            "{folder}/{sample}/mosaiclassifier/sv_calls/lenient_filterFALSE.tsv"
+        ),
     output:
         "{folder}/{sample}/plots/UCSC/{sample}.bedUCSC.gz",
     log:
@@ -318,3 +351,33 @@ rule ucsc_genome_browser_file:
         mem_mb=get_mem_mb,
     shell:
         "python workflow/scripts/plotting/ucsc_vizu.py {input.counts} {input.stringent_calls} {input.lenient_calls} {output} > {log}"
+
+
+rule split_ucsc_into_individual_tracks:
+    input:
+        ucsc_file="{folder}/{sample}/plots/UCSC/{sample}.bedUCSC.gz",
+    output:
+        output_dir=directory("{folder}/{sample}/plots/IGV/SPLITTED"),
+    log:
+        "{folder}/log/split_ucsc_into_individual_tracks/{sample}.log",
+    conda:
+        "../envs/mc_base.yaml"
+    resources:
+        mem_mb=get_mem_mb,
+    shell:
+        "sh workflow/scripts/plotting/split_ucsc_file.sh {input.ucsc_file} {output.output_dir}"
+
+
+rule generate_igv_session:
+    input:
+        splitted_files_dir="{folder}/{sample}/plots/IGV/SPLITTED",
+    output:
+        xml_session="{folder}/{sample}/plots/IGV/{sample}_IGV_session.xml",
+    log:
+        "{folder}/log/generate_igv_session/{sample}.log",
+    conda:
+        "../envs/mc_base.yaml"
+    resources:
+        mem_mb=get_mem_mb,
+    shell:
+        "sh workflow/scripts/plotting/generate_IGV_session.sh {input.splitted_files_dir} {output.xml_session}"

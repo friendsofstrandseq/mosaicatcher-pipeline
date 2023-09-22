@@ -46,4 +46,4 @@ snakemake --configfile .tests/config/simple_config.yaml --config ashleys_pipelin
 
 docker login -u weber8thomas
 docker build --platform=linux/amd64 -t weber8thomas/mosaicatcher-pipeline:VERSION .
-docker push -t weber8thomas/mosaicatcher-pipeline:VERSION
+docker push weber8thomas/mosaicatcher-pipeline:VERSION

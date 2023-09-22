@@ -18,17 +18,33 @@ rule install_BSgenome_package:
             config["reference"]
         ),
     params:
-        selected_package=lambda wc, input: "BSgenome.Hsapiens.UCSC.{}".format(
+        selected_package=lambda wc, input: "BSgenome.{}.UCSC.{}".format(
+            "Mmusculus" if config["reference"] == "mm10" else "Hsapiens",
             config["reference"]
-        )
-        if config["reference"] in ["hg38", "hg19", "mm10"]
-        else input.package,
+        ) if config["reference"] in ["hg38", "hg19", "mm10"] else input.package,
     conda:
         "../envs/rtools.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
-    script:
-        "../scripts/utils/install_R_package.R"
+    shell:
+        "Rscript workflow/scripts/utils/install_R_package.R {params.selected_package}"
+
+
+rule install_sctrip_multiplot_package:
+    input:
+        package=bsgenome_install,
+    output:
+        touch("workflow/config/scTRIP_multiplot.ok"),
+    log:
+        "log/install_sctrip_multiplot_package.log",
+    params:
+        selected_package="workflow/scripts/plotting/scTRIP_multiplot/scTRIPmultiplot",
+    conda:
+        "../envs/rtools.yaml"
+    resources:
+        mem_mb=get_mem_mb_heavy,
+    shell:
+        "Rscript workflow/scripts/utils/install_R_package.R {params.selected_package}"
 
 
 rule config_run_summary:
