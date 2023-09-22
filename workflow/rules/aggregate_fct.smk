@@ -313,3 +313,9 @@ def select_binbed(wildcards):
         return "workflow/data/bin_200kb_all.bed"
     else:
         return "workflow/data/mm10.bin_200kb_all.bed"
+
+def select_labels(wildcards):
+    if config["use_strandscape_labels"]:
+        return "{folder}/{sample}/cell_selection/labels_strandscape.tsv"
+    else:
+        return "{folder}/{sample}/cell_selection/labels.tsv"
