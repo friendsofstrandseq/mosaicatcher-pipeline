@@ -1,9 +1,9 @@
 .. role:: underline
     :class: underline
-    
+
 MosaiCatcher v2 is a `Snakemake <https://snakemake.github.io>`__ pipeline that aims to detect Structural variants from single-cell Strand-seq data.
 
-**Versions used and general parameters:** 
+**Versions used and general parameters:**
 
 * MosaiCatcher version used: {{ snakemake.config["version"] }}
 * Ashleys version used (if enabled): {{ snakemake.config["ashleys_pipeline_version"] }}
@@ -15,7 +15,7 @@ MosaiCatcher v2 is a `Snakemake <https://snakemake.github.io>`__ pipeline that a
 * Publishdir defined: {{ snakemake.config["publishdir"] }}
 * Input BAM legacy (bam & selected ; mutually exclusive with ashleys_pipeline): {{ snakemake.config["input_bam_legacy"] }}
 
-**Ashleys-QC parameters (if enabled)
+**Ashleys-QC parameters (if enabled)**
 
 * Ashleys-QC preprocessing pipeline enabled: {{ snakemake.config["ashleys_pipeline"] }}
 * Ashleys-QC preprocessing pipeline version used: {{ snakemake.config["ashleys_pipeline_version"] }}

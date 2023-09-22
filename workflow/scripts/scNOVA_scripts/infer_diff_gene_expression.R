@@ -10,7 +10,7 @@ library(umap)
 library(pheatmap)
 library(gplots)
 
-filename = args[8]
+filename <- args[8]
 
 
 prefix <- strsplit(filename, "scNOVA_result_plots")[[1]][1]
@@ -244,8 +244,9 @@ plot(tsne_out$Y, pch = 16, xlab = "t-SNE1", ylab = "t-SNE2", cex = 1, col = data
 
 
 umap_out <- umap(ind.coord[, 1:10])
+# saveRDS(umap_out, file = "umap_out.rds")
 plot(umap_out$layout, pch = 16, xlab = "UMAP1", ylab = "UMAP2", cex = 1, col = data_lab_mat_sub)
-# write.table(umap_out$layout, file = "/Users/jeong/Documents/Strand_Seq/Deeptool/deeptool_ATAC/Active_X_haplo_analysis/LCL_GM20509/output_umap_500genes.txt", row.names = TRUE, col.names = TRUE, sep = "\t", quote = FALSE)
+# write.table(umap_out$layout, file = "/scratch/tweber/DATA/MC_DATA/PAPER_RUNS/TMP/scNOVA/umap.txt", row.names = TRUE, col.names = TRUE, sep = "\t", quote = FALSE)
 
 
 
@@ -254,6 +255,7 @@ dds <- DESeqDataSetFromMatrix(countData = cts, colData = coldata, design = ~cond
 # keep <- rowSums(counts(dds)) >= 10
 # dds <- dds[keep,]
 dds <- DESeq(dds)
+# save(dds, file = "/scratch/tweber/DATA/MC_DATA/PAPER_RUNS/TMP/scNOVA/dds.RData")
 normcount <- counts(dds, normalized = TRUE)
 res <- results(dds, contrast = c("condition", "clone2", "clone1"))
 
@@ -319,8 +321,10 @@ if (sum(input_matrix_sort_woMT$blacklist == 0 & res_sort_woMT$padj < 0.1 & is.na
     breaksList <- append(breaksList, 2)
     breaksList <- append(breaksList, -2, 0)
     mycol <- colorpanel(n = length(breaksList) - 1, low = "blue", mid = "white", high = "red")
-    res <- pheatmap(normlogt[class_label == "clone1" | class_label == "clone2", input_matrix_sort_woMT$blacklist == 0 & res_sort_woMT$padj < 0.1 & is.na(res_sort_woMT$padj) == 0], show_rownames = F, show_colnames = T, cluster_cols = T, cluster_rows = T, scale = "column", col = mycol, breaks = breaksList, clustering_distance_rows = "euclidean", cex = 0.8, annotation_row = row_annotation, annotation_colors = anno_colors, clustering_method = "ward.D")
+    heatmap_data <- normlogt[class_label == "clone1" | class_label == "clone2", input_matrix_sort_woMT$blacklist == 0 & res_sort_woMT$padj < 0.1 & is.na(res_sort_woMT$padj) == 0]
+    # save(heatmap_data, breaksList, row_annotation, anno_colors, file = "/scratch/tweber/DATA/MC_DATA/PAPER_RUNS/TMP/scNOVA/heatmap_data_and_breaks.RData")
 
+    res <- pheatmap(heatmap_data, show_rownames = F, show_colnames = T, cluster_cols = T, cluster_rows = T, scale = "column", col = mycol, breaks = breaksList, clustering_distance_rows = "euclidean", cex = 0.8, annotation_row = row_annotation, annotation_colors = anno_colors, clustering_method = "ward.D")
 
     ## Without clustering row
     normlogt_sort <- rbind(normlogt[class_label == "clone1", ], normlogt[class_label == "clone2", ])

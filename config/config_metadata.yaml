@@ -111,9 +111,27 @@ scNOVA:
   required: False
   default: False
   lint_check: False
+genome_browsing_files_generation:
+  desc: Enable genome browsing files generation (UCSC + IGV)
+  type: bool
+  required: False
+  default: False
+  lint_check: False
 genecore_prefix:
   desc: ""
   type: str
   required: False
   default: "/g/korbel/shared/genecore"
+  lint_check: False
+scTRIP_multiplot:
+  desc: "Enable scTRIP multiplot (W/C, depth, phased het SNPs, SV) for all chrom of all cells for every sample"
+  type: bool
+  required: False
+  default: "/g/korbel/shared/genecore"
+  lint_check: False
+use_strandscape_labels::
+  desc: "Use StrandScape labels instead of cell_selection/labels.tsv"
+  type: bool
+  required: False
+  default: False
   lint_check: False

@@ -14,6 +14,15 @@ From 2.2.0, you don't need to clone both [ashleys-qc-pipeline preprocessing modu
 
 1. A. Create a dedicated conda environment
 
+---
+
+**ℹ️ Note**
+
+- Please be careful of your conda/mamba setup, if you applied specific constraints/modifications to your system, this could lead to some versions discrepancies.
+- mamba is usually preferred but might not be installed by default on a shared cluster environment
+
+---
+
 ```bash
 conda create -n snakemake -c bioconda -c conda-forge -c defaults -c anaconda snakemake
 ```
@@ -24,7 +33,7 @@ conda create -n snakemake -c bioconda -c conda-forge -c defaults -c anaconda sna
 conda activate snakemake
 ```
 
-**Reminder:** You will need to verify that this conda environment is activated and provide the right snakemake before each execution (`which snakemake` command should output like <FOLDER>/<USER>/[ana|mini]conda3/envs/snakemake/bin/snakemake)
+**Reminder:** You will need to verify that this conda environment is activated and provide the right snakemake before each execution (`which snakemake` command should output like \<FOLDER>/\<USER>/[ana|mini]conda3/envs/snakemake/bin/snakemake)
 
 2. Clone the repository
 
@@ -81,8 +90,7 @@ snakemake \
 
 **ℹ️ Note for 🇪🇺 EMBL users**
 
-- You can load already installed snakemake modules on the HPC (by connecting to login01 & login02) using the following `module load snakemake/7.14.0-foss-2022a`
-- Use the following command for singularity-args parameter: `--singularity-args "-B /g:/g -B /scratch:/scratch"`
+- Use the following profile to run on EMBL cluster: `--profile workflow/snakemake_profiles/HPC/slurm_EMBL`
 
 ---
 
@@ -202,7 +210,7 @@ If possible, it is also highly recommended to install and use `mamba` package ma
 
 ```bash
 conda install -c conda-forge mamba
-mamba create -n snakemake -c bioconda -c conda-forge -c defaults -c anaconda snakemake=7.14.0
+mamba create -n snakemake -c bioconda -c conda-forge -c defaults -c anaconda snakemake
 conda activate mosaicatcher_env
 ```
 
@@ -297,19 +305,15 @@ Parent_folder
     `-- selected
         |-- Cell_03.sort.mdup.bam
         `-- Cell_04.sort.mdup.bam
-
-
-
-
 ```
 
-> Using the `old behavior`, cells flagged as low-quality will be determined both based on their presence in the `selected` folder presented above and on coverage [see Note here](#note:-filtering-of-low-quality-cells-impossible-to-process).
+> Using the `input_bam_legacy` parameter, cells flagged as low-quality will be determined both based on their presence in the `selected` folder presented above and on coverage [see Note here](#note:-filtering-of-low-quality-cells-impossible-to-process).
 
 ---
 
 **⚠️ Warning**
 
-Using the `old behavior`, only **intersection** between cells present in the selected folder and with enough coverage will be kept. Example: if a library is present in the selected folder but present a low coverage [see Note here](#note:-filtering-of-low-quality-cells-impossible-to-process), this will not be processed.
+Using the `input_bam_legacy` parameter, only **intersection** between cells present in the selected folder and with enough coverage will be kept. Example: if a library is present in the selected folder but present a low coverage [see Note here](#note:-filtering-of-low-quality-cells-impossible-to-process), this will not be processed.
 
 ---
 
@@ -386,7 +390,7 @@ snakemake \
 **ℹ️ Note**
 
 It is possible to provide multiple mouting points between system and cointainer using as many `-B` as needed in the `singularity-args` command like the following: "-B /<mouting_point1>:/<mounting_point1> -B /<mouting_point2>:/<mounting_point2>"
-For EMBL users, this can be for example "-B /g:/g -B /scratch:/scratch"
+For EMBL users, you don't need to specify this as this is already part of the execution profile (workflow/snakemake_profiles/HPC/slurm_EMBL)
 
 ---
 
@@ -530,6 +534,12 @@ snakemake \
 
 ```
 
+## scTRIP multiplot
+
+From 2.2.2, scTRIP multiplot (from Marco Cosenza) is now compatible with MosaiCatcher. The single requirement is to clone scTRIP multiplot repository (please reach out Marco if you want to access the repository, currently private) inside `workflow/scripts/plotting/scTRIP_multiplot`.
+
+By default, scTRIP multiplot is set to false, to enable it, please update the `config/config.yaml` file or use `scTRIP_multiplot=True` in the config section of the command line. An example of a scTRIP multiplot is available [here](/docs/output.md#sctrip-multiplot-marco-cosenza)
+
 ---
 
 **ℹ️ Note**
@@ -546,9 +556,9 @@ If you already use a previous version of mosaicatcher-pipeline, here is a short 
 
 `git fetch --all`
 
-- Jump to a new version (for example 2.1.0) & pull code:
+- Jump to a new version (for example 2.2.2) & pull code:
 
-`git checkout 2.1.0 && git pull`
+`git checkout 2.2.2 && git pull`
 
 Then, to initiate or update git snakemake_profiles submodule:
 
