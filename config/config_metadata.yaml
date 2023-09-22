@@ -129,3 +129,9 @@ scTRIP_multiplot:
   required: False
   default: "/g/korbel/shared/genecore"
   lint_check: False
+use_strandscape_labels::
+  desc: "Use StrandScape labels instead of cell_selection/labels.tsv"
+  type: bool
+  required: False
+  default: False
+  lint_check: False
