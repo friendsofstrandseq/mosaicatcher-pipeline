@@ -20,6 +20,6 @@ rule fastqc_debug:
     conda:
         "../envs/dev/debug.yaml"
     params:
-        outdir = lambda wc, output: config["abs_path"].join(output.zip.split("/")[:-1])
+        outdir=lambda wc, output: config["abs_path"].join(output.zip.split("/")[:-1]),
     shell:
         "fastqc --outdir {params.outdir} --quiet {input.fastq} "

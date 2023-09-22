@@ -110,7 +110,7 @@ if config["ashleys_pipeline_only"] is True:
 
 
 if config["scNOVA"] is True:
-    print(config["chromosomes_to_exclude"])
+    # print(config["chromosomes_to_exclude"])
     assert (
         "chrY" in config["chromosomes_to_exclude"]
     ), "chrY is not handled by scNOVA yet, please remove it for config['chromosomes'] and add it in config['chomosomes_to_exclude']"
@@ -403,13 +403,13 @@ samples = list(sorted(list(df_config_files.Sample.unique().tolist())))
 # scNOVA dedicated - to handle only selected cells labeled by the user /& ashleys
 if config["scNOVA"] is True:
     l = list()
-    print(samples)
+    # print(samples)
     for sample in samples:
         # Path of the labels file
         labels_path = "{folder}/{sample}/cell_selection/labels.tsv".format(
             folder=config["data_location"], sample=sample
         )
-        print(labels_path)
+        # print(labels_path)
         if os.path.exists(labels_path):
             # Read df
             tmp_df_labels_selected = pd.read_csv(labels_path, sep="\t")[
@@ -425,8 +425,8 @@ if config["scNOVA"] is True:
             tmp_df_labels_selected["Selected"] = tmp_df_labels_selected[
                 "Selected"
             ].astype(bool)
-            print(tmp_df_labels_selected)
-            print(df_config_files)
+            # print(tmp_df_labels_selected)
+            # print(df_config_files)
             # Merge dfs
             tmp_merge_df = pd.merge(
                 tmp_df_labels_selected,
@@ -444,7 +444,7 @@ if config["scNOVA"] is True:
                 ]
                 tmp_merge_df["Selected"] = True
             l.append(tmp_merge_df)
-    print(l)
+    # print(l)
     # Concat df to create a new one
     df_config_files_with_labels = pd.concat(l).reset_index(drop=True)
     df_config_files_with_labels.to_csv(
@@ -1075,11 +1075,9 @@ def get_all_plots(wildcards):
                 )
             )
 
-
         # UCSC + IGV
 
         if config["genome_browsing_files_generation"] == True:
-
             l_outputs.extend(
                 expand(
                     "{folder}/{sample}/plots/IGV/{sample}_IGV_session.xml",
@@ -1111,3 +1109,4 @@ def get_all_plots(wildcards):
     # from pprint import pprint
     # pprint(l_outputs)
     return l_outputs
+  
