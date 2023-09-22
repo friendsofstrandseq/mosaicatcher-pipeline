@@ -29,15 +29,15 @@ All these arguments can be specified in two ways:
 
 ### Ashleys-QC upstream pipeline
 
-| Parameter               | Comment                                                                                                           | Parameter type | Default |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------- | ------- |
-| `input_bam_legacy`      | Mutualy exclusive with ashleys_pipeline. Will use `selected` folder to identify high-quality libraries to process | Boolean        | False   |
-| `ashleys_pipeline`      | Allow to load and use ashleys-qc-pipeline snakemake preprocessing module and to start from FASTQ inputs           | Boolean        | False   |
-| `ashleys_pipeline_only` | Stop the execution after ashleys-qc-pipeline submodule. Requires `ashleys_pipeline` to be True                    | Boolean        | False   |
-| `ashleys_threshold`     | Threshold for Ashleys-qc binary classification                                                                    | Float          | 0.5     |
-| `MultiQC`               | Enable or disable MultiQC analysis (includes FastQC, samtools flagstats & idxstats)                               | Boolean        | False   |
-| `hand_selection`        | Enable or disable hand selection through the Jupyter Notebook                                                     | Boolean        | False   |
-| `split_qc_plot`         | Enable or disable the split of QC plot into individual pages plots                                                | Boolean        | False   |
+| Parameter               | Comment                                                                                                                                                        | Parameter type | Default |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ------- |
+| `input_bam_legacy`      | Mutualy exclusive with ashleys_pipeline. Will use `selected` folder to identify high-quality libraries to process                                              | Boolean        | False   |
+| `ashleys_pipeline`      | Allow to load and use [ashleys-qc-pipeline](/docs/usage.md#3c-fastq-input--preprocessing-module) snakemake preprocessing module and to start from FASTQ inputs | Boolean        | False   |
+| `ashleys_pipeline_only` | Stop the execution after ashleys-qc-pipeline submodule. Requires `ashleys_pipeline` to be True                                                                 | Boolean        | False   |
+| `ashleys_threshold`     | Threshold for Ashleys-qc binary classification                                                                                                                 | Float          | 0.5     |
+| `MultiQC`               | Enable or disable MultiQC analysis (includes FastQC, samtools flagstats & idxstats)                                                                            | Boolean        | False   |
+| `hand_selection`        | Enable or disable hand selection through the Jupyter Notebook                                                                                                  | Boolean        | False   |
+| `split_qc_plot`         | Enable or disable the split of QC plot into individual pages plots                                                                                             | Boolean        | False   |
 
 ### Reference data & Chromosomes
 
@@ -49,11 +49,11 @@ All these arguments can be specified in two ways:
 
 ### Counts configuration
 
-| Parameter                          | Comment                                                                                             | Default |
-| ---------------------------------- | --------------------------------------------------------------------------------------------------- | ------- |
-| `multistep_normalisation_analysis` | Allow to perform multistep normalisation including GC correction for visualization (Marco Cosenza). | False   |
-| `window`                           | Window size used for binning by mosaic count (Can be of high importance regarding library coverage) | 100000  |
-| `blacklist_regions`                | Enable/Disable blacklisting                                                                         | True    |
+| Parameter                 | Comment                                                                                                                                       | Default |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| `multistep_normalisation` | Allow to perform [multistep normalisation](/docs/usage.md#multistep-normalisation) including GC correction for visualization (Marco Cosenza). | False   |
+| `window`                  | Window size used for binning by mosaic count (Can be of high importance regarding library coverage)                                           | 100000  |
+| `blacklist_regions`       | Enable/Disable blacklisting                                                                                                                   | True    |
 
 ### SV calling parameters
 
@@ -74,11 +74,12 @@ All these arguments can be specified in two ways:
 
 ### Downstream analysis
 
-| Parameter           | Comment                                                                             | Default |
-| ------------------- | ----------------------------------------------------------------------------------- | ------- |
-| `arbigent`          | Enable ArbiGent mode of execution to genotype SV based on arbitrary segments        | False   |
-| `arbigent_bed_file` | Allow to specify custom ArbiGent BED file                                           | ""      |
-| `scNOVA`            | Enable scNOVA mode of execution to compute Nucleosome Occupancy (NO) of detected SV | False   |
+| Parameter           | Comment                                                                                                                        | Default |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------ | ------- |
+| `arbigent`          | Enable [ArbiGent](/docs/usage.md#arbigent-mode-of-execution) mode of execution to genotype SV based on arbitrary segments      | False   |
+| `arbigent_bed_file` | Allow to specify custom ArbiGent BED file                                                                                      | ""      |
+| `scNOVA`            | Enable [scNOVA](/docs/usage.md#scnova-mode-of-execution) mode of execution to compute Nucleosome Occupancy (NO) of detected SV | False   |
+| `scTRIP_multiplot`  | Enable [scTRIP multiplot](/docs/usage.md#sctrip-multiplot) generation for all chromosomes of all cells                         | False   |
 
 ### EMBL specific options
 

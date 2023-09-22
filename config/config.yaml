@@ -3,10 +3,10 @@
 # --------------------------------------------------------
 
 # MosaiCatcher version
-version: 2.2.1
+version: 2.2.2
 
 # Ashleys-QC pipeline version
-ashleys_pipeline_version: 2.2.1
+ashleys_pipeline_version: 2.2.2
 
 # Email for notifications about the pipeline's status
 email: ""
@@ -73,6 +73,7 @@ references_data:
     R_reference: "BSgenome.Hsapiens.UCSC.hg19"
     segdups: "workflow/data/segdups/segDups_hg19_UCSCtrack.bed.gz"
     snv_sites_to_genotype: ""
+    # snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/ALL.chr1-22plusXY_hg19_sites.20170504.renamedCHR.vcf.gz"
     reference_file_location: https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/analysisSet/hg19.p13.plusMT.no_alt_analysis_set.fa.gz
   "T2T":
     reference_fasta: "workflow/data/ref_genomes/T2T.fa"

@@ -106,13 +106,10 @@ if config["ashleys_pipeline"] is False:
                 "echo 'cell\tprobability\tprediction' > {output}"
 
 
+
 rule copy_labels:
     input:
-        lambda wc: expand(
-            "{folder}/{sample}/cell_selection/labels.tsv",
-            folder=config["data_location"],
-            sample=wc.sample,
-        ),
+        select_labels
     output:
         "{folder}/{sample}/config/labels.tsv",
     log:

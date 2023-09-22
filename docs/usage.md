@@ -468,7 +468,7 @@ snakemake \
 
 From 2.2.2, scTRIP multiplot (from Marco Cosenza) is now compatible with MosaiCatcher. The single requirement is to clone scTRIP multiplot repository (please reach out Marco if you want to access the repository, currently private) inside `workflow/scripts/plotting/scTRIP_multiplot`.
 
-By default, scTRIP multiplot is set to false, to enable it, please update the `config/config.yaml` file or use `scTRIP_multiplot=True` in the config section of the command line.
+By default, scTRIP multiplot is set to false, to enable it, please update the `config/config.yaml` file or use `scTRIP_multiplot=True` in the config section of the command line. An example of a scTRIP multiplot is available [here](/docs/output.md#sctrip-multiplot-marco-cosenza)
 
 ---
 
@@ -486,9 +486,9 @@ If you already use a previous version of mosaicatcher-pipeline, here is a short 
 
 `git fetch --all`
 
-- Jump to a new version (for example 2.1.0) & pull code:
+- Jump to a new version (for example 2.2.2) & pull code:
 
-`git checkout 2.1.0 && git pull`
+`git checkout 2.2.2 && git pull`
 
 Then, to initiate or update git snakemake_profiles submodule:
 

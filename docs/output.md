@@ -148,7 +148,7 @@ MosaiCatcher generates an XML session ready to use by IGV. Thus, files in this X
 
 ### scTRIP multiplot (Marco Cosenza)
 
-From 2.2.2, it's now possible to use [scTRIP multiplot](/docs/usage.md/#sctrip-multiplot) inside MosaiCatcher. By enabling the option available in the configuration (`scTRIP_multiplot=True`), you will obtain for each chromosome of each cell able to be processed, a plot similar to below:
+From 2.2.2, it's now possible to use [scTRIP multiplot](/docs/usage.md#sctrip-multiplot) inside MosaiCatcher. By enabling the option available in the configuration (`scTRIP_multiplot=True`), you will obtain for each chromosome of each cell able to be processed, a plot similar to below:
 
 |              ![summary](images/plots/scTRIP_multiplot.png)              |
 | :---------------------------------------------------------------------: |
