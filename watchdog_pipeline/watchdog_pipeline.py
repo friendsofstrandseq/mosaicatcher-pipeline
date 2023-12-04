@@ -39,11 +39,14 @@ data_location = "/scratch/tweber/DATA/MC_DATA/STOCKS"
 # publishdir_location = "/g/korbel/weber/TMP/WORKFLOW_RESULTS_DEV"
 publishdir_location = "/g/korbel/WORKFLOW_RESULTS"
 genecore_prefix = path_to_watch
-# profile_slurm = ["--profile", "../snakemake_profiles/HPC/dev/slurm_legacy_conda/"]
 profile_slurm = [
     "--profile",
-    "/g/korbel2/weber/workspace/snakemake_profiles/HPC/slurm_EMBL/",
+    "/g/korbel2/weber/workspace/snakemake_profiles/HPC/dev/slurm_legacy_conda/",
 ]
+# profile_slurm = [
+#     "--profile",
+#     "/g/korbel2/weber/workspace/snakemake_profiles/HPC/slurm_EMBL/",
+# ]
 profile_dry_run = [
     "--profile",
     "workflow/snakemake_profiles/local/conda/",
@@ -297,7 +300,9 @@ class MyHandler(FileSystemEventHandler):
                                 "PDAC60590MNI",
                                 "DXR30hMaja",
                                 "DXR42hMaja",
-                                "GM19705",
+                                # "GM19705",
+                                "OrgxDoxocx02",
+                                "GM20355x01",
                             ]:
                                 run_id = f"{pipeline}--{plate}--{sample_name}"
                                 workflow_id = self.find_workflow_id_by_name(
@@ -458,6 +463,10 @@ class MyHandler(FileSystemEventHandler):
 
                     print(panoptes_entry)
                     print(panoptes_data)
+                    if workflow_id:
+                        assert (
+                            len(panoptes_data) > 0
+                        ), "Data issue between pika & panoptes"
 
                     if panoptes_data:
                         panoptes_data = panoptes_data[0]
@@ -693,7 +702,7 @@ class MyHandler(FileSystemEventHandler):
             "-s",
             "workflow/Snakefile",
             "--set-resources",
-            "ashleys_mark_duplicates:partition=bigmem",
+            "ashleys_mark_duplicates:constraint='milan\|rome'",
             "--config",
             "genecore=True",
             f"genecore_prefix={genecore_prefix}",
