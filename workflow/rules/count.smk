@@ -215,7 +215,7 @@ else:
             "../envs/mc_base.yaml"
         shell:
             """
-            cp {input.norm} {ouput.merged}
+            cp {input.norm} {output.merged}
             """
 
 
