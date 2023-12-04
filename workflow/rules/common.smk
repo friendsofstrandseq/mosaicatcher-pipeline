@@ -14,7 +14,9 @@ os.environ["LC_CTYPE"] = "C"
 # print(config["data_location"])
 
 if config["ashleys_pipeline"] is True and config["genecore"] is True:
-    config["data_location"] = "/".join(config["data_location"].split("/")[:-1])
+    config["data_location"] = config["abs_path"].join(
+        config["data_location"].split("/")[:-1]
+    )
 
 
 envvars:

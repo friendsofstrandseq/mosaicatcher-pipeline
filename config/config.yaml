@@ -3,10 +3,10 @@
 # --------------------------------------------------------
 
 # MosaiCatcher version
-version: 2.2.2
+version: 2.2.3
 
 # Ashleys-QC pipeline version
-ashleys_pipeline_version: 2.2.2
+ashleys_pipeline_version: 2.2.3
 
 # Email for notifications about the pipeline's status
 email: ""
