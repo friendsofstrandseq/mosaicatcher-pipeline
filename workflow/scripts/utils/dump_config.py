@@ -1,28 +1,22 @@
-import json
-import time
+import yaml
 
-timestamp = time.strftime("%Y%m%d-%H%M%S")
 
-configured_samples = []
-for key in config.keys():
-    if not key.startswith("sample_description"):
-        continue
-    sample = key.split("_", 2)[-1]
-    configured_samples.append(sample)
+def update_config(input_file, output_file):
+    # Load the existing config file
+    with open(input_file, "r") as file:
+        flat_file_config = yaml.safe_load(file)
 
-if configured_samples:
-    second_dump = "config_{}_{}.json".format(timestamp, "_".join(sorted(configured_samples)))
-else:
-    second_dump = "config_{}.json".format(timestamp)
+    # Update the config with Snakemake parameters
+    for key, value in snakemake.config.items():
+        flat_file_config[key] = value
 
-with open(output[0], "w") as fake:
-    _ = fake.write(second_dump + "\n(Full configuration dump)")
+    # Save the updated config to the output file
+    with open(output_file, "w") as file:
+        yaml.dump(flat_file_config, file)
 
-with open(second_dump, "w") as dump:
-    json.dump(
-        config,
-        dump,
-        ensure_ascii=True,
-        indent=2,
-        sort_keys=True,
-    )
+
+if __name__ == "__main__":
+    input_config = snakemake.input[0]
+    output_config = snakemake.output[0]
+
+    update_config(input_config, output_config)

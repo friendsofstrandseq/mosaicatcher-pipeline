@@ -135,3 +135,9 @@ use_strandscape_labels::
   required: False
   default: False
   lint_check: False
+plate_size::
+  desc: "Plate size used for the sequencing (96/384)"
+  type: int
+  required: True
+  default: 96
+  lint_check: False

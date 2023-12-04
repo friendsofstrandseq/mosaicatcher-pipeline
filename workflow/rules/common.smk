@@ -11,6 +11,12 @@ import os, sys
 os.environ["LC_CTYPE"] = "C"
 
 
+# print(config["data_location"])
+
+if config["ashleys_pipeline"] is True and config["genecore"] is True:
+    config["data_location"] = "/".join(config["data_location"].split("/")[:-1])
+
+
 envvars:
     "LC_CTYPE",
 
@@ -131,6 +137,9 @@ class HandleInput:
         genecore=False,
         genecore_path=str,
     ):
+        # print(input_path)
+        # print(genecore_path)
+        # print("\n")
         if genecore is False:
             df_config_files = self.handle_input_data(thisdir=input_path, bam=bam)
         elif genecore is True:
@@ -154,56 +163,69 @@ class HandleInput:
         Returns:
             _type_: _description_
         """
+        from pprint import pprint
+        from collections import Counter
+
+        directory_path = f"{config['genecore_prefix']}/{config['genecore_date_folder']}"
+
+        l = sorted([e for e in os.listdir(directory_path) if e.endswith(".txt.gz")])
+
         complete_df_list = list()
+        # print(thisdir)
+        genecore_prefix = config["genecore_prefix"]
+        date_folder = config["genecore_date_folder"]
+        # print(f"{genecore_prefix}/{date_folder}")
 
-        # List of folders/files to not consider (restrict to samples only)
-        l = sorted(
-            [
-                e
-                for e in os.listdir(
-                    "{genecore_prefix}/{date_folder}".format(
-                        genecore_prefix=config["genecore_prefix"],
-                        date_folder=config["genecore_date_folder"],
-                    )
-                )
-                if e.endswith(".txt.gz")
-            ]
+        # Pattern to extract sample name and index
+        pattern = re.compile(r"(.*_lane1)(.*?)(iTRU|PE20)(.*?)(\d{2})(?:_1_|_2_)")
+
+        samples = list()
+        prefixes = list()
+        indexes = list()
+        plate_types = list()
+        d_master = collections.defaultdict(
+            lambda: {
+                "indexes": set(),
+                "file_prefix": "",
+                "plate_type": "",
+                "index_pattern": "",
+            }
         )
-        # print(l)
-        # Create a list of  files to process for each sample
-        d_master = collections.defaultdict(dict)
-        sub_l = list()
-        for j, e in enumerate(l):
-            sub_l.append(e)
-            if (j + 1) % 192 == 0:
-                common_element = findstem(sub_l)
-                l_elems = common_element.split("lane1")
-                # print(sub_l)
-                # print(common_element)
-                # print(l_elems)
-                # print(l_elems[1].split("{regex_element}".format(regex_element=config["genecore_regex_element"]))
-                prefix = l_elems[0]
-                # technician_name = l_elems[0].split("_")[-2]
-                sample = l_elems[1].split(
-                    "{regex_element}".format(
-                        regex_element=config["genecore_regex_element"]
-                    )
-                )[0]
-                index = l_elems[1].split(
-                    "{regex_element}".format(
-                        regex_element=config["genecore_regex_element"]
-                    )
-                )[1]
-                # pe_index = common_element[-1]
-                sub_l = list()
 
-                d_master[sample]["prefix"] = prefix
-                # d_master[sample]["technician_name"] = technician_name
-                d_master[sample]["index"] = index
-                d_master[sample]["common_element"] = common_element
-        # from pprint import pprint
-        # pprint(d_master)
-        # exit()
+        # First pass: Count occurrences of each sample_name
+        file_counts_per_sample = Counter()
+        for file_path in l:
+            match = pattern.search(file_path)
+            if match:
+                sample_name = match.group(2)
+                file_counts_per_sample[sample_name] += 1
+
+        # Second pass: Process files and determine plate type per sample
+        for j, file_path in enumerate(sorted(l)):
+            match = pattern.search(file_path)
+            if match:
+                sample_name = match.group(2)
+                index = match.group(4)
+                indexes.append(index)
+                d_master[sample_name]["indexes"].add(index)
+                file_count = file_counts_per_sample[sample_name]
+
+                # Determine plate type using modulo 96 operation
+                if file_count % 96 != 0:
+                    raise ValueError(
+                        f"Invalid file count for sample {sample_name} with file count {file_count}. Must be a multiple of 96."
+                    )
+                plate_type = int(file_count / 2)
+
+                if (j + 1) % file_count == 0:
+                    prefixes.append(match.group(3))
+                    d_master[sample_name]["file_prefix"] = match.group(1)
+                    d_master[sample_name]["index_pattern"] = match.group(3)
+                    plate = directory_path.split("/")[-1]
+                    samples.append(sample_name)
+                    plate_types.append(plate_type)
+                    d_master[sample_name]["plate_type"] = plate_type
+
         samples_to_process = (
             config["samples_to_process"]
             if len(config["samples_to_process"]) > 0
@@ -220,8 +242,8 @@ class HandleInput:
                 "{data_location}/{sample}/fastq/{sample}{regex_element}{index}{cell_nb}.{pair}.fastq.gz",
                 data_location=config["data_location"],
                 sample=sample,
-                regex_element=config["genecore_regex_element"],
-                index=d_master[sample]["index"],
+                regex_element=d_master[sample]["index_pattern"],
+                index=d_master[sample]["indexes"],
                 cell_nb=[str(e).zfill(2) for e in list(range(1, 97))],
                 pair=["1", "2"],
             )
@@ -229,7 +251,8 @@ class HandleInput:
             if sample in samples_to_process
         ]
         genecore_list = [sub_e for e in genecore_list for sub_e in e]
-        # pprint(genecore_list)
+        # pprint(d_master)
+
         complete_df_list = list()
 
         for sample in d_master:
@@ -248,11 +271,12 @@ class HandleInput:
                 df["Full_path"] = df[["Folder", "File"]].apply(
                     lambda r: f"{r['Folder']}/{r['File']}.fastq.gz", axis=1
                 )
+
                 df["Genecore_path"] = df["File"].apply(
-                    lambda r: f"{config['genecore_prefix']}/{config['genecore_date_folder']}/{d_master[sample]['prefix']}lane1{r.replace('.', '_')}_sequence.txt.gz"
+                    lambda r: f"{config['genecore_prefix']}/{config['genecore_date_folder']}/{d_master[sample]['file_prefix']}{r.replace('.', '_')}_sequence.txt.gz"
                 )
                 df["Genecore_file"] = df["File"].apply(
-                    lambda r: f"{d_master[sample]['prefix']}lane1{r.replace('.', '_')}"
+                    lambda r: f"{d_master[sample]['file_prefix']}{r.replace('.', '_')}"
                 )
                 df["Genecore_file"] = df["Genecore_file"].apply(
                     lambda r: "_".join(r.split("_")[:-1])
@@ -375,12 +399,18 @@ def findstem(arr):
 
 # Create configuration file with samples
 
+# print("config['data_location']")
+# print(config["data_location"])
+
 c = HandleInput(
     input_path=config["data_location"],
-    genecore_path="{genecore_prefix}/{genecore_date_folder}".format(
+    genecore_path="{genecore_prefix}".format(
         genecore_prefix=config["genecore_prefix"],
-        genecore_date_folder=config["genecore_date_folder"],
     ),
+    # genecore_path="{genecore_prefix}/{genecore_date_folder}".format(
+    #     genecore_prefix=config["genecore_prefix"],
+    #     genecore_date_folder=config["genecore_date_folder"],
+    # ),
     output_path="{data_location}/config/config_df.tsv".format(
         data_location=config["data_location"]
     ),
@@ -532,8 +562,12 @@ def onsuccess_fct(log):
         log, "SUCCESS", config, config_metadata
     )
     shell(
-        'mail -s "[Snakemake] smk-wf-catalog/mosacaitcher-pipeline v{} - Run on {} - SUCCESS" {} < {}'.format(
-            config["version"], config["data_location"], config["email"], log_path_new
+        'mail -s "[smk-wf-catalog/mosaicatcher-pipeline] v{} - [{}--{}] - SUCCESS" {} < {}'.format(
+            config["version"],
+            config["data_location"].split("/")[-1],
+            ";".join(samples),
+            config["email"],
+            log_path_new,
         )
     )
 
@@ -546,8 +580,12 @@ def onerror_fct(log):
         log, "ERROR", config, config_metadata
     )
     shell(
-        'mail -s "[Snakemake] smk-wf-catalog/mosacaitcher-pipeline v{} - Run on {} - ERRROR" {} < {}'.format(
-            config["version"], config["data_location"], config["email"], log_path_new
+        'mail -s "[smk-wf-catalog/mosaicatcher-pipeline] v{} - [{}--{}] - ERROR" {} < {}'.format(
+            config["version"],
+            config["data_location"].split("/")[-1],
+            ";".join(samples),
+            config["email"],
+            log_path_new,
         )
     )
 
@@ -564,308 +602,26 @@ def get_scnova_final_output(wildcards):
     # abbreviate_names = False
 
     l = [
-        # expand(
-        #     "{folder}/{sample}/scNOVA_input_user/{clone}_sv_calls_all_print.txt",
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        #     clone=clones[wildcards.sample],
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_result/Features_reshape_{clone}_orientation_CN_correct0.txt",
-        #     clone=clones[wildcards.sample],
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_input_user/sv_calls_all_print_CREs.txt",
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam",
-        #     cell=cell_per_sample[wildcards.sample],
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_result/{sample}.tab",
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_result/{sample}_sort.txt",
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_result/{sample}_sort_geneid.txt",
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}.tab",
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}_sc.tab",
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_result/Deeptool_chr_length_{sample}.tab",
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_result/Deeptool_chr_length_{sample}_sc.tab",
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}_sort.txt",
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}_sort_lab.txt",
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}_sort_lab_final.txt",
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_result/Features_reshape_{sample}_{clone}_orientation_norm_qc.pdf",
-        #     clone=clones[wildcards.sample],
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_result/Features_reshape_{clone}_orientation_norm.txt",
-        #     clone=clones[wildcards.sample],
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}_sc_sort.txt",
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}_sc_sort_lab.txt",
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_result/Deeptool_Genes_for_CNN_{sample}_sc_sort_lab_final.txt",
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_result/Features_reshape_{sample}_{clone}_Resid_orientation_qc.pdf",
-        #     clone=clones[wildcards.sample],
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_result/Features_reshape_{clone}_Resid_orientation.txt",
-        #     clone=clones[wildcards.sample],
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_result/Features_reshape_all_orientation_norm_var_GC_CpG_RT_T_comb3_{clone}.txt",
-        #     clone=clones[wildcards.sample],
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_result/Expression_all_{clone}.txt",
-        #     clone=clones[wildcards.sample],
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_result/Features_reshape_all_TSS_matrix_woM_all_RT_{clone}.txt",
-        #     clone=clones[wildcards.sample],
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_result_CNN/DNN_train80_output_ypred_{clone}.csv",
-        #     clone=clones[wildcards.sample],
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_result_CNN/DNN_train40_output_ypred_{clone}.csv",
-        #     clone=clones[wildcards.sample],
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_result_CNN/DNN_train20_output_ypred_{clone}.csv",
-        #     clone=clones[wildcards.sample],
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_result_CNN/DNN_train5_output_ypred_{clone}.csv",
-        #     clone=clones[wildcards.sample],
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_result_CNN/DNN_train80_output_ypred_{clone}_annot.txt",
-        #     clone=clones[wildcards.sample],
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_result_CNN/DNN_train40_output_ypred_{clone}_annot.txt",
-        #     clone=clones[wildcards.sample],
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_result_CNN/DNN_train20_output_ypred_{clone}_annot.txt",
-        #     clone=clones[wildcards.sample],
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_result_CNN/DNN_train5_output_ypred_{clone}_annot.txt",
-        #     clone=clones[wildcards.sample],
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_result_plots/Result_scNOVA_plots_{sample}.pdf",
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_result/result_PLSDA_{sample}.txt",
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
         expand(
             "{folder}/{sample}/scNOVA_result_plots/Result_scNOVA_plots_{sample}_alternative_PLSDA.pdf",
             folder=config["data_location"],
             sample=wildcards.sample,
         ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_result/{sample}_CREs_2kb.tab",
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_result/{sample}_CREs_2kb_sort.txt",
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_result/{sample}_CREs_2kb_sort_num.txt",
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
         expand(
             "{folder}/{sample}/scNOVA_result/{sample}_CREs_2kb_sort_num_sort_for_chromVAR.txt",
             folder=config["data_location"],
             sample=wildcards.sample,
         ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.W1.bam",
-        #     cell=cell_per_sample[wildcards.sample],
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.W2.bam",
-        #     cell=cell_per_sample[wildcards.sample],
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.C1.bam",
-        #     cell=cell_per_sample[wildcards.sample],
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.C2.bam",
-        #     cell=cell_per_sample[wildcards.sample],
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.W.bam",
-        #     cell=cell_per_sample[wildcards.sample],
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.C.bam",
-        #     cell=cell_per_sample[wildcards.sample],
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.W.bam.bai",
-        #     cell=cell_per_sample[wildcards.sample],
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.C.bam.bai",
-        #     cell=cell_per_sample[wildcards.sample],
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_nucleosomes_bam/nucleosome_sampleA/result.H1.bam",
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_nucleosomes_bam/nucleosome_sampleB/result.H2.bam",
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_input_user/strandphaser_output_copy.txt",
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_result_haplo/Deeptool_DHS_2kb_H1H2.tab",
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
         expand(
             "{folder}/{sample}/scNOVA_result_haplo/Deeptool_DHS_2kb_H1H2_sort.txt",
             folder=config["data_location"],
             sample=wildcards.sample,
         ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_result_haplo/Deeptool_Genebody_H1H2.tab",
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
         expand(
             "{folder}/{sample}/scNOVA_result_haplo/Deeptool_Genebody_H1H2_sort.txt",
             folder=config["data_location"],
             sample=wildcards.sample,
         ),
-        # expand(
-        #     "{folder}/{sample}/scNOVA_bam_merge/{clone}.merge.bam",
-        #     clone=clones[wildcards.sample],
-        #     folder=config["data_location"],
-        #     sample=wildcards.sample,
-        # ),
     ]
     l = [sub_e for e in l for sub_e in e]
     return l
@@ -1096,15 +852,25 @@ def get_all_plots(wildcards):
             ),
         )
 
-        # Run summary section
+        # Config section
 
         l_outputs.extend(
             expand(
-                "{folder}/{sample}/config/run_summary.txt",
+                "{folder}/{sample}/config/config.yaml",
                 folder=config["data_location"],
                 sample=wildcards.sample,
             ),
         )
+
+        # Run summary section
+
+        # l_outputs.extend(
+        #     expand(
+        #         "{folder}/{sample}/config/run_summary.txt",
+        #         folder=config["data_location"],
+        #         sample=wildcards.sample,
+        #     ),
+        # )
 
     # from pprint import pprint
     # pprint(l_outputs)

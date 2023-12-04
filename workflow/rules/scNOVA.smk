@@ -1,8 +1,24 @@
+rule assert_list_of_cells:
+    input:
+        labels="{folder}/{sample}/cell_selection/labels.tsv",
+        subclone_list="{folder}/{sample}/scNOVA_input_user/input_subclonality.txt",
+        selected_cells="{folder}/{sample}/selected/",
+    output:
+        "{folder}/{sample}/scNOVA_input_user/assert_list_of_cells.txt",
+    log:
+        "{folder}/{sample}/log/assert_list_of_cells.log",
+    conda:
+        "../envs/mc_base.yaml"
+    script:
+        "../scripts/scNOVA_scripts/assert_list_of_cells.py"
+
+
 rule filter_sv_calls:
     log:
         "{folder}/{sample}/log/filter_sv_calls/{sample}.log",
     input:
         "{folder}/{sample}/mosaiclassifier/sv_calls/stringent_filterTRUE.tsv",
+        "{folder}/{sample}/scNOVA_input_user/assert_list_of_cells.txt",
     output:
         "{folder}/{sample}/scNOVA_input_user/sv_calls.tsv",
     conda:
@@ -147,6 +163,7 @@ rule remove_dup:
         None
     input:
         bam="{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark.bam",
+        assert_list_of_cells="{folder}/{sample}/scNOVA_input_user/assert_list_of_cells.txt",
     output:
         bam_uniq="{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam",
         bam_metrix="{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono.metrix_dup.txt",
@@ -272,6 +289,7 @@ rule filter_input_subclonality:
         None
     input:
         "{folder}/{sample}/scNOVA_input_user/input_subclonality.txt",
+        "{folder}/{sample}/scNOVA_input_user/assert_list_of_cells.txt",
     output:
         "{folder}/{sample}/scNOVA_input_user/input_subclonality_{clone}.txt",
     conda:
@@ -973,6 +991,7 @@ rule split_bam_WC:
         None
     input:
         "{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam",
+        "{folder}/{sample}/scNOVA_input_user/assert_list_of_cells.txt",
     output:
         bam_header="{folder}/{sample}/scNOVA_bam_modified/{cell}.header_WC.sam",
         bam_C1="{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.C1.bam",

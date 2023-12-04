@@ -46,7 +46,8 @@ profile_slurm = [
 ]
 profile_dry_run = [
     "--profile",
-    "workflow/snakemake_profiles/local/conda_singularity/",
+    "workflow/snakemake_profiles/local/conda/",
+    # "workflow/snakemake_profiles/local/conda_singularity/",
     "-c",
     "1",
 ]
@@ -272,7 +273,7 @@ class MyHandler(FileSystemEventHandler):
         # last_message_timestamp = last_message_timestamp
 
         main_df = list()
-        if workflows_data:
+        if len(workflows_data) > 0:
             for plate in total_list_runs:
                 # print(plate)
                 if plate.split("-")[0][:2] == "20":
@@ -383,6 +384,7 @@ class MyHandler(FileSystemEventHandler):
             pd.options.display.max_rows = 999
             pd.options.display.max_colwidth = 30
             # pd.options.display.max_columns = 50
+
             main_df = pd.DataFrame(main_df)
             # main_df.loc[(main_df["labels"] == True) &  (main_df["report"] == True), "real_status"] = "Completed"
             main_df.loc[
@@ -418,7 +420,7 @@ class MyHandler(FileSystemEventHandler):
             main_df["real_status"] = main_df["real_status"].fillna(
                 "Error (to  investigate))"
             )
-
+            print(workflows_data["workflows"])
             print(main_df)
 
             dry_run_db = False
@@ -453,6 +455,9 @@ class MyHandler(FileSystemEventHandler):
                     panoptes_data = [
                         e for e in workflows_data["workflows"] if e["id"] == workflow_id
                     ]
+
+                    print(panoptes_entry)
+                    print(panoptes_data)
 
                     if panoptes_data:
                         panoptes_data = panoptes_data[0]
@@ -530,7 +535,7 @@ class MyHandler(FileSystemEventHandler):
                 for row in main_df.loc[
                     # (main_df["multiqc_scratch"] == False)
                     (main_df["multiqc_scratch"] == False)
-                    & (main_df["report"] == False)
+                    # & (main_df["report"] == False)
                 ].to_dict("records"):
                     logging.info(row)
 
