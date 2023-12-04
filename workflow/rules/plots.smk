@@ -17,7 +17,7 @@ if config["ashleys_pipeline"] is False:
             # "{folder}/{sample}/plots/counts/CountComplete.raw.pdf",
             report(
                 "{folder}/{sample}/plots/counts/CountComplete.raw.pdf",
-                category="Mosaic Counts",
+                category="Mosaic counts",
                 subcategory="{sample}",
                 labels={"Cell": "ALL", "Type": "raw"},
             ),
@@ -40,7 +40,7 @@ rule divide_pdf:
         report(
             "{folder}/{sample}/plots/counts_raw/{cell}.{i, \d+}.pdf",
             caption="../report/mosaic_counts.rst",
-            category="Mosaic counts",
+            category="Mosaic counts cellwise",
             subcategory="{sample}",
             labels={"Cell": "{cell}", "Nb": "{i}", "Type": "raw"},
         ),
@@ -306,7 +306,7 @@ rule scTRIP_multiplot:
         sv_counts="{folder}/{sample}/mosaiclassifier/sv_calls/stringent_filterTRUE.tsv",
     output:
         figure=report(
-            "{folder}/{sample}/plots/scTRIP_multiplot/{cell}/{chrom}.png",
+            "{folder}/{sample}/plots/scTRIP_multiplot/{cell}/{chrom}.pdf",
             category="scTRIP multiplot",
             subcategory="{sample}",
             labels={"Cell": "{cell}", "Chrom": "{chrom}"},
@@ -315,6 +315,7 @@ rule scTRIP_multiplot:
         "{folder}/log/scTRIP_multiplot/{sample}/{cell}/{chrom}.log",
     conda:
         "../envs/rtools.yaml"
+    container: None
     resources:
         mem_mb=get_mem_mb,
     shell:

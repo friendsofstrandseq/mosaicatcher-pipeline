@@ -139,3 +139,18 @@ rule samtools_faindex:
         mem_mb=get_mem_mb_heavy,
     shell:
         "samtools faidx {input}"
+
+
+rule save_config:
+    input:
+        "config/config.yaml",
+    output:
+        "{folder}/{sample}/config/config.yaml",
+    log:
+        "{folder}/log/save_config/{sample}.log",
+    conda:
+        "../envs/mc_base.yaml"
+    resources:
+        mem_mb=get_mem_mb,
+    script:
+        "../scripts/utils/dump_config.py"
