@@ -70,6 +70,7 @@ def main():
                     norm_table.loc[[i], "class"] = "good"
                     additional_whitelist += row.end - row.start
 
+
     print("White listing: Removed", additional_whitelist, "bp of sequence for blacklist", file=sys.stderr)
 
     norm_table.to_csv(args.output, index=False, sep="\t")

@@ -215,7 +215,7 @@ else:
             "../envs/mc_base.yaml"
         shell:
             """
-            workflow/scripts/normalization/merge-blacklist.py --merge_distance 500000 {input.norm} > {output.merged} 2> {log}
+            cp {input.norm} {ouput.merged}
             """
 
 
