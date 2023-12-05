@@ -25,7 +25,6 @@ fi
 
 # Append custom steps to the Dockerfile
 {
-    echo '\n'
     echo "# CUSTOM PART"
     echo "RUN wget https://zenodo.org/record/7697400/files/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz -P /workflow/data/ref_genomes/"
     echo "COPY /workflow/scripts/utils/install_R_package.R /conda-envs/"
