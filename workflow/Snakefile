@@ -19,6 +19,7 @@ if config["ashleys_pipeline"] is True:
 
     module ashleys_qc:
         snakefile:
+            # "../../ashleys-qc-pipeline/workflow/Snakefile"
             github(
                 "friendsofstrandseq/ashleys-qc-pipeline",
                 path="workflow/Snakefile",
@@ -29,9 +30,18 @@ if config["ashleys_pipeline"] is True:
 
     use rule * from ashleys_qc as ashleys_*
 
-    localrules:
-        ashleys_genecore_symlink,
-        symlink_selected_bam,
+    if config["ashleys_pipeline_only"] is True:
+
+        localrules:
+            ashleys_genecore_symlink,
+            ashleys_symlink_selected_bam,
+
+    else:
+
+        localrules:
+            ashleys_genecore_symlink,
+            ashleys_symlink_selected_bam,
+            symlink_selected_bam,
 
 else:
 
