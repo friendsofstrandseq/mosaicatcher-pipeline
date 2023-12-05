@@ -173,8 +173,8 @@ rule download_scnova_data:
         touch("log/config/dl_arbigent_mappability_track.ok"),
     conda:
         "../envs/scNOVA/scNOVA_DL.yaml"
-    container:
-        None
+    # container:
+    #     None
     shell:
         """
         directory="workflow/data/ref_genomes/"
