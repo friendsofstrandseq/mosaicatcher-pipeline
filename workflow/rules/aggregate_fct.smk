@@ -169,7 +169,7 @@ def aggregate_cells_scTRIP_multiplot(wildcards):
     cell_list = df.cell.tolist()
 
     return expand(
-        "{folder}/{sample}/plots/scTRIP_multiplot/{cell}/{chrom}.png",
+        "{folder}/{sample}/plots/scTRIP_multiplot/{cell}/{chrom}.pdf",
         folder=config["data_location"],
         sample=wildcards.sample,
         cell=cell_list,

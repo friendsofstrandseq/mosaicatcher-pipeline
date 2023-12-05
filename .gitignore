@@ -219,3 +219,7 @@ LOGS_DEV/
 # scTRIP multiplot
 workflow/scripts/plotting/scTRIP_multiplot/scTRIPmultiplot
 workflow/config/scTRIP_multiplot.ok
+args.output
+scNOVA_env_costea.yaml
+.keras/keras.json
+hs_err_pid2227945.log

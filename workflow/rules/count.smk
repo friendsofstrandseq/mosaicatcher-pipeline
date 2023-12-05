@@ -136,6 +136,7 @@ rule symlink_selected_bam:
 
 rule remove_unselected_bam:
     input:
+        labels="{folder}/{sample}/cell_selection/labels.tsv",
         bam=unselected_input_bam,
         bai=unselected_input_bai,
     output:
@@ -196,7 +197,7 @@ if (
             "../envs/mc_base.yaml"
         shell:
             """
-            workflow/scripts/normalization/merge-blacklist.py --merge_distance 500000 {input.norm} --whitelist {input.whitelist} --min_whitelist_interval_size {params.window} > {output.merged} 2>> {log}
+            workflow/scripts/normalization/merge-blacklist.py --merge_distance 500000 {input.norm} --whitelist {input.whitelist} --min_whitelist_interval_size {params.window} --output {output.merged}
             """
 
 else:
@@ -214,7 +215,7 @@ else:
             "../envs/mc_base.yaml"
         shell:
             """
-            workflow/scripts/normalization/merge-blacklist.py --merge_distance 500000 {input.norm} > {output.merged} 2> {log}
+            cp {input.norm} {output.merged}
             """
 
 

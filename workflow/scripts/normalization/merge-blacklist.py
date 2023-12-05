@@ -16,6 +16,7 @@ def main():
         type=int,
         help="If the distance between two blacklisted intervals is below this threshold, they are merged.",
     )
+    parser.add_argument("--output", default=None, help="Output file name")
     parser.add_argument(
         "--whitelist", default=None, help="TSV file with intervals to be removed from the blacklist (columns: chrom, start, end)."
     )
@@ -69,9 +70,10 @@ def main():
                     norm_table.loc[[i], "class"] = "good"
                     additional_whitelist += row.end - row.start
 
+
     print("White listing: Removed", additional_whitelist, "bp of sequence for blacklist", file=sys.stderr)
 
-    norm_table.to_csv(sys.stdout, index=False, sep="\t")
+    norm_table.to_csv(args.output, index=False, sep="\t")
 
     ## Identify "complex" intervals
     # segments = calls.groupby(by=['chrom','start','end']).sv_call_name.agg({'is_complex':partial(is_complex, ignore_haplotypes=args.ignore_haplotypes, min_cell_count=args.min_cell_count)}).reset_index().sort_values(['chrom','start','end'])

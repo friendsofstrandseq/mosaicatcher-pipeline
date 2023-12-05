@@ -6,6 +6,7 @@ rule mergeBams:
         check=remove_unselected_fct,
         bam=selected_input_bam,
         bai=selected_input_bai,
+        labels="{folder}/{sample}/cell_selection/labels.tsv",
     output:
         temp("{folder}/{sample}/merged_bam/merged.raw.bam"),
     log:
