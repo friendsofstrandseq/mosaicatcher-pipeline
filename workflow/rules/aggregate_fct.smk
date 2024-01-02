@@ -254,6 +254,7 @@ def selected_input_bam(wildcards):
     )
 
 
+
 def selected_input_bai(wildcards):
     """
     Function based on checkpoint filter_bad_cells_from_mosaic_count

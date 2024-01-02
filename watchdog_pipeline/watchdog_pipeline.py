@@ -33,20 +33,21 @@ logging.basicConfig(
 path_to_watch = sys.argv[1]
 dry_run = sys.argv[2]
 report_only = sys.argv[3]
+panoptes = sys.argv[4]
 
 
 data_location = "/scratch/tweber/DATA/MC_DATA/STOCKS"
 # publishdir_location = "/g/korbel/weber/TMP/WORKFLOW_RESULTS_DEV"
 publishdir_location = "/g/korbel/WORKFLOW_RESULTS"
 genecore_prefix = path_to_watch
-profile_slurm = [
-    "--profile",
-    "/g/korbel2/weber/workspace/snakemake_profiles/HPC/dev/slurm_legacy_conda/",
-]
 # profile_slurm = [
 #     "--profile",
-#     "/g/korbel2/weber/workspace/snakemake_profiles/HPC/slurm_EMBL/",
+#     "/g/korbel2/weber/workspace/snakemake_profiles/HPC/dev/slurm_legacy_conda/",
 # ]
+profile_slurm = [
+    "--profile",
+    "/g/korbel2/weber/workspace/snakemake_profiles/HPC/dev/slurm_EMBL/",
+]
 profile_dry_run = [
     "--profile",
     "workflow/snakemake_profiles/local/conda/",
@@ -60,7 +61,12 @@ snakemake_binary = (
     "/g/korbel2/weber/miniconda3/envs/snakemake_panoptesfix/bin/snakemake"
 )
 # Panoptes
-pipeline = "ashleys-qc-pipeline"
+pipeline = sys.argv[5]
+assert pipeline in [
+    "ashleys-qc-pipeline",
+    "mosaicatcher-pipeline",
+], "Pipeline not correct"
+# pipeline = "ashleys-qc-pipeline"
 
 my_env = os.environ.copy()
 snakemake_binary_folder = "/".join(snakemake_binary.split("/")[:-1])
@@ -93,21 +99,29 @@ class MyHandler(FileSystemEventHandler):
                 sample_name = match.group(1)
                 file_counts_per_sample[sample_name] += 1
 
+        print(directory_path)
+        print(file_counts_per_sample)
+
         # Second pass: Process files and determine plate type per sample
         for j, file_path in enumerate(sorted(l)):
             match = pattern.search(file_path)
             if match:
                 sample_name = match.group(1)
+
                 file_count = file_counts_per_sample[sample_name]
 
                 # Determine plate type using modulo 96 operation
                 if file_count % 96 != 0:
-                    raise ValueError(
+                    # raise ValueError(
+                    print(
                         f"Invalid file count for sample {sample_name} with file count {file_count}. Must be a multiple of 96."
                     )
+                    continue
                 plate_type = int(file_count / 2)
 
                 if (j + 1) % file_count == 0:
+                    if not sample_name or len(sample_name) == 0:
+                        continue
                     prefixes.append(match.group(2))
                     plate = directory_path.split("/")[-1]
                     samples.append(sample_name)
@@ -178,19 +192,19 @@ class MyHandler(FileSystemEventHandler):
 
         if method_frame:
             # Extract the timestamp from the header frame
-            if header_frame.timestamp:
-                timestamp = header_frame.timestamp
-                human_readable_timestamp = datetime.fromtimestamp(
-                    timestamp / 1000.0
-                ).strftime("%Y-%m-%d %H:%M:%S")
+            # if header_frame.timestamp:
+            timestamp = header_frame.timestamp
+            human_readable_timestamp = datetime.fromtimestamp(
+                timestamp / 1000.0
+            ).strftime("%Y-%m-%d %H:%M:%S")
 
-            else:
-                timestamp = None
+            # else:
+            #     timestamp = None
             # Convert timestamp to human-readable format if necessary
 
             # # Acknowledge the message after processing
-            # channel.basic_ack(delivery_tag=method_frame.delivery_tag)
-            pika_connection.close()
+            channel.basic_nack(delivery_tag=method_frame.delivery_tag, requeue=True)
+            # pika_connection.close()
             data = json.loads(body.decode("utf-8"))
             print(data)
             # if data dict is empty
@@ -275,11 +289,14 @@ class MyHandler(FileSystemEventHandler):
 
         # last_message_timestamp = last_message_timestamp
 
+        variable = "aqc" if pipeline == "ashleys-qc-pipeline" else "mc"
+
         main_df = list()
         if len(workflows_data) > 0:
             for plate in total_list_runs:
                 # print(plate)
                 if plate.split("-")[0][:2] == "20":
+                    # and plate == "2021-06-25-H22VVAFX3"
                     # if plate.split("-")[0] == "2023":
                     # if plate.startswith("2023-11-09"):
                     # if plate == "2021-02-17-HM7LYAFX2":
@@ -296,55 +313,92 @@ class MyHandler(FileSystemEventHandler):
                         # print(plate)
                         for sample_name, plate_type in zip(samples, plate_types):
                             if sample_name not in [
-                                "PDAC60590",
-                                "PDAC60590MNI",
-                                "DXR30hMaja",
-                                "DXR42hMaja",
-                                # "GM19705",
-                                "OrgxDoxocx02",
-                                "GM20355x01",
+                                "PDAC60590",  # MICE
+                                "PDAC60590MNI",  # MICE
+                                "DXR30hMaja",  # MICE
+                                "DXR42hMaja",  # MICE
+                                "GM19705",  # ERROR to investigate
+                                "OrgxDoxocx02",  # ERROR Multistep
+                                "GM20355x01",  # ERROR Multistep
+                                "10uMDXR42hx01",  # ERROR Multistep
+                                "mESCx01",  # ERROR Multistep
+                                "DXR100nMxS2x01",  # ERROR Multistep
+                                "MRD48hx02",  # ERROR Multistep
+                                "RPEx03",  # ERROR Only 48 cells
+                                ###### OLD
+                                "ckAML02x02" # ashleys_library_size_normalisation
+
                             ]:
+                                #  and sample_name in ["GM19331x01EDLB"]:
                                 run_id = f"{pipeline}--{plate}--{sample_name}"
                                 workflow_id = self.find_workflow_id_by_name(
                                     workflows_data, run_id
                                 )
 
-                                report = False
-                                labels = False
-                                multiqc_scratch = False
-                                multiqc_scratch_timestamp = None
-                                remaining_days = None
+                                dict_variables = {
+                                    f"{variable}_scratch": False,
+                                    f"{variable}_scratch_ts": False,
+                                    f"{variable}_scratch_rdays": None,
+                                    f"{variable}_report": False,
+                                }
 
-                                if os.path.isfile(
-                                    f"{publishdir_location}/{plate}/{sample_name}/cell_selection/labels.tsv"
-                                ):
-                                    labels = True
+                                # ashleys_final_scratch = False
+                                # ashleys_report = False
+                                # ashleys_final_scratch_timestamp = None
+                                # ashleys_rdays = None
+
+                                # mosaicatcher_final_scratch = False
+                                # mosaicatcher_report = False
+                                # mosaicatcher_final_scratch_timestamp = None
+                                # mc_rdays = None
 
                                 if os.path.isfile(
                                     f"{publishdir_location}/{plate}/{sample_name}/reports/{sample_name}_{pipeline}_report.zip"
                                 ):
-                                    report = True
+                                    # report = True
+                                    dict_variables[f"{variable}_report"] = True
 
-                                if os.path.isfile(
-                                    f"{data_location}/{plate}/{sample_name}/multiqc/multiqc_report/multiqc_report.html"
-                                ):
-                                    multiqc_scratch = True
-                                    multiqc_scratch_timestamp = os.path.getmtime(
-                                        f"{data_location}/{plate}/{sample_name}/multiqc/multiqc_report/multiqc_report.html"
-                                    )
-                                    # to datetime and then strfmtime
-                                    multiqc_scratch_timestamp = datetime.fromtimestamp(
-                                        multiqc_scratch_timestamp
-                                    )
-                                    # computing remaning days to reach 5 months between multiqc_scratch_timestamp and now
-                                    remaining_days = (
-                                        datetime.now() - multiqc_scratch_timestamp
-                                    ).days
-                                    remaining_days = 150 - remaining_days
+                                if pipeline == "ashleys-qc-pipeline":
+                                    if os.path.isfile(
+                                        f"{data_location}/{plate}/{sample_name}/config/ashleys_final_results.ok"
+                                        # f"{data_location}/{plate}/{sample_name}/multiqc/multiqc_report/multiqc_report.html"
+                                    ):
+                                        # ashleys_final_scratch = True
+                                        ts = os.path.getmtime(
+                                            f"{data_location}/{plate}/{sample_name}/config/ashleys_final_results.ok"
+                                        )
+                                        ts = datetime.fromtimestamp(ts)
+                                        dict_variables[f"{variable}_scratch"] = True
+                                        dict_variables[f"{variable}_scratch_ts"] = ts
 
-                                    multiqc_scratch_timestamp = (
-                                        multiqc_scratch_timestamp.strftime("%Y-%m-%d")
-                                    )
+                                        # to datetime and then strfmtime
+
+                                        # computing remaning days to reach 5 months between ashleys_final_scratch_timestamp and now
+                                        rdays = (datetime.now() - ts).days
+                                        rdays = 150 - rdays
+
+                                        dict_variables[
+                                            f"{variable}_scratch_rdays"
+                                        ] = rdays
+                                elif pipeline == "mosaicatcher-pipeline":
+                                    if os.path.isfile(
+                                        f"{data_location}/{plate}/{sample_name}/plots/final_results/{sample_name}.txt"
+                                        # f"{data_location}/{plate}/{sample_name}/multiqc/multiqc_report/multiqc_report.html"
+                                    ):
+                                        ts = os.path.getmtime(
+                                            f"{data_location}/{plate}/{sample_name}/plots/final_results/{sample_name}.txt"
+                                        )
+                                        ts = datetime.fromtimestamp(ts)
+                                        dict_variables[f"{variable}_scratch"] = True
+                                        dict_variables[f"{variable}_scratch_ts"] = ts
+                                        # to datetime and then strfmtime
+                                        # computing remaning days to reach 5 months between ashleys_final_scratch_timestamp and now
+                                        rdays = (datetime.now() - ts).days
+                                        rdays = 150 - rdays
+
+                                        dict_variables[
+                                            f"{variable}_scratch_rdays"
+                                        ] = rdays
 
                                 if not workflow_id:
                                     workflow_id = {
@@ -372,11 +426,27 @@ class MyHandler(FileSystemEventHandler):
                                     "panoptes_id": workflow_id["id"],
                                     "plate": plate,
                                     "sample": sample_name,
-                                    "report": report,
-                                    "labels": labels,
-                                    "multiqc_scratch": multiqc_scratch,
-                                    "multiqc_scratch_timestamp": multiqc_scratch_timestamp,
-                                    "remaining_days": remaining_days,
+                                    # "report": report,
+                                    # "labels": labels,
+                                    # "ashleys_final_scratch": ashleys_final_scratch,
+                                    # "ashleys_final_scratch_timestamp": ashleys_final_scratch_timestamp,
+                                    # "ashleys_rdays": ashleys_rdays,
+                                    # "mosaicatcher_final_scratch": mosaicatcher_final_scratch,
+                                    # "mosaicatcher_final_scratch_timestamp": mosaicatcher_final_scratch_timestamp,
+                                    # "mc_rdays": mc_rdays,
+                                    "report": dict_variables[f"{variable}_report"],
+                                    # "ashleys_final_scratch": ashleys_final_scratch,
+                                    # "ashleys_final_scratch_timestamp": ashleys_final_scratch_timestamp,
+                                    # "ashleys_rdays": ashleys_rdays,
+                                    "final_output_scratch": dict_variables[
+                                        f"{variable}_scratch"
+                                    ],
+                                    "scratch_ts": dict_variables[
+                                        f"{variable}_scratch_ts"
+                                    ],
+                                    "scratch_rdays": dict_variables[
+                                        f"{variable}_scratch_rdays"
+                                    ],
                                     "status": workflow_id["status"],
                                     "prefix": list(prefixes)[0],
                                     "plate_type": plate_type,
@@ -393,31 +463,34 @@ class MyHandler(FileSystemEventHandler):
             main_df = pd.DataFrame(main_df)
             # main_df.loc[(main_df["labels"] == True) &  (main_df["report"] == True), "real_status"] = "Completed"
             main_df.loc[
-                (main_df["labels"] == True) & (main_df["report"] == False),
+                (main_df["final_output_scratch"] == True)
+                & (main_df["report"] == False),
                 "real_status",
             ] = "Report missing"
             main_df.loc[
-                (main_df["labels"] == False) & (main_df["report"] == True),
+                (main_df["final_output_scratch"] == False)
+                & (main_df["report"] == True),
                 "real_status",
             ] = "Error"
             main_df.loc[
-                (main_df["labels"] == False) & (main_df["report"] == False),
+                (main_df["final_output_scratch"] == False)
+                & (main_df["report"] == False),
                 "real_status",
             ] = "To process"
             main_df.loc[
-                (main_df["labels"] == True)
+                (main_df["final_output_scratch"] == True)
                 & (main_df["report"] == True)
                 & (main_df["status"] == "None"),
                 "real_status",
             ] = "Error"
             main_df.loc[
-                (main_df["labels"] == True)
+                (main_df["final_output_scratch"] == True)
                 & (main_df["report"] == True)
                 & (main_df["status"] == "Running"),
                 "real_status",
             ] = "Running"
             main_df.loc[
-                (main_df["labels"] == True)
+                (main_df["final_output_scratch"] == True)
                 & (main_df["report"] == True)
                 & (main_df["status"] == "Done"),
                 "real_status",
@@ -426,130 +499,110 @@ class MyHandler(FileSystemEventHandler):
                 "Error (to  investigate))"
             )
             print(workflows_data["workflows"])
+
+            print("\n")
+            logging.info(f"Pipeline selected {pipeline}")
+            print("\n")
+
             print(main_df)
+
+            # pipeline_final_file_variable = (
+            #     "ashleys_final_scratch"
+            #     if pipeline == "ashleys_qc_pipeline"
+            #     else "mosaicatcher_final_scratch"
+            # )
 
             dry_run_db = False
 
             if dry_run_db is False:
                 cursor = connection.cursor()
 
-                assert (
-                    main_df.loc[
-                        (main_df["labels"] == False) & (main_df["report"] == True)
-                    ].shape[0]
-                    == 0
-                ), "Error in table, samples have report done without the completion of the pipeline"
+                # assert (
+                #     main_df.loc[
+                #         (main_df["final_output_scratch"] == False)
+                #         & (main_df["report"] == True)
+                #     ].shape[0]
+                #     == 0
+                # ), "Error in table, samples have report done without the completion of the pipeline"
+
+                # logging.info(
+                #     "Correcting status of plates with report.zip and final_output_scratch"
+                # )
+
+                # for row in main_df.loc[
+                #     (main_df["final_output_scratch"] == True)
+                #     & (main_df["report"] == True)
+                #     & (main_df["status"] != "Done")
+                # ].to_dict("records"):
+                #     logging.info(row)
+                #     panoptes_entry = f"{pipeline}--{row['plate']}--{row['sample']}"
+                #     workflow_id = row["panoptes_id"]
+
+                #     # if workflow_id != "None":
+                #     #     command = f'sqlite3 /g/korbel2/weber/workspace/strandscape/.panoptes.db "DELETE FROM workflows WHERE id={workflow_id};"'
+                #     #     subprocess.run(command, shell=True, check=True)
+
+                #     panoptes_data = [
+                #         e for e in workflows_data["workflows"] if e["id"] == workflow_id
+                #     ]
+
+                #     print(panoptes_entry)
+                #     print(panoptes_data)
+                #     print(row)
+                #     if workflow_id and workflow_id != "None":
+                #         assert (
+                #             len(panoptes_data) > 0
+                #         ), f"Data issue between pika & panoptes, {str(panoptes_data)}"
+
+                #     if panoptes_data:
+                #         panoptes_data = panoptes_data[0]
+                #         if "completed_at" not in panoptes_data:
+                #             panoptes_data["completed_at"] = last_message_timestamp
+
+                #         command = f'sqlite3 /g/korbel2/weber/workspace/strandscape/.panoptes.db "DELETE FROM workflows WHERE id={workflow_id};"'
+                #         subprocess.run(command, shell=True, check=True)
+
+                #     else:
+                #         logging.info(
+                #             "Panoptes data not found for workflow entry: %s", row
+                #         )
+                #         panoptes_data = {
+                #             "started_at": last_message_timestamp,
+                #             "completed_at": last_message_timestamp,
+                #             "jobs_done": "1",
+                #             "jobs_total": "1",
+                #         }
+
+                #     print(row)
+
+                #     cursor.execute(
+                #         """
+                #         INSERT INTO workflows (name, status, done, total, started_at, completed_at)
+                #         VALUES (?, ?, ?, ?, ?, ?)
+                #         """,
+                #         (
+                #             panoptes_entry,
+                #             "Done",
+                #             panoptes_data["jobs_done"],
+                #             panoptes_data["jobs_total"],
+                #             panoptes_data["started_at"],
+                #             panoptes_data["completed_at"],
+                #         ),
+                #     )
+                #     connection.commit()
 
                 logging.info(
-                    "Correcting status of plates with report.zip and labels.tsv"
+                    "Processing plates without final_output_scratch or outdated without report.zip"
                 )
 
                 for row in main_df.loc[
-                    (main_df["labels"] == True)
-                    & (main_df["report"] == True)
-                    & (main_df["status"] != "Done")
-                ].to_dict("records"):
-                    logging.info(row)
-                    panoptes_entry = f"{pipeline}--{row['plate']}--{row['sample']}"
-                    workflow_id = row["panoptes_id"]
-
-                    # if workflow_id != "None":
-                    #     command = f'sqlite3 /g/korbel2/weber/workspace/strandscape/.panoptes.db "DELETE FROM workflows WHERE id={workflow_id};"'
-                    #     subprocess.run(command, shell=True, check=True)
-
-                    panoptes_data = [
-                        e for e in workflows_data["workflows"] if e["id"] == workflow_id
-                    ]
-
-                    print(panoptes_entry)
-                    print(panoptes_data)
-                    if workflow_id:
-                        assert (
-                            len(panoptes_data) > 0
-                        ), "Data issue between pika & panoptes"
-
-                    if panoptes_data:
-                        panoptes_data = panoptes_data[0]
-                        if "completed_at" not in panoptes_data:
-                            panoptes_data["completed_at"] = last_message_timestamp
-
-                        command = f'sqlite3 /g/korbel2/weber/workspace/strandscape/.panoptes.db "DELETE FROM workflows WHERE id={workflow_id};"'
-                        subprocess.run(command, shell=True, check=True)
-
-                    else:
-                        logging.info(
-                            "Panoptes data not found for workflow entry: %s", row
-                        )
-                        panoptes_data = {
-                            "started_at": last_message_timestamp,
-                            "completed_at": last_message_timestamp,
-                            "jobs_done": "1",
-                            "jobs_total": "1",
-                        }
-
-                    print(row)
-
-                    cursor.execute(
-                        """
-                        INSERT INTO workflows (name, status, done, total, started_at, completed_at)
-                        VALUES (?, ?, ?, ?, ?, ?)
-                        """,
-                        (
-                            panoptes_entry,
-                            "Done",
-                            panoptes_data["jobs_done"],
-                            panoptes_data["jobs_total"],
-                            panoptes_data["started_at"],
-                            panoptes_data["completed_at"],
-                        ),
-                    )
-                    connection.commit()
-
-                logging.info(
-                    "Processing plates without labels.tsv or outdated without report.zip"
-                )
-
-                for row in main_df.loc[
-                    (main_df["labels"] == False) & (main_df["report"] == False)
-                ].to_dict("records"):
-                    logging.info(row)
-
-                    # panoptes = True if row["status"] == "None" else False
-                    panoptes = True
-
-                    if dry_run == "False":
-                        if row["panoptes_id"] != "None":
-                            workflow_id = row["panoptes_id"]
-                            panoptes_data = [
-                                e
-                                for e in workflows_data["workflows"]
-                                if e["id"] == workflow_id
-                            ]
-                            command = f'sqlite3 /g/korbel2/weber/workspace/strandscape/.panoptes.db "DELETE FROM workflows WHERE id={workflow_id};"'
-                            subprocess.run(command, shell=True, check=True)
-
-                        self.process_new_directory(
-                            "/".join([path_to_watch, row["plate"]]),
-                            row["prefix"],
-                            row["sample"],
-                            row["plate_type"],
-                            report_only=False,
-                            panoptes=panoptes,
-                        )
-
-                logging.info(
-                    "Processing plates not present anymore on scratch and without report.zip"
-                )
-
-                for row in main_df.loc[
-                    # (main_df["multiqc_scratch"] == False)
-                    (main_df["multiqc_scratch"] == False)
+                    (main_df["final_output_scratch"] == False)
                     # & (main_df["report"] == False)
                 ].to_dict("records"):
                     logging.info(row)
 
                     # panoptes = True if row["status"] == "None" else False
-                    panoptes = True
+                    # panoptes = True
 
                     if dry_run == "False":
                         if row["panoptes_id"] != "None":
@@ -570,21 +623,54 @@ class MyHandler(FileSystemEventHandler):
                             report_only=False,
                             panoptes=panoptes,
                         )
+
+                # logging.info(
+                #     "Processing plates not present anymore on scratch and without report.zip"
+                # )
+
+                # for row in main_df.loc[
+                #     # (main_df["multiqc_scratch"] == False)
+                #     (main_df["final_output_scratch"] == False)
+                #     # & (main_df["report"] == False)
+                # ].to_dict("records"):
+                #     logging.info(row)
+
+                #     # panoptes = True if row["status"] == "None" else False
+                #     # panoptes = True
+
+                #     if dry_run == "False":
+                #         if row["panoptes_id"] != "None":
+                #             workflow_id = row["panoptes_id"]
+                #             panoptes_data = [
+                #                 e
+                #                 for e in workflows_data["workflows"]
+                #                 if e["id"] == workflow_id
+                #             ]
+                #             command = f'sqlite3 /g/korbel2/weber/workspace/strandscape/.panoptes.db "DELETE FROM workflows WHERE id={workflow_id};"'
+                #             subprocess.run(command, shell=True, check=True)
+
+                #         self.process_new_directory(
+                #             "/".join([path_to_watch, row["plate"]]),
+                #             row["prefix"],
+                #             row["sample"],
+                #             row["plate_type"],
+                #             report_only=False,
+                #             panoptes=panoptes,
+                #         )
 
                 logging.info(
                     "Processing plates without report.zip but with labels.tsv and still on scratch"
                 )
 
                 for row in main_df.loc[
-                    (main_df["labels"] == True)
-                    & (main_df["multiqc_scratch"] == True)
-                    & (main_df["remaining_days"] > 2)
+                    (main_df["final_output_scratch"] == True)
+                    & (main_df["scratch_rdays"] > 2)
                     & (main_df["report"] == False)
                 ].to_dict("records"):
                     logging.info(row)
 
                     # panoptes = True if row["status"] == "None" else False
-                    panoptes = False
+                    # panoptes = False
                     panoptes_entry = f"{pipeline}--{row['plate']}--{row['sample']}"
 
                     if dry_run == "False":
@@ -635,9 +721,8 @@ class MyHandler(FileSystemEventHandler):
                 )
 
                 for row in main_df.loc[
-                    (main_df["labels"] == True)
-                    & (main_df["multiqc_scratch"] == True)
-                    & (main_df["remaining_days"] < 10)
+                    (main_df["final_output_scratch"] == True)
+                    & (main_df["scratch_rdays"] < 10)
                 ].to_dict("records"):
                     logging.info(row)
                     self.update_timestamps(
@@ -697,12 +782,18 @@ class MyHandler(FileSystemEventHandler):
         # Change directory and run the snakemake command
         date_folder = directory_path.split("/")[-1]
 
+        ashleys_pipeline_only = True if pipeline == "ashleys-qc-pipeline" else False
+
+        genome_browsing_files_generation = (
+            False if pipeline == "ashleys-qc-pipeline" else True
+        )
+
         cmd = [
             f"{snakemake_binary}",
             "-s",
             "workflow/Snakefile",
-            "--set-resources",
-            "ashleys_mark_duplicates:constraint='milan\|rome'",
+            # "--set-resources",
+            # "ashleys_mark_duplicates:constraint='milan\|rome'",
             "--config",
             "genecore=True",
             f"genecore_prefix={genecore_prefix}",
@@ -711,12 +802,13 @@ class MyHandler(FileSystemEventHandler):
             f'samples_to_process="[{sample}]"',
             f"plate_type={plate_type}",
             "multistep_normalisation=True",
+            f"genome_browsing_files_generation={genome_browsing_files_generation}"
             "MultiQC=True",
             "split_qc_plot=False",
             f"publishdir={publishdir_location}",
             "email=thomas.weber@embl.de",
             f"data_location={data_location}",
-            "ashleys_pipeline_only=True",
+            f"ashleys_pipeline_only={ashleys_pipeline_only}",
             "ashleys_pipeline=True",
             "--nolock",
             "--rerun-incomplete",
@@ -790,7 +882,7 @@ class MyHandler(FileSystemEventHandler):
     ):
         """Run the second command and write the output to a log file."""
 
-        report_location = f"{publishdir_location}/{date_folder}/{sample}/reports/{sample}_ashleys-qc-pipeline_report.zip"
+        report_location = f"{publishdir_location}/{date_folder}/{sample}/reports/{sample}_{pipeline}_report.zip"
         report_options = [
             "--report",
             f"{report_location}",
@@ -811,7 +903,7 @@ class MyHandler(FileSystemEventHandler):
 
         # print(cmd + profile_slurm + report_options)
 
-        os.makedirs("watchdog/logs/per-run", exist_ok=True)
+        os.makedirs(f"watchdog/logs/per-run/{pipeline}", exist_ok=True)
 
         # Get the current date and time
         now = datetime.now()
@@ -822,7 +914,7 @@ class MyHandler(FileSystemEventHandler):
         if panoptes is True:
             final_cmd = cmd + wms_monitor_args + profile_slurm
         else:
-            final_cmd = (cmd + profile_slurm,)
+            final_cmd = cmd + profile_slurm
 
         if report_only is False:
             logging.info("\nThe output is as expected.")
@@ -833,7 +925,7 @@ class MyHandler(FileSystemEventHandler):
             )
 
             with open(
-                f"watchdog/logs/per-run/{date_folder}_{pipeline}_{current_time}.log",
+                f"watchdog/logs/per-run/{pipeline}/{current_time}_{date_folder}_{sample}.log",
                 "w",
             ) as f:
                 # process2 = subprocess.Popen(cmd + wms_monitor_args + profile_dry_run, stdout=f, stderr=f, universal_newlines=True, cwd=working_directory, env=my_env)
@@ -849,51 +941,58 @@ class MyHandler(FileSystemEventHandler):
 
                 logging.info("Return code: %s", process2.returncode)
 
-        logging.info("Generating ashleys report.")
-        os.makedirs(os.path.dirname(report_location), exist_ok=True)
-        # os.makedirs(f"{publishdir_location}/{date_folder}/{sample}/reports/", exist_ok=True)
-        logging.info(
-            "Running command: %s", " ".join(cmd + profile_dry_run + report_options)
-        )
         # Change the permissions of the new directory
         # subprocess.run(["chmod", "-R", "777", f"{data_location}/{date_folder}"])
-
-        with open(
-            f"watchdog/logs/per-run/{date_folder}_{pipeline}_{current_time}_report.log",
-            "w",
-        ) as f:
-            process2 = subprocess.Popen(
-                cmd + profile_dry_run + report_options,
-                stdout=f,
-                stderr=f,
-                universal_newlines=True,
-                cwd=working_directory,
-                env=my_env,
-            )
-            # process2 = subprocess.Popen(cmd + profile_slurm + report_options, stdout=f, stderr=f, universal_newlines=True, cwd=working_directory, env=my_env)
-            process2.wait()
-
-            logging.info("Return code: %s", process2.returncode)
-
-        # ZIPFILE
-
-        import zipfile
-
-        # Check if the file exists and is a valid zip file
-        if zipfile.is_zipfile(report_location):
-            # Specify the directory where you want to extract the contents
-            # If you want to extract in the same directory as the zip file, just use the parent directory
-            extract_location = f"{publishdir_location}/{date_folder}/{sample}/reports/"
-
-            # Extract the zip file
-            with zipfile.ZipFile(report_location, "r") as zip_ref:
-                zip_ref.extractall(extract_location)
-            print(f"Extracted the archive to {extract_location}")
+        if report_only is True:
+            check_report = True
         else:
-            print(f"{report_location} is not a valid zip file.")
+            check_report = True if (str(process2.returncode) == str(0)) else False
 
-        # Change the permissions of the new directory
-        subprocess.run(["chmod", "-R", "777", f"{data_location}/{date_folder}"])
+        if check_report is True:
+            logging.info("Generating ashleys report.")
+            os.makedirs(os.path.dirname(report_location), exist_ok=True)
+            # os.makedirs(f"{publishdir_location}/{date_folder}/{sample}/reports/", exist_ok=True)
+            logging.info(
+                "Running command: %s", " ".join(cmd + profile_dry_run + report_options)
+            )
+            with open(
+                f"watchdog/logs/per-run/{pipeline}/{current_time}_{date_folder}_{sample}_report.log",
+                "w",
+            ) as f:
+                process2 = subprocess.Popen(
+                    cmd + profile_dry_run + report_options,
+                    stdout=f,
+                    stderr=f,
+                    universal_newlines=True,
+                    cwd=working_directory,
+                    env=my_env,
+                )
+                # process2 = subprocess.Popen(cmd + profile_slurm + report_options, stdout=f, stderr=f, universal_newlines=True, cwd=working_directory, env=my_env)
+                process2.wait()
+
+                logging.info("Return code: %s", process2.returncode)
+
+            # ZIPFILE
+
+            import zipfile
+
+            # Check if the file exists and is a valid zip file
+            if zipfile.is_zipfile(report_location):
+                # Specify the directory where you want to extract the contents
+                # If you want to extract in the same directory as the zip file, just use the parent directory
+                extract_location = (
+                    f"{publishdir_location}/{date_folder}/{sample}/reports/"
+                )
+
+                # Extract the zip file
+                with zipfile.ZipFile(report_location, "r") as zip_ref:
+                    zip_ref.extractall(extract_location)
+                print(f"Extracted the archive to {extract_location}")
+            else:
+                print(f"{report_location} is not a valid zip file.")
+
+            # Change the permissions of the new directory
+            subprocess.run(["chmod", "-R", "777", f"{data_location}/{date_folder}"])
 
 
 def main():

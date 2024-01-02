@@ -441,6 +441,11 @@ if config["scNOVA"] is True:
         labels_path = "{folder}/{sample}/cell_selection/labels.tsv".format(
             folder=config["data_location"], sample=sample
         )
+
+        assert os.path.isfile(
+            labels_path
+        ), "Ashleys labels were not computed yet, use first ashleys mode to perform cell selection"
+
         # print(labels_path)
         if os.path.exists(labels_path):
             # Read df
@@ -839,6 +844,20 @@ def get_all_plots(wildcards):
             l_outputs.extend(
                 expand(
                     "{folder}/{sample}/plots/IGV/{sample}_IGV_session.xml",
+                    folder=config["data_location"],
+                    sample=wildcards.sample,
+                ),
+            )
+            l_outputs.extend(
+                expand(
+                    "{folder}/{sample}/plots/UCSC/{sample}.bedUCSC.gz",
+                    folder=config["data_location"],
+                    sample=wildcards.sample,
+                ),
+            )
+            l_outputs.extend(
+                expand(
+                    "{folder}/{sample}/plots/JBROWSE/{sample}.ok",
                     folder=config["data_location"],
                     sample=wildcards.sample,
                 ),
