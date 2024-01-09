@@ -1,14 +1,13 @@
 import os
+
 # from snakemake.remote.HTTP import RemoteProvider as HTTPRemoteProvider
 
 # HTTP = HTTPRemoteProvider()
 
-storage:
-    provider="http",
 
 rule dl_example_data:
     input:
-        storage.http(
+        storage(
             "https://sandbox.zenodo.org/record/1074721/files/TEST_EXAMPLE_DATA.zip",
             keep_local=True,
         ),
@@ -22,7 +21,7 @@ rule dl_example_data:
 
 rule download_hg19_reference:
     input:
-        storage.http(
+        storage(
             "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/analysisSet/hg19.p13.plusMT.no_alt_analysis_set.fa.gz",
             keep_local=True,
         ),
@@ -43,7 +42,7 @@ rule download_hg19_reference:
 
 rule download_hg38_reference:
     input:
-        storage.http(
+        storage(
             "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/analysisSet/hg38.analysisSet.fa.gz",
             keep_local=True,
         ),
@@ -64,7 +63,7 @@ rule download_hg38_reference:
 
 rule download_T2T_reference:
     input:
-        storage.http(
+        storage(
             "https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/CHM13/assemblies/analysis_set/chm13v2.0.fa.gz",
             keep_local=True,
         ),
@@ -85,7 +84,7 @@ rule download_T2T_reference:
 
 rule download_mm10_reference:
     input:
-        storage.http(
+        storage(
             "https://hgdownload.soe.ucsc.edu/goldenPath/mm10/bigZips/mm10.fa.gz",
             keep_local=True,
         ),
@@ -106,7 +105,7 @@ rule download_mm10_reference:
 
 rule download_T2T_tarball:
     input:
-        storage.http(
+        storage(
             "https://zenodo.org/record/7697400/files/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz",
             keep_local=True,
         ),
@@ -126,7 +125,7 @@ rule download_T2T_tarball:
 
 rule download_arbigent_mappability_track:
     input:
-        storage.http(
+        storage(
             "https://zenodo.org/record/7697400/files/mapping_counts_allchrs_hg38.txt",
             keep_local=True,
         ),
@@ -145,7 +144,7 @@ rule download_arbigent_mappability_track:
 rule download_scnova_data:
     input:
         ancient(
-            storage.http(
+            storage(
                 "https://zenodo.org/record/7697400/files/scNOVA_data_models.zip",
                 keep_local=True,
             )
