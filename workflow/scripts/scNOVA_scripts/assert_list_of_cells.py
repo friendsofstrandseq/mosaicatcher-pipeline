@@ -11,6 +11,10 @@ def main(labels_file, subclone_file, selected_folder, output_file):
 
     # Read input_subclonality.txt
     input_subclonality = pd.read_csv(subclone_file, sep="\t")
+
+    assert set(input_subclonality.Subclonality.unique().tolist()) == set(
+        ["clone1", "clone2"]
+    )
     subclone_cells = set(input_subclonality["Filename"].values.tolist())
 
     # List files in selected/ folder and process filenames
