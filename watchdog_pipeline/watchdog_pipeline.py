@@ -12,7 +12,8 @@ import threading
 import re
 from collections import Counter
 from pathlib import Path
-import pika  # RabbitMQ
+import pika
+import yaml  # RabbitMQ
 
 os.makedirs("watchdog/logs", exist_ok=True)
 
@@ -30,7 +31,7 @@ logging.basicConfig(
 
 
 # Set the path you want to watch
-path_to_watch = sys.argv[1]
+main_path_to_watch = sys.argv[1]
 dry_run = sys.argv[2]
 report_only = sys.argv[3]
 panoptes = sys.argv[4]
@@ -39,15 +40,23 @@ panoptes = sys.argv[4]
 data_location = "/scratch/tweber/DATA/MC_DATA/STOCKS"
 # publishdir_location = "/g/korbel/weber/TMP/WORKFLOW_RESULTS_DEV"
 publishdir_location = "/g/korbel/WORKFLOW_RESULTS"
-genecore_prefix = path_to_watch
+genecore_prefix = main_path_to_watch
 # profile_slurm = [
 #     "--profile",
 #     "/g/korbel2/weber/workspace/snakemake_profiles/HPC/dev/slurm_legacy_conda/",
 # ]
 profile_slurm = [
     "--profile",
-    "/g/korbel2/weber/workspace/snakemake_profiles/HPC/dev/slurm_EMBL/",
+    "/g/korbel2/weber/workspace/snakemake_profiles/local/conda_singularity/",
+    "--cores",
+    "64",
+    "--singularity-args",
+    '"-B /scratch,/g"',
 ]
+# profile_slurm = [
+#     "--profile",
+#     "/g/korbel2/weber/workspace/snakemake_profiles/HPC/dev/slurm_EMBL/",
+# ]
 profile_dry_run = [
     "--profile",
     "workflow/snakemake_profiles/local/conda/",
@@ -77,6 +86,61 @@ working_directory = "/g/korbel2/weber/workspace/mosaicatcher-update"
 # print(plates_processing_status)
 
 
+def generate_data_file(directory):
+    # Define the directory containing the files
+
+    # Pattern to match the files
+    pattern = re.compile(
+        r"\/g\/korbel\/WORKFLOW_RESULTS\/202[0-3]-\d{2}-\d{2}-.*\/(.*)\/counts\/\1.info_raw"
+    )
+
+    # Initialize an empty DataFrame to store aggregated data
+    df_aggregated = pd.DataFrame()
+
+    # Iterate over the files in the main directory
+
+    unwanted = ["._.DS_Store", ".DS_Store", "config"]
+
+    total_list_runs = sorted([e for e in os.listdir(directory) if e not in unwanted])
+
+    l_df = list()
+
+    for plate in total_list_runs:
+        if plate.split("-")[0][:2] == "20":
+            for sample in os.listdir(os.path.join(directory, plate)):
+                if "sample" not in unwanted:
+                    counts_stats_file_path = os.path.join(
+                        directory, plate, sample, "counts", f"{sample}.info_raw"
+                    )
+                    labels_file_path = os.path.join(
+                        directory, plate, sample, "cell_selection", "labels.tsv"
+                    )
+
+                    if os.path.isfile(counts_stats_file_path):
+                        if os.path.isfile(labels_file_path):
+                            # print(counts_stats_file_path)
+                            tmp_df_stats = pd.read_csv(
+                                counts_stats_file_path, sep="\t", skiprows=13
+                            )
+                            tmp_df_stats["depictio_run_id"] = plate
+                            tmp_df_labels = pd.read_csv(labels_file_path, sep="\t")
+                            tmp_df_labels["depictio_run_id"] = plate
+                            tmp_df_labels["cell"] = tmp_df_labels["cell"].str.replace(
+                                ".sort.mdup.bam", ""
+                            )
+                            tmp_df = tmp_df_stats.merge(
+                                tmp_df_labels, on=["depictio_run_id", "sample", "cell"]
+                            )
+                            l_df.append(tmp_df)
+
+    l_df = pd.concat(l_df)
+    l_df["year"] = l_df["depictio_run_id"].apply(lambda r: r.split("-")[0])
+    l_df.to_parquet(
+        "/g/korbel2/weber/workspace/strandscape/strandscape_vizu_dev.parquet"
+    )
+    # TODO: push df to parquet & reuse the same for ashleys stats
+
+
 # Define the event handler
 class MyHandler(FileSystemEventHandler):
     def on_created(self, event):
@@ -99,8 +163,8 @@ class MyHandler(FileSystemEventHandler):
                 sample_name = match.group(1)
                 file_counts_per_sample[sample_name] += 1
 
-        print(directory_path)
-        print(file_counts_per_sample)
+        # print(directory_path)
+        # print(file_counts_per_sample)
 
         # Second pass: Process files and determine plate type per sample
         for j, file_path in enumerate(sorted(l)):
@@ -259,24 +323,204 @@ class MyHandler(FileSystemEventHandler):
                 return workflow
         return None
 
+    # Function to load YAML configuration
+    @staticmethod
+    def load_config(file_path):
+        with open(file_path, "r") as file:
+            return yaml.safe_load(file)
+
+    # Function to process each sample
+    def process_sample(
+        self,
+        sample_name,
+        plate,
+        pipeline,
+        data_location,
+        publishdir_location,
+        variable,
+        workflows_data,
+        last_message_timestamp,
+        prefixes,
+        plate_type,
+    ):
+        run_id = f"{pipeline}--{plate}--{sample_name}"
+        workflow_id = self.find_workflow_id_by_name(workflows_data, run_id)
+
+        dict_variables = {
+            f"{variable}_scratch": False,
+            f"{variable}_scratch_ts": False,
+            f"{variable}_scratch_rdays": None,
+            f"{variable}_report": False,
+        }
+
+        # ashleys_final_scratch = False
+        # ashleys_report = False
+        # ashleys_final_scratch_timestamp = None
+        # ashleys_rdays = None
+
+        # mosaicatcher_final_scratch = False
+        # mosaicatcher_report = False
+        # mosaicatcher_final_scratch_timestamp = None
+        # mc_rdays = None
+
+        if os.path.isfile(
+            f"{publishdir_location}/{plate}/{sample_name}/reports/{sample_name}_{pipeline}_report.zip"
+        ):
+            # report = True
+            dict_variables[f"{variable}_report"] = True
+
+        if pipeline == "ashleys-qc-pipeline":
+            if os.path.isfile(
+                f"{data_location}/{plate}/{sample_name}/config/ashleys_final_results.ok"
+                # f"{data_location}/{plate}/{sample_name}/multiqc/multiqc_report/multiqc_report.html"
+            ):
+                # ashleys_final_scratch = True
+                ts = os.path.getmtime(
+                    f"{data_location}/{plate}/{sample_name}/config/ashleys_final_results.ok"
+                )
+                ts = datetime.fromtimestamp(ts)
+                dict_variables[f"{variable}_scratch"] = True
+                dict_variables[f"{variable}_scratch_ts"] = ts
+
+                # to datetime and then strfmtime
+
+                # computing remaning days to reach 5 months between ashleys_final_scratch_timestamp and now
+                rdays = (datetime.now() - ts).days
+                rdays = 150 - rdays
+
+                dict_variables[f"{variable}_scratch_rdays"] = rdays
+        elif pipeline == "mosaicatcher-pipeline":
+            if os.path.isfile(
+                f"{data_location}/{plate}/{sample_name}/plots/final_results/{sample_name}.txt"
+                # f"{data_location}/{plate}/{sample_name}/multiqc/multiqc_report/multiqc_report.html"
+            ):
+                ts = os.path.getmtime(
+                    f"{data_location}/{plate}/{sample_name}/plots/final_results/{sample_name}.txt"
+                )
+                ts = datetime.fromtimestamp(ts)
+                dict_variables[f"{variable}_scratch"] = True
+                dict_variables[f"{variable}_scratch_ts"] = ts
+                # to datetime and then strfmtime
+                # computing remaning days to reach 5 months between ashleys_final_scratch_timestamp and now
+                rdays = (datetime.now() - ts).days
+                rdays = 150 - rdays
+
+                dict_variables[f"{variable}_scratch_rdays"] = rdays
+
+        if not workflow_id:
+            workflow_id = {
+                "id": "None",
+                "status": "None",
+                "started_at": last_message_timestamp,
+                "completed_at": last_message_timestamp,
+                "jobs_done": "None",
+                "jobs_total": "None",
+            }
+        else:
+            workflow_id["started_at"] = datetime.strptime(
+                workflow_id["started_at"],
+                "%a, %d %b %Y %H:%M:%S GMT",
+            ).strftime("%Y-%m-%d %H:%M:%S.%f")
+
+            if workflow_id["completed_at"] is not None:
+                workflow_id["completed_at"] = datetime.strptime(
+                    workflow_id["completed_at"],
+                    "%a, %d %b %Y %H:%M:%S GMT",
+                ).strftime("%Y-%m-%d %H:%M:%S.%f")
+
+        # turn the print into a dict
+        tmp_d = {
+            "panoptes_id": workflow_id["id"],
+            "plate": plate,
+            "sample": sample_name,
+            # "report": report,
+            # "labels": labels,
+            # "ashleys_final_scratch": ashleys_final_scratch,
+            # "ashleys_final_scratch_timestamp": ashleys_final_scratch_timestamp,
+            # "ashleys_rdays": ashleys_rdays,
+            # "mosaicatcher_final_scratch": mosaicatcher_final_scratch,
+            # "mosaicatcher_final_scratch_timestamp": mosaicatcher_final_scratch_timestamp,
+            # "mc_rdays": mc_rdays,
+            "report": dict_variables[f"{variable}_report"],
+            # "ashleys_final_scratch": ashleys_final_scratch,
+            # "ashleys_final_scratch_timestamp": ashleys_final_scratch_timestamp,
+            # "ashleys_rdays": ashleys_rdays,
+            "final_output_scratch": dict_variables[f"{variable}_scratch"],
+            "scratch_ts": dict_variables[f"{variable}_scratch_ts"],
+            "scratch_rdays": dict_variables[f"{variable}_scratch_rdays"],
+            "status": workflow_id["status"],
+            "prefix": list(prefixes)[0],
+            "plate_type": plate_type,
+            "started_at": workflow_id["started_at"],
+            "completed_at": workflow_id["completed_at"],
+            "jobs_done": workflow_id["jobs_done"],
+            "jobs_total": workflow_id["jobs_total"],
+        }
+        return tmp_d
+
+    # Main function to process directories
+    def process_directories(
+        self,
+        main_path_to_watch,
+        excluded_samples,
+        pipeline,
+        data_location,
+        publishdir_location,
+        variable,
+        workflows_data,
+        last_message_timestamp,
+    ):
+        unwanted = ["._.DS_Store", ".DS_Store", "config"]
+
+        main_df = []
+        if len(workflows_data) > 0:
+            for year in os.listdir(main_path_to_watch):
+                if year.startswith("20"):  # Assuming only years are relevant
+                    path_to_watch = f"{main_path_to_watch}/{year}"
+                    total_list_runs = sorted(
+                        [e for e in os.listdir(path_to_watch) if e not in unwanted]
+                    )
+                    for plate in total_list_runs:
+                        if plate.split("-")[0][:2] == "20":
+                            directory_path = f"{path_to_watch}/{plate}"
+                            prefixes, samples, plate_types = self.extract_samples_names(
+                                glob.glob(f"{directory_path}/*.txt.gz"),
+                                directory_path,
+                            )
+                            if len(set(prefixes)) == 1:
+                                for sample_name, plate_type in zip(
+                                    samples, plate_types
+                                ):
+                                    if sample_name not in excluded_samples:
+                                        result = self.process_sample(
+                                            sample_name,
+                                            plate,
+                                            pipeline,
+                                            data_location,
+                                            publishdir_location,
+                                            variable,
+                                            workflows_data,
+                                            last_message_timestamp,
+                                            prefixes,
+                                            plate_type,
+                                        )
+                                        main_df.append(result)
+        return pd.DataFrame(main_df)
+
     def check_unprocessed_folder(self):
         connection = sqlite3.connect(
             "/g/korbel2/weber/workspace/strandscape/.panoptes.db"
         )
 
-        # Get the list of processed plates from rabbitmq
+        # # Get the list of processed plates from rabbitmq
         message = self.consume_last_message_from_rabbitmq(
             json_backup_filename="watchdog/processing_status.json", queue="data_queue"
         )
 
-        unwanted = ["._.DS_Store", ".DS_Store", "config"]
-        list_runs_processed = sorted(
-            [e for e in os.listdir(data_location) if e not in unwanted]
-        )
+        # list_runs_processed = sorted(
+        #     [e for e in os.listdir(data_location) if e not in unwanted]
+        # )
 
-        total_list_runs = sorted(
-            [e for e in os.listdir(path_to_watch) if e not in unwanted]
-        )
         # unprocessed_plates = sorted(list(set(total_list_runs).difference(list_runs_processed)))
         unprocessed_plates = list()
         # workflows_data = self.get_workflows()
@@ -291,443 +535,290 @@ class MyHandler(FileSystemEventHandler):
 
         variable = "aqc" if pipeline == "ashleys-qc-pipeline" else "mc"
 
-        main_df = list()
-        if len(workflows_data) > 0:
-            for plate in total_list_runs:
-                # print(plate)
-                if plate.split("-")[0][:2] == "20":
-                    # and plate == "2021-06-25-H22VVAFX3"
-                    # if plate.split("-")[0] == "2023":
-                    # if plate.startswith("2023-11-09"):
-                    # if plate == "2021-02-17-HM7LYAFX2":
-                    # if plate == "2020-06-22-H5YMMAFX2":
-                    directory_path = f"{path_to_watch}/{plate}"
-                    prefixes, samples, plate_types = self.extract_samples_names(
-                        glob.glob(f"{path_to_watch}/{plate}/*.txt.gz"), directory_path
-                    )
-                    # print(prefixes, samples, plate_types)
-                    if len(set(prefixes)) == 1:
-                        # print(plate)
-                        # if self.check_date(plate):
+        # Get the list of excluded samples from the config
+        config = self.load_config("watchdog_pipeline/excluded_samples.yaml")
+        # TODO: add run in the excluded list
+        excluded_samples = config["excluded_samples"]
 
-                        # print(plate)
-                        for sample_name, plate_type in zip(samples, plate_types):
-                            if sample_name not in [
-                                "PDAC60590",  # MICE
-                                "PDAC60590MNI",  # MICE
-                                "DXR30hMaja",  # MICE
-                                "DXR42hMaja",  # MICE
-                                "GM19705",  # ERROR to investigate
-                                "OrgxDoxocx02",  # ERROR Multistep
-                                "GM20355x01",  # ERROR Multistep
-                                "10uMDXR42hx01",  # ERROR Multistep
-                                "mESCx01",  # ERROR Multistep
-                                "DXR100nMxS2x01",  # ERROR Multistep
-                                "MRD48hx02",  # ERROR Multistep
-                                "RPEx03",  # ERROR Only 48 cells
-                                ###### OLD
-                                "ckAML02x02" # ashleys_library_size_normalisation
+        main_df = self.process_directories(
+            main_path_to_watch,
+            excluded_samples,
+            pipeline,
+            data_location,
+            publishdir_location,
+            variable,
+            workflows_data,
+            last_message_timestamp,
+        )
 
-                            ]:
-                                #  and sample_name in ["GM19331x01EDLB"]:
-                                run_id = f"{pipeline}--{plate}--{sample_name}"
-                                workflow_id = self.find_workflow_id_by_name(
-                                    workflows_data, run_id
-                                )
+        pd.options.display.max_rows = 999
+        pd.options.display.max_colwidth = 30
 
-                                dict_variables = {
-                                    f"{variable}_scratch": False,
-                                    f"{variable}_scratch_ts": False,
-                                    f"{variable}_scratch_rdays": None,
-                                    f"{variable}_report": False,
-                                }
+        main_df = pd.DataFrame(main_df)
+        # main_df.loc[(main_df["labels"] == True) &  (main_df["report"] == True), "real_status"] = "Completed"
+        main_df.loc[
+            (main_df["final_output_scratch"] == True) & (main_df["report"] == False),
+            "real_status",
+        ] = "Report missing"
+        main_df.loc[
+            (main_df["final_output_scratch"] == False) & (main_df["report"] == True),
+            "real_status",
+        ] = "Error"
+        main_df.loc[
+            (main_df["final_output_scratch"] == False) & (main_df["report"] == False),
+            "real_status",
+        ] = "To process"
+        main_df.loc[
+            (main_df["final_output_scratch"] == True)
+            & (main_df["report"] == True)
+            & (main_df["status"] == "None"),
+            "real_status",
+        ] = "Error"
+        main_df.loc[
+            (main_df["final_output_scratch"] == True)
+            & (main_df["report"] == True)
+            & (main_df["status"] == "Running"),
+            "real_status",
+        ] = "Running"
+        main_df.loc[
+            (main_df["final_output_scratch"] == True)
+            & (main_df["report"] == True)
+            & (main_df["status"] == "Done"),
+            "real_status",
+        ] = "Completed"
+        main_df["real_status"] = main_df["real_status"].fillna(
+            "Error (to  investigate))"
+        )
+        print(workflows_data["workflows"])
 
-                                # ashleys_final_scratch = False
-                                # ashleys_report = False
-                                # ashleys_final_scratch_timestamp = None
-                                # ashleys_rdays = None
+        print("\n")
+        logging.info(f"Pipeline selected {pipeline}")
+        print("\n")
 
-                                # mosaicatcher_final_scratch = False
-                                # mosaicatcher_report = False
-                                # mosaicatcher_final_scratch_timestamp = None
-                                # mc_rdays = None
+        print(main_df)
+        test_json = main_df.to_json(orient="records", date_format="iso")
+        print(test_json)
+        print(pd.read_json(test_json, orient="records"))
+        exit()
 
-                                if os.path.isfile(
-                                    f"{publishdir_location}/{plate}/{sample_name}/reports/{sample_name}_{pipeline}_report.zip"
-                                ):
-                                    # report = True
-                                    dict_variables[f"{variable}_report"] = True
+        # pipeline_final_file_variable = (
+        #     "ashleys_final_scratch"
+        #     if pipeline == "ashleys_qc_pipeline"
+        #     else "mosaicatcher_final_scratch"
+        # )
 
-                                if pipeline == "ashleys-qc-pipeline":
-                                    if os.path.isfile(
-                                        f"{data_location}/{plate}/{sample_name}/config/ashleys_final_results.ok"
-                                        # f"{data_location}/{plate}/{sample_name}/multiqc/multiqc_report/multiqc_report.html"
-                                    ):
-                                        # ashleys_final_scratch = True
-                                        ts = os.path.getmtime(
-                                            f"{data_location}/{plate}/{sample_name}/config/ashleys_final_results.ok"
-                                        )
-                                        ts = datetime.fromtimestamp(ts)
-                                        dict_variables[f"{variable}_scratch"] = True
-                                        dict_variables[f"{variable}_scratch_ts"] = ts
+        dry_run_db = False
 
-                                        # to datetime and then strfmtime
+        if dry_run_db is False:
+            cursor = connection.cursor()
 
-                                        # computing remaning days to reach 5 months between ashleys_final_scratch_timestamp and now
-                                        rdays = (datetime.now() - ts).days
-                                        rdays = 150 - rdays
+            assert (
+                main_df.loc[
+                    (main_df["final_output_scratch"] == False)
+                    & (main_df["report"] == True)
+                ].shape[0]
+                == 0
+            ), "Error in table, samples have report done without the completion of the pipeline"
 
-                                        dict_variables[
-                                            f"{variable}_scratch_rdays"
-                                        ] = rdays
-                                elif pipeline == "mosaicatcher-pipeline":
-                                    if os.path.isfile(
-                                        f"{data_location}/{plate}/{sample_name}/plots/final_results/{sample_name}.txt"
-                                        # f"{data_location}/{plate}/{sample_name}/multiqc/multiqc_report/multiqc_report.html"
-                                    ):
-                                        ts = os.path.getmtime(
-                                            f"{data_location}/{plate}/{sample_name}/plots/final_results/{sample_name}.txt"
-                                        )
-                                        ts = datetime.fromtimestamp(ts)
-                                        dict_variables[f"{variable}_scratch"] = True
-                                        dict_variables[f"{variable}_scratch_ts"] = ts
-                                        # to datetime and then strfmtime
-                                        # computing remaning days to reach 5 months between ashleys_final_scratch_timestamp and now
-                                        rdays = (datetime.now() - ts).days
-                                        rdays = 150 - rdays
-
-                                        dict_variables[
-                                            f"{variable}_scratch_rdays"
-                                        ] = rdays
-
-                                if not workflow_id:
-                                    workflow_id = {
-                                        "id": "None",
-                                        "status": "None",
-                                        "started_at": last_message_timestamp,
-                                        "completed_at": last_message_timestamp,
-                                        "jobs_done": "None",
-                                        "jobs_total": "None",
-                                    }
-                                else:
-                                    workflow_id["started_at"] = datetime.strptime(
-                                        workflow_id["started_at"],
-                                        "%a, %d %b %Y %H:%M:%S GMT",
-                                    ).strftime("%Y-%m-%d %H:%M:%S.%f")
-
-                                    if workflow_id["completed_at"] is not None:
-                                        workflow_id["completed_at"] = datetime.strptime(
-                                            workflow_id["completed_at"],
-                                            "%a, %d %b %Y %H:%M:%S GMT",
-                                        ).strftime("%Y-%m-%d %H:%M:%S.%f")
-
-                                # turn the print into a dict
-                                tmp_d = {
-                                    "panoptes_id": workflow_id["id"],
-                                    "plate": plate,
-                                    "sample": sample_name,
-                                    # "report": report,
-                                    # "labels": labels,
-                                    # "ashleys_final_scratch": ashleys_final_scratch,
-                                    # "ashleys_final_scratch_timestamp": ashleys_final_scratch_timestamp,
-                                    # "ashleys_rdays": ashleys_rdays,
-                                    # "mosaicatcher_final_scratch": mosaicatcher_final_scratch,
-                                    # "mosaicatcher_final_scratch_timestamp": mosaicatcher_final_scratch_timestamp,
-                                    # "mc_rdays": mc_rdays,
-                                    "report": dict_variables[f"{variable}_report"],
-                                    # "ashleys_final_scratch": ashleys_final_scratch,
-                                    # "ashleys_final_scratch_timestamp": ashleys_final_scratch_timestamp,
-                                    # "ashleys_rdays": ashleys_rdays,
-                                    "final_output_scratch": dict_variables[
-                                        f"{variable}_scratch"
-                                    ],
-                                    "scratch_ts": dict_variables[
-                                        f"{variable}_scratch_ts"
-                                    ],
-                                    "scratch_rdays": dict_variables[
-                                        f"{variable}_scratch_rdays"
-                                    ],
-                                    "status": workflow_id["status"],
-                                    "prefix": list(prefixes)[0],
-                                    "plate_type": plate_type,
-                                    "started_at": workflow_id["started_at"],
-                                    "completed_at": workflow_id["completed_at"],
-                                    "jobs_done": workflow_id["jobs_done"],
-                                    "jobs_total": workflow_id["jobs_total"],
-                                }
-                                main_df.append(tmp_d)
-            pd.options.display.max_rows = 999
-            pd.options.display.max_colwidth = 30
-            # pd.options.display.max_columns = 50
-
-            main_df = pd.DataFrame(main_df)
-            # main_df.loc[(main_df["labels"] == True) &  (main_df["report"] == True), "real_status"] = "Completed"
-            main_df.loc[
-                (main_df["final_output_scratch"] == True)
-                & (main_df["report"] == False),
-                "real_status",
-            ] = "Report missing"
-            main_df.loc[
-                (main_df["final_output_scratch"] == False)
-                & (main_df["report"] == True),
-                "real_status",
-            ] = "Error"
-            main_df.loc[
-                (main_df["final_output_scratch"] == False)
-                & (main_df["report"] == False),
-                "real_status",
-            ] = "To process"
-            main_df.loc[
-                (main_df["final_output_scratch"] == True)
-                & (main_df["report"] == True)
-                & (main_df["status"] == "None"),
-                "real_status",
-            ] = "Error"
-            main_df.loc[
-                (main_df["final_output_scratch"] == True)
-                & (main_df["report"] == True)
-                & (main_df["status"] == "Running"),
-                "real_status",
-            ] = "Running"
-            main_df.loc[
-                (main_df["final_output_scratch"] == True)
-                & (main_df["report"] == True)
-                & (main_df["status"] == "Done"),
-                "real_status",
-            ] = "Completed"
-            main_df["real_status"] = main_df["real_status"].fillna(
-                "Error (to  investigate))"
+            logging.info(
+                "Correcting status of plates with report.zip and final_output_scratch"
             )
-            print(workflows_data["workflows"])
 
-            print("\n")
-            logging.info(f"Pipeline selected {pipeline}")
-            print("\n")
+            for row in main_df.loc[
+                (main_df["final_output_scratch"] == True)
+                & (main_df["report"] == True)
+                & (main_df["status"] != "Done")
+            ].to_dict("records"):
+                logging.info(row)
+                panoptes_entry = f"{pipeline}--{row['plate']}--{row['sample']}"
+                workflow_id = row["panoptes_id"]
 
-            print(main_df)
+                # if workflow_id != "None":
+                #     command = f'sqlite3 /g/korbel2/weber/workspace/strandscape/.panoptes.db "DELETE FROM workflows WHERE id={workflow_id};"'
+                #     subprocess.run(command, shell=True, check=True)
 
-            # pipeline_final_file_variable = (
-            #     "ashleys_final_scratch"
-            #     if pipeline == "ashleys_qc_pipeline"
-            #     else "mosaicatcher_final_scratch"
+                panoptes_data = [
+                    e for e in workflows_data["workflows"] if e["id"] == workflow_id
+                ]
+
+                print(panoptes_entry)
+                print(panoptes_data)
+                print(row)
+                if workflow_id and workflow_id != "None":
+                    assert (
+                        len(panoptes_data) > 0
+                    ), f"Data issue between pika & panoptes, {str(panoptes_data)}"
+
+                if panoptes_data:
+                    panoptes_data = panoptes_data[0]
+                    if "completed_at" not in panoptes_data:
+                        panoptes_data["completed_at"] = last_message_timestamp
+
+                    command = f'sqlite3 /g/korbel2/weber/workspace/strandscape/.panoptes.db "DELETE FROM workflows WHERE id={workflow_id};"'
+                    subprocess.run(command, shell=True, check=True)
+
+                else:
+                    logging.info("Panoptes data not found for workflow entry: %s", row)
+                    panoptes_data = {
+                        "started_at": last_message_timestamp,
+                        "completed_at": last_message_timestamp,
+                        "jobs_done": "1",
+                        "jobs_total": "1",
+                    }
+
+                print(row)
+
+                cursor.execute(
+                    """
+                    INSERT INTO workflows (name, status, done, total, started_at, completed_at)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        panoptes_entry,
+                        "Done",
+                        panoptes_data["jobs_done"],
+                        panoptes_data["jobs_total"],
+                        panoptes_data["started_at"],
+                        panoptes_data["completed_at"],
+                    ),
+                )
+                connection.commit()
+
+            logging.info(
+                "Processing plates without final_output_scratch or outdated without report.zip"
+            )
+
+            for row in main_df.loc[
+                (main_df["final_output_scratch"] == False)
+                # & (main_df["report"] == False)
+            ].to_dict("records"):
+                logging.info(row)
+
+                # panoptes = True if row["status"] == "None" else False
+                # panoptes = True
+
+                if dry_run == "False":
+                    if row["panoptes_id"] != "None":
+                        workflow_id = row["panoptes_id"]
+                        panoptes_data = [
+                            e
+                            for e in workflows_data["workflows"]
+                            if e["id"] == workflow_id
+                        ]
+                        command = f'sqlite3 /g/korbel2/weber/workspace/strandscape/.panoptes.db "DELETE FROM workflows WHERE id={workflow_id};"'
+                        subprocess.run(command, shell=True, check=True)
+
+                    self.process_new_directory(
+                        "/".join([path_to_watch, row["plate"]]),
+                        row["prefix"],
+                        row["sample"],
+                        row["plate_type"],
+                        report_only=False,
+                        panoptes=panoptes,
+                    )
+
+            # logging.info(
+            #     "Processing plates not present anymore on scratch and without report.zip"
             # )
 
-            dry_run_db = False
+            # for row in main_df.loc[
+            #     # (main_df["multiqc_scratch"] == False)
+            #     (main_df["final_output_scratch"] == False)
+            #     # & (main_df["report"] == False)
+            # ].to_dict("records"):
+            #     logging.info(row)
 
-            if dry_run_db is False:
-                cursor = connection.cursor()
+            #     # panoptes = True if row["status"] == "None" else False
+            #     # panoptes = True
 
-                # assert (
-                #     main_df.loc[
-                #         (main_df["final_output_scratch"] == False)
-                #         & (main_df["report"] == True)
-                #     ].shape[0]
-                #     == 0
-                # ), "Error in table, samples have report done without the completion of the pipeline"
+            #     if dry_run == "False":
+            #         if row["panoptes_id"] != "None":
+            #             workflow_id = row["panoptes_id"]
+            #             panoptes_data = [
+            #                 e
+            #                 for e in workflows_data["workflows"]
+            #                 if e["id"] == workflow_id
+            #             ]
+            #             command = f'sqlite3 /g/korbel2/weber/workspace/strandscape/.panoptes.db "DELETE FROM workflows WHERE id={workflow_id};"'
+            #             subprocess.run(command, shell=True, check=True)
 
-                # logging.info(
-                #     "Correcting status of plates with report.zip and final_output_scratch"
-                # )
+            #         self.process_new_directory(
+            #             "/".join([path_to_watch, row["plate"]]),
+            #             row["prefix"],
+            #             row["sample"],
+            #             row["plate_type"],
+            #             report_only=False,
+            #             panoptes=panoptes,
+            #         )
 
-                # for row in main_df.loc[
-                #     (main_df["final_output_scratch"] == True)
-                #     & (main_df["report"] == True)
-                #     & (main_df["status"] != "Done")
-                # ].to_dict("records"):
-                #     logging.info(row)
-                #     panoptes_entry = f"{pipeline}--{row['plate']}--{row['sample']}"
-                #     workflow_id = row["panoptes_id"]
+            logging.info(
+                "Processing plates without report.zip but with labels.tsv and still on scratch"
+            )
 
-                #     # if workflow_id != "None":
-                #     #     command = f'sqlite3 /g/korbel2/weber/workspace/strandscape/.panoptes.db "DELETE FROM workflows WHERE id={workflow_id};"'
-                #     #     subprocess.run(command, shell=True, check=True)
+            for row in main_df.loc[
+                (main_df["final_output_scratch"] == True)
+                & (main_df["scratch_rdays"] > 2)
+                & (main_df["report"] == False)
+            ].to_dict("records"):
+                logging.info(row)
 
-                #     panoptes_data = [
-                #         e for e in workflows_data["workflows"] if e["id"] == workflow_id
-                #     ]
+                # panoptes = True if row["status"] == "None" else False
+                # panoptes = False
+                panoptes_entry = f"{pipeline}--{row['plate']}--{row['sample']}"
 
-                #     print(panoptes_entry)
-                #     print(panoptes_data)
-                #     print(row)
-                #     if workflow_id and workflow_id != "None":
-                #         assert (
-                #             len(panoptes_data) > 0
-                #         ), f"Data issue between pika & panoptes, {str(panoptes_data)}"
+                if dry_run == "False":
+                    self.process_new_directory(
+                        "/".join([path_to_watch, row["plate"]]),
+                        row["prefix"],
+                        row["sample"],
+                        row["plate_type"],
+                        report_only=True,
+                        panoptes=panoptes,
+                    )
 
-                #     if panoptes_data:
-                #         panoptes_data = panoptes_data[0]
-                #         if "completed_at" not in panoptes_data:
-                #             panoptes_data["completed_at"] = last_message_timestamp
+                    if row["panoptes_id"] != "None":
+                        workflow_id = row["panoptes_id"]
+                        panoptes_data = [
+                            e
+                            for e in workflows_data["workflows"]
+                            if e["id"] == workflow_id
+                        ][0]
 
-                #         command = f'sqlite3 /g/korbel2/weber/workspace/strandscape/.panoptes.db "DELETE FROM workflows WHERE id={workflow_id};"'
-                #         subprocess.run(command, shell=True, check=True)
-
-                #     else:
-                #         logging.info(
-                #             "Panoptes data not found for workflow entry: %s", row
-                #         )
-                #         panoptes_data = {
-                #             "started_at": last_message_timestamp,
-                #             "completed_at": last_message_timestamp,
-                #             "jobs_done": "1",
-                #             "jobs_total": "1",
-                #         }
-
-                #     print(row)
-
-                #     cursor.execute(
-                #         """
-                #         INSERT INTO workflows (name, status, done, total, started_at, completed_at)
-                #         VALUES (?, ?, ?, ?, ?, ?)
-                #         """,
-                #         (
-                #             panoptes_entry,
-                #             "Done",
-                #             panoptes_data["jobs_done"],
-                #             panoptes_data["jobs_total"],
-                #             panoptes_data["started_at"],
-                #             panoptes_data["completed_at"],
-                #         ),
-                #     )
-                #     connection.commit()
-
-                logging.info(
-                    "Processing plates without final_output_scratch or outdated without report.zip"
-                )
-
-                for row in main_df.loc[
-                    (main_df["final_output_scratch"] == False)
-                    # & (main_df["report"] == False)
-                ].to_dict("records"):
-                    logging.info(row)
-
-                    # panoptes = True if row["status"] == "None" else False
-                    # panoptes = True
-
-                    if dry_run == "False":
-                        if row["panoptes_id"] != "None":
-                            workflow_id = row["panoptes_id"]
-                            panoptes_data = [
-                                e
-                                for e in workflows_data["workflows"]
-                                if e["id"] == workflow_id
-                            ]
+                        if panoptes_data:
                             command = f'sqlite3 /g/korbel2/weber/workspace/strandscape/.panoptes.db "DELETE FROM workflows WHERE id={workflow_id};"'
                             subprocess.run(command, shell=True, check=True)
 
-                        self.process_new_directory(
-                            "/".join([path_to_watch, row["plate"]]),
-                            row["prefix"],
-                            row["sample"],
-                            row["plate_type"],
-                            report_only=False,
-                            panoptes=panoptes,
-                        )
+                            cursor.execute(
+                                """
+                                INSERT INTO workflows (name, status, done, total, started_at, completed_at)
+                                VALUES (?, ?, ?, ?, ?, ?)
+                                """,
+                                (
+                                    panoptes_entry,
+                                    "Done",
+                                    panoptes_data["jobs_done"],
+                                    panoptes_data["jobs_total"],
+                                    panoptes_data["started_at"],
+                                    panoptes_data["completed_at"],
+                                ),
+                            )
+                            connection.commit()
 
-                # logging.info(
-                #     "Processing plates not present anymore on scratch and without report.zip"
-                # )
+                else:
+                    logging.info("Panoptes data not found for workflow entry: %s", row)
 
-                # for row in main_df.loc[
-                #     # (main_df["multiqc_scratch"] == False)
-                #     (main_df["final_output_scratch"] == False)
-                #     # & (main_df["report"] == False)
-                # ].to_dict("records"):
-                #     logging.info(row)
+            logging.info(
+                "Updating /scratch files timestamps that are close to 6 months"
+            )
 
-                #     # panoptes = True if row["status"] == "None" else False
-                #     # panoptes = True
-
-                #     if dry_run == "False":
-                #         if row["panoptes_id"] != "None":
-                #             workflow_id = row["panoptes_id"]
-                #             panoptes_data = [
-                #                 e
-                #                 for e in workflows_data["workflows"]
-                #                 if e["id"] == workflow_id
-                #             ]
-                #             command = f'sqlite3 /g/korbel2/weber/workspace/strandscape/.panoptes.db "DELETE FROM workflows WHERE id={workflow_id};"'
-                #             subprocess.run(command, shell=True, check=True)
-
-                #         self.process_new_directory(
-                #             "/".join([path_to_watch, row["plate"]]),
-                #             row["prefix"],
-                #             row["sample"],
-                #             row["plate_type"],
-                #             report_only=False,
-                #             panoptes=panoptes,
-                #         )
-
-                logging.info(
-                    "Processing plates without report.zip but with labels.tsv and still on scratch"
+            for row in main_df.loc[
+                (main_df["final_output_scratch"] == True)
+                & (main_df["scratch_rdays"] < 10)
+            ].to_dict("records"):
+                logging.info(row)
+                self.update_timestamps(
+                    f"{data_location}/{row['plate']}/{row['sample']}"
                 )
-
-                for row in main_df.loc[
-                    (main_df["final_output_scratch"] == True)
-                    & (main_df["scratch_rdays"] > 2)
-                    & (main_df["report"] == False)
-                ].to_dict("records"):
-                    logging.info(row)
-
-                    # panoptes = True if row["status"] == "None" else False
-                    # panoptes = False
-                    panoptes_entry = f"{pipeline}--{row['plate']}--{row['sample']}"
-
-                    if dry_run == "False":
-                        self.process_new_directory(
-                            "/".join([path_to_watch, row["plate"]]),
-                            row["prefix"],
-                            row["sample"],
-                            row["plate_type"],
-                            report_only=True,
-                            panoptes=panoptes,
-                        )
-
-                        if row["panoptes_id"] != "None":
-                            workflow_id = row["panoptes_id"]
-                            panoptes_data = [
-                                e
-                                for e in workflows_data["workflows"]
-                                if e["id"] == workflow_id
-                            ][0]
-
-                            if panoptes_data:
-                                command = f'sqlite3 /g/korbel2/weber/workspace/strandscape/.panoptes.db "DELETE FROM workflows WHERE id={workflow_id};"'
-                                subprocess.run(command, shell=True, check=True)
-
-                                cursor.execute(
-                                    """
-                                    INSERT INTO workflows (name, status, done, total, started_at, completed_at)
-                                    VALUES (?, ?, ?, ?, ?, ?)
-                                    """,
-                                    (
-                                        panoptes_entry,
-                                        "Done",
-                                        panoptes_data["jobs_done"],
-                                        panoptes_data["jobs_total"],
-                                        panoptes_data["started_at"],
-                                        panoptes_data["completed_at"],
-                                    ),
-                                )
-                                connection.commit()
-
-                    else:
-                        logging.info(
-                            "Panoptes data not found for workflow entry: %s", row
-                        )
-
-                logging.info(
-                    "Updating /scratch files timestamps that are close to 6 months"
-                )
-
-                for row in main_df.loc[
-                    (main_df["final_output_scratch"] == True)
-                    & (main_df["scratch_rdays"] < 10)
-                ].to_dict("records"):
-                    logging.info(row)
-                    self.update_timestamps(
-                        f"{data_location}/{row['plate']}/{row['sample']}"
-                    )
 
     def process_new_directory(
         self,
@@ -1003,7 +1094,7 @@ def main():
     observer = Observer()
 
     # Assign the observer to the path and the event handler
-    observer.schedule(event_handler, path_to_watch, recursive=False)
+    observer.schedule(event_handler, main_path_to_watch, recursive=False)
 
     # Start the observer
     observer.start()
@@ -1011,6 +1102,7 @@ def main():
     # Start the periodical directory scanning in a separate thread
     def periodic_scan():
         while True:
+            # generate_data_file(publishdir_location)
             event_handler.check_unprocessed_folder()
             time.sleep(3600)  # Scan the directory every hour
 
