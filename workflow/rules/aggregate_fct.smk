@@ -254,7 +254,6 @@ def selected_input_bam(wildcards):
     )
 
 
-
 def selected_input_bai(wildcards):
     """
     Function based on checkpoint filter_bad_cells_from_mosaic_count
@@ -318,7 +317,7 @@ def select_binbed(wildcards):
 
 
 def select_labels(wildcards):
-    if config["use_strandscape_labels"]:
-        return "{folder}/{sample}/cell_selection/labels_strandscape.tsv"
+    if config["strandscape_labels_path"] != "":
+        return config["strandscape_labels_path"]
     else:
         return "{folder}/{sample}/cell_selection/labels.tsv"

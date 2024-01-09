@@ -14,9 +14,6 @@ email: ""
 # List of samples to process if multiple are specified
 samples_to_process: []
 
-# Plate size
-plate_size: 96
-
 # --------------------------------------------------------
 # Data location & I/O
 # --------------------------------------------------------
@@ -250,7 +247,7 @@ scTRIP_multiplot: False
 # StrandScape
 # --------------------------------------------------------
 
-use_strandscape_labels: False
+strandscape_labels_path: ""
 
 # --------------------------------------------------------
 # Internal Parameters

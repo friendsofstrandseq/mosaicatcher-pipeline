@@ -124,6 +124,24 @@ if config["scNOVA"] is True:
     ), "chrY is not handled by scNOVA yet, please remove it for config['chromosomes'] and add it in config['chomosomes_to_exclude']"
 
 
+
+
+if config["strandscape_labels_path"]:
+    folder_location = config["abs_path"].join(
+        config["strandscape_labels_path"].split("/")[:-1]
+    )
+    labels_path = f"{folder_location}/labels.tsv"
+    assert os.path.isfile(labels_path)
+    ashleys_labels = pd.read_csv(labels_path, sep="\t")
+    strandscape_labels = pd.read_csv(config["strandscape_labels_path"], sep="\t")
+    print(ashleys_labels)
+    print(strandscape_labels)
+    assert ashleys_labels.shape[0] == strandscape_labels.shape[0]
+    assert (
+        ashleys_labels.cell.values.tolist() == strandscape_labels.cell.values.tolist()
+    )
+
+
 # Configure if handle_input needs to be based on bam or fastq
 bam = True if config["ashleys_pipeline"] is False else False
 
