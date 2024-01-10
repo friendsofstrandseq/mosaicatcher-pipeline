@@ -334,6 +334,27 @@ rule scTRIP_multiplot_aggr:
         mem_mb=get_mem_mb,
 
 
+rule jbrowse_genome_browser_file:
+    input:
+        counts="{folder}/{sample}/counts/{sample}.txt.gz",
+        stringent_calls=(
+            "{folder}/{sample}/mosaiclassifier/sv_calls/stringent_filterTRUE.tsv"
+        ),
+    output:
+        "{folder}/{sample}/plots/JBROWSE/{sample}.ok",
+    log:
+        "{folder}/log/JBROWSE/{sample}.log",
+    conda:
+        "/g/korbel2/weber/miniconda3/envs/genome_browsing"
+        # "../envs/genome_browsing.yaml"
+    container:
+        None
+    resources:
+        mem_mb=get_mem_mb,
+    shell:
+        "python workflow/scripts/genome_browsing/generate_jbrowse_tracks.py {input.counts} {input.stringent_calls} {output} > {log}"
+
+
 rule ucsc_genome_browser_file:
     input:
         counts="{folder}/{sample}/counts/{sample}.txt.gz",
@@ -346,7 +367,7 @@ rule ucsc_genome_browser_file:
     output:
         "{folder}/{sample}/plots/UCSC/{sample}.bedUCSC.gz",
     log:
-        "{folder}/log/ucsc_genome_browser_file/{sample}.bedUCSC.gz",
+        "{folder}/log/ucsc_genome_browser_file/{sample}.bedUCSC.log",
     conda:
         "../envs/mc_base.yaml"
     resources:

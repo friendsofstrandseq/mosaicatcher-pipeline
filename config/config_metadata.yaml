@@ -3,141 +3,155 @@ email:
   type: string
   required: False
   default: '""'
+  category: "Others"
 data_location:
   desc: "Input BAM location"
   type: string
   required: True
   default: '""'
+  category: "I/O"
 reference:
   desc: "Reference assembly selected"
   type: string
   required: True
   default: hg38
-hand_selection:
-  desc: "Enable / Disable low-quality libraries hand selection through Jupyter Notebook"
-  type: bool
-  required: False
-  default: False
+  category: "Reference genome"
 MultiQC:
   desc: "Enable / Disable MultiQC aggregation"
   type: bool
   required: False
   default: False
+  category: "Quality Control"
 multistep_normalisation:
   desc: "Enable / Disable multistep normalisation"
   type: bool
   required: False
   default: False
+  category: "Normalisation"
 multistep_normalisation_for_SV_calling:
   desc: "Enable / Disable multistep normalisation to be used in SV calling"
   type: bool
   required: False
   default: False
+  category: "Normalisation"
 ashleys_threshold:
   desc: "Ashleys-qc binary classification threshold"
   type: bool
   required: False
   default: 0.5
+  category: "Quality Control"
 window:
   desc: "Mosaic bin window size"
   type: int
   required: True
   default: 200000
+  category: "Counts"
 chromosomes:
   desc: List of chromosomes to be processed in the pipeline
   type: list
   required: True
   default: "[chr1..22,chrX,chrY]"
+  category: "Reference genome"
 chromosomes_to_exclude:
   desc: List of chromosomes to be excluded
   type: list
   required: True
   default: "[]"
+  category: "Reference genome"
 genecore:
   desc: Enable / Disable genecore option to work on GeneCore folder. Required genecore_date_folder
   type: bool
   required: False
   default: False
+  category: "Data processing"
 genecore_date_folder:
   desc: Genecore folder to be processed under /g/korbel/shared/genecore
   type: str
   required: False
   default: '""'
+  category: "Data processing"
 samples_to_process:
   desc: Optional list of samples to be specifically processed in genecore_date_folder
   type: list
   required: True
   default: "[]"
+  category: "Data processing"
 hgsvc_based_normalized_counts:
   desc: Normalize or not mosaic counts
   type: bool
   required: False
   default: True
+  category: "Normalisation"
 input_bam_legacy:
   desc: Mutually exclusive with ashleys_pipeline
   type: bool
   required: False
   default: False
+  category: "I/O"
 ashleys_pipeline:
   desc: Enable/Disable ashleys-qc-pipeline module loading to start pipeline from FASTQ files
   type: bool
   required: False
   default: False
+  category: "Quality Control"
 ashleys_pipeline_only:
   desc: Stop execution at the output of ashleys-pipeline in order to procede to manual & additional selection of cells
   type: bool
   required: False
   default: False
+  category: "Quality Control"
 blacklist_regions:
   desc: Enable/Disable blacklisting during counting step
   type: bool
   required: False
   default: False
+  category: "Counts"
 arbigent:
   desc: Enable ArbiGent mode of execution to genotype specific regions of Strand Seq libraries
   type: bool
   required: False
   default: False
+  category: "Downstream"
   lint_check: False
 arbigent_bed_file:
   desc: ArbiGent BED file path that would be used to perform arbitrary segmentation
   type: str
   required: False
   default: "workflow/data/arbigent/manual_segmentation.bed"
+  category: "Downstream"
   lint_check: False
 scNOVA:
   desc: Enable scNOVA downstream module to perform nucleosome occupancy based SV analysis
   type: bool
   required: False
   default: False
+  category: "Downstream"
   lint_check: False
 genome_browsing_files_generation:
   desc: Enable genome browsing files generation (UCSC + IGV)
   type: bool
   required: False
   default: False
+  category: "Downstream"
   lint_check: False
 genecore_prefix:
   desc: ""
   type: str
   required: False
   default: "/g/korbel/shared/genecore"
+  category: "Data processing"
   lint_check: False
 scTRIP_multiplot:
   desc: "Enable scTRIP multiplot (W/C, depth, phased het SNPs, SV) for all chrom of all cells for every sample"
   type: bool
   required: False
   default: "/g/korbel/shared/genecore"
+  category: "Downstream"
   lint_check: False
-use_strandscape_labels::
-  desc: "Use StrandScape labels instead of cell_selection/labels.tsv"
-  type: bool
+strandscape_labels_path:
+  desc: "Use StrandScape labels instead of cell_selection/labels.tsv, need to specify path"
+  type: str
   required: False
-  default: False
-  lint_check: False
-plate_size::
-  desc: "Plate size used for the sequencing (96/384)"
-  type: int
-  required: True
-  default: 96
+  default: ""
+  category: "Data processing"
   lint_check: False

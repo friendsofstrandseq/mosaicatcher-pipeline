@@ -124,6 +124,24 @@ if config["scNOVA"] is True:
     ), "chrY is not handled by scNOVA yet, please remove it for config['chromosomes'] and add it in config['chomosomes_to_exclude']"
 
 
+
+
+if config["strandscape_labels_path"]:
+    folder_location = config["abs_path"].join(
+        config["strandscape_labels_path"].split("/")[:-1]
+    )
+    labels_path = f"{folder_location}/labels.tsv"
+    assert os.path.isfile(labels_path)
+    ashleys_labels = pd.read_csv(labels_path, sep="\t")
+    strandscape_labels = pd.read_csv(config["strandscape_labels_path"], sep="\t")
+    print(ashleys_labels)
+    print(strandscape_labels)
+    assert ashleys_labels.shape[0] == strandscape_labels.shape[0]
+    assert (
+        ashleys_labels.cell.values.tolist() == strandscape_labels.cell.values.tolist()
+    )
+
+
 # Configure if handle_input needs to be based on bam or fastq
 bam = True if config["ashleys_pipeline"] is False else False
 
@@ -441,6 +459,11 @@ if config["scNOVA"] is True:
         labels_path = "{folder}/{sample}/cell_selection/labels.tsv".format(
             folder=config["data_location"], sample=sample
         )
+
+        assert os.path.isfile(
+            labels_path
+        ), "Ashleys labels were not computed yet, use first ashleys mode to perform cell selection"
+
         # print(labels_path)
         if os.path.exists(labels_path):
             # Read df
@@ -839,6 +862,20 @@ def get_all_plots(wildcards):
             l_outputs.extend(
                 expand(
                     "{folder}/{sample}/plots/IGV/{sample}_IGV_session.xml",
+                    folder=config["data_location"],
+                    sample=wildcards.sample,
+                ),
+            )
+            l_outputs.extend(
+                expand(
+                    "{folder}/{sample}/plots/UCSC/{sample}.bedUCSC.gz",
+                    folder=config["data_location"],
+                    sample=wildcards.sample,
+                ),
+            )
+            l_outputs.extend(
+                expand(
+                    "{folder}/{sample}/plots/JBROWSE/{sample}.ok",
                     folder=config["data_location"],
                     sample=wildcards.sample,
                 ),
