@@ -221,11 +221,27 @@ else:
 
 if config["blacklist_regions"] is True:
 
+    rule correct_norm_for_blacklisting:
+        input:
+            "{folder}/{sample}/normalizations/{reference}/HGSVC.{window}.merged.tsv",
+        output:
+            "{folder}/{sample}/normalizations/{reference}/HGSVC.{window}.corrected.tsv",
+        log:
+            "{folder}/log/correct_norm_for_blacklisting/{sample}/{reference}/HGSVC.{window}.merged.tsv",
+        conda:
+            "../envs/mc_base.yaml"
+        resources:
+            mem_mb=get_mem_mb,
+        shell:
+            """
+            awk 'BEGIN {{FS=OFS="\t"}} {{if (NF < 5 || $5 == "") $5 = "None"}} 1' {input} > {output}
+            """
+
     rule normalize_counts:
         input:
             counts="{folder}/{sample}/counts/{sample}.txt.filter.gz",
             norm=lambda wc: expand(
-                "{folder}/{sample}/normalizations/{reference}/HGSVC.{window}.merged.tsv",
+                "{folder}/{sample}/normalizations/{reference}/HGSVC.{window}.corrected.tsv",
                 folder=config["data_location"],
                 sample=wc.sample,
                 reference=config["reference"],
