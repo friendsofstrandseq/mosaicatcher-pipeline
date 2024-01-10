@@ -13,3 +13,5 @@ dependencies:
   # scNOVA archive
   - unzip
   # Fix
+  - pip:
+      - cffi
