@@ -27,7 +27,7 @@ ssh USERNAME@login0[1,2,3,4].embl.de (login01 to login04)
 
 ## Snakemake cheat sheet & important things
 
-Snakemake is a workflow manager, will handle execution and distribute computing based on configuration (local execution: use local CPUs, cluster execution, will generate the sbatch commands for each job, 1 single instance locally = snakemake, other jobs computed on the cluster, except when specifically defined)
+Snakemake is a workflow manager, it will handle execution and distribute computing based on configuration (local execution: use local CPUs; cluster execution: will generate the sbatch commands for each job). Under cluster execution, snakemake is using 1 single instance locally, the other jobs computed on the cluster.
 
 To run the pipeline, go into the repository and run: snakemake
 
@@ -68,16 +68,16 @@ To run the pipeline, go into the repository and run: snakemake
 
 ---
 
-1. Clone the repository
+1. Clone the repository & update to latest profiles
 
 ```bash
-git clone --recurse-submodules https://github.com/friendsofstrandseq/mosaicatcher-pipeline.git && cd mosaicatcher-pipeline
+git clone --recurse-submodules https://github.com/friendsofstrandseq/mosaicatcher-pipeline.git && cd mosaicatcher-pipeline && git submodule update --remote
 ```
 
-Temporary minor fix to work using the latest execution profiles:
+For download time and space purpose in that workshop, let symlink the latest version of the pipeline container. If you're updating the pipeline or if there is any issue in the future, you can just delete the symbolic link and snakemake will download the real image in your local workspace.
 
-```
-git submodule update --remote
+```bash
+ln -s /g/korbel2/weber/workspace/mosaicatcher-update/.snakemake/singularity/43cee69ec12532570abaa913132bfaa5.simg .snakemake/singularity/
 ```
 
 Give a look at the folder structure:
@@ -121,11 +121,16 @@ module load snakemake/7.32.4-foss-2022b
 
 3. Run on example data on only one small chromosome.
 
-First using the `--dry-run` option of snakemake to make sure the Graph of Execution is properly connected. (In combination with `--dry-run`, we use the `local/conda` profile as snakemake still present a bug by looking for the singularity container).
+List all the options available in MosiiCatcher.
+
+```bash
+snakemake --config list_commands=True --core 1 --dry-run
+```
+
+Then dry-run on the test dataset.
 
 ```bash
 snakemake \
-    --cores 6 \
     --configfile .tests/config/simple_config.yaml \
     --config \
         data_location=.tests/data_CHR17 \
@@ -133,7 +138,8 @@ snakemake \
         ashleys_pipeline_only=True \
         multistep_normalisation=True \
         MultiQC=True \
-    --profile workflow/snakemake_profiles/local/conda/ \ TO BE USED
+    --profile workflow/snakemake_profiles/HPC/slurm_EMBL/ \
+    --jobs 20 \
     --dry-run
 ```
 
@@ -185,9 +191,10 @@ snakemake \
 
 ---
 
-Note:
+Notes:
 
-If you trust blindly ashleys-qc and just want to trigger the pipeline from the FASTQ processing to the SV calling, you can directly run the command below without doing the step 3 above.
+- The list of jobs in the jobs table doesn't mandatory represent the complete list, as some rule are "checkpoint" rules, the list of jobs to be executed is re-evaluated on the fly after the completion of those checkpoints.
+- If you trust blindly ashleys-qc and just want to trigger the pipeline from the FASTQ processing to the SV calling, you can directly run the command below without doing the step 3 above.
 
 ---
 
@@ -207,6 +214,8 @@ snakemake \
     --report TEST_DATA_REPORT.zip \
     --report-stylesheet workflow/report/custom-stylesheet.css
 ```
+
+Using your SFTP tool, download the .zip file on your laptop, extract and check the content!
 
 7. Bonus for test dataset: run scNOVA!
 
@@ -234,6 +243,8 @@ Note:
 You can use the block of commands above as a template for your own analysis in the future if you want to use scNOVA. Thus, you will limit discrepancies and potential issues in the pipeline.
 
 You can now trigger scNOVA mode by adding `scNOVA=True` to the config section:
+
+---
 
 ```bash
 snakemake \
@@ -274,8 +285,7 @@ snakemake \
         genecore=True \
         genecore_prefix=/g/korbel/STOCKS/Data/Assay/sequencing/2023 \
         genecore_date_folder=2023-XX-XX-XXXXXX \
-        genecore_regex_element=PE20 \
-        data_location=DATA_LOCATION \
+        data_location=DATA_LOCATION_XXX \
         ashleys_pipeline=True \
         ashleys_pipeline_only=True \
         multistep_normalisation=True \
@@ -284,7 +294,32 @@ snakemake \
     --jobs 100
 ```
 
+If you don't have pick a sample yet, you can select one in the list below:
+
+- 2023-03-24-HCNJ5AFX5 -- TAllPDX6340p6RELs1p1x
+- 2023-03-24-HCNJ5AFX5 -- IMR90E6E7PD106s1p3x01
+- 2023-03-24-HCNJ5AFX5 -- IMR90E6E7PD103s1p2x01
+- 2023-03-24-HCNGCAFX5 -- BAB3161
+- 2023-03-24-HCNGCAFX5 -- BAB3114
+- 2023-03-24-HCNGCAFX5 -- BAB14547
+- 2023-03-08-HCNGHAFX5 -- HGSVCpool2inWell5ul
+- 2023-03-08-HCNGHAFX5 -- HGSVCpool2inWell2ul
+- 2023-03-08-HCNGHAFX5 -- HGSVCpool2OPSfromFrozen2ul
+- 2023-02-08-HCN3VAFX5 -- HGSVCpool2
+- 2023-01-24-H75WVAFX5 -- TAllPDX4973p8RELx
+- 2023-01-24-H75WVAFX5 -- RPEH2BdendraMicroNx01
+- 2023-01-24-H75WVAFX5 -- IMR90E6E7PD106x01
+
+Tip tool:
+
+```
+# make sure your sample name is exact & without typo
+SAMPLE="YOUR_SAMPLE" && find /g/korbel/STOCKS/Data/Assay/sequencing/2023 -name "*$SAMPLE*" | head -n 1 | tr "/" "\t" | cut -f 9
+```
+
 ## Strand-Scape usage
+
+Strand-Scape current adress: http://seneca.embl.de:8060
 
 If you want to use Strand-Scape and further reprocess data available there, you can pick the location of raw data on /scratch. If you do so, please use the following while copying over your workspace:
 

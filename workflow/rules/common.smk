@@ -357,7 +357,7 @@ class HandleInput:
                 if len(f.split("_")) == 4:
                     assert (
                         len(f.split("_")) != 4
-                    ), "Your file name is using 4 times the '_' character, which is currently not supported by ashleys-qc, please rename your files"
+                    ), "Your file name is using 3 times the '_' character, which is currently not supported by ashleys-qc, please rename your files"
 
             # Dataframe creation
             df = pd.DataFrame([{"File": f} for f in l_files_all])

@@ -91,7 +91,7 @@ def generate_data_file(directory):
 
     # Pattern to match the files
     pattern = re.compile(
-        r"\/g\/korbel\/WORKFLOW_RESULTS\/202[0-3]-\d{2}-\d{2}-.*\/(.*)\/counts\/\1.info_raw"
+        r"\/g\/korbel\/WORKFLOW_RESULTS\/20\d{2}-\d{2}-\d{2}-.*\/(.*)\/counts\/\1.info_raw"
     )
 
     # Initialize an empty DataFrame to store aggregated data
@@ -514,8 +514,7 @@ class MyHandler(FileSystemEventHandler):
 
         # # Get the list of processed plates from rabbitmq
         message = self.consume_last_message_from_rabbitmq(
-            json_backup_filename="watchdog/processing_status.json",
-            queue="data_panoptes",
+            json_backup_filename="watchdog/processing_status.json", queue="data_queue"
         )
 
         # list_runs_processed = sorted(
