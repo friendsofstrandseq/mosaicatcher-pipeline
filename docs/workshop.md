@@ -54,7 +54,7 @@ To run the pipeline, go into the repository and run: snakemake
 
 ## CLI usage of the pipeline
 
-### Quick Start
+### Quick Start
 
 ---
 
@@ -285,6 +285,7 @@ snakemake \
         genecore=True \
         genecore_prefix=/g/korbel/STOCKS/Data/Assay/sequencing/2023 \
         genecore_date_folder=2023-XX-XX-XXXXXX \
+        samples_to_process="[YOUR_SAMPLE]" \
         data_location=DATA_LOCATION_XXX \
         ashleys_pipeline=True \
         ashleys_pipeline_only=True \
