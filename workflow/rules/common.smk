@@ -124,8 +124,6 @@ if config["scNOVA"] is True:
     ), "chrY is not handled by scNOVA yet, please remove it for config['chromosomes'] and add it in config['chomosomes_to_exclude']"
 
 
-
-
 if config["strandscape_labels_path"]:
     folder_location = config["abs_path"].join(
         config["strandscape_labels_path"].split("/")[:-1]
@@ -732,6 +730,15 @@ def get_all_plots(wildcards):
     ]
     l_outputs.extend([sub_e for e in tmp_l_divide_count_plots for sub_e in e])
 
+    # CONDA ENVS
+
+    conda_envs = ["mc_base", "rtools", "mc_bioinfo_tools"]
+    conda_envs += (
+        ["scNOVA_bioinfo_tools", "scNOVA_base", "scNOVA_rtools"]
+        if config["scNOVA"] is True
+        else []
+    )
+
     if config["split_qc_plot"] is True:
         # print("OK")
 
@@ -757,6 +764,25 @@ def get_all_plots(wildcards):
                 folder=config["data_location"],
                 sample=samples,
             )
+        )
+
+        # Config section
+
+        l_outputs.extend(
+            expand(
+                "{folder}/{sample}/config/config.yaml",
+                folder=config["data_location"],
+                sample=wildcards.sample,
+            ),
+        )
+
+        l_outputs.extend(
+            expand(
+                "{folder}/{sample}/config/{conda}.yaml",
+                folder=config["data_location"],
+                sample=wildcards.sample,
+                conda=conda_envs,
+            ),
         )
 
     else:
@@ -901,6 +927,23 @@ def get_all_plots(wildcards):
             ),
         )
 
+        l_outputs.extend(
+            expand(
+                "{folder}/{sample}/config/conda_export/{conda}.yaml",
+                folder=config["data_location"],
+                sample=wildcards.sample,
+                conda=conda_envs,
+            ),
+        )
+
+    if config["publishdir"] != "":
+        l_outputs.extend(
+            expand(
+                "{folder}/{sample}/config/publishdir_outputs_mc.ok",
+                folder=config["data_location"],
+                sample=wildcards.sample,
+            )
+        )
         # Run summary section
 
         # l_outputs.extend(
@@ -914,3 +957,84 @@ def get_all_plots(wildcards):
     # from pprint import pprint
     # pprint(l_outputs)
     return l_outputs
+
+
+def publishdir_fct_mc(wildcards):
+    """
+    Restricted for ASHLEYS at the moment
+    Backup files on a secondary location
+    """
+    list_files_to_copy = [
+        # ASHLEYS
+        "{folder}/{sample}/cell_selection/labels_raw.tsv",
+        "{folder}/{sample}/cell_selection/labels.tsv",
+        "{folder}/{sample}/counts/{sample}.info_raw",
+        "{folder}/{sample}/counts/{sample}.txt.raw.gz",
+        # "{folder}/{sample}/config/config.yaml",
+        # MC
+        "{folder}/{sample}/config/config.yaml",
+    ]
+
+    list_files_to_copy += [
+        e for e in get_all_plots(wildcards) if "publishdir_outputs_mc.ok" not in e
+    ]
+
+    final_list = [
+        expand(e, folder=config["data_location"], sample=wildcards.sample)
+        for e in list_files_to_copy
+    ]
+    final_list = [sub_e for e in final_list for sub_e in e]
+    final_list.extend(
+        expand(
+            "{folder}/{sample}/plots/counts/CountComplete.{plottype_counts}.pdf",
+            folder=config["data_location"],
+            sample=wildcards.sample,
+            plottype_counts=plottype_counts,
+        )
+    )
+
+    if config["use_light_data"] is False:
+        final_list.extend(
+            expand(
+                "{folder}/{sample}/plots/plate/ashleys_plate_{plate_plot}.pdf",
+                folder=config["data_location"],
+                sample=wildcards.sample,
+                plate_plot=["predictions", "probabilities"],
+            )
+        )
+        final_list.extend(
+            expand(
+                "{folder}/{sample}/cell_selection/labels_positive_control_corrected.tsv",
+                folder=config["data_location"],
+                sample=wildcards.sample,
+            )
+        )
+        final_list.extend(
+            expand(
+                "{folder}/{sample}/config/bypass_cell.txt",
+                folder=config["data_location"],
+                sample=wildcards.sample,
+            )
+        )
+
+    # folders_to_keep = [
+    #     "plots",
+    #     "snv_calls",
+    #     "segmentation",
+    #     "haplotag",
+    #     "strandphaser",
+    #     "ploidy",
+    #     "stats",
+    #     "mosaiclassifier",
+    # ]
+
+    # final_list += expand(
+    #     "{folder}/{sample}/{folder_to_keep}/",
+    #     folder=config["data_location"],
+    #     sample=wildcards.sample,
+    #     folder_to_keep=folders_to_keep,
+    # )
+
+    # print(final_list)
+
+    return final_list

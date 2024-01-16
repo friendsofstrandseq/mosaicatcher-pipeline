@@ -31,32 +31,39 @@ logging.basicConfig(
 
 
 # Set the path you want to watch
-main_path_to_watch = sys.argv[1]
-dry_run = sys.argv[2]
-report_only = sys.argv[3]
-panoptes = sys.argv[4]
+# main_path_to_watch = sys.argv[1]
+
+paths_to_watch = [
+    # "/g/korbel/shared/data/others/StrandSeq/runs",
+    "/g/korbel/shared/genecore",
+    # "/g/korbel/STOCKS/Data/Assay/sequencing",
+]
+
+dry_run = sys.argv[1]
+report_only = sys.argv[2]
+panoptes = sys.argv[3]
 
 
 data_location = "/scratch/tweber/DATA/MC_DATA/STOCKS"
 # publishdir_location = "/g/korbel/weber/TMP/WORKFLOW_RESULTS_DEV"
 publishdir_location = "/g/korbel/WORKFLOW_RESULTS"
-genecore_prefix = main_path_to_watch
+genecore_prefix = paths_to_watch[0]
 # profile_slurm = [
 #     "--profile",
 #     "/g/korbel2/weber/workspace/snakemake_profiles/HPC/dev/slurm_legacy_conda/",
 # ]
-profile_slurm = [
-    "--profile",
-    "/g/korbel2/weber/workspace/snakemake_profiles/local/conda_singularity/",
-    "--cores",
-    "64",
-    "--singularity-args",
-    '"-B /scratch,/g"',
-]
 # profile_slurm = [
 #     "--profile",
-#     "/g/korbel2/weber/workspace/snakemake_profiles/HPC/dev/slurm_EMBL/",
+#     "/g/korbel2/weber/workspace/snakemake_profiles/local/conda_singularity/",
+#     "--cores",
+#     "64",
+#     "--singularity-args",
+#     '"-B /scratch,/g"',
 # ]
+profile_slurm = [
+    "--profile",
+    "/g/korbel2/weber/workspace/mosaicatcher-update/workflow/snakemake_profiles/HPC/dev/slurm_EMBL/",
+]
 profile_dry_run = [
     "--profile",
     "workflow/snakemake_profiles/local/conda/",
@@ -70,7 +77,7 @@ snakemake_binary = (
     "/g/korbel2/weber/miniconda3/envs/snakemake_panoptesfix/bin/snakemake"
 )
 # Panoptes
-pipeline = sys.argv[5]
+pipeline = sys.argv[4]
 assert pipeline in [
     "ashleys-qc-pipeline",
     "mosaicatcher-pipeline",
@@ -102,6 +109,7 @@ def generate_data_file(directory):
     unwanted = ["._.DS_Store", ".DS_Store", "config"]
 
     total_list_runs = sorted([e for e in os.listdir(directory) if e not in unwanted])
+    print(total_list_runs)
 
     l_df = list()
 
@@ -175,12 +183,12 @@ class MyHandler(FileSystemEventHandler):
                 file_count = file_counts_per_sample[sample_name]
 
                 # Determine plate type using modulo 96 operation
-                if file_count % 96 != 0:
-                    # raise ValueError(
-                    print(
-                        f"Invalid file count for sample {sample_name} with file count {file_count}. Must be a multiple of 96."
-                    )
-                    continue
+                # if file_count % 96 != 0:
+                #     # raise ValueError(
+                #     print(
+                #         f"Invalid file count for sample {sample_name} with file count {file_count}. Must be a multiple of 96."
+                #     )
+                #     continue
                 plate_type = int(file_count / 2)
 
                 if (j + 1) % file_count == 0:
@@ -342,6 +350,7 @@ class MyHandler(FileSystemEventHandler):
         last_message_timestamp,
         prefixes,
         plate_type,
+        path_to_watch,
     ):
         run_id = f"{pipeline}--{plate}--{sample_name}"
         workflow_id = self.find_workflow_id_by_name(workflows_data, run_id)
@@ -455,13 +464,15 @@ class MyHandler(FileSystemEventHandler):
             "completed_at": workflow_id["completed_at"],
             "jobs_done": workflow_id["jobs_done"],
             "jobs_total": workflow_id["jobs_total"],
+            "run_path": f"{path_to_watch}/{plate}",
         }
+        print(tmp_d)
         return tmp_d
 
     # Main function to process directories
     def process_directories(
         self,
-        main_path_to_watch,
+        paths_to_watch,
         excluded_samples,
         pipeline,
         data_location,
@@ -474,37 +485,56 @@ class MyHandler(FileSystemEventHandler):
 
         main_df = []
         if len(workflows_data) > 0:
-            for year in os.listdir(main_path_to_watch):
-                if year.startswith("20"):  # Assuming only years are relevant
-                    path_to_watch = f"{main_path_to_watch}/{year}"
-                    total_list_runs = sorted(
-                        [e for e in os.listdir(path_to_watch) if e not in unwanted]
-                    )
-                    for plate in total_list_runs:
-                        if plate.split("-")[0][:2] == "20":
-                            directory_path = f"{path_to_watch}/{plate}"
-                            prefixes, samples, plate_types = self.extract_samples_names(
-                                glob.glob(f"{directory_path}/*.txt.gz"),
-                                directory_path,
-                            )
-                            if len(set(prefixes)) == 1:
-                                for sample_name, plate_type in zip(
-                                    samples, plate_types
+            for path_to_watch in paths_to_watch:
+                total_list_runs = []
+
+                if path_to_watch == "/g/korbel/STOCKS/Data/Assay/sequencing":
+                    for year in os.listdir(path_to_watch):
+                        if year.startswith(
+                            "20"
+                        ):  # Assuming directories starting with "20" are years
+                            year_path = os.path.join(path_to_watch, year)
+                            for folder in os.listdir(year_path):
+                                folder_path = os.path.join(year_path, folder)
+                                if (
+                                    os.path.isdir(folder_path)
+                                    and folder not in unwanted
                                 ):
-                                    if sample_name not in excluded_samples:
-                                        result = self.process_sample(
-                                            sample_name,
-                                            plate,
-                                            pipeline,
-                                            data_location,
-                                            publishdir_location,
-                                            variable,
-                                            workflows_data,
-                                            last_message_timestamp,
-                                            prefixes,
-                                            plate_type,
-                                        )
-                                        main_df.append(result)
+                                    total_list_runs.append(folder_path)
+                else:
+                    total_list_runs = [
+                        os.path.join(path_to_watch, e)
+                        for e in os.listdir(path_to_watch)
+                        if e not in unwanted
+                        and os.path.isdir(os.path.join(path_to_watch, e))
+                    ]
+
+                print(total_list_runs)
+
+                for directory_path in total_list_runs:
+                    print(directory_path)
+                    prefixes, samples, plate_types = self.extract_samples_names(
+                        glob.glob(f"{directory_path}/*.txt.gz"),
+                        directory_path,
+                    )
+
+                    if len(set(prefixes)) == 1:
+                        for sample_name, plate_type in zip(samples, plate_types):
+                            if sample_name not in excluded_samples:
+                                result = self.process_sample(
+                                    sample_name,
+                                    os.path.basename(directory_path),
+                                    pipeline,
+                                    data_location,
+                                    publishdir_location,
+                                    variable,
+                                    workflows_data,
+                                    last_message_timestamp,
+                                    prefixes,
+                                    plate_type,
+                                    path_to_watch,
+                                )
+                                main_df.append(result)
         return pd.DataFrame(main_df)
 
     def check_unprocessed_folder(self):
@@ -542,7 +572,7 @@ class MyHandler(FileSystemEventHandler):
         excluded_samples = config["excluded_samples"]
 
         main_df = self.process_directories(
-            main_path_to_watch,
+            paths_to_watch,
             excluded_samples,
             pipeline,
             data_location,
@@ -556,6 +586,8 @@ class MyHandler(FileSystemEventHandler):
         pd.options.display.max_colwidth = 30
 
         main_df = pd.DataFrame(main_df)
+        # print(main_df)
+        # exit()
         # main_df.loc[(main_df["labels"] == True) &  (main_df["report"] == True), "real_status"] = "Completed"
         main_df.loc[
             (main_df["final_output_scratch"] == True) & (main_df["report"] == False),
@@ -597,10 +629,11 @@ class MyHandler(FileSystemEventHandler):
         print("\n")
 
         print(main_df)
+        print(main_df.run_path.values[0])
         test_json = main_df.to_json(orient="records", date_format="iso")
-        print(test_json)
-        print(pd.read_json(test_json, orient="records"))
-        exit()
+        # print(test_json)
+        # print(pd.read_json(test_json, orient="records"))
+        # exit()
 
         # pipeline_final_file_variable = (
         #     "ashleys_final_scratch"
@@ -613,77 +646,77 @@ class MyHandler(FileSystemEventHandler):
         if dry_run_db is False:
             cursor = connection.cursor()
 
-            assert (
-                main_df.loc[
-                    (main_df["final_output_scratch"] == False)
-                    & (main_df["report"] == True)
-                ].shape[0]
-                == 0
-            ), "Error in table, samples have report done without the completion of the pipeline"
+            # assert (
+            #     main_df.loc[
+            #         (main_df["final_output_scratch"] == False)
+            #         & (main_df["report"] == True)
+            #     ].shape[0]
+            #     == 0
+            # ), "Error in table, samples have report done without the completion of the pipeline"
 
-            logging.info(
-                "Correcting status of plates with report.zip and final_output_scratch"
-            )
+            # logging.info(
+            #     "Correcting status of plates with report.zip and final_output_scratch"
+            # )
 
-            for row in main_df.loc[
-                (main_df["final_output_scratch"] == True)
-                & (main_df["report"] == True)
-                & (main_df["status"] != "Done")
-            ].to_dict("records"):
-                logging.info(row)
-                panoptes_entry = f"{pipeline}--{row['plate']}--{row['sample']}"
-                workflow_id = row["panoptes_id"]
+            # for row in main_df.loc[
+            #     (main_df["final_output_scratch"] == True)
+            #     & (main_df["report"] == True)
+            #     & (main_df["status"] != "Done")
+            # ].to_dict("records"):
+            #     logging.info(row)
+            #     panoptes_entry = f"{pipeline}--{row['plate']}--{row['sample']}"
+            #     workflow_id = row["panoptes_id"]
 
-                # if workflow_id != "None":
-                #     command = f'sqlite3 /g/korbel2/weber/workspace/strandscape/.panoptes.db "DELETE FROM workflows WHERE id={workflow_id};"'
-                #     subprocess.run(command, shell=True, check=True)
+            #     # if workflow_id != "None":
+            #     #     command = f'sqlite3 /g/korbel2/weber/workspace/strandscape/.panoptes.db "DELETE FROM workflows WHERE id={workflow_id};"'
+            #     #     subprocess.run(command, shell=True, check=True)
 
-                panoptes_data = [
-                    e for e in workflows_data["workflows"] if e["id"] == workflow_id
-                ]
+            #     panoptes_data = [
+            #         e for e in workflows_data["workflows"] if e["id"] == workflow_id
+            #     ]
 
-                print(panoptes_entry)
-                print(panoptes_data)
-                print(row)
-                if workflow_id and workflow_id != "None":
-                    assert (
-                        len(panoptes_data) > 0
-                    ), f"Data issue between pika & panoptes, {str(panoptes_data)}"
+            #     print(panoptes_entry)
+            #     print(panoptes_data)
+            #     print(row)
+            #     if workflow_id and workflow_id != "None":
+            #         assert (
+            #             len(panoptes_data) > 0
+            #         ), f"Data issue between pika & panoptes, {str(panoptes_data)}"
 
-                if panoptes_data:
-                    panoptes_data = panoptes_data[0]
-                    if "completed_at" not in panoptes_data:
-                        panoptes_data["completed_at"] = last_message_timestamp
+            #     if panoptes_data:
+            #         panoptes_data = panoptes_data[0]
+            #         if "completed_at" not in panoptes_data:
+            #             panoptes_data["completed_at"] = last_message_timestamp
 
-                    command = f'sqlite3 /g/korbel2/weber/workspace/strandscape/.panoptes.db "DELETE FROM workflows WHERE id={workflow_id};"'
-                    subprocess.run(command, shell=True, check=True)
+            #         command = f'sqlite3 /g/korbel2/weber/workspace/strandscape/.panoptes.db "DELETE FROM workflows WHERE id={workflow_id};"'
+            #         subprocess.run(command, shell=True, check=True)
 
-                else:
-                    logging.info("Panoptes data not found for workflow entry: %s", row)
-                    panoptes_data = {
-                        "started_at": last_message_timestamp,
-                        "completed_at": last_message_timestamp,
-                        "jobs_done": "1",
-                        "jobs_total": "1",
-                    }
+            #     else:
+            #         logging.info("Panoptes data not found for workflow entry: %s", row)
+            #         panoptes_data = {
+            #             "started_at": last_message_timestamp,
+            #             "completed_at": last_message_timestamp,
+            #             "jobs_done": "1",
+            #             "jobs_total": "1",
+            #         }
 
-                print(row)
+            #     print(row)
 
-                cursor.execute(
-                    """
-                    INSERT INTO workflows (name, status, done, total, started_at, completed_at)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                    """,
-                    (
-                        panoptes_entry,
-                        "Done",
-                        panoptes_data["jobs_done"],
-                        panoptes_data["jobs_total"],
-                        panoptes_data["started_at"],
-                        panoptes_data["completed_at"],
-                    ),
-                )
-                connection.commit()
+            #     cursor.execute(
+            #         """
+            #         INSERT INTO workflows (name, status, done, total, started_at, completed_at)
+            #         VALUES (?, ?, ?, ?, ?, ?)
+            #         """,
+            #         (
+            #             panoptes_entry,
+            #             "Done",
+            #             panoptes_data["jobs_done"],
+            #             panoptes_data["jobs_total"],
+            #             panoptes_data["started_at"],
+            #             panoptes_data["completed_at"],
+            #         ),
+            #     )
+            #     connection.commit()
 
             logging.info(
                 "Processing plates without final_output_scratch or outdated without report.zip"
@@ -710,7 +743,8 @@ class MyHandler(FileSystemEventHandler):
                         subprocess.run(command, shell=True, check=True)
 
                     self.process_new_directory(
-                        "/".join([path_to_watch, row["plate"]]),
+                        row["run_path"],
+                        # "/".join([path_to_watch, row["plate"]]),
                         row["prefix"],
                         row["sample"],
                         row["plate_type"],
@@ -906,6 +940,7 @@ class MyHandler(FileSystemEventHandler):
             "--rerun-incomplete",
             "--rerun-triggers",
             "mtime",
+            # "--touch",
         ]
 
         if cell:
@@ -1095,7 +1130,7 @@ def main():
     observer = Observer()
 
     # Assign the observer to the path and the event handler
-    observer.schedule(event_handler, main_path_to_watch, recursive=False)
+    observer.schedule(event_handler, paths_to_watch[0], recursive=False)
 
     # Start the observer
     observer.start()

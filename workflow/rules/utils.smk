@@ -11,8 +11,8 @@ rule check_sm_tag:
         """
         sample_name="{wildcards.sample}"
         sm_tag=$(samtools view -H {input} | grep '^@RG' | sed "s/.*SM:\([^\\t]*\).*/\\1/g")
-        
-        if [[ $sample_name == $sm_tag ]]; then 
+
+        if [[ $sample_name == $sm_tag ]]; then
             echo "{input}: $sm_tag $sample_name OK" > {output}
             echo "{input}: $sm_tag $sample_name OK" > {log}
         else
@@ -141,6 +141,9 @@ rule samtools_faindex:
         "samtools faidx {input}"
 
 
+########################################
+
+
 rule save_config:
     input:
         "config/config.yaml",
@@ -154,3 +157,74 @@ rule save_config:
         mem_mb=get_mem_mb,
     script:
         "../scripts/utils/dump_config.py"
+
+
+rule save_conda_versions_mc_base:
+    output:
+        "{folder}/{sample}/config/conda_export/mc_base.yaml",
+    conda:
+        "../envs/mc_base.yaml"
+    shell:
+        "conda env export > {output}"
+
+
+rule save_conda_versions_mc_bioinfo_tools:
+    output:
+        "{folder}/{sample}/config/conda_export/mc_bioinfo_tools.yaml",
+    conda:
+        "../envs/mc_bioinfo_tools.yaml"
+    shell:
+        "conda env export > {output}"
+
+
+rule save_conda_versions_rtools:
+    output:
+        "{folder}/{sample}/config/conda_export/rtools.yaml",
+    conda:
+        "../envs/rtools.yaml"
+    shell:
+        "conda env export > {output}"
+
+
+if config["scNOVA"] == True:
+
+    rule save_conda_versions_scNOVA_bioinfo_tools:
+        output:
+            "{folder}/{sample}/config/conda_export/scNOVA.yaml",
+        conda:
+            "../envs/scNOVA/scNOVA_bioinfo_tools.yaml"
+        shell:
+            "conda env export > {output}"
+
+    rule save_conda_versions_scNOVA_DL:
+        output:
+            "{folder}/{sample}/config/conda_export/scNOVA_DL.yaml",
+        conda:
+            "../envs/scNOVA/scNOVA_DL.yaml"
+        shell:
+            "conda env export > {output}"
+
+    rule save_conda_versions_scNOVA_R:
+        output:
+            "{folder}/{sample}/config/conda_export/scNOVA_R.yaml",
+        conda:
+            "../envs/scNOVA/scNOVA_R.yaml"
+        shell:
+            "conda env export > {output}"
+
+
+# PUBLISHDIR
+
+if config["publishdir"] != "":
+
+    rule publishdir_outputs_mc:
+        input:
+            list_publishdir=publishdir_fct_mc,
+        output:
+            touch("{folder}/{sample}/config/publishdir_outputs_mc.ok"),
+        log:
+            "{folder}/log/publishdir_outputs/{sample}.log",
+        conda:
+            "../envs/mc_base.yaml"
+        script:
+            "../scripts/utils/publishdir.py"
