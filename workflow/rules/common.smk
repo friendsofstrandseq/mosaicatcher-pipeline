@@ -778,10 +778,10 @@ def get_all_plots(wildcards):
 
         l_outputs.extend(
             expand(
-                "{folder}/{sample}/config/{conda}.yaml",
+                "{folder}/{sample}/config/{conda_env}.yaml",
                 folder=config["data_location"],
                 sample=wildcards.sample,
-                conda=conda_envs,
+                conda_env=conda_envs,
             ),
         )
 
@@ -929,10 +929,10 @@ def get_all_plots(wildcards):
 
         l_outputs.extend(
             expand(
-                "{folder}/{sample}/config/conda_export/{conda}.yaml",
+                "{folder}/{sample}/config/conda_export/{conda_env}.yaml",
                 folder=config["data_location"],
                 sample=wildcards.sample,
-                conda=conda_envs,
+                conda_env=conda_envs,
             ),
         )
 
@@ -959,82 +959,25 @@ def get_all_plots(wildcards):
     return l_outputs
 
 
+
+
 def publishdir_fct_mc(wildcards):
     """
-    Restricted for ASHLEYS at the moment
-    Backup files on a secondary location
+    Function to generate a list of files and directories for backup.
     """
-    list_files_to_copy = [
-        # ASHLEYS
-        "{folder}/{sample}/cell_selection/labels_raw.tsv",
-        "{folder}/{sample}/cell_selection/labels.tsv",
-        "{folder}/{sample}/counts/{sample}.info_raw",
-        "{folder}/{sample}/counts/{sample}.txt.raw.gz",
-        # "{folder}/{sample}/config/config.yaml",
-        # MC
-        "{folder}/{sample}/config/config.yaml",
-    ]
 
-    list_files_to_copy += [
+
+    list_files_to_copy = [
         e for e in get_all_plots(wildcards) if "publishdir_outputs_mc.ok" not in e
     ]
 
-    final_list = [
-        expand(e, folder=config["data_location"], sample=wildcards.sample)
-        for e in list_files_to_copy
+    # Expand the paths for files
+    expanded_files = [
+        expand(file_path, folder=config["data_location"], sample=wildcards.sample)
+        for file_path in list_files_to_copy
     ]
-    final_list = [sub_e for e in final_list for sub_e in e]
-    final_list.extend(
-        expand(
-            "{folder}/{sample}/plots/counts/CountComplete.{plottype_counts}.pdf",
-            folder=config["data_location"],
-            sample=wildcards.sample,
-            plottype_counts=plottype_counts,
-        )
-    )
-
-    if config["use_light_data"] is False:
-        final_list.extend(
-            expand(
-                "{folder}/{sample}/plots/plate/ashleys_plate_{plate_plot}.pdf",
-                folder=config["data_location"],
-                sample=wildcards.sample,
-                plate_plot=["predictions", "probabilities"],
-            )
-        )
-        final_list.extend(
-            expand(
-                "{folder}/{sample}/cell_selection/labels_positive_control_corrected.tsv",
-                folder=config["data_location"],
-                sample=wildcards.sample,
-            )
-        )
-        final_list.extend(
-            expand(
-                "{folder}/{sample}/config/bypass_cell.txt",
-                folder=config["data_location"],
-                sample=wildcards.sample,
-            )
-        )
-
-    # folders_to_keep = [
-    #     "plots",
-    #     "snv_calls",
-    #     "segmentation",
-    #     "haplotag",
-    #     "strandphaser",
-    #     "ploidy",
-    #     "stats",
-    #     "mosaiclassifier",
-    # ]
-
-    # final_list += expand(
-    #     "{folder}/{sample}/{folder_to_keep}/",
-    #     folder=config["data_location"],
-    #     sample=wildcards.sample,
-    #     folder_to_keep=folders_to_keep,
-    # )
-
+    final_list = [sub_e for e in expanded_files for sub_e in e]
     # print(final_list)
+
 
     return final_list
