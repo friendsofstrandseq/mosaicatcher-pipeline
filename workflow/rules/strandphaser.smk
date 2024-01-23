@@ -56,7 +56,7 @@ rule run_strandphaser_per_chrom:
         "../envs/rtools.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
-        time="10:00:00",
+        time=600,
     params:
         input_bam=lambda wc: "{}/{}/selected".format(config["data_location"], wc.sample),
         output=lambda wc: "{}/{}/strandphaser/StrandPhaseR_analysis.{}".format(
@@ -72,6 +72,8 @@ rule run_strandphaser_per_chrom:
                 {input.snppositions} \
                 $(pwd)/utils/R-packages/
         """
+
+
 
 
 rule merge_strandphaser_vcfs:
