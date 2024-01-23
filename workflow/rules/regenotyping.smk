@@ -13,7 +13,7 @@ rule mergeBams:
         "{folder}/log/mergeBams/{sample}.log",
     resources:
         mem_mb=get_mem_mb_heavy,
-        time="01:00:00",
+        time=60,
     threads: 10
     conda:
         "../envs/mc_bioinfo_tools.yaml"
@@ -30,7 +30,7 @@ rule mergeSortBams:
         "{folder}/log/mergeBams/{sample}.log",
     resources:
         mem_mb=get_mem_mb_heavy,
-        time="01:00:00",
+        time=60,
     threads: 10
     conda:
         "../envs/mc_bioinfo_tools.yaml"
@@ -68,7 +68,7 @@ rule regenotype_SNVs:
         "{folder}/log/snv_genotyping/{sample}/{chrom}.log",
     resources:
         mem_mb=get_mem_mb_heavy,
-        time="10:00:00",
+        time=600,
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     shell:
@@ -105,9 +105,37 @@ rule call_SNVs_bcftools_chrom:
         "../envs/mc_bioinfo_tools.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
-        time="10:00:00",
+        time=600,
     shell:
         """
         bcftools mpileup -r {wildcards.chrom} -f {input.fasta} {input.bam} \
         | bcftools call -mv --ploidy-file {input.ploidy} | bcftools view --genotype het --types snps > {output} 2> {log}
+        """
+
+
+checkpoint check_SNVs_nb:
+    input:
+        lambda wc: expand(
+            "{folder}/{sample}/snv_calls/{chrom}.vcf",
+            chrom=config["chromosomes"],
+            sample=wc.sample,
+            folder=wc.folder,
+        ),
+    output:
+        summary_snp_nb="{folder}/{sample}/snv_calls/check_SNVs_nb.txt",
+    log:
+        "{folder}/log/check_SNVs_nb/{sample}.log",
+    conda:
+        "../envs/mc_base.yaml"
+    shell:
+        """
+        # header
+        echo "chrom\tSNP_nb" >> {output.summary_snp_nb}
+        # for each chromosome, check the number of SNVs
+        for chrom_input in {input};
+        do
+            chrom=$(basename $chrom_input .vcf);
+            nb=$(grep -v "#" $chrom_input | wc -l);
+            echo "$chrom\t$nb" >> {output.summary_snp_nb};
+        done
         """

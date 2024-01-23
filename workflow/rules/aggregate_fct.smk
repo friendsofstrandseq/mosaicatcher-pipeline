@@ -4,6 +4,7 @@ def aggregate_phased_haps(wildcards):
     the median ploidy status is equal or above 2 for all segments
     Return phased_haps.txt as input for combine_strandphaser_output
     """
+    # Check chrom ploidy status
     df = pd.read_csv(
         checkpoints.summarise_ploidy.get(
             sample=wildcards.sample, folder=config["data_location"]
@@ -11,7 +12,24 @@ def aggregate_phased_haps(wildcards):
         sep="\t",
     )
     df = df.loc[df["50%"] >= 2]
-    chrom_list = [e for e in df["#chrom"].values.tolist() if e != "genome"]
+
+    # Check chrom SNP nb
+    df_snp = pd.read_csv(
+        checkpoints.check_SNVs_nb.get(
+            sample=wildcards.sample, folder=config["data_location"]
+        ).output.summary_snp_nb,
+        sep="\t",
+    )
+
+    df_snp = df_snp.loc[df_snp["SNP_nb"] >= config["snv_nb_threshold_for_strandphaser"]]
+
+    chrom_list = [
+        e
+        for e in df["#chrom"].values.tolist()
+        if e != "genome" and e in df_snp["chrom"].values.tolist()
+    ]
+
+    # chrom_list = [e for e in df["#chrom"].values.tolist() if e != "genome"]
     return expand(
         "{{folder}}/{{sample}}/strandphaser/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt",
         chrom=chrom_list,
@@ -31,7 +49,24 @@ def aggregate_vcf_gz(wildcards):
         sep="\t",
     )
     df = df.loc[df["50%"] >= 2]
-    chrom_list = [e for e in df["#chrom"].values.tolist() if e != "genome"]
+
+    # Check chrom SNP nb
+    df_snp = pd.read_csv(
+        checkpoints.check_SNVs_nb.get(
+            sample=wildcards.sample, folder=config["data_location"]
+        ).output.summary_snp_nb,
+        sep="\t",
+    )
+
+    df_snp = df_snp.loc[df_snp["SNP_nb"] >= config["snv_nb_threshold_for_strandphaser"]]
+
+    chrom_list = [
+        e
+        for e in df["#chrom"].values.tolist()
+        if e != "genome" and e in df_snp["chrom"].values.tolist()
+    ]
+
+    # chrom_list = [e for e in df["#chrom"].values.tolist() if e != "genome"]
     return expand(
         "{{folder}}/{{sample}}/strandphaser/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz",
         chrom=chrom_list,
@@ -51,7 +86,24 @@ def aggregate_vcf_gz_tbi(wildcards):
         sep="\t",
     )
     df = df.loc[df["50%"] >= 2]
-    chrom_list = [e for e in df["#chrom"].values.tolist() if e != "genome"]
+
+    # Check chrom SNP nb
+    df_snp = pd.read_csv(
+        checkpoints.check_SNVs_nb.get(
+            sample=wildcards.sample, folder=config["data_location"]
+        ).output.summary_snp_nb,
+        sep="\t",
+    )
+
+    df_snp = df_snp.loc[df_snp["SNP_nb"] >= config["snv_nb_threshold_for_strandphaser"]]
+
+    chrom_list = [
+        e
+        for e in df["#chrom"].values.tolist()
+        if e != "genome" and e in df_snp["chrom"].values.tolist()
+    ]
+
+    # chrom_list = [e for e in df["#chrom"].values.tolist() if e != "genome"]
     return expand(
         "{{folder}}/{{sample}}/strandphaser/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz.tbi",
         chrom=chrom_list,

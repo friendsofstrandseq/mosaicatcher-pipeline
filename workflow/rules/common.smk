@@ -950,7 +950,7 @@ def get_all_plots(wildcards):
         #     expand(
         #         "{folder}/{sample}/config/run_summary.txt",
         #         folder=config["data_location"],
-        #         sample=wildcards.sample,
+        #         sample    =wildcards.sample,
         #     ),
         # )
 
@@ -959,13 +959,10 @@ def get_all_plots(wildcards):
     return l_outputs
 
 
-
-
 def publishdir_fct_mc(wildcards):
     """
     Function to generate a list of files and directories for backup.
     """
-
 
     list_files_to_copy = [
         e for e in get_all_plots(wildcards) if "publishdir_outputs_mc.ok" not in e
@@ -978,6 +975,5 @@ def publishdir_fct_mc(wildcards):
     ]
     final_list = [sub_e for e in expanded_files for sub_e in e]
     # print(final_list)
-
 
     return final_list

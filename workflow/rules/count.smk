@@ -177,6 +177,28 @@ checkpoint filter_bad_cells_from_mosaic_count:
         "../scripts/utils/filter_bad_cells.py"
 
 
+rule check_counts:
+    input:
+        info="{folder}/{sample}/counts/{sample}.info",
+    output:
+        "{folder}/{sample}/config/check_counts.ok",
+    log:
+        "{folder}/log/check_counts/{sample}.log",
+    conda:
+        "../envs/mc_base.yaml"
+    shell:
+        # UNIX command to check if file contains more than 18 lines (13 header lines + 5 cells)
+        """
+        if [ $(wc -l < {input.info}) -gt 18 ]; then
+            echo "Counts file is OK" > {output}
+        else
+            echo "Counts file is empty"
+            exit 1
+        fi
+        """
+
+
+
 if (
     config["hgsvc_based_normalized_counts"] is True
     and (config["window"] in [50000, 100000, 200000])
@@ -239,6 +261,7 @@ if config["blacklist_regions"] is True:
 
     rule normalize_counts:
         input:
+            counts_check="{folder}/{sample}/config/check_counts.ok",
             counts="{folder}/{sample}/counts/{sample}.txt.filter.gz",
             norm=lambda wc: expand(
                 "{folder}/{sample}/normalizations/{reference}/HGSVC.{window}.corrected.tsv",
@@ -266,7 +289,8 @@ else:
 
     rule cp_mosaic_count:
         input:
-            "{folder}/{sample}/counts/{sample}.txt.filter.gz",
+            counts_check="{folder}/{sample}/config/check_counts.ok",
+            counts="{folder}/{sample}/counts/{sample}.txt.filter.gz",
         output:
             "{folder}/{sample}/counts/{sample}.txt.gz",
         log:
@@ -274,7 +298,7 @@ else:
         conda:
             "../envs/mc_base.yaml"
         shell:
-            "cp {input} {output}"
+            "cp {input.counts} {output}"
 
 
 rule sort_counts:
