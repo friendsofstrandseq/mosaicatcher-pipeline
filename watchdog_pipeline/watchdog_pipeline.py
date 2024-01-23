@@ -34,8 +34,8 @@ logging.basicConfig(
 # main_path_to_watch = sys.argv[1]
 
 paths_to_watch = [
-    # "/g/korbel/shared/data/others/StrandSeq/runs",
-    "/g/korbel/shared/genecore",
+    "/g/korbel/shared/data/others/StrandSeq/runs",
+    # "/g/korbel/shared/genecore",
     # "/g/korbel/STOCKS/Data/Assay/sequencing",
 ]
 
@@ -47,11 +47,11 @@ panoptes = sys.argv[3]
 data_location = "/scratch/tweber/DATA/MC_DATA/STOCKS"
 # publishdir_location = "/g/korbel/weber/TMP/WORKFLOW_RESULTS_DEV"
 publishdir_location = "/g/korbel/WORKFLOW_RESULTS"
-genecore_prefix = paths_to_watch[0]
-# profile_slurm = [
-#     "--profile",
-#     "/g/korbel2/weber/workspace/snakemake_profiles/HPC/dev/slurm_legacy_conda/",
-# ]
+# genecore_prefix = paths_to_watch[0]
+profile_slurm = [
+    "--profile",
+    "/g/korbel2/weber/workspace/snakemake_profiles/HPC/dev/slurm_legacy_conda/",
+]
 # profile_slurm = [
 #     "--profile",
 #     "/g/korbel2/weber/workspace/snakemake_profiles/local/conda_singularity/",
@@ -60,10 +60,10 @@ genecore_prefix = paths_to_watch[0]
 #     "--singularity-args",
 #     '"-B /scratch,/g"',
 # ]
-profile_slurm = [
-    "--profile",
-    "/g/korbel2/weber/workspace/mosaicatcher-update/workflow/snakemake_profiles/HPC/dev/slurm_EMBL/",
-]
+# profile_slurm = [
+#     "--profile",
+#     "/g/korbel2/weber/workspace/mosaicatcher-update/workflow/snakemake_profiles/HPC/dev/slurm_EMBL/",
+# ]
 profile_dry_run = [
     "--profile",
     "workflow/snakemake_profiles/local/conda/",
@@ -78,6 +78,7 @@ snakemake_binary = (
 )
 # Panoptes
 pipeline = sys.argv[4]
+print(pipeline)
 assert pipeline in [
     "ashleys-qc-pipeline",
     "mosaicatcher-pipeline",
@@ -437,6 +438,13 @@ class MyHandler(FileSystemEventHandler):
                     "%a, %d %b %Y %H:%M:%S GMT",
                 ).strftime("%Y-%m-%d %H:%M:%S.%f")
 
+        year = plate.split("-")[0]
+        run_path = (
+            f"{path_to_watch}/{year}/{plate}"
+            if year in ["2023", "2024"]
+            else f"{path_to_watch}/{plate}"
+        )
+
         # turn the print into a dict
         tmp_d = {
             "panoptes_id": workflow_id["id"],
@@ -464,7 +472,7 @@ class MyHandler(FileSystemEventHandler):
             "completed_at": workflow_id["completed_at"],
             "jobs_done": workflow_id["jobs_done"],
             "jobs_total": workflow_id["jobs_total"],
-            "run_path": f"{path_to_watch}/{plate}",
+            "run_path": run_path,
         }
         print(tmp_d)
         return tmp_d
@@ -521,6 +529,10 @@ class MyHandler(FileSystemEventHandler):
                     if len(set(prefixes)) == 1:
                         for sample_name, plate_type in zip(samples, plate_types):
                             if sample_name not in excluded_samples:
+                                os.makedirs(
+                                    f"{publishdir_location}/{os.path.basename(directory_path)}/{sample_name}/reports",
+                                    exist_ok=True,
+                                )
                                 result = self.process_sample(
                                     sample_name,
                                     os.path.basename(directory_path),
@@ -583,7 +595,7 @@ class MyHandler(FileSystemEventHandler):
         )
 
         pd.options.display.max_rows = 999
-        pd.options.display.max_colwidth = 30
+        pd.options.display.max_colwidth = 70
 
         main_df = pd.DataFrame(main_df)
         # print(main_df)
@@ -726,31 +738,32 @@ class MyHandler(FileSystemEventHandler):
                 (main_df["final_output_scratch"] == False)
                 # & (main_df["report"] == False)
             ].to_dict("records"):
-                logging.info(row)
-
                 # panoptes = True if row["status"] == "None" else False
                 # panoptes = True
+                if row["plate"].split("-")[0][:2] == "20":
+                    # if row["plate"].split("-")[0] == "2024":
+                    logging.info(row)
 
-                if dry_run == "False":
-                    if row["panoptes_id"] != "None":
-                        workflow_id = row["panoptes_id"]
-                        panoptes_data = [
-                            e
-                            for e in workflows_data["workflows"]
-                            if e["id"] == workflow_id
-                        ]
-                        command = f'sqlite3 /g/korbel2/weber/workspace/strandscape/.panoptes.db "DELETE FROM workflows WHERE id={workflow_id};"'
-                        subprocess.run(command, shell=True, check=True)
+                    if dry_run == "False":
+                        if row["panoptes_id"] != "None":
+                            workflow_id = row["panoptes_id"]
+                            panoptes_data = [
+                                e
+                                for e in workflows_data["workflows"]
+                                if e["id"] == workflow_id
+                            ]
+                            command = f'sqlite3 /g/korbel2/weber/workspace/strandscape/.panoptes.db "DELETE FROM workflows WHERE id={workflow_id};"'
+                            subprocess.run(command, shell=True, check=True)
 
-                    self.process_new_directory(
-                        row["run_path"],
-                        # "/".join([path_to_watch, row["plate"]]),
-                        row["prefix"],
-                        row["sample"],
-                        row["plate_type"],
-                        report_only=False,
-                        panoptes=panoptes,
-                    )
+                        self.process_new_directory(
+                            row["run_path"],
+                            # "/".join([path_to_watch, row["plate"]]),
+                            row["prefix"],
+                            row["sample"],
+                            row["plate_type"],
+                            report_only=False,
+                            panoptes=panoptes,
+                        )
 
             # logging.info(
             #     "Processing plates not present anymore on scratch and without report.zip"
@@ -914,6 +927,13 @@ class MyHandler(FileSystemEventHandler):
             False if pipeline == "ashleys-qc-pipeline" else True
         )
 
+        year = date_folder.split("-")[0]
+        genecore_prefix = (
+            f"{directory_path[0]}/{year}"
+            if year in ["2023", "2024"]
+            else paths_to_watch[0]
+        )
+
         cmd = [
             f"{snakemake_binary}",
             "-s",
@@ -928,7 +948,7 @@ class MyHandler(FileSystemEventHandler):
             f'samples_to_process="[{sample}]"',
             f"plate_type={plate_type}",
             "multistep_normalisation=True",
-            f"genome_browsing_files_generation={genome_browsing_files_generation}"
+            f"genome_browsing_files_generation={genome_browsing_files_generation}",
             "MultiQC=True",
             "split_qc_plot=False",
             f"publishdir={publishdir_location}",
@@ -1047,9 +1067,7 @@ class MyHandler(FileSystemEventHandler):
             logging.info("\nThe output is as expected.")
             # logging.info("Running command: %s", " ".join(cmd + profile_slurm))
 
-            logging.info(
-                "Running command: %s", " ".join(cmd + wms_monitor_args + profile_slurm)
-            )
+            logging.info("Running command: %s", " ".join(final_cmd))
 
             with open(
                 f"watchdog/logs/per-run/{pipeline}/{current_time}_{date_folder}_{sample}.log",
@@ -1070,10 +1088,13 @@ class MyHandler(FileSystemEventHandler):
 
         # Change the permissions of the new directory
         # subprocess.run(["chmod", "-R", "777", f"{data_location}/{date_folder}"])
-        if report_only is True:
-            check_report = True
-        else:
-            check_report = True if (str(process2.returncode) == str(0)) else False
+
+        # if report_only is True:
+        #     check_report = True
+        # else:
+        #     check_report = True if (str(process2.returncode) == str(0)) else False
+
+        check_report = True
 
         if check_report is True:
             logging.info("Generating ashleys report.")
@@ -1130,7 +1151,7 @@ def main():
     observer = Observer()
 
     # Assign the observer to the path and the event handler
-    observer.schedule(event_handler, paths_to_watch[0], recursive=False)
+    observer.schedule(event_handler, paths_to_watch[-1], recursive=False)
 
     # Start the observer
     observer.start()
