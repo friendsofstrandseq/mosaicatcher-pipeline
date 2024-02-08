@@ -156,9 +156,9 @@ if (add_overview_plot == T) {
     d_mv <- d[class != "None", .(mean = mean(w + c), var = var(w + c)), by = .(sample, cell)]
     print(d_mv)
 
-    if(nrow(d_mv) > 0) {
+    if (nrow(d_mv) > 0) {
         d_p <- d_mv[, .(p = sum(mean * mean) / sum(mean * var)), by = sample]
-        
+
         ov_meanvar <- ggplot(d_mv) +
             geom_point(aes(mean, var), alpha = 0.4) +
             facet_wrap(~sample, nrow = 1) +
@@ -168,7 +168,7 @@ if (add_overview_plot == T) {
             ggtitle("Mean variance relationship of reads per bin") +
             xlab("Mean") +
             ylab("Variance")
-        
+
         # Arranging overview plot
         content <- ggdraw() +
             draw_plot(ov_binsizes, x = 0, y = .66, width = .5, height = .33) +
@@ -177,7 +177,7 @@ if (add_overview_plot == T) {
             draw_plot(ov_meanvar, x = 0, y = 0, width = min(n_samples / 3, 1), height = .33)
     } else {
         print("d_mv is empty. Skipping the overview mean/variance plot...")
-        
+
         # Arranging overview plot without ov_meanvar
         content <- ggdraw() +
             draw_plot(ov_binsizes, x = 0, y = .66, width = .5, height = .33) +
@@ -216,8 +216,8 @@ if (add_overview_plot == T) {
 # Plot all cells
 for (s in unique(d$sample))
 {
-    # for (ce in unique(d[sample == s, ]$cell)[3])
     for (ce in unique(d[sample == s, ]$cell))
+    # for (ce in unique(d[sample == s, ]$cell)[1:5])
     {
         message(paste("* Plotting sample", s, "cell", ce))
 
@@ -242,8 +242,14 @@ for (s in unique(d$sample))
         # print(e_lite, n = 40)
 
         # e_lite <- e
+        # print(e)
+        # print(e$bin_id)
+        # fill in missing bin_ids with ""
+        e$bin_id[is.na(e$bin_id)] <- ""
+        # print(e$bin_id)
         e_lite <- filter(e, bin_id == "")
-        print(e_lite)
+        # print("e_lite")
+        # print(e_lite)
 
 
 

@@ -143,10 +143,23 @@ col_annotation <- sapply(strsplit(lite_data_pivot_clustering$pos, "_"), `[`, 1)
 
 col_test <- factor(sapply(strsplit(colnames(t_lite_data_pivot_clustering_num), "_"), `[`, 1), levels = unique(sapply(strsplit(colnames(t_lite_data_pivot_clustering_num), "_"), `[`, 1)))
 
+
+calculate_lwd <- function(num_columns, min_columns = 30, max_columns = 500, min_lwd = 0.1, max_lwd = 1.5) {
+    # Linear interpolation
+    lwd <- (max_lwd - min_lwd) * (max_columns - num_columns) / (max_columns - min_columns) + min_lwd
+    # Ensure lwd is within the specified range
+    return(max(min(lwd, max_lwd), min_lwd))
+}
+
+# Usage:
+num_columns <- ncol(t_lite_data_pivot_clustering_num)
+lwd <- calculate_lwd(num_columns)
+
+
 cl_h <- Heatmap(as.matrix(t_lite_data_pivot_clustering_num),
     name = "LLR", col = RColorBrewer::brewer.pal(name = "Reds", n = 9),
     # column_title = "a discrete numeric matrix",
-    rect_gp = gpar(col = "white", lwd = 1.5),
+    rect_gp = gpar(col = "white", lwd = lwd),
     top_annotation = ComplexHeatmap::HeatmapAnnotation(
         foo = anno_block(gp = gpar(fill = 2:24))
     ),
@@ -231,7 +244,7 @@ col_test <- factor(sapply(strsplit(colnames(t_lite_data_pivot), "_"), `[`, 1), l
 cat_h <- Heatmap(as.matrix(t_lite_data_pivot),
     name = "SV type", col = colors,
     # column_title = "a discrete numeric matrix",
-    rect_gp = gpar(col = "white", lwd = 1.5),
+    rect_gp = gpar(col = "white", lwd = lwd),
     top_annotation = ComplexHeatmap::HeatmapAnnotation(
         foo = anno_block(gp = gpar(fill = 2:24))
     ),

@@ -140,6 +140,7 @@ window: 200000
 
 # Enable / Disable blacklisting of difficult mappable regions
 blacklist_regions: True
+blacklist_regions_for_qc_plot: False
 
 # Enable or disable hand selection through the Jupyter Notebook
 hand_selection: False
@@ -183,7 +184,7 @@ additional_sce_cutoff: 20000000
 sce_min_distance: 500000
 
 # Phasing parameters
-snv_nb_threshold_for_strandphaser: 20
+snv_nb_threshold_for_strandphaser: 100
 
 # --------------------------------------------------------
 # Downstream modules configuration - genome browsing

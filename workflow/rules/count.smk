@@ -64,20 +64,41 @@ if config["ashleys_pipeline"] is False:
             > {log} 2>&1
             """
 
-    rule populate_counts:
-        input:
-            bin_bed=ancient("workflow/data/bin_200kb_all.bed"),
-            counts="{folder}/{sample}/counts/{sample}.txt.raw.gz",
-        output:
-            populated_counts="{folder}/{sample}/counts/{sample}.txt.populated.gz",
-        log:
-            "{folder}/log/plot_mosaic_counts/{sample}.log",
-        conda:
-            "../envs/mc_base.yaml"
-        resources:
-            mem_mb=get_mem_mb,
-        script:
-            "../scripts/utils/populated_counts_for_qc_plot.py"
+    if config["reference"] != "mm10":
+
+        rule populate_counts:
+            input:
+                bin_bed=ancient("workflow/data/bin_200kb_all.bed"),
+                counts="{folder}/{sample}/counts/{sample}.txt.raw.gz",
+            output:
+                populated_counts="{folder}/{sample}/counts/{sample}.txt.populated.gz",
+            log:
+                "{folder}/log/plot_mosaic_counts/{sample}.log",
+            conda:
+                "../envs/mc_base.yaml"
+            resources:
+                mem_mb=get_mem_mb,
+            script:
+                "../scripts/utils/populated_counts_for_qc_plot.py"
+
+    else:
+
+        rule populate_counts:
+            input:
+                counts="{folder}/{sample}/counts/{sample}.txt.raw.gz",
+            output:
+                populated_counts="{folder}/{sample}/counts/{sample}.txt.populated.gz",
+            log:
+                "{folder}/log/plot_mosaic_counts/{sample}.log",
+            conda:
+                "../envs/ashleys_base.yaml"
+            resources:
+                mem_mb=get_mem_mb,
+            shell:
+                """
+                zcat {input.counts} | awk 'BEGIN {{OFS="\t"}}; NR==1 {{print $0, "bin_id"}}; NR>1 {{print $0, $1 "_" $2 "_" $3}}' | \
+                gzip > {output.populated_counts}
+                """
 
     if config["input_bam_legacy"] is True:
 
