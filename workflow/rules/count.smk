@@ -127,6 +127,7 @@ if config["ashleys_pipeline"] is False:
                 "echo 'cell\tprobability\tprediction' > {output}"
 
 
+
 rule copy_labels:
     input:
         select_labels,
@@ -155,9 +156,10 @@ rule symlink_selected_bam:
         "../scripts/utils/symlink_selected_bam.py"
 
 
+
 rule remove_unselected_bam:
     input:
-        labels="{folder}/{sample}/cell_selection/labels.tsv",
+        labels=select_labels,
         bam=unselected_input_bam,
         bai=unselected_input_bai,
     output:
@@ -183,7 +185,8 @@ checkpoint filter_bad_cells_from_mosaic_count:
     input:
         info_raw="{folder}/{sample}/counts/{sample}.info_raw",
         counts_sort=select_counts_for_SV_calling,
-        labels="{folder}/{sample}/config/labels.tsv",
+        labels=select_labels,
+        # labels="{folder}/{sample}/config/labels.tsv",
     output:
         info="{folder}/{sample}/counts/{sample}.info",
         info_removed="{folder}/{sample}/counts/{sample}.info_rm",

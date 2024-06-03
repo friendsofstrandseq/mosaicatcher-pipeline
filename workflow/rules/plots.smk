@@ -402,5 +402,7 @@ rule generate_igv_session:
         "../envs/mc_base.yaml"
     resources:
         mem_mb=get_mem_mb,
+    params:
+        reference_genome=config["reference"],
     shell:
-        "sh workflow/scripts/plotting/generate_IGV_session.sh {input.splitted_files_dir} {output.xml_session}"
+        "sh workflow/scripts/plotting/generate_IGV_session.sh {input.splitted_files_dir} {output.xml_session} {params.reference_genome} > {log}"

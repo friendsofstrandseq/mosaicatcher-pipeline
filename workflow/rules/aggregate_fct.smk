@@ -370,6 +370,6 @@ def select_binbed(wildcards):
 
 def select_labels(wildcards):
     if config["strandscape_labels_path"] != "":
-        return config["strandscape_labels_path"]
+        return ancient(config["strandscape_labels_path"])
     else:
         return "{folder}/{sample}/cell_selection/labels.tsv"

@@ -55,7 +55,7 @@ include: "rules/common.smk"
 include: "rules/aggregate_fct.smk"
 
 
-include: "rules/external_data.smk"
+# include: "rules/external_data.smk"
 
 
 include: "rules/setup.smk"
@@ -77,6 +77,9 @@ include: "rules/regenotyping.smk"
 
 
 include: "rules/strandphaser.smk"
+
+
+include: "rules/breakpointr.smk"
 
 
 include: "rules/haplotagging.smk"

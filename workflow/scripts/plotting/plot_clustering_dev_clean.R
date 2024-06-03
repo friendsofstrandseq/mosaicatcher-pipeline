@@ -144,7 +144,7 @@ col_annotation <- sapply(strsplit(lite_data_pivot_clustering$pos, "_"), `[`, 1)
 col_test <- factor(sapply(strsplit(colnames(t_lite_data_pivot_clustering_num), "_"), `[`, 1), levels = unique(sapply(strsplit(colnames(t_lite_data_pivot_clustering_num), "_"), `[`, 1)))
 
 
-calculate_lwd <- function(num_columns, min_columns = 30, max_columns = 500, min_lwd = 0.1, max_lwd = 1.5) {
+calculate_lwd <- function(num_columns, min_columns = 30, max_columns = 1000, min_lwd = 0.01, max_lwd = 1.5) {
     # Linear interpolation
     lwd <- (max_lwd - min_lwd) * (max_columns - num_columns) / (max_columns - min_columns) + min_lwd
     # Ensure lwd is within the specified range

@@ -1,0 +1,8 @@
+name: breakpointr_env
+channels:
+  - bioconda
+  - conda-forge
+  - r
+  - anaconda
+dependencies:
+  - bioconductor-breakpointr

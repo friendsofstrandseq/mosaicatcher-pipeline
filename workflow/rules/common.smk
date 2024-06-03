@@ -132,8 +132,8 @@ if config["strandscape_labels_path"]:
     assert os.path.isfile(labels_path)
     ashleys_labels = pd.read_csv(labels_path, sep="\t")
     strandscape_labels = pd.read_csv(config["strandscape_labels_path"], sep="\t")
-    print(ashleys_labels)
-    print(strandscape_labels)
+    # print(ashleys_labels)
+    # print(strandscape_labels)
     assert ashleys_labels.shape[0] == strandscape_labels.shape[0]
     assert (
         ashleys_labels.cell.values.tolist() == strandscape_labels.cell.values.tolist()
@@ -737,6 +737,15 @@ def get_all_plots(wildcards):
         if config["scNOVA"] is True
         else []
     )
+
+    if config["breakpointR"] is True:
+        l_outputs.extend(
+            expand(
+                "{folder}/{sample}/breakpointR/breakpointR.config",
+                folder=config["data_location"],
+                sample=wildcards.sample,
+            )
+        )
 
     if config["split_qc_plot"] is True:
         # print("OK")

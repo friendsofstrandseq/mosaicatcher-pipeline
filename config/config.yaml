@@ -15,6 +15,12 @@ email: ""
 samples_to_process: []
 
 # --------------------------------------------------------
+# Other modules
+# --------------------------------------------------------
+
+breakpointR: False
+
+# --------------------------------------------------------
 # Data location & I/O
 # --------------------------------------------------------
 
@@ -42,6 +48,9 @@ ashleys_threshold: 0.5
 
 # Enable or disable FastQC analysis
 MultiQC: False
+
+# Enable or disable ashleys-qc
+bypass_ashleys: False
 
 # --------------------------------------------------------
 # GENECORE Configuration

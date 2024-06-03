@@ -1,12 +1,23 @@
 # if config["multistep_normalisation"] == False or config["ashleys_pipeline"] == False:
 
 
-rule mergeBams:
+rule create_tmp_input_bam_list:
     input:
-        check=remove_unselected_fct,
         bam=selected_input_bam,
         bai=selected_input_bai,
-        labels="{folder}/{sample}/cell_selection/labels.tsv",
+        labels=select_labels,
+        check=remove_unselected_fct,
+    output:
+        "{folder}/{sample}/merged_bam/tmp_input_bam_list.txt",
+    conda:
+        "../envs/mc_base.yaml"
+    script:
+        "../scripts/utils/create_tmp_list_for_samtools_merge.py"
+
+
+rule mergeBams:
+    input:
+        bam="{folder}/{sample}/merged_bam/tmp_input_bam_list.txt",
     output:
         temp("{folder}/{sample}/merged_bam/merged.raw.bam"),
     log:
@@ -18,7 +29,7 @@ rule mergeBams:
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     shell:
-        "samtools merge -@ {threads} {output} {input.bam} 2>&1 > {log}"
+        "samtools merge -@ {threads} {output} -b {input.bam} 2>&1 > {log}"
 
 
 rule mergeSortBams:

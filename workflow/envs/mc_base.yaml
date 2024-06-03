@@ -20,5 +20,5 @@ dependencies:
   # ArbiGent Hufsah deps
   - pytables
   - xopen
-  # Genome browsing
+  # NEW
   - pybigwig
