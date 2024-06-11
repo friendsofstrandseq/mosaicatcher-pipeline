@@ -2,7 +2,7 @@ import os
 from snakemake.remote.HTTP import RemoteProvider as HTTPRemoteProvider
 
 # storage:
-#     provider="http",
+    # provider="http",
 HTTP = HTTPRemoteProvider()
 
 
