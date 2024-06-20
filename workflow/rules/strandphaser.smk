@@ -79,6 +79,7 @@ rule merge_strandphaser_vcfs:
     input:
         vcfs=aggregate_vcf_gz,
         tbis=aggregate_vcf_gz_tbi,
+        ploidy_summary="{folder}/{sample}/ploidy/ploidy_summary.txt",
     output:
         vcfgz="{folder}/{sample}/strandphaser/phased-snvs/{sample}.vcf.gz",
     log:

@@ -7,6 +7,7 @@ rule mergeBams:
         bam=selected_input_bam,
         bai=selected_input_bai,
         labels="{folder}/{sample}/cell_selection/labels.tsv",
+        ploidy_summary="{folder}/{sample}/ploidy/ploidy_summary.txt",
     output:
         temp("{folder}/{sample}/merged_bam/merged.raw.bam"),
     log:
@@ -62,7 +63,6 @@ rule regenotype_SNVs:
         fasta_index="{fasta}.fai".format(
             fasta=config["references_data"][config["reference"]]["reference_fasta"]
         ),
-        ploidy_summary="{folder}/{sample}/ploidy/ploidy_summary.txt",
     output:
         vcf="{folder}/{sample}/snv_genotyping/{chrom,chr[0-9A-Z]+}.vcf",
     log:
