@@ -13,8 +13,6 @@ on:
 
 jobs:
 
-
-
   Formatting:
     runs-on: ubuntu-latest
     steps:
