@@ -10,7 +10,7 @@ on:
     branches:
       - "*"
       - "!master"
-
+      - "!dev"
 jobs:
   # Downloading_example_data:
   #   runs-on: ubuntu-latest

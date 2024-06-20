@@ -5,3 +5,5 @@ channels:
 dependencies:
   - pandas
   - snakemake-storage-plugin-http
+  - snakemake-storage-plugin-fs
+  - snakemake-executor-plugin-slurm

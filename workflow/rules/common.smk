@@ -124,8 +124,6 @@ if config["scNOVA"] is True:
     ), "chrY is not handled by scNOVA yet, please remove it for config['chromosomes'] and add it in config['chomosomes_to_exclude']"
 
 
-
-
 if config["strandscape_labels_path"]:
     folder_location = config["abs_path"].join(
         config["strandscape_labels_path"].split("/")[:-1]
@@ -840,6 +838,13 @@ def get_all_plots(wildcards):
         l_outputs.extend(
             expand(
                 "{folder}/{sample}/plots/ploidy/{sample}.pdf",
+                folder=config["data_location"],
+                sample=wildcards.sample,
+            ),
+        )
+        l_outputs.extend(
+            expand(
+                "{folder}/{sample}/ploidy/ploidy_summary.txt",
                 folder=config["data_location"],
                 sample=wildcards.sample,
             ),
