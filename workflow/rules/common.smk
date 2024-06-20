@@ -908,13 +908,13 @@ def get_all_plots(wildcards):
 
         # Run summary section
 
-        # l_outputs.extend(
-        #     expand(
-        #         "{folder}/{sample}/config/run_summary.txt",
-        #         folder=config["data_location"],
-        #         sample=wildcards.sample,
-        #     ),
-        # )
+        l_outputs.extend(
+            expand(
+                "{folder}/{sample}/config/run_summary.txt",
+                folder=config["data_location"],
+                sample=wildcards.sample,
+            ),
+        )
 
     # from pprint import pprint
     # pprint(l_outputs)

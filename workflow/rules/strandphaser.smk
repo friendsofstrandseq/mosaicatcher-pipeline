@@ -48,7 +48,6 @@ rule run_strandphaser_per_chrom:
         bsgenome="workflow/data/ref_genomes/config/BSgenome_{}.ok".format(
             config["reference"]
         ),
-        summary="{folder}/{sample}/ploidy/ploidy_summary.txt",
     output:
         "{folder}/{sample}/strandphaser/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt",
         "{folder}/{sample}/strandphaser/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf",
@@ -76,7 +75,6 @@ rule run_strandphaser_per_chrom:
         """
 
 
-ruleorder: summarise_ploidy > merge_strandphaser_vcfs
 
 
 rule merge_strandphaser_vcfs:
