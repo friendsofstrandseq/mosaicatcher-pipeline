@@ -345,10 +345,9 @@ rule jbrowse_genome_browser_file:
     log:
         "{folder}/log/JBROWSE/{sample}.log",
     conda:
-        "/g/korbel2/weber/miniconda3/envs/genome_browsing"
-        # "../envs/genome_browsing.yaml"
-    container:
-        None
+        "../envs/mc_base.yaml"
+    # container:
+    #     None
     resources:
         mem_mb=get_mem_mb,
     shell:
