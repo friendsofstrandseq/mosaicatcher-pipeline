@@ -2,7 +2,6 @@ rule convert_strandphaser_input:
     input:
         states="{folder}/{sample}/segmentation/Selection_initial_strand_state",
         info="{folder}/{sample}/counts/{sample}.info",
-        ploidy_summary="{folder}/{sample}/ploidy/ploidy_summary.txt",
     output:
         "{folder}/{sample}/strandphaser/strandphaser_input.txt",
     log:
@@ -73,8 +72,6 @@ rule run_strandphaser_per_chrom:
                 {input.snppositions} \
                 $(pwd)/utils/R-packages/
         """
-
-
 
 
 rule merge_strandphaser_vcfs:

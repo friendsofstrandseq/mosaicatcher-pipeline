@@ -58,7 +58,7 @@ jobs:
 
       - name: Setup snakemake
         run: |
-          mamba install -c conda-forge -c bioconda snakemake snakemake-storage-plugin-http
+          mamba install -c conda-forge -c bioconda snakemake==7.32.4
 
       - name: Run Snakemake Lint
         run: |
@@ -103,7 +103,7 @@ jobs:
         run: conda install -c conda-forge mamba
 
       - name: Setup Snakemake
-        run: mamba install -c conda-forge -c bioconda snakemake snakemake-storage-plugin-http
+        run: mamba install -c conda-forge -c bioconda snakemake==7.32.4
 
       - name: List options of workflow
         run: |
@@ -111,6 +111,6 @@ jobs:
 
       - name: Run workflow
         run: |
-          snakemake --cores 1 --software-deployment-method conda --configfile .tests/config/simple_config_ashleys.yaml \
+          snakemake --cores 1 --use-conda --configfile .tests/config/simple_config_ashleys.yaml \
           --conda-frontend mamba -p --verbose --debug --snakefile workflow/Snakefile
 

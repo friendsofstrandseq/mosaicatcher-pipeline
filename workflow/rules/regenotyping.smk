@@ -7,7 +7,6 @@ rule mergeBams:
         bam=selected_input_bam,
         bai=selected_input_bai,
         labels="{folder}/{sample}/cell_selection/labels.tsv",
-        ploidy_summary="{folder}/{sample}/ploidy/ploidy_summary.txt",
     output:
         temp("{folder}/{sample}/merged_bam/merged.raw.bam"),
     log:
