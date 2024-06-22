@@ -23,7 +23,7 @@ if config["ashleys_pipeline"] is True:
             github(
                 "friendsofstrandseq/ashleys-qc-pipeline",
                 path="workflow/Snakefile",
-                tag=str(config["ashleys_pipeline_version"]),
+                # tag=str(config["ashleys_pipeline_version"]),
                 branch="dev",
             )
         config:
