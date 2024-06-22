@@ -124,8 +124,6 @@ if config["scNOVA"] is True:
     ), "chrY is not handled by scNOVA yet, please remove it for config['chromosomes'] and add it in config['chomosomes_to_exclude']"
 
 
-
-
 if config["strandscape_labels_path"]:
     folder_location = config["abs_path"].join(
         config["strandscape_labels_path"].split("/")[:-1]
@@ -844,6 +842,13 @@ def get_all_plots(wildcards):
                 sample=wildcards.sample,
             ),
         )
+        l_outputs.extend(
+            expand(
+                "{folder}/{sample}/ploidy/ploidy_summary.txt",
+                folder=config["data_location"],
+                sample=wildcards.sample,
+            ),
+        )
 
         # scTRIP multiplot
 
@@ -903,14 +908,15 @@ def get_all_plots(wildcards):
 
         # Run summary section
 
-        # l_outputs.extend(
-        #     expand(
-        #         "{folder}/{sample}/config/run_summary.txt",
-        #         folder=config["data_location"],
-        #         sample=wildcards.sample,
-        #     ),
-        # )
+        l_outputs.extend(
+            expand(
+                "{folder}/{sample}/config/run_summary.txt",
+                folder=config["data_location"],
+                sample=wildcards.sample,
+            ),
+        )
 
-    # from pprint import pprint
-    # pprint(l_outputs)
+    from pprint import pprint
+
+    pprint(l_outputs)
     return l_outputs
