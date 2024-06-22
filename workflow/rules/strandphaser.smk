@@ -76,8 +76,8 @@ rule run_strandphaser_per_chrom:
 
 rule merge_strandphaser_vcfs:
     input:
-        vcfs=aggregate_vcf_gz,
-        tbis=aggregate_vcf_gz_tbi,
+        vcfs=ancient(aggregate_vcf_gz),
+        tbis=ancient(aggregate_vcf_gz_tbi),
     output:
         vcfgz="{folder}/{sample}/strandphaser/phased-snvs/{sample}.vcf.gz",
     log:

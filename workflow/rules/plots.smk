@@ -346,8 +346,6 @@ rule jbrowse_genome_browser_file:
         "{folder}/log/JBROWSE/{sample}.log",
     conda:
         "../envs/mc_base.yaml"
-    # container:
-    #     None
     resources:
         mem_mb=get_mem_mb,
     shell:
