@@ -916,7 +916,7 @@ def get_all_plots(wildcards):
             ),
         )
 
-    from pprint import pprint
+    # from pprint import pprint
 
-    pprint(l_outputs)
+    # pprint(l_outputs)
     return l_outputs
