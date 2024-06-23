@@ -1,11 +1,11 @@
 FROM condaforge/mambaforge:latest
 LABEL io.github.snakemake.containerized="true"
-LABEL io.github.snakemake.conda_env_hash="baf5a990206daa9bf405d986fff7878503f9b07f31cfc3099a2a59cd3f613c61"
+LABEL io.github.snakemake.conda_env_hash="a4f99a026c9278f93ef0e72bfea3150e40ff465337539cbe6f1aac566afe4cbb"
 
 # Step 1: Retrieve conda environments
 
 # Conda environment:
-#   source: https://github.com/friendsofstrandseq/ashleys-qc-pipeline/raw/dev/workflow/envs/ashleys_base.yaml
+#   source: https://github.com/friendsofstrandseq/ashleys-qc-pipeline/raw/2.3.1/workflow/envs/ashleys_base.yaml
 #   prefix: /conda-envs/eba7cf011bffb12bcf25d066f6955913
 #   name: ashleys_base
 #   channels:
@@ -29,10 +29,10 @@ LABEL io.github.snakemake.conda_env_hash="baf5a990206daa9bf405d986fff7878503f9b0
 #     # Fix ashleys GH issue
 #     - python=3.10
 RUN mkdir -p /conda-envs/eba7cf011bffb12bcf25d066f6955913
-ADD https://github.com/friendsofstrandseq/ashleys-qc-pipeline/raw/dev/workflow/envs/ashleys_base.yaml /conda-envs/eba7cf011bffb12bcf25d066f6955913/environment.yaml
+ADD https://github.com/friendsofstrandseq/ashleys-qc-pipeline/raw/2.3.1/workflow/envs/ashleys_base.yaml /conda-envs/eba7cf011bffb12bcf25d066f6955913/environment.yaml
 
 # Conda environment:
-#   source: https://github.com/friendsofstrandseq/ashleys-qc-pipeline/raw/dev/workflow/envs/ashleys_rtools.yaml
+#   source: https://github.com/friendsofstrandseq/ashleys-qc-pipeline/raw/2.3.1/workflow/envs/ashleys_rtools.yaml
 #   prefix: /conda-envs/9b847fc31baae8e01dfb7ce438a56b71
 #   name: rtools
 #   channels:
@@ -85,7 +85,7 @@ ADD https://github.com/friendsofstrandseq/ashleys-qc-pipeline/raw/dev/workflow/e
 #     # SOLVE R lib issue
 #     - r-stringi=1.7.12
 RUN mkdir -p /conda-envs/9b847fc31baae8e01dfb7ce438a56b71
-ADD https://github.com/friendsofstrandseq/ashleys-qc-pipeline/raw/dev/workflow/envs/ashleys_rtools.yaml /conda-envs/9b847fc31baae8e01dfb7ce438a56b71/environment.yaml
+ADD https://github.com/friendsofstrandseq/ashleys-qc-pipeline/raw/2.3.1/workflow/envs/ashleys_rtools.yaml /conda-envs/9b847fc31baae8e01dfb7ce438a56b71/environment.yaml
 
 # Conda environment:
 #   source: https://github.com/snakemake/snakemake-wrappers/raw/v1.7.0/bio/bwa/index/environment.yaml
@@ -113,7 +113,7 @@ ADD https://github.com/snakemake/snakemake-wrappers/raw/v1.7.0/bio/fastqc/enviro
 
 # Conda environment:
 #   source: workflow/envs/mc_base.yaml
-#   prefix: /conda-envs/b60fb18f70c5dfd6fe94ada9e184f419
+#   prefix: /conda-envs/13317d3185b8c4c0305fe98c6a708486
 #   name: mc-base
 #   channels:
 #     - conda-forge
@@ -138,8 +138,8 @@ ADD https://github.com/snakemake/snakemake-wrappers/raw/v1.7.0/bio/fastqc/enviro
 #     - xopen
 #     # Fix jbrowse tracks generation
 #     - pybigwig
-RUN mkdir -p /conda-envs/b60fb18f70c5dfd6fe94ada9e184f419
-COPY workflow/envs/mc_base.yaml /conda-envs/b60fb18f70c5dfd6fe94ada9e184f419/environment.yaml
+RUN mkdir -p /conda-envs/13317d3185b8c4c0305fe98c6a708486
+COPY workflow/envs/mc_base.yaml /conda-envs/13317d3185b8c4c0305fe98c6a708486/environment.yaml
 
 # Conda environment:
 #   source: workflow/envs/mc_bioinfo_tools.yaml
@@ -292,10 +292,15 @@ RUN mamba env create --prefix /conda-envs/eba7cf011bffb12bcf25d066f6955913 --fil
     mamba env create --prefix /conda-envs/9b847fc31baae8e01dfb7ce438a56b71 --file /conda-envs/9b847fc31baae8e01dfb7ce438a56b71/environment.yaml && \
     mamba env create --prefix /conda-envs/5681728a49bd83ceed09ba194330c858 --file /conda-envs/5681728a49bd83ceed09ba194330c858/environment.yaml && \
     mamba env create --prefix /conda-envs/08d4368302a4bdf7eda6b536495efe7d --file /conda-envs/08d4368302a4bdf7eda6b536495efe7d/environment.yaml && \
-    mamba env create --prefix /conda-envs/b60fb18f70c5dfd6fe94ada9e184f419 --file /conda-envs/b60fb18f70c5dfd6fe94ada9e184f419/environment.yaml && \
+    mamba env create --prefix /conda-envs/13317d3185b8c4c0305fe98c6a708486 --file /conda-envs/13317d3185b8c4c0305fe98c6a708486/environment.yaml && \
     mamba env create --prefix /conda-envs/f251d84cdc9f25d0e14b48e780261d66 --file /conda-envs/f251d84cdc9f25d0e14b48e780261d66/environment.yaml && \
     mamba env create --prefix /conda-envs/598c87b6c764d05e0c66953cc67f2931 --file /conda-envs/598c87b6c764d05e0c66953cc67f2931/environment.yaml && \
     mamba env create --prefix /conda-envs/667f8c581ac0b8e1ef11912ad74bf264 --file /conda-envs/667f8c581ac0b8e1ef11912ad74bf264/environment.yaml && \
     mamba env create --prefix /conda-envs/193f60d48796dd17eb847ea689b863a9 --file /conda-envs/193f60d48796dd17eb847ea689b863a9/environment.yaml && \
     mamba env create --prefix /conda-envs/ca9641251a8cb0057003875ad776c49f --file /conda-envs/ca9641251a8cb0057003875ad776c49f/environment.yaml && \
     mamba clean --all -y
+    
+# CUSTOM PART
+RUN wget https://zenodo.org/record/7697400/files/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz -P /workflow/data/ref_genomes/
+COPY /workflow/scripts/utils/install_R_package.R /conda-envs/
+RUN chmod -R 0777 /conda-envs/598c87b6c764d05e0c66953cc67f2931/lib/R/library && /conda-envs/598c87b6c764d05e0c66953cc67f2931/bin/Rscript /conda-envs/install_R_package.R /workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz
