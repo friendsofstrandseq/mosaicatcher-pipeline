@@ -15,7 +15,7 @@ rule convert_strandphaser_input:
 rule check_single_paired_end:
     input:
         bam=selected_input_bam,
-        check="{folder}/{sample}/config/remove_unselected_bam.ok",
+        check=remove_unselected_fct,
     output:
         single_paired_end_detect="{folder}/{sample}/config/single_paired_end_detection.txt",
     log:

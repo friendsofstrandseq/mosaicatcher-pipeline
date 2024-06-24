@@ -96,8 +96,8 @@ if config["ashleys_pipeline"] is False:
     else:
 
         rule touch_labels:
-            input:
-                info_raw="{folder}/{sample}/counts/{sample}.info_raw",
+            # input:
+            #     info_raw="{folder}/{sample}/counts/{sample}.info_raw",
             output:
                 "{folder}/{sample}/cell_selection/labels.tsv",
             log:
@@ -108,10 +108,10 @@ if config["ashleys_pipeline"] is False:
                 """
                 # Create the output file
                 echo 'cell\tprobability\tprediction' > {output}
-                # Process table and append to the output
-                tail -n+15 {input.info_raw} | \
-                awk '{{print $2".sort.mdup.bam\t"$10"\t"$10}}' >> {output}
-                cat {output}
+                # # Process table and append to the output
+                # tail -n+15 {{input.info_raw}} | \
+                # awk '{{print $2".sort.mdup.bam\t"$10"\t"$10}}' >> {output}
+                # cat {output}
                 """
 
 
@@ -145,7 +145,8 @@ rule symlink_selected_bam:
 
 rule remove_unselected_bam:
     input:
-        labels="{folder}/{sample}/config/labels.tsv",
+        # labels="{folder}/{sample}/config/labels.tsv",
+        labels="{folder}/{sample}/cell_selection/labels.tsv",
         bam=unselected_input_bam,
         bai=unselected_input_bai,
     output:
@@ -156,22 +157,7 @@ rule remove_unselected_bam:
         "../envs/mc_base.yaml"
     shell:
         """
-        # Show labels
-        cat {input.labels}
-        ls -lh {input.labels}
-        # echo bam
-        echo {input.bam}
-        ls -lh {wildcards.folder}/{wildcards.sample}/bam
-        ls -lh {wildcards.folder}/{wildcards.sample}/selected
-        ls -lh {input.bam}
-        # Show bai
-        echo {input.bai}
-        ls -lh {input.bai}
-        # Remove unselected bam & bai
-        # Check if bam and bai are not empty, then remove them
-        if [ -s {input.bam} ]; then
-            rm {input.bam} {input.bai}
-        fi
+        rm {input.bam} {input.bai}
         """
 
 

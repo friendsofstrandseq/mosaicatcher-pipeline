@@ -193,6 +193,7 @@ def unselected_input_bam(wildcards):
     cell_list = df.cell.tolist()
     # # print(cell_list)
 
+
     # if len(cell_list)>0:
     return expand(
         "{folder}/{sample}/selected/{cell}.sort.mdup.bam",
