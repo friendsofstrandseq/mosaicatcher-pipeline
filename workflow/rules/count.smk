@@ -106,10 +106,11 @@ if config["ashleys_pipeline"] is False:
                 "../envs/mc_base.yaml"
             shell:
                 """
-                echo 'cell\tprobability\tprediction' > {output}
+                tail > {output}
                 # Process table and append to the output
                 tail -n+15 {input.info_raw} | \
-                awk '{{print $1"\t"$10"\t"$10}}' >> {output}
+                awk '{{print $2".sort.mdup.bam\t"$10"\t"$10}}' >> {output}
+                cat {output}
                 """
 
 

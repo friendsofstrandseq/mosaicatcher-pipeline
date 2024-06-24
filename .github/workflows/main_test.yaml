@@ -159,7 +159,7 @@ jobs:
 
       - name: Run workflow
         run: |
-          snakemake --cores 1 --use-conda --configfile .tests/config/simple_config_mosaicatcher.yaml ashleys_pipeline=True \
+          snakemake --cores 1 --use-conda --configfile .tests/config/simple_config_mosaicatcher.yaml --config ashleys_pipeline=True \
           --conda-frontend mamba -p --verbose --debug --snakefile workflow/Snakefile
 
   Testing-with-MultiQC:
