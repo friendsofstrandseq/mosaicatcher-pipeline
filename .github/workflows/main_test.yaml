@@ -31,7 +31,7 @@ jobs:
 
       - name: Pull LFS objects in submodules
         run: |
-          git submodule foreach --recursive 'git pull --rebase origin main && git lfs pull'
+          git submodule foreach --recursive 'git lfs pull'
 
       - name: List contents of .tests
         run: |
@@ -75,7 +75,7 @@ jobs:
           lfs: true
 
       - name: Pull LFS objects in submodules
-        run: git submodule foreach --recursive 'git pull --rebase origin main && git lfs pull'
+        run: git submodule foreach --recursive 'git lfs pull'
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -125,7 +125,7 @@ jobs:
           lfs: true
 
       - name: Pull LFS objects in submodules
-        run: git submodule foreach --recursive 'git pull --rebase origin main && git lfs pull'
+        run: git submodule foreach --recursive 'git lfs pull'
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -177,7 +177,7 @@ jobs:
           lfs: true
 
       - name: Pull LFS objects in submodules
-        run: git submodule foreach --recursive 'git pull --rebase origin main && git lfs pull'
+        run: git submodule foreach --recursive 'git lfs pull'
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -217,7 +217,7 @@ jobs:
           lfs: true
 
       - name: Pull LFS objects in submodules
-        run: git submodule foreach --recursive 'git pull --rebase origin main && git lfs pull'
+        run: git submodule foreach --recursive 'git lfs pull'
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -257,7 +257,7 @@ jobs:
           lfs: true
 
       - name: Pull LFS objects in submodules
-        run: git submodule foreach --recursive 'git pull --rebase origin main && git lfs pull'
+        run: git submodule foreach --recursive 'git lfs pull'
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -297,7 +297,7 @@ jobs:
           lfs: true
 
       - name: Pull LFS objects in submodules
-        run: git submodule foreach --recursive 'git pull --rebase origin main && git lfs pull'
+        run: git submodule foreach --recursive 'git lfs pull'
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -338,7 +338,7 @@ jobs:
           lfs: true
 
       - name: Pull LFS objects in submodules
-        run: git submodule foreach --recursive 'git pull --rebase origin main && git lfs pull'
+        run: git submodule foreach --recursive 'git lfs pull'
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -379,7 +379,7 @@ jobs:
           lfs: true
 
       - name: Pull LFS objects in submodules
-        run: git submodule foreach --recursive 'git pull --rebase origin main && git lfs pull'
+        run: git submodule foreach --recursive 'git lfs pull'
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -420,7 +420,7 @@ jobs:
           lfs: true
 
       - name: Pull LFS objects in submodules
-        run: git submodule foreach --recursive 'git pull --rebase origin main && git lfs pull'
+        run: git submodule foreach --recursive 'git lfs pull'
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -461,7 +461,7 @@ jobs:
           lfs: true
 
       - name: Pull LFS objects in submodules
-        run: git submodule foreach --recursive 'git pull --rebase origin main && git lfs pull'
+        run: git submodule foreach --recursive 'git lfs pull'
 
       - name: Setup Python
         uses: actions/setup-python@v5
