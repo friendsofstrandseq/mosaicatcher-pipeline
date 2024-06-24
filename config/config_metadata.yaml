@@ -176,3 +176,10 @@ breakpointR_only:
   required: False
   category: "Downstream"
   lint_check: False
+whatshap_only:
+  desc: If specified, will run whatshap only
+  type: bool
+  default: False
+  required: False
+  category: "Downstream"
+  lint_check: False
