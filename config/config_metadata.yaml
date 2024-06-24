@@ -155,3 +155,24 @@ strandscape_labels_path:
   default: ""
   category: "Data processing"
   lint_check: False
+publishdir:
+  desc: If specified, will copy important data to a second place
+  type: str
+  required: False
+  default: ""
+  lint_check: False
+  category: "I/O"
+breakpointR:
+  desc: If specified, will run breakpointR
+  type: bool
+  default: False
+  required: False
+  category: "Downstream"
+  lint_check: False
+breakpointR_only:
+  desc: If specified, will run breakpointR only, needs breakpointR to be True
+  type: bool
+  default: False
+  required: False
+  category: "Downstream"
+  lint_check: False
