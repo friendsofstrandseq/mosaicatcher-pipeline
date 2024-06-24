@@ -4,9 +4,8 @@ on:
   push:
     branches:
       - "**"
-      
-jobs:
 
+jobs:
   Formatting:
     runs-on: ubuntu-latest
     steps:
@@ -21,15 +20,14 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VALIDATE_SNAKEMAKE_SNAKEFMT: true
 
-
   Linting:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository with submodules
         uses: actions/checkout@v4
         with:
-          submodules: 'recursive'  # Ensures all submodules are checked out
-          lfs: true                # Ensures LFS objects for the main repo are pulled
+          submodules: "recursive" # Ensures all submodules are checked out
+          lfs: true # Ensures LFS objects for the main repo are pulled
 
       - name: Pull LFS objects in submodules
         run: |
@@ -44,9 +42,9 @@ jobs:
           tree -h workflow/data
 
       - name: Setup Python
-        uses: actions/setup-python@v5 
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.12' 
+          python-version: "3.12"
 
       - name: Add Conda to system path
         run: |
@@ -66,7 +64,7 @@ jobs:
 
   Testing-basic:
     runs-on: ubuntu-latest
-    # needs: 
+    # needs:
     #   - Formatting
     #   - Linting
     steps:
@@ -80,9 +78,9 @@ jobs:
         run: git submodule foreach --recursive 'git lfs pull'
 
       - name: Setup Python
-        uses: actions/setup-python@v5 
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.12' 
+          python-version: "3.12"
 
       - name: List contents of .tests
         run: |
@@ -90,7 +88,7 @@ jobs:
 
       - name: Show config file
         run: |
-          cat .tests/config/simple_config_ashleys.yaml
+          cat .tests/config/simple_config_mosaicatcher.yaml
 
       - name: List contents of workflow/data
         run: |
@@ -111,6 +109,339 @@ jobs:
 
       - name: Run workflow
         run: |
-          snakemake --cores 1 --use-conda --configfile .tests/config/simple_config_ashleys.yaml \
+          snakemake --cores 1 --use-conda --configfile .tests/config/simple_config_mosaicatcher.yaml \
           --conda-frontend mamba -p --verbose --debug --snakefile workflow/Snakefile
 
+  Testing-basic-with-ashleys:
+    runs-on: ubuntu-latest
+    # needs:
+    #   - Formatting
+    #   - Linting
+    steps:
+      - name: Checkout repository with submodules and LFS
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          lfs: true
+
+      - name: Pull LFS objects in submodules
+        run: git submodule foreach --recursive 'git lfs pull'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: List contents of .tests
+        run: |
+          tree -h .tests
+
+      - name: Show config file
+        run: |
+          cat .tests/config/simple_config_mosaicatcher.yaml
+
+      - name: List contents of workflow/data
+        run: |
+          tree -h workflow/data
+
+      - name: Add Conda to system path
+        run: echo "$CONDA/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: conda install -c conda-forge mamba
+
+      - name: Setup Snakemake
+        run: mamba install -c conda-forge -c bioconda snakemake==7.32.4
+
+      - name: List options of workflow
+        run: |
+          snakemake --cores 1 --config list_commands=True --verbose --debug
+
+      - name: Run workflow
+        run: |
+          snakemake --cores 1 --use-conda --configfile .tests/config/simple_config_mosaicatcher.yaml ashleys_pipeline=True \
+          --conda-frontend mamba -p --verbose --debug --snakefile workflow/Snakefile
+
+  Testing-with-MultiQC:
+    runs-on: ubuntu-latest
+    needs:
+      - Formatting
+      - Linting
+      - Testing-basic
+      - Testing-basic-with-ashleys
+    steps:
+      - name: Checkout repository with submodules and LFS
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          lfs: true
+
+      - name: Pull LFS objects in submodules
+        run: git submodule foreach --recursive 'git lfs pull'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Add Conda to system path
+        run: echo "$CONDA/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: conda install -c conda-forge mamba
+
+      - name: Setup Snakemake
+        run: mamba install -c conda-forge -c bioconda snakemake==7.32.4
+
+      - name: List options of workflow
+        run: |
+          snakemake --cores 1 --config list_commands=True --verbose --debug
+
+      - name: Run workflow
+        run: |
+          snakemake --cores 1 --use-conda --configfile .tests/config/simple_config_mosaicatcher.yaml --config MultiQC=True ashleys_pipeline=True \
+          --conda-frontend mamba -p --verbose --debug --snakefile workflow/Snakefile
+
+  Testing-with-ms-norm:
+    runs-on: ubuntu-latest
+    needs:
+      - Formatting
+      - Linting
+      - Testing-basic
+      - Testing-basic-with-ashleys
+    steps:
+      - name: Checkout repository with submodules and LFS
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          lfs: true
+
+      - name: Pull LFS objects in submodules
+        run: git submodule foreach --recursive 'git lfs pull'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Add Conda to system path
+        run: echo "$CONDA/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: conda install -c conda-forge mamba
+
+      - name: Setup Snakemake
+        run: mamba install -c conda-forge -c bioconda snakemake==7.32.4
+
+      - name: List options of workflow
+        run: |
+          snakemake --cores 1 --config list_commands=True --verbose --debug
+
+      - name: Run workflow
+        run: |
+          snakemake --cores 1 --use-conda --configfile .tests/config/simple_config_mosaicatcher.yaml --config multistep_normalisation=True ashleys_pipeline=True \
+          --conda-frontend mamba -p --verbose --debug --snakefile workflow/Snakefile
+
+  Testing-with-breakpointR-only:
+    runs-on: ubuntu-latest
+    needs:
+      - Formatting
+      - Linting
+      - Testing-basic
+      - Testing-basic-with-ashleys
+    steps:
+      - name: Checkout repository with submodules and LFS
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          lfs: true
+
+      - name: Pull LFS objects in submodules
+        run: git submodule foreach --recursive 'git lfs pull'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Add Conda to system path
+        run: echo "$CONDA/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: conda install -c conda-forge mamba
+
+      - name: Setup Snakemake
+        run: mamba install -c conda-forge -c bioconda snakemake==7.32.4
+
+      - name: List options of workflow
+        run: |
+          snakemake --cores 1 --config list_commands=True --verbose --debug
+
+      - name: Run workflow
+        run: |
+          snakemake --cores 1 --use-conda --configfile .tests/config/simple_config_mosaicatcher.yaml --config breakpointR=True breakpointR_only=True \
+          --conda-frontend mamba -p --verbose --debug --snakefile workflow/Snakefile
+
+  Testing-with-hg38:
+    runs-on: ubuntu-latest
+    needs:
+      - Formatting
+      - Linting
+      - Testing-basic
+      - Testing-basic-with-ashleys
+    # - Testing-basic-with-slurm
+    steps:
+      - name: Checkout repository with submodules and LFS
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          lfs: true
+
+      - name: Pull LFS objects in submodules
+        run: git submodule foreach --recursive 'git lfs pull'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Add Conda to system path
+        run: echo "$CONDA/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: conda install -c conda-forge mamba
+
+      - name: Setup Snakemake
+        run: mamba install -c conda-forge -c bioconda snakemake==7.32.4
+
+      - name: List options of workflow
+        run: |
+          snakemake --cores 1 --config list_commands=True --verbose --debug
+
+      - name: Run workflow
+        run: |
+          snakemake --cores 1 --use-conda --config reference=hg38 use_light_data=True chromosomes=[chr17] ashleys_pipeline=True \
+          --conda-frontend mamba -p --verbose --debug --snakefile workflow/Snakefile
+
+  Testing-with-hg19:
+    runs-on: ubuntu-latest
+    needs:
+      - Formatting
+      - Linting
+      - Testing-basic
+      - Testing-basic-with-ashleys
+    # - Testing-basic-with-slurm
+    steps:
+      - name: Checkout repository with submodules and LFS
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          lfs: true
+
+      - name: Pull LFS objects in submodules
+        run: git submodule foreach --recursive 'git lfs pull'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Add Conda to system path
+        run: echo "$CONDA/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: conda install -c conda-forge mamba
+
+      - name: Setup Snakemake
+        run: mamba install -c conda-forge -c bioconda snakemake==7.32.4
+
+      - name: List options of workflow
+        run: |
+          snakemake --cores 1 --config list_commands=True --verbose --debug
+
+      - name: Run workflow
+        run: |
+          snakemake --cores 1 --use-conda --config reference=hg19 use_light_data=True chromosomes=[chr17] ashleys_pipeline=True \
+          --conda-frontend mamba -p --verbose --debug --snakefile workflow/Snakefile
+
+  Testing-with-T2T:
+    runs-on: ubuntu-latest
+    needs:
+      - Formatting
+      - Linting
+      - Testing-basic
+      - Testing-basic-with-ashleys
+    # - Testing-basic-with-slurm
+    steps:
+      - name: Checkout repository with submodules and LFS
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          lfs: true
+
+      - name: Pull LFS objects in submodules
+        run: git submodule foreach --recursive 'git lfs pull'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Add Conda to system path
+        run: echo "$CONDA/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: conda install -c conda-forge mamba
+
+      - name: Setup Snakemake
+        run: mamba install -c conda-forge -c bioconda snakemake==7.32.4
+
+      - name: List options of workflow
+        run: |
+          snakemake --cores 1 --config list_commands=True --verbose --debug
+
+      - name: Run workflow
+        run: |
+          snakemake --cores 1 --use-conda --config reference=T2T use_light_data=True chromosomes=[chr17] ashleys_pipeline=True \
+          --conda-frontend mamba -p --verbose --debug --snakefile workflow/Snakefile
+
+  Testing-with-mm10:
+    runs-on: ubuntu-latest
+    needs:
+      - Formatting
+      - Linting
+      - Testing-basic
+      - Testing-basic-with-ashleys
+    # - Testing-basic-with-slurm
+    steps:
+      - name: Checkout repository with submodules and LFS
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          lfs: true
+
+      - name: Pull LFS objects in submodules
+        run: git submodule foreach --recursive 'git lfs pull'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Add Conda to system path
+        run: echo "$CONDA/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: conda install -c conda-forge mamba
+
+      - name: Setup Snakemake
+        run: mamba install -c conda-forge -c bioconda snakemake==7.32.4
+
+      - name: List options of workflow
+        run: |
+          snakemake --cores 1 --config list_commands=True --verbose --debug
+
+      - name: Run workflow
+        run: |
+          snakemake --cores 1 --use-conda --config reference=T2T use_light_data=True chromosomes=[chr17] ashleys_pipeline=True \
+          --conda-frontend mamba -p --verbose --debug --snakefile workflow/Snakefile
