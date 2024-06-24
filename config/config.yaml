@@ -49,6 +49,7 @@ MultiQC: False
 
 breakpointR: False
 breakpointR_only: False
+whatshap_only: False
 
 # --------------------------------------------------------
 # GENECORE Configuration

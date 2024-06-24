@@ -129,7 +129,14 @@ if config["breakpointR_only"] is True:
     assert (
         config["breakpointR_only"] == config["breakpointR"]
     ), "breakpointR parameter should be set to True when breakpointR_only is also set to True"
+    assert (
+        config["breakpointR_only"] != config["whatshap_only"]
+    ), "breakpointR_only and whatshap_only parameters cannot both be set to True, parameters are mutually exclusive"
 
+if config["whatshap_only"] is True:
+    assert (
+        config["whatshap_only"] != config["breakpointR_only"]
+    ), "whatshap_only and breakpointR_only parameters cannot both be set to True, parameters are mutually exclusive"
 
 if config["scNOVA"] is True:
     # print(config["chromosomes_to_exclude"])
@@ -716,6 +723,17 @@ def get_final_output():
         final_list.extend(
             expand(
                 "{folder}/{sample}/breakpointR/output/plots/breaksPlot.pdf",
+                folder=config["data_location"],
+                sample=samples,
+            )
+        )
+
+    if config["whatshap_only"] is True:
+        final_list = list()
+
+        final_list.extend(
+            expand(
+                "{folder}/{sample}/haplotag/table/haplotag_counts_merged.tsv",
                 folder=config["data_location"],
                 sample=samples,
             )
