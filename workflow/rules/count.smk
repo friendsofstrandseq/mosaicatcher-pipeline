@@ -103,7 +103,12 @@ if config["ashleys_pipeline"] is False:
             conda:
                 "../envs/mc_base.yaml"
             shell:
-                "echo 'cell\tprobability\tprediction' > {output}"
+                """
+                echo 'cell\tprobability\tprediction' > {output}
+                # Process table and append to the output
+                tail -n+15 {wildcards.folder}/{wildcards.sample}/counts/{wildcards.sample}.info_raw | \
+                awk '{{print $1"\t"$10"\t"$10}}' >> {output}
+                """
 
 
 rule copy_labels:
@@ -136,7 +141,7 @@ rule symlink_selected_bam:
 
 rule remove_unselected_bam:
     input:
-        labels="{folder}/{sample}/cell_selection/labels.tsv",
+        labels="{folder}/{sample}/config/labels.tsv",
         bam=unselected_input_bam,
         bai=unselected_input_bai,
     output:
