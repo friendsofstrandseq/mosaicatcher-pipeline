@@ -159,6 +159,8 @@ rule save_config:
 rule save_conda_versions_mc_base:
     output:
         "{folder}/{sample}/config/conda_export/mc_base.yaml",
+    log:
+        "{folder}/log/save_conda_versions/{sample}/mc_base.log",
     conda:
         "../envs/mc_base.yaml"
     shell:
@@ -168,6 +170,8 @@ rule save_conda_versions_mc_base:
 rule save_conda_versions_mc_bioinfo_tools:
     output:
         "{folder}/{sample}/config/conda_export/mc_bioinfo_tools.yaml",
+    log:
+        "{folder}/log/save_conda_versions/{sample}/mc_bioinfo_tools.log",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     shell:
@@ -177,6 +181,8 @@ rule save_conda_versions_mc_bioinfo_tools:
 rule save_conda_versions_rtools:
     output:
         "{folder}/{sample}/config/conda_export/rtools.yaml",
+    log:
+        "{folder}/log/save_conda_versions/{sample}/rtools.log",
     conda:
         "../envs/rtools.yaml"
     shell:
@@ -186,6 +192,8 @@ rule save_conda_versions_rtools:
 rule save_conda_versions_scNOVA_bioinfo_tools:
     output:
         "{folder}/{sample}/config/conda_export/scNOVA_bioinfo_tools.yaml",
+    log:
+        "{folder}/log/save_conda_versions/{sample}/scNOVA_bioinfo_tools.log",
     conda:
         "../envs/scNOVA/scNOVA_bioinfo_tools.yaml"
     shell:
@@ -195,6 +203,8 @@ rule save_conda_versions_scNOVA_bioinfo_tools:
 rule save_conda_versions_scNOVA_DL:
     output:
         "{folder}/{sample}/config/conda_export/scNOVA_DL.yaml",
+    log:
+        "{folder}/log/save_conda_versions/{sample}/scNOVA_DL.log",
     conda:
         "../envs/scNOVA/scNOVA_DL.yaml"
     shell:
@@ -204,6 +214,8 @@ rule save_conda_versions_scNOVA_DL:
 rule save_conda_versions_scNOVA_R:
     output:
         "{folder}/{sample}/config/conda_export/scNOVA_R.yaml",
+    log:
+        "{folder}/log/save_conda_versions/{sample}/scNOVA_R.log",
     conda:
         "../envs/scNOVA/scNOVA_R.yaml"
     shell:
