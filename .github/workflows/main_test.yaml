@@ -31,7 +31,7 @@ jobs:
 
       - name: Pull LFS objects in submodules
         run: |
-          git submodule foreach --recursive 'git pull origin main && git lfs pull'
+          git submodule foreach --recursive 'git pull --rebase origin main && git lfs pull'
 
       - name: List contents of .tests
         run: |
@@ -74,11 +74,8 @@ jobs:
           submodules: recursive
           lfs: true
 
-      - name: Set git config to fast-forward only on pull
-        run: git config pull.ff only
-
       - name: Pull LFS objects in submodules
-        run: git submodule foreach --recursive 'git pull origin main && git lfs pull'
+        run: git submodule foreach --recursive 'git pull --rebase origin main && git lfs pull'
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -127,11 +124,8 @@ jobs:
           submodules: recursive
           lfs: true
 
-      - name: Set git config to fast-forward only on pull
-        run: git config pull.ff only
-
       - name: Pull LFS objects in submodules
-        run: git submodule foreach --recursive 'git pull origin main && git lfs pull'
+        run: git submodule foreach --recursive 'git pull --rebase origin main && git lfs pull'
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -182,11 +176,8 @@ jobs:
           submodules: recursive
           lfs: true
 
-      - name: Set git config to fast-forward only on pull
-        run: git config pull.ff only
-
       - name: Pull LFS objects in submodules
-        run: git submodule foreach --recursive 'git pull origin main && git lfs pull'
+        run: git submodule foreach --recursive 'git pull --rebase origin main && git lfs pull'
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -225,11 +216,8 @@ jobs:
           submodules: recursive
           lfs: true
 
-      - name: Set git config to fast-forward only on pull
-        run: git config pull.ff only
-
       - name: Pull LFS objects in submodules
-        run: git submodule foreach --recursive 'git pull origin main && git lfs pull'
+        run: git submodule foreach --recursive 'git pull --rebase origin main && git lfs pull'
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -268,11 +256,8 @@ jobs:
           submodules: recursive
           lfs: true
 
-      - name: Set git config to fast-forward only on pull
-        run: git config pull.ff only
-
       - name: Pull LFS objects in submodules
-        run: git submodule foreach --recursive 'git pull origin main && git lfs pull'
+        run: git submodule foreach --recursive 'git pull --rebase origin main && git lfs pull'
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -311,11 +296,8 @@ jobs:
           submodules: recursive
           lfs: true
 
-      - name: Set git config to fast-forward only on pull
-        run: git config pull.ff only
-
       - name: Pull LFS objects in submodules
-        run: git submodule foreach --recursive 'git pull origin main && git lfs pull'
+        run: git submodule foreach --recursive 'git pull --rebase origin main && git lfs pull'
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -355,11 +337,8 @@ jobs:
           submodules: recursive
           lfs: true
 
-      - name: Set git config to fast-forward only on pull
-        run: git config pull.ff only
-
       - name: Pull LFS objects in submodules
-        run: git submodule foreach --recursive 'git pull origin main && git lfs pull'
+        run: git submodule foreach --recursive 'git pull --rebase origin main && git lfs pull'
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -399,11 +378,8 @@ jobs:
           submodules: recursive
           lfs: true
 
-      - name: Set git config to fast-forward only on pull
-        run: git config pull.ff only
-
       - name: Pull LFS objects in submodules
-        run: git submodule foreach --recursive 'git pull origin main && git lfs pull'
+        run: git submodule foreach --recursive 'git pull --rebase origin main && git lfs pull'
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -443,11 +419,8 @@ jobs:
           submodules: recursive
           lfs: true
 
-      - name: Set git config to fast-forward only on pull
-        run: git config pull.ff only
-
       - name: Pull LFS objects in submodules
-        run: git submodule foreach --recursive 'git pull origin main && git lfs pull'
+        run: git submodule foreach --recursive 'git pull --rebase origin main && git lfs pull'
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -487,11 +460,8 @@ jobs:
           submodules: recursive
           lfs: true
 
-      - name: Set git config to fast-forward only on pull
-        run: git config pull.ff only
-
       - name: Pull LFS objects in submodules
-        run: git submodule foreach --recursive 'git pull origin main && git lfs pull'
+        run: git submodule foreach --recursive 'git pull --rebase origin main && git lfs pull'
 
       - name: Setup Python
         uses: actions/setup-python@v5
