@@ -147,7 +147,17 @@ rule remove_unselected_bam:
         "../envs/mc_base.yaml"
     shell:
         """
-        rm {input.bam} {input.bai}
+        # Show labels
+        cat {input.labels}
+        # echo bam
+        echo {input.bam}
+        # Show bai
+        echo {input.bai}
+        # Remove unselected bam & bai
+        # Check if bam and bai are not empty, then remove them
+        if [ -s {input.bam} ] && [ -s {input.bai} ]; then
+            rm {input.bam} {input.bai}
+        fi
         """
 
 
