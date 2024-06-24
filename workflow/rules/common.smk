@@ -11,6 +11,15 @@ import os, sys
 os.environ["LC_CTYPE"] = "C"
 
 
+# CONDA ENVS
+
+conda_envs = ["mc_base", "rtools", "mc_bioinfo_tools"]
+conda_envs += (
+    ["scNOVA_bioinfo_tools", "scNOVA_base", "scNOVA_rtools"]
+    if config["scNOVA"] is True
+    else []
+)
+
 # print(config["data_location"])
 
 if config["ashleys_pipeline"] is True and config["genecore"] is True:
@@ -116,6 +125,11 @@ if config["ashleys_pipeline_only"] is True:
         config["ashleys_pipeline_only"] == config["ashleys_pipeline"]
     ), "ashleys_pipeline parameter should be set to True when ashleys_pipeline_only is also set to True"
 
+if config["breakpointR_only"] is True:
+    assert (
+        config["breakpointR_only"] == config["breakpointR"]
+    ), "breakpointR parameter should be set to True when breakpointR_only is also set to True"
+
 
 if config["scNOVA"] is True:
     # print(config["chromosomes_to_exclude"])
@@ -132,8 +146,8 @@ if config["strandscape_labels_path"]:
     assert os.path.isfile(labels_path)
     ashleys_labels = pd.read_csv(labels_path, sep="\t")
     strandscape_labels = pd.read_csv(config["strandscape_labels_path"], sep="\t")
-    print(ashleys_labels)
-    print(strandscape_labels)
+    # print(ashleys_labels)
+    # print(strandscape_labels)
     assert ashleys_labels.shape[0] == strandscape_labels.shape[0]
     assert (
         ashleys_labels.cell.values.tolist() == strandscape_labels.cell.values.tolist()
@@ -332,7 +346,6 @@ class HandleInput:
             for e in os.listdir(thisdir)
             if e not in exclude and e.endswith(".zip") is False
         ]
-        # print(l_to_process)
         if config["samples_to_process"]:
             l_to_process = [
                 e for e in l_to_process if e in config["samples_to_process"]
@@ -355,7 +368,7 @@ class HandleInput:
                 if len(f.split("_")) == 4:
                     assert (
                         len(f.split("_")) != 4
-                    ), "Your file name is using 4 times the '_' character, which is currently not supported by ashleys-qc, please rename your files"
+                    ), "Your file name is using 3 times the '_' character, which is currently not supported by ashleys-qc, please rename your files"
 
             # Dataframe creation
             df = pd.DataFrame([{"File": f} for f in l_files_all])
@@ -613,6 +626,28 @@ def onerror_fct(log):
     )
 
 
+def return_config_output(final_list):
+    # Config section
+
+    final_list.extend(
+        expand(
+            "{folder}/{sample}/config/config.yaml",
+            folder=config["data_location"],
+            sample=samples,
+        ),
+    )
+
+    final_list.extend(
+        expand(
+            "{folder}/{sample}/config/conda_export/{conda_env}.yaml",
+            folder=config["data_location"],
+            sample=samples,
+            conda_env=conda_envs,
+        ),
+    )
+    return final_list
+
+
 def get_scnova_final_output(wildcards):
     # WARNING
 
@@ -663,12 +698,23 @@ def get_final_output():
             sample=samples,
         )
     )
+
     # print(config["scNOVA"])
     if config["scNOVA"] is True:
         # print("TOTO")
         final_list.extend(get_final_output_scnova())
-    # from pprint import pprint
-    # pprint(final_list)
+
+    if config["breakpointR_only"] is True:
+        final_list = list()
+
+        final_list.extend(
+            expand(
+                "{folder}/{sample}/breakpointR/output/plots/breaksPlot.pdf",
+                folder=config["data_location"],
+                sample=samples,
+            )
+        )
+        final_list = return_config_output(final_list)
 
     return final_list
 
@@ -730,6 +776,15 @@ def get_all_plots(wildcards):
     ]
     l_outputs.extend([sub_e for e in tmp_l_divide_count_plots for sub_e in e])
 
+    if config["breakpointR"] is True:
+        l_outputs.extend(
+            expand(
+                "{folder}/{sample}/breakpointR/plots/breaksPlot.pdf",
+                folder=config["data_location"],
+                sample=wildcards.sample,
+            )
+        )
+
     if config["split_qc_plot"] is True:
         # print("OK")
 
@@ -755,6 +810,25 @@ def get_all_plots(wildcards):
                 folder=config["data_location"],
                 sample=samples,
             )
+        )
+
+        # Config section
+
+        l_outputs.extend(
+            expand(
+                "{folder}/{sample}/config/config.yaml",
+                folder=config["data_location"],
+                sample=wildcards.sample,
+            ),
+        )
+
+        l_outputs.extend(
+            expand(
+                "{folder}/{sample}/config/{conda_env}.yaml",
+                folder=config["data_location"],
+                sample=wildcards.sample,
+                conda_env=conda_envs,
+            ),
         )
 
     else:
@@ -842,13 +916,6 @@ def get_all_plots(wildcards):
                 sample=wildcards.sample,
             ),
         )
-        l_outputs.extend(
-            expand(
-                "{folder}/{sample}/ploidy/ploidy_summary.txt",
-                folder=config["data_location"],
-                sample=wildcards.sample,
-            ),
-        )
 
         # scTRIP multiplot
 
@@ -906,17 +973,53 @@ def get_all_plots(wildcards):
             ),
         )
 
-        # Run summary section
-
         l_outputs.extend(
             expand(
-                "{folder}/{sample}/config/run_summary.txt",
+                "{folder}/{sample}/config/conda_export/{conda_env}.yaml",
                 folder=config["data_location"],
                 sample=wildcards.sample,
+                conda_env=conda_envs,
             ),
         )
 
-    from pprint import pprint
+    if config["publishdir"] != "":
+        l_outputs.extend(
+            expand(
+                "{folder}/{sample}/config/publishdir_outputs_mc.ok",
+                folder=config["data_location"],
+                sample=wildcards.sample,
+            )
+        )
+        # Run summary section
 
-    pprint(l_outputs)
+        # l_outputs.extend(
+        #     expand(
+        #         "{folder}/{sample}/config/run_summary.txt",
+        #         folder=config["data_location"],
+        #         sample    =wildcards.sample,
+        #     ),
+        # )
+
+    # from pprint import pprint
+    # pprint(l_outputs)
     return l_outputs
+
+
+def publishdir_fct_mc(wildcards):
+    """
+    Function to generate a list of files and directories for backup.
+    """
+
+    list_files_to_copy = [
+        e for e in get_all_plots(wildcards) if "publishdir_outputs_mc.ok" not in e
+    ]
+
+    # Expand the paths for files
+    expanded_files = [
+        expand(file_path, folder=config["data_location"], sample=wildcards.sample)
+        for file_path in list_files_to_copy
+    ]
+    final_list = [sub_e for e in expanded_files for sub_e in e]
+    # print(final_list)
+
+    return final_list
