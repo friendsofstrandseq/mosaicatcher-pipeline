@@ -80,6 +80,9 @@ include: "rules/regenotyping.smk"
 include: "rules/strandphaser.smk"
 
 
+include: "rules/breakpointr.smk"
+
+
 include: "rules/haplotagging.smk"
 
 
