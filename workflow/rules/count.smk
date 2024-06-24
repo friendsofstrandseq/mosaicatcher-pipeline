@@ -158,13 +158,18 @@ rule remove_unselected_bam:
         """
         # Show labels
         cat {input.labels}
+        ls -lh {input.labels}
         # echo bam
         echo {input.bam}
+        ls -lh {wildcards.folder}/{wildcards.sample}/bam
+        ls -lh {wildcards.folder}/{wildcards.sample}/selected
+        ls -lh {input.bam}
         # Show bai
         echo {input.bai}
+        ls -lh {input.bai}
         # Remove unselected bam & bai
         # Check if bam and bai are not empty, then remove them
-        if [ -s {input.bam} ] && [ -s {input.bai} ]; then
+        if [ -s {input.bam} ]; then
             rm {input.bam} {input.bai}
         fi
         """
