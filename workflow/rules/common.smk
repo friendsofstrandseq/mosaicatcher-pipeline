@@ -828,6 +828,22 @@ def get_all_plots(wildcards):
         )
 
     else:
+        # Ploidy section
+        l_outputs.extend(
+            expand(
+                "{folder}/{sample}/plots/ploidy/{sample}.pdf",
+                folder=config["data_location"],
+                sample=wildcards.sample,
+            ),
+        )
+        l_outputs.extend(
+            expand(
+                "{folder}/{sample}/ploidy/ploidy_summary.txt",
+                folder=config["data_location"],
+                sample=wildcards.sample,
+            ),
+        )
+
         # SV_consistency section
 
         l_outputs.extend(
@@ -904,22 +920,6 @@ def get_all_plots(wildcards):
             ]
         ),
 
-        # Ploidy section
-        l_outputs.extend(
-            expand(
-                "{folder}/{sample}/plots/ploidy/{sample}.pdf",
-                folder=config["data_location"],
-                sample=wildcards.sample,
-            ),
-        )
-        l_outputs.extend(
-            expand(
-                "{folder}/{sample}/ploidy/ploidy_summary.txt",
-                folder=config["data_location"],
-                sample=wildcards.sample,
-            ),
-        )
-
         # scTRIP multiplot
 
         if config["scTRIP_multiplot"] == True:
@@ -995,7 +995,7 @@ def get_all_plots(wildcards):
             ),
         )
 
-    from pprint import pprint
+    # from pprint import pprint
 
-    pprint(l_outputs)
+    # pprint(l_outputs)
     return l_outputs
