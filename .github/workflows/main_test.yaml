@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.7
 
       - name: Formatting using Super-Linter
         uses: github/super-linter@v4
@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository with submodules
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.7
         with:
           submodules: 'recursive'  # Ensures all submodules are checked out
           lfs: true                # Ensures LFS objects for the main repo are pulled
@@ -71,7 +71,7 @@ jobs:
     #   - Linting
     steps:
       - name: Checkout repository with submodules and LFS
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.7
         with:
           submodules: recursive
           lfs: true
