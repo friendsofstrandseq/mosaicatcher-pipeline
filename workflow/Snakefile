@@ -56,7 +56,13 @@ include: "rules/common.smk"
 include: "rules/aggregate_fct.smk"
 
 
-include: "rules/external_data.smk"
+if snakemake.__version__.split(".")[0] == "7":
+
+    include: "rules/external_data_v7.smk"
+
+elif snakemake.__version__.split(".")[0] == "8":
+
+    include: "rules/external_data_v8.smk"
 
 
 include: "rules/setup.smk"
