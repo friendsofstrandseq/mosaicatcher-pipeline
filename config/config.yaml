@@ -43,6 +43,9 @@ ashleys_threshold: 0.5
 # Enable or disable FastQC analysis
 MultiQC: False
 
+# Enable or disable ashleys-qc automatic classification
+bypass_ashleys: False
+
 # --------------------------------------------------------
 # Other modules
 # --------------------------------------------------------
