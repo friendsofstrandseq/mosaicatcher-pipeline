@@ -25,22 +25,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository with submodules
-        uses: actions/checkout@v4.1.7
-        with:
-          submodules: "recursive" # Ensures all submodules are checked out
-          # lfs: true # Ensures LFS objects for the main repo are pulled
+        uses: actions/checkout@v4
+        # with:
+        #   submodules: "recursive" # Ensures all submodules are checked out
+        # lfs: true # Ensures LFS objects for the main repo are pulled
 
-      - name: Pull LFS objects in submodules
-        run: |
-          git submodule foreach --recursive 'git pull origin main'
+      # - name: Pull LFS objects in submodules
+      #   run: |
+      #     git submodule foreach --recursive 'git pull origin main'
 
       - name: List contents of .tests
         run: |
-          tree -h .tests
-
-      - name: List contents of workflow/data
-        run: |
-          tree -h workflow/data
+          tree -h github-actions-runner/.tests
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -61,7 +57,7 @@ jobs:
 
       - name: Run Snakemake Lint
         run: |
-          snakemake --lint
+          snakemake --config data_location=github-actions-runner/.tests --lint
 
   Testing-basic-v7:
     runs-on: ubuntu-latest
