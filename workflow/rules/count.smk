@@ -1,6 +1,5 @@
 if config["ashleys_pipeline"] is False:
 
-
     rule generate_exclude_file_for_mosaic_count:
         input:
             bam=lambda wc: expand(
@@ -14,7 +13,7 @@ if config["ashleys_pipeline"] is False:
         log:
             "{folder}/log/config/{sample}/exclude_file.log",
         conda:
-            "../envs/ashleys_base.yaml"
+            "../envs/mc_base.yaml"
         params:
             chroms=config["chromosomes"]
             if config["reference"] != "mm10"
