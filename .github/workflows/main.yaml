@@ -34,9 +34,9 @@ jobs:
       #   run: |
       #     git submodule foreach --recursive 'git pull origin main'
 
-      - name: List contents of .tests
+      - name: List contents of .tests-mock
         run: |
-          tree -h github-actions-runner/.tests
+          tree -h github-actions-runner/.tests-mock
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -57,7 +57,7 @@ jobs:
 
       - name: Run Snakemake Lint
         run: |
-          snakemake --config data_location=github-actions-runner/.tests --lint
+          snakemake --config data_location=github-actions-runner/.tests-mock --lint
 
   Testing-basic-v7:
     runs-on: ubuntu-latest
@@ -71,8 +71,14 @@ jobs:
           submodules: recursive
           # lfs: true
 
-      - name: Pull LFS objects in submodules
-        run: git submodule foreach --recursive 'git pull origin main'
+      # - name: Pull LFS objects in submodules
+      #   run: git submodule foreach --recursive 'git pull origin main'
+
+      # Update references
+      - name: Git Submodule Update
+        run: |
+          git pull --recurse-submodules
+          git submodule update --remote --recursive
 
       - name: Setup Python
         uses: actions/setup-python@v5
