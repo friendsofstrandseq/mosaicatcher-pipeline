@@ -1,15 +1,17 @@
 name: "Create tag & release"
 
-# on:
-#   push:
-#     branches:
-#       - master
-
 on:
-  pull_request:
-    types: [closed]
-    branches:
-      - master
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: "Log level"
+        required: true
+        default: "warning"
+        type: choice
+        options:
+          - info
+          - warning
+          - debug
 
 jobs:
   tagged-release:

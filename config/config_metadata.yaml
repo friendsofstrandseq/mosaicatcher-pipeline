@@ -22,6 +22,13 @@ MultiQC:
   required: False
   default: False
   category: "Quality Control"
+paired_end:
+  desc: "Enable / Disable paired-end data"
+  type: bool
+  required: False
+  default: True
+  lint_check: True
+  category: "Quality Control"
 multistep_normalisation:
   desc: "Enable / Disable multistep normalisation"
   type: bool

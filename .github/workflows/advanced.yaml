@@ -1,4 +1,4 @@
-name: MosaiCatcher assemblies checks
+name: MosaiCatcher advanced modules checks
 
 on:
   workflow_dispatch:
@@ -16,20 +16,19 @@ on:
     - cron: "0 0 * * 0"
 
 jobs:
-  Testing-with-hg38:
+  Testing-with-MultiQC:
     runs-on: ubuntu-latest
     needs:
       - Formatting
       - Linting
       - Testing-basic-v7
       - Testing-basic-with-ashleys
-    # - Testing-basic-with-slurm
     steps:
-      - name: Checkout repository with submodules and LFS
+      - name: Checkout repository with submodules
         uses: actions/checkout@v4
         with:
           submodules: recursive
-          lfs: true
+          # lfs: true
 
       - name: Git Submodule Update
         run: |
@@ -56,23 +55,22 @@ jobs:
 
       - name: Run workflow
         run: |
-          snakemake --cores 1 --use-conda --config reference=hg38 use_light_data=True chromosomes=[chr17] ashleys_pipeline=True \
+          snakemake --cores 1 --use-conda --configfile .tests/config/simple_config_mosaicatcher.yaml --config MultiQC=True ashleys_pipeline=True \
           --conda-frontend mamba -p --verbose --debug --snakefile workflow/Snakefile
 
-  Testing-with-hg19:
+  Testing-with-ms-norm:
     runs-on: ubuntu-latest
     needs:
       - Formatting
       - Linting
       - Testing-basic-v7
       - Testing-basic-with-ashleys
-    # - Testing-basic-with-slurm
     steps:
-      - name: Checkout repository with submodules and LFS
+      - name: Checkout repository with submodules
         uses: actions/checkout@v4
         with:
           submodules: recursive
-          lfs: true
+          # lfs: true
 
       - name: Git Submodule Update
         run: |
@@ -99,23 +97,22 @@ jobs:
 
       - name: Run workflow
         run: |
-          snakemake --cores 1 --use-conda --config reference=hg19 use_light_data=True chromosomes=[chr17] ashleys_pipeline=True \
+          snakemake --cores 1 --use-conda --configfile .tests/config/simple_config_mosaicatcher.yaml --config multistep_normalisation=True ashleys_pipeline=True \
           --conda-frontend mamba -p --verbose --debug --snakefile workflow/Snakefile
 
-  Testing-with-T2T:
+  Testing-with-breakpointR-only:
     runs-on: ubuntu-latest
     needs:
       - Formatting
       - Linting
       - Testing-basic-v7
       - Testing-basic-with-ashleys
-    # - Testing-basic-with-slurm
     steps:
-      - name: Checkout repository with submodules and LFS
+      - name: Checkout repository with submodules
         uses: actions/checkout@v4
         with:
           submodules: recursive
-          lfs: true
+          # lfs: true
 
       - name: Git Submodule Update
         run: |
@@ -142,23 +139,22 @@ jobs:
 
       - name: Run workflow
         run: |
-          snakemake --cores 1 --use-conda --config reference=T2T use_light_data=True chromosomes=[chr17] ashleys_pipeline=True \
+          snakemake --cores 1 --use-conda --configfile .tests/config/simple_config_mosaicatcher.yaml --config breakpointR=True breakpointR_only=True \
           --conda-frontend mamba -p --verbose --debug --snakefile workflow/Snakefile
 
-  Testing-with-mm10:
+  Testing-with-whatshap-only:
     runs-on: ubuntu-latest
     needs:
       - Formatting
       - Linting
       - Testing-basic-v7
       - Testing-basic-with-ashleys
-    # - Testing-basic-with-slurm
     steps:
-      - name: Checkout repository with submodules and LFS
+      - name: Checkout repository with submodules
         uses: actions/checkout@v4
         with:
           submodules: recursive
-          lfs: true
+          # lfs: true
 
       - name: Git Submodule Update
         run: |
@@ -185,5 +181,5 @@ jobs:
 
       - name: Run workflow
         run: |
-          snakemake --cores 1 --use-conda --config reference=T2T use_light_data=True chromosomes=[chr17] ashleys_pipeline=True \
+          snakemake --cores 1 --use-conda --configfile .tests/config/simple_config_mosaicatcher.yaml --config whatshap_only=True \
           --conda-frontend mamba -p --verbose --debug --snakefile workflow/Snakefile
