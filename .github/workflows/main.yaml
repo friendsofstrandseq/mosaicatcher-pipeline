@@ -28,11 +28,11 @@ jobs:
         uses: actions/checkout@v4.1.7
         with:
           submodules: "recursive" # Ensures all submodules are checked out
-          lfs: true # Ensures LFS objects for the main repo are pulled
+          # lfs: true # Ensures LFS objects for the main repo are pulled
 
       - name: Pull LFS objects in submodules
         run: |
-          git submodule foreach --recursive 'git lfs pull'
+          git submodule foreach --recursive 'git pull origin main'
 
       - name: List contents of .tests
         run: |
@@ -73,10 +73,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
-          lfs: true
+          # lfs: true
 
       - name: Pull LFS objects in submodules
-        run: git submodule foreach --recursive 'git lfs pull'
+        run: git submodule foreach --recursive 'git pull origin main'
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -123,10 +123,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
-          lfs: true
+          # lfs: true
 
       - name: Pull LFS objects in submodules
-        run: git submodule foreach --recursive 'git lfs pull'
+        run: git submodule foreach --recursive 'git pull origin main'
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -175,10 +175,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
-          lfs: true
+          # lfs: true
 
       - name: Pull LFS objects in submodules
-        run: git submodule foreach --recursive 'git lfs pull'
+        run: git submodule foreach --recursive 'git pull origin main'
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -215,10 +215,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
-          lfs: true
+          # lfs: true
 
       - name: Pull LFS objects in submodules
-        run: git submodule foreach --recursive 'git lfs pull'
+        run: git submodule foreach --recursive 'git pull origin main'
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -255,10 +255,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
-          lfs: true
+          # lfs: true
 
       - name: Pull LFS objects in submodules
-        run: git submodule foreach --recursive 'git lfs pull'
+        run: git submodule foreach --recursive 'git pull origin main'
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -295,10 +295,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
-          lfs: true
+          # lfs: true
 
       - name: Pull LFS objects in submodules
-        run: git submodule foreach --recursive 'git lfs pull'
+        run: git submodule foreach --recursive 'git pull origin main'
 
       - name: Setup Python
         uses: actions/setup-python@v5
