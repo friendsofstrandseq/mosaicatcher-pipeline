@@ -126,6 +126,21 @@ rule index_merged_strandphaser_vcf:
         "tabix -p vcf {input.vcf} > {log} 2>&1"
 
 
+rule gunzip_fasta:
+    input:
+        ancient("{file}.fa.gz"),
+    output:
+        "{file}.fa",
+    log:
+        "{file}.log",
+    conda:
+        "../envs/mc_bioinfo_tools.yaml"
+    resources:
+        mem_mb=get_mem_mb_heavy,
+    shell:
+        "gunzip -cd {input} > {output}"
+
+
 rule samtools_faindex:
     input:
         ancient("{file}.fa"),

@@ -20,6 +20,11 @@ conda_envs += (
     else []
 )
 
+if config["paired_end"] is True:
+    pair = ["1", "2"]
+else:
+    pair = ["1"]
+
 # print(config["data_location"])
 
 if config["ashleys_pipeline"] is True and config["genecore"] is True:
@@ -284,7 +289,7 @@ class HandleInput:
                 regex_element=d_master[sample]["index_pattern"],
                 index=d_master[sample]["indexes"],
                 cell_nb=[str(e).zfill(2) for e in list(range(1, 97))],
-                pair=["1", "2"],
+                pair=pair,
             )
             for sample in d_master
             if sample in samples_to_process

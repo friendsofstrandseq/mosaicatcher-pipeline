@@ -46,6 +46,8 @@ MultiQC: False
 # Enable or disable ashleys-qc automatic classification
 bypass_ashleys: False
 
+paired_end: True
+
 # --------------------------------------------------------
 # Other modules
 # --------------------------------------------------------
