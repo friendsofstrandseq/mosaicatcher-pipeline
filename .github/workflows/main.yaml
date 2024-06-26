@@ -57,7 +57,7 @@ jobs:
 
       - name: Run Snakemake Lint
         run: |
-          snakemake --config data_location=github-actions-runner/.tests-mock --lint
+          snakemake --config data_location=github-actions-runner/.tests-mock/data_CHR17 --lint
 
   Testing-basic-v7:
     runs-on: ubuntu-latest
