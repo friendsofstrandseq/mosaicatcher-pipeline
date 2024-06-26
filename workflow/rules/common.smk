@@ -358,7 +358,6 @@ class HandleInput:
             for e in os.listdir(thisdir)
             if e not in exclude and e.endswith(".zip") is False
         ]
-        # print(l_to_process)
         if config["samples_to_process"]:
             l_to_process = [
                 e for e in l_to_process if e in config["samples_to_process"]
@@ -375,6 +374,7 @@ class HandleInput:
                 )
                 if f.endswith(ext)
             ]
+
             # print(l_files_all)
 
             for f in l_files_all:

@@ -127,8 +127,10 @@ jobs:
           submodules: recursive
           # lfs: true
 
-      - name: Pull LFS objects in submodules
-        run: git submodule foreach --recursive 'git pull origin main'
+      - name: Git Submodule Update
+        run: |
+          git pull --recurse-submodules
+          git submodule update --remote --recursive
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -179,8 +181,10 @@ jobs:
           submodules: recursive
           # lfs: true
 
-      - name: Pull LFS objects in submodules
-        run: git submodule foreach --recursive 'git pull origin main'
+      - name: Git Submodule Update
+        run: |
+          git pull --recurse-submodules
+          git submodule update --remote --recursive
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -219,8 +223,10 @@ jobs:
           submodules: recursive
           # lfs: true
 
-      - name: Pull LFS objects in submodules
-        run: git submodule foreach --recursive 'git pull origin main'
+      - name: Git Submodule Update
+        run: |
+          git pull --recurse-submodules
+          git submodule update --remote --recursive
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -259,8 +265,10 @@ jobs:
           submodules: recursive
           # lfs: true
 
-      - name: Pull LFS objects in submodules
-        run: git submodule foreach --recursive 'git pull origin main'
+      - name: Git Submodule Update
+        run: |
+          git pull --recurse-submodules
+          git submodule update --remote --recursive
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -299,8 +307,10 @@ jobs:
           submodules: recursive
           # lfs: true
 
-      - name: Pull LFS objects in submodules
-        run: git submodule foreach --recursive 'git pull origin main'
+      - name: Git Submodule Update
+        run: |
+          git pull --recurse-submodules
+          git submodule update --remote --recursive
 
       - name: Setup Python
         uses: actions/setup-python@v5
