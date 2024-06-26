@@ -1,5 +1,6 @@
 if config["ashleys_pipeline"] is False:
 
+
     rule generate_exclude_file_for_mosaic_count:
         input:
             bam=lambda wc: expand(
