@@ -1,21 +1,46 @@
 if config["ashleys_pipeline"] is False:
 
+
     rule generate_exclude_file_for_mosaic_count:
         input:
             bam=lambda wc: expand(
                 "{folder}/{sample}/bam/{cell}.sort.mdup.bam",
                 folder=config["data_location"],
                 sample=wc.sample,
-                cell=bam_per_sample_local[str(wc.sample)],
+                cell=cell_per_sample[str(wc.sample)],
             ),
         output:
-            "{folder}/{sample}/config/chroms_to_exclude.txt",
+            excl="{folder}/{sample}/config/chroms_to_exclude.txt",
         log:
-            "{folder}/log/config_output/{sample}/exclude_file.log",
-        params:
-            chroms=config["chromosomes"],
+            "{folder}/log/config/{sample}/exclude_file.log",
         conda:
             "../envs/mc_base.yaml"
+        params:
+            chroms=config["chromosomes"]
+            if config["reference"] != "mm10"
+            else [
+                "chr1",
+                "chr2",
+                "chr3",
+                "chr4",
+                "chr5",
+                "chr6",
+                "chr7",
+                "chr8",
+                "chr9",
+                "chr10",
+                "chr11",
+                "chr12",
+                "chr13",
+                "chr14",
+                "chr15",
+                "chr16",
+                "chr17",
+                "chr18",
+                "chr19",
+                "chrX",
+                "chrY",
+            ],
         script:
             "../scripts/utils/generate_exclude_file.py"
 
@@ -96,6 +121,8 @@ if config["ashleys_pipeline"] is False:
     else:
 
         rule touch_labels:
+            # input:
+            #     info_raw="{folder}/{sample}/counts/{sample}.info_raw",
             output:
                 "{folder}/{sample}/cell_selection/labels.tsv",
             log:
@@ -103,7 +130,14 @@ if config["ashleys_pipeline"] is False:
             conda:
                 "../envs/mc_base.yaml"
             shell:
-                "echo 'cell\tprobability\tprediction' > {output}"
+                """
+                # Create the output file
+                echo 'cell\tprobability\tprediction' > {output}
+                # # Process table and append to the output
+                # tail -n+15 {{input.info_raw}} | \
+                # awk '{{print $2".sort.mdup.bam\t"$10"\t"$10}}' >> {output}
+                # cat {output}
+                """
 
 
 rule copy_labels:
@@ -136,6 +170,7 @@ rule symlink_selected_bam:
 
 rule remove_unselected_bam:
     input:
+        # labels="{folder}/{sample}/config/labels.tsv",
         labels="{folder}/{sample}/cell_selection/labels.tsv",
         bam=unselected_input_bam,
         bai=unselected_input_bai,

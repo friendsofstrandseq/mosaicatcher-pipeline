@@ -126,6 +126,21 @@ rule index_merged_strandphaser_vcf:
         "tabix -p vcf {input.vcf} > {log} 2>&1"
 
 
+rule gunzip_fasta:
+    input:
+        ancient("{file}.fa.gz"),
+    output:
+        "{file}.fa",
+    log:
+        "{file}.log",
+    conda:
+        "../envs/mc_bioinfo_tools.yaml"
+    resources:
+        mem_mb=get_mem_mb_heavy,
+    shell:
+        "gunzip -cd {input} > {output}"
+
+
 rule samtools_faindex:
     input:
         ancient("{file}.fa"),
@@ -154,3 +169,86 @@ rule save_config:
         mem_mb=get_mem_mb,
     script:
         "../scripts/utils/dump_config.py"
+
+
+rule save_conda_versions_mc_base:
+    output:
+        "{folder}/{sample}/config/conda_export/mc_base.yaml",
+    log:
+        "{folder}/log/save_conda_versions/{sample}/mc_base.log",
+    conda:
+        "../envs/mc_base.yaml"
+    shell:
+        "conda env export > {output}"
+
+
+rule save_conda_versions_mc_bioinfo_tools:
+    output:
+        "{folder}/{sample}/config/conda_export/mc_bioinfo_tools.yaml",
+    log:
+        "{folder}/log/save_conda_versions/{sample}/mc_bioinfo_tools.log",
+    conda:
+        "../envs/mc_bioinfo_tools.yaml"
+    shell:
+        "conda env export > {output}"
+
+
+rule save_conda_versions_rtools:
+    output:
+        "{folder}/{sample}/config/conda_export/rtools.yaml",
+    log:
+        "{folder}/log/save_conda_versions/{sample}/rtools.log",
+    conda:
+        "../envs/rtools.yaml"
+    shell:
+        "conda env export > {output}"
+
+
+rule save_conda_versions_scNOVA_bioinfo_tools:
+    output:
+        "{folder}/{sample}/config/conda_export/scNOVA_bioinfo_tools.yaml",
+    log:
+        "{folder}/log/save_conda_versions/{sample}/scNOVA_bioinfo_tools.log",
+    conda:
+        "../envs/scNOVA/scNOVA_bioinfo_tools.yaml"
+    shell:
+        "conda env export > {output}"
+
+
+rule save_conda_versions_scNOVA_DL:
+    output:
+        "{folder}/{sample}/config/conda_export/scNOVA_DL.yaml",
+    log:
+        "{folder}/log/save_conda_versions/{sample}/scNOVA_DL.log",
+    conda:
+        "../envs/scNOVA/scNOVA_DL.yaml"
+    shell:
+        "conda env export > {output}"
+
+
+rule save_conda_versions_scNOVA_R:
+    output:
+        "{folder}/{sample}/config/conda_export/scNOVA_R.yaml",
+    log:
+        "{folder}/log/save_conda_versions/{sample}/scNOVA_R.log",
+    conda:
+        "../envs/scNOVA/scNOVA_R.yaml"
+    shell:
+        "conda env export > {output}"
+
+
+# PUBLISHDIR
+
+if config["publishdir"] != "":
+
+    rule publishdir_outputs_mc:
+        input:
+            list_publishdir=publishdir_fct_mc,
+        output:
+            touch("{folder}/{sample}/config/publishdir_outputs_mc.ok"),
+        log:
+            "{folder}/log/publishdir_outputs/{sample}.log",
+        conda:
+            "../envs/mc_base.yaml"
+        script:
+            "../scripts/utils/publishdir.py"

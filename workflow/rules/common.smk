@@ -11,6 +11,20 @@ import os, sys
 os.environ["LC_CTYPE"] = "C"
 
 
+# CONDA ENVS
+
+conda_envs = ["mc_base", "rtools", "mc_bioinfo_tools"]
+conda_envs += (
+    ["scNOVA_DL", "scNOVA_bioinfo_tools", "scNOVA_R"]
+    if config["scNOVA"] is True
+    else []
+)
+
+if config["paired_end"] is True:
+    pair = ["1", "2"]
+else:
+    pair = ["1"]
+
 # print(config["data_location"])
 
 if config["ashleys_pipeline"] is True and config["genecore"] is True:
@@ -116,6 +130,18 @@ if config["ashleys_pipeline_only"] is True:
         config["ashleys_pipeline_only"] == config["ashleys_pipeline"]
     ), "ashleys_pipeline parameter should be set to True when ashleys_pipeline_only is also set to True"
 
+if config["breakpointR_only"] is True:
+    assert (
+        config["breakpointR_only"] == config["breakpointR"]
+    ), "breakpointR parameter should be set to True when breakpointR_only is also set to True"
+    assert (
+        config["breakpointR_only"] != config["whatshap_only"]
+    ), "breakpointR_only and whatshap_only parameters cannot both be set to True, parameters are mutually exclusive"
+
+if config["whatshap_only"] is True:
+    assert (
+        config["whatshap_only"] != config["breakpointR_only"]
+    ), "whatshap_only and breakpointR_only parameters cannot both be set to True, parameters are mutually exclusive"
 
 if config["scNOVA"] is True:
     # print(config["chromosomes_to_exclude"])
@@ -263,7 +289,7 @@ class HandleInput:
                 regex_element=d_master[sample]["index_pattern"],
                 index=d_master[sample]["indexes"],
                 cell_nb=[str(e).zfill(2) for e in list(range(1, 97))],
-                pair=["1", "2"],
+                pair=pair,
             )
             for sample in d_master
             if sample in samples_to_process
@@ -332,7 +358,6 @@ class HandleInput:
             for e in os.listdir(thisdir)
             if e not in exclude and e.endswith(".zip") is False
         ]
-        # print(l_to_process)
         if config["samples_to_process"]:
             l_to_process = [
                 e for e in l_to_process if e in config["samples_to_process"]
@@ -349,6 +374,7 @@ class HandleInput:
                 )
                 if f.endswith(ext)
             ]
+
             # print(l_files_all)
 
             for f in l_files_all:
@@ -650,6 +676,32 @@ def get_scnova_final_output(wildcards):
     return l
 
 
+def return_config_output(final_list):
+    # Config section
+
+    final_list.extend(
+        expand(
+            "{folder}/{sample}/config/config.yaml",
+            folder=config["data_location"],
+            sample=samples,
+        ),
+    )
+
+    # print("CONDA ENVS")
+    # print(conda_envs)
+
+    final_list.extend(
+        expand(
+            "{folder}/{sample}/config/conda_export/{conda_env}.yaml",
+            folder=config["data_location"],
+            sample=samples,
+            conda_env=conda_envs,
+        ),
+    )
+    # print(final_list)
+    return final_list
+
+
 def get_final_output():
     """
     Input function of the pipeline, will retrieve all 'end' outputs
@@ -669,6 +721,29 @@ def get_final_output():
         final_list.extend(get_final_output_scnova())
     # from pprint import pprint
     # pprint(final_list)
+
+    if config["breakpointR_only"] is True:
+        final_list = list()
+
+        final_list.extend(
+            expand(
+                "{folder}/{sample}/breakpointR/output/plots/breaksPlot.pdf",
+                folder=config["data_location"],
+                sample=samples,
+            )
+        )
+
+    if config["whatshap_only"] is True:
+        final_list = list()
+
+        final_list.extend(
+            expand(
+                "{folder}/{sample}/haplotag/table/haplotag_counts_merged.tsv",
+                folder=config["data_location"],
+                sample=samples,
+            )
+        )
+    final_list = return_config_output(final_list)
 
     return final_list
 
@@ -758,6 +833,22 @@ def get_all_plots(wildcards):
         )
 
     else:
+        # Ploidy section
+        l_outputs.extend(
+            expand(
+                "{folder}/{sample}/plots/ploidy/{sample}.pdf",
+                folder=config["data_location"],
+                sample=wildcards.sample,
+            ),
+        )
+        l_outputs.extend(
+            expand(
+                "{folder}/{sample}/ploidy/ploidy_summary.txt",
+                folder=config["data_location"],
+                sample=wildcards.sample,
+            ),
+        )
+
         # SV_consistency section
 
         l_outputs.extend(
@@ -834,22 +925,6 @@ def get_all_plots(wildcards):
             ]
         ),
 
-        # Ploidy section
-        l_outputs.extend(
-            expand(
-                "{folder}/{sample}/plots/ploidy/{sample}.pdf",
-                folder=config["data_location"],
-                sample=wildcards.sample,
-            ),
-        )
-        l_outputs.extend(
-            expand(
-                "{folder}/{sample}/ploidy/ploidy_summary.txt",
-                folder=config["data_location"],
-                sample=wildcards.sample,
-            ),
-        )
-
         # scTRIP multiplot
 
         if config["scTRIP_multiplot"] == True:
@@ -886,6 +961,15 @@ def get_all_plots(wildcards):
                 ),
             )
 
+        if config["breakpointR"] is True:
+            l_outputs.extend(
+                expand(
+                    "{folder}/{sample}/breakpointR/output/plots/breaksPlot.pdf",
+                    folder=config["data_location"],
+                    sample=wildcards.sample,
+                )
+            )
+
         # Stats section
 
         l_outputs.extend(
@@ -916,7 +1000,7 @@ def get_all_plots(wildcards):
             ),
         )
 
-    from pprint import pprint
+    # from pprint import pprint
 
-    pprint(l_outputs)
+    # pprint(l_outputs)
     return l_outputs

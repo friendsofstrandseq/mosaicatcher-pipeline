@@ -22,6 +22,13 @@ MultiQC:
   required: False
   default: False
   category: "Quality Control"
+paired_end:
+  desc: "Enable / Disable paired-end data"
+  type: bool
+  required: False
+  default: True
+  lint_check: True
+  category: "Quality Control"
 multistep_normalisation:
   desc: "Enable / Disable multistep normalisation"
   type: bool
@@ -154,4 +161,32 @@ strandscape_labels_path:
   required: False
   default: ""
   category: "Data processing"
+  lint_check: False
+publishdir:
+  desc: If specified, will copy important data to a second place
+  type: str
+  required: False
+  default: ""
+  lint_check: False
+  category: "I/O"
+breakpointR:
+  desc: If specified, will run breakpointR
+  type: bool
+  default: False
+  required: False
+  category: "Downstream"
+  lint_check: False
+breakpointR_only:
+  desc: If specified, will run breakpointR only, needs breakpointR to be True
+  type: bool
+  default: False
+  required: False
+  category: "Downstream"
+  lint_check: False
+whatshap_only:
+  desc: If specified, will run whatshap only
+  type: bool
+  default: False
+  required: False
+  category: "Downstream"
   lint_check: False
