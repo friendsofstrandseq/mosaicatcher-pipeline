@@ -33,7 +33,7 @@ jobs:
       - name: Git Submodule Update
         run: |
           git pull --recurse-submodules
-          git submodule update --remote --recursive
+          git submodule update --remote --recursive --force --init
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -75,7 +75,7 @@ jobs:
       - name: Git Submodule Update
         run: |
           git pull --recurse-submodules
-          git submodule update --remote --recursive
+          git submodule update --remote --recursive --force --init
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -117,7 +117,7 @@ jobs:
       - name: Git Submodule Update
         run: |
           git pull --recurse-submodules
-          git submodule update --remote --recursive
+          git submodule update --remote --recursive --force --init
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -159,7 +159,7 @@ jobs:
       - name: Git Submodule Update
         run: |
           git pull --recurse-submodules
-          git submodule update --remote --recursive
+          git submodule update --remote --recursive --force --init
 
       - name: Setup Python
         uses: actions/setup-python@v5
