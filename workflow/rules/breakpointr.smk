@@ -25,7 +25,7 @@ rule run_breakpointr:
         "../envs/rtools.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
-        time=600,
+        time="10:00:00",
     params:
         input_bam=lambda wc: "{}/{}/selected".format(config["data_location"], wc.sample),
     shell:
