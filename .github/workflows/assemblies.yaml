@@ -18,23 +18,23 @@ on:
 jobs:
   Testing-with-hg38:
     runs-on: ubuntu-latest
-    needs:
-      - Formatting
-      - Linting
-      - Testing-basic-v7
-      - Testing-basic-with-ashleys
+    # needs:
+    #   - Formatting
+    #   - Linting
+    #   - Testing-basic-v7
+    #   - Testing-basic-with-ashleys
     # - Testing-basic-with-slurm
     steps:
       - name: Checkout repository with submodules and LFS
         uses: actions/checkout@v4
         with:
           submodules: recursive
-          lfs: true
+          # lfs: true
 
       - name: Git Submodule Update
         run: |
-          git pull --recurse-submodules
-          git submodule update --remote --recursive
+          # git pull --recurse-submodules
+          git submodule update --remote --recursive --force --init
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -61,23 +61,23 @@ jobs:
 
   Testing-with-hg19:
     runs-on: ubuntu-latest
-    needs:
-      - Formatting
-      - Linting
-      - Testing-basic-v7
-      - Testing-basic-with-ashleys
+    # needs:
+    #   - Formatting
+    #   - Linting
+    #   - Testing-basic-v7
+    #   - Testing-basic-with-ashleys
     # - Testing-basic-with-slurm
     steps:
       - name: Checkout repository with submodules and LFS
         uses: actions/checkout@v4
         with:
           submodules: recursive
-          lfs: true
+          # lfs: true
 
       - name: Git Submodule Update
         run: |
-          git pull --recurse-submodules
-          git submodule update --remote --recursive
+          # git pull --recurse-submodules
+          git submodule update --remote --recursive --force --init
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -104,23 +104,23 @@ jobs:
 
   Testing-with-T2T:
     runs-on: ubuntu-latest
-    needs:
-      - Formatting
-      - Linting
-      - Testing-basic-v7
-      - Testing-basic-with-ashleys
+    # needs:
+    #   - Formatting
+    #   - Linting
+    #   - Testing-basic-v7
+    #   - Testing-basic-with-ashleys
     # - Testing-basic-with-slurm
     steps:
       - name: Checkout repository with submodules and LFS
         uses: actions/checkout@v4
         with:
           submodules: recursive
-          lfs: true
+          # lfs: true
 
       - name: Git Submodule Update
         run: |
-          git pull --recurse-submodules
-          git submodule update --remote --recursive
+          # git pull --recurse-submodules
+          git submodule update --remote --recursive --force --init
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -147,23 +147,23 @@ jobs:
 
   Testing-with-mm10:
     runs-on: ubuntu-latest
-    needs:
-      - Formatting
-      - Linting
-      - Testing-basic-v7
-      - Testing-basic-with-ashleys
+    # needs:
+    #   - Formatting
+    #   - Linting
+    #   - Testing-basic-v7
+    #   - Testing-basic-with-ashleys
     # - Testing-basic-with-slurm
     steps:
       - name: Checkout repository with submodules and LFS
         uses: actions/checkout@v4
         with:
           submodules: recursive
-          lfs: true
+          # lfs: true
 
       - name: Git Submodule Update
         run: |
-          git pull --recurse-submodules
-          git submodule update --remote --recursive
+          # git pull --recurse-submodules
+          git submodule update --remote --recursive --force --init
 
       - name: Setup Python
         uses: actions/setup-python@v5
