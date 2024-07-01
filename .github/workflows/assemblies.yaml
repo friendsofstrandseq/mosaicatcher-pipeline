@@ -18,11 +18,11 @@ on:
 jobs:
   Testing-with-hg38:
     runs-on: ubuntu-latest
-    needs:
-      - Formatting
-      - Linting
-      - Testing-basic-v7
-      - Testing-basic-with-ashleys
+    # needs:
+    #   - Formatting
+    #   - Linting
+    #   - Testing-basic-v7
+    #   - Testing-basic-with-ashleys
     # - Testing-basic-with-slurm
     steps:
       - name: Checkout repository with submodules and LFS
@@ -33,7 +33,7 @@ jobs:
 
       - name: Git Submodule Update
         run: |
-          git pull --recurse-submodules
+          # git pull --recurse-submodules
           git submodule update --remote --recursive --force --init
 
       - name: Setup Python
@@ -61,11 +61,11 @@ jobs:
 
   Testing-with-hg19:
     runs-on: ubuntu-latest
-    needs:
-      - Formatting
-      - Linting
-      - Testing-basic-v7
-      - Testing-basic-with-ashleys
+    # needs:
+    #   - Formatting
+    #   - Linting
+    #   - Testing-basic-v7
+    #   - Testing-basic-with-ashleys
     # - Testing-basic-with-slurm
     steps:
       - name: Checkout repository with submodules and LFS
@@ -76,7 +76,7 @@ jobs:
 
       - name: Git Submodule Update
         run: |
-          git pull --recurse-submodules
+          # git pull --recurse-submodules
           git submodule update --remote --recursive --force --init
 
       - name: Setup Python
@@ -104,11 +104,11 @@ jobs:
 
   Testing-with-T2T:
     runs-on: ubuntu-latest
-    needs:
-      - Formatting
-      - Linting
-      - Testing-basic-v7
-      - Testing-basic-with-ashleys
+    # needs:
+    #   - Formatting
+    #   - Linting
+    #   - Testing-basic-v7
+    #   - Testing-basic-with-ashleys
     # - Testing-basic-with-slurm
     steps:
       - name: Checkout repository with submodules and LFS
@@ -119,7 +119,7 @@ jobs:
 
       - name: Git Submodule Update
         run: |
-          git pull --recurse-submodules
+          # git pull --recurse-submodules
           git submodule update --remote --recursive --force --init
 
       - name: Setup Python
@@ -147,11 +147,11 @@ jobs:
 
   Testing-with-mm10:
     runs-on: ubuntu-latest
-    needs:
-      - Formatting
-      - Linting
-      - Testing-basic-v7
-      - Testing-basic-with-ashleys
+    # needs:
+    #   - Formatting
+    #   - Linting
+    #   - Testing-basic-v7
+    #   - Testing-basic-with-ashleys
     # - Testing-basic-with-slurm
     steps:
       - name: Checkout repository with submodules and LFS
@@ -162,7 +162,7 @@ jobs:
 
       - name: Git Submodule Update
         run: |
-          git pull --recurse-submodules
+          # git pull --recurse-submodules
           git submodule update --remote --recursive --force --init
 
       - name: Setup Python
