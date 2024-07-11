@@ -1004,3 +1004,23 @@ def get_all_plots(wildcards):
 
     # pprint(l_outputs)
     return l_outputs
+
+
+def publishdir_fct_mc(wildcards):
+    """
+    Function to generate a list of files and directories for backup.
+    """
+
+    list_files_to_copy = [
+        e for e in get_all_plots(wildcards) if "publishdir_outputs_mc.ok" not in e
+    ]
+
+    # Expand the paths for files
+    expanded_files = [
+        expand(file_path, folder=config["data_location"], sample=wildcards.sample)
+        for file_path in list_files_to_copy
+    ]
+    final_list = [sub_e for e in expanded_files for sub_e in e]
+    # print(final_list)
+
+    return final_list
