@@ -10,6 +10,9 @@ track_dir="$1"
 # output_file=${snakemake_output[igv_session]}
 output_file="$2"
 
+# reference
+reference="$3"
+
 # Check if the directory exists
 if [ ! -d "$track_dir" ]; then
     echo "Error: Directory '$track_dir' not found!"
@@ -18,7 +21,7 @@ fi
 # Start of the XML session
 {
     echo '<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-    <Session genome="hg38" locus="ALL" version="8">
+    <Session genome="'$reference'" locus="ALL" version="8">
         <Resources>'
 
     # Loop through the bedGraph and bed files in the directory and populate the Resources section
