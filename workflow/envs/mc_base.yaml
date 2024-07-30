@@ -3,22 +3,18 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - pandas
   - intervaltree
-  - scipy
-  - pysam
-  - tqdm
-  - perl
-  - pypdf2
-  - parmap
-  # NEW
-  - pyyaml
-  - seaborn
   - matplotlib
-  # SOLVE se-pe detection
-  - samtools
-  # ArbiGent Hufsah deps
-  - pytables
-  - xopen
-  # Fix jbrowse tracks generation
+  - pandas
+  - parmap
+  - perl
   - pybigwig
+  - pypdf2
+  - pysam
+  - pytables
+  - pyyaml
+  - samtools
+  - scipy
+  - seaborn
+  - tqdm
+  - xopen
