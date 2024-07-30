@@ -2,22 +2,17 @@ name: rtools
 channels:
   - bioconda
   - conda-forge
-  - r
-  - anaconda
 dependencies:
-  # # NEW
-  - strandphaser
-  # ###############
   - bioconductor-biocparallel
+  - bioconductor-breakpointr
   - bioconductor-bsgenome
   - bioconductor-bsgenome.hsapiens.ucsc.hg38
   - bioconductor-complexheatmap
-  # - bioconductor-fastseg
+  - bioconductor-edger
   - bioconductor-genomicalignments
   - bioconductor-genomicranges
   - bioconductor-rsamtools
-  # - bioconductor-s4vectors
-  - fonts-anaconda
+  - fonts-conda-forge
   - r-assertthat
   - r-base
   - r-biocmanager
@@ -28,30 +23,22 @@ dependencies:
   - r-doparallel
   - r-dplyr
   - r-foreach
+  - r-ggbeeswarm
+  - r-ggnewscale
   - r-ggplot2
+  - r-ggpubr
   - r-gplots
   - r-gtools
   - r-mc2d
+  - r-optparse
+  - r-pheatmap
+  - r-r.utils
   - r-rcolorbrewer
+  - r-reshape
   - r-reshape2
   - r-scales
-  - r-stringr
-  # SV_CALLS_DEV
-  # - r-zoo
-  - r-r.utils
-  - r-ggnewscale
-  # HEATMAP
-  - r-tidyr
-  # ARBIGENT
-  - r-reshape
-  - r-optparse
-  - r-tidyr
-  - r-ggbeeswarm
-  - r-pheatmap
-  # GC_correction
-  - r-ggpubr
-  - bioconductor-edger
-  # SOLVE R lib issue
   - r-stringi=1.7.12
-  # breakpointr
-  - bioconductor-breakpointr
+  - r-stringr
+  - r-tidyr
+  - r-tidyr
+  - strandphaser
