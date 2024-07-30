@@ -397,7 +397,9 @@ rule generate_igv_session:
         "{folder}/log/generate_igv_session/{sample}.log",
     conda:
         "../envs/mc_base.yaml"
+    params:
+        reference=config["reference"],
     resources:
         mem_mb=get_mem_mb,
     shell:
-        "sh workflow/scripts/plotting/generate_IGV_session.sh {input.splitted_files_dir} {output.xml_session}"
+        "sh workflow/scripts/plotting/generate_IGV_session.sh {input.splitted_files_dir} {params.reference} {output.xml_session}"
