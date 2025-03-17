@@ -1,4 +1,4 @@
-name: MosaiCatcher basic checks with snakemake v8
+name: MosaiCatcher basic checks with snakemake v9
 
 on:
   push:
