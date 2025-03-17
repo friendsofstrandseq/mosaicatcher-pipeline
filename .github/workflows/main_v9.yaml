@@ -8,7 +8,7 @@ on:
     - cron: "0 0 * * 0"
 
 jobs:
-  Testing-basic-v8:
+  Testing-basic-v9:
     runs-on: ubuntu-latest
     # needs:
     #   - Formatting
@@ -50,10 +50,13 @@ jobs:
               - bioconda
 
       - name: List options of workflow
+        shell: bash -el {0}
         run: |
           snakemake --cores 1 --config list_commands=True --verbose --debug
+        
 
       - name: Run workflow
+        shell: bash -el {0}
         run: |
           snakemake --cores 1 --sdm conda --configfile .tests/config/simple_config_mosaicatcher.yaml \
           --conda-frontend mamba -p --verbose --debug --snakefile workflow/Snakefile
