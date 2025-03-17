@@ -25,11 +25,6 @@ jobs:
           # git pull --recurse-submodules
           git submodule update --remote --recursive --force --init
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
       - name: List contents of .tests
         run: |
           tree -h .tests
@@ -42,17 +37,18 @@ jobs:
         run: |
           tree -h workflow/data
 
-      - name: Add Conda to system path
-        run: echo "$CONDA/bin" >> $GITHUB_PATH
+      - uses: mamba-org/setup-micromamba@v2
+        with:
+          environment-name: snakemake_env
+          create-args: snakemake snakemake-storage-plugin-http
+          cache-environment: true
+          post-cleanup: 'all'
+          init-shell: bash
+          condarc: |
+            channels:
+              - conda-forge
+              - bioconda
 
-      - name: Install dependencies
-        run: conda install -c conda-forge mamba
-
-      - name: Setup Snakemake
-        run: |
-          mamba create -n snakemake_env -c conda-forge -c bioconda snakemake snakemake-storage-plugin-http
-          mamba activate snakemake_env
-          
       - name: List options of workflow
         run: |
           snakemake --cores 1 --config list_commands=True --verbose --debug
