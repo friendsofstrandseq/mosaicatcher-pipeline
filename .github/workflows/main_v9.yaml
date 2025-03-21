@@ -41,7 +41,7 @@ jobs:
         with:
           environment-name: snakemake_env
           create-args: snakemake snakemake-storage-plugin-http
-          cache-environment: true
+          cache-environment: false
           post-cleanup: 'all'
           init-shell: bash
           condarc: |
