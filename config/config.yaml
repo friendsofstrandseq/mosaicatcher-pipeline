@@ -46,6 +46,9 @@ MultiQC: False
 # Enable or disable ashleys-qc automatic classification
 bypass_ashleys: False
 
+# Keep ashleys predictions for later use
+keep_ashleys_predictions: True
+
 # Whether to use paired-end data or not
 paired_end: True
 
@@ -102,6 +105,12 @@ references_data:
     segdups: "workflow/data/segdups/segDups_mm10_UCSCtrack.bed.gz"
     snv_sites_to_genotype: ""
     reference_file_location: https://hgdownload.soe.ucsc.edu/goldenPath/mm10/bigZips/mm10.fa.gz
+  "mm39":
+    reference_fasta: "workflow/data/ref_genomes/mm39.fa"
+    R_reference: "BSgenome.Mmusculus.UCSC.mm39"
+    segdups: "workflow/data/segdups/segDups_mm39_UCSCtrack.bed.gz"
+    snv_sites_to_genotype: ""
+    reference_file_location: https://hgdownload.soe.ucsc.edu/goldenPath/mm39/bigZips/mm39.fa.gz
 
 # List of chromosomes to process
 chromosomes:
@@ -278,3 +287,5 @@ abs_path: "/"
 
 # Option to display all potential options - listed in config_metadata.yaml
 list_commands: False
+
+default_modulo: 96

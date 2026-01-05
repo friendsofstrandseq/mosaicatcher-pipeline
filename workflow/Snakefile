@@ -19,13 +19,13 @@ if config["ashleys_pipeline"] is True:
 
     module ashleys_qc:
         snakefile:
-            # "../../ashleys-qc-pipeline-friendsofstrandseq/workflow/Snakefile"
-            github(
-                "friendsofstrandseq/ashleys-qc-pipeline",
-                path="workflow/Snakefile",
-                tag=str(config["ashleys_pipeline_version"]),
-                # branch="dev",
-            )
+            "../../ashleys-qc-pipeline-friendsofstrandseq/workflow/Snakefile"
+            # github(
+            #     "friendsofstrandseq/ashleys-qc-pipeline",
+            #     path="workflow/Snakefile",
+            #     tag=str(config["ashleys_pipeline_version"]),
+            #     # branch="dev",
+            # )
         config:
             config
 
@@ -56,13 +56,7 @@ include: "rules/common.smk"
 include: "rules/aggregate_fct.smk"
 
 
-if snakemake.__version__.split(".")[0] == "7":
-
-    include: "rules/external_data_v7.smk"
-
-elif snakemake.__version__.split(".")[0] == "8":
-
-    include: "rules/external_data_v8.smk"
+include: "rules/external_data.smk"
 
 
 include: "rules/setup.smk"

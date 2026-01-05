@@ -1,6 +1,5 @@
 if config["ashleys_pipeline"] is False:
 
-
     rule generate_exclude_file_for_mosaic_count:
         input:
             bam=lambda wc: expand(
@@ -17,7 +16,7 @@ if config["ashleys_pipeline"] is False:
             "../envs/mc_base.yaml"
         params:
             chroms=config["chromosomes"]
-            if config["reference"] != "mm10"
+            if config["reference"] not in ["mm10", "mm39"]
             else [
                 "chr1",
                 "chr2",
@@ -75,7 +74,8 @@ if config["ashleys_pipeline"] is False:
         params:
             window=config["window"],
         resources:
-            mem_mb=get_mem_mb,
+            mem_mb=get_mem_mb_heavy,
+            time="24:00:00",
         shell:
             """
             mosaicatcher count \
