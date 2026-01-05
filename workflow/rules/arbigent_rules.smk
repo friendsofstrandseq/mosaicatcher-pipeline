@@ -91,6 +91,9 @@ if config["arbigent"] is True:
             bp="{folder}/{sample}/arbigent/arbigent_counts/manual_segments_counts.txt",
         output:
             output="{folder}/{sample}/arbigent_mosaiclassifier/sv_probabilities/probabilities.Rdata",
+        resources:
+            mem_mb=get_mem_mb,
+            time="10:00:00"
         log:
             "{folder}/log/arbigent/mosaiClassifier_calc_probs_arbigent/{sample}.log",
         conda:

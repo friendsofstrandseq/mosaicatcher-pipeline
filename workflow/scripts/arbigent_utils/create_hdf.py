@@ -84,8 +84,8 @@ def convert_mapping_counts(raw_counts, process_chrom):
 
             if chrom != last_chrom:
                 with pd.HDFStore(hdf_file, "a") as hdf:
-                    hdf.put(os.path.join(last_chrom, "correct"), pd.Series(correct_counts, dtype=np.int8), format="fixed")
-                    hdf.put(os.path.join(last_chrom, "incorrect"), pd.Series(incorrect_counts, dtype=np.int8), format="fixed")
+                    hdf.put(os.path.join(last_chrom, "correct"), pd.Series(correct_counts, dtype=np.int32), format="fixed")
+                    hdf.put(os.path.join(last_chrom, "incorrect"), pd.Series(incorrect_counts, dtype=np.int32), format="fixed")
 
                 correct_counts = []
                 incorrect_counts = []
@@ -109,8 +109,8 @@ def convert_mapping_counts(raw_counts, process_chrom):
     # dump last
     if correct_counts:
         with pd.HDFStore(hdf_file, "a") as hdf:
-            hdf.put(os.path.join(last_chrom, "correct"), pd.Series(correct_counts, dtype=np.int8), format="fixed")
-            hdf.put(os.path.join(last_chrom, "incorrect"), pd.Series(incorrect_counts, dtype=np.int8), format="fixed")
+            hdf.put(os.path.join(last_chrom, "correct"), pd.Series(correct_counts, dtype=np.int32), format="fixed")
+            hdf.put(os.path.join(last_chrom, "incorrect"), pd.Series(incorrect_counts, dtype=np.int32), format="fixed")
 
     # return hdf_file
 
