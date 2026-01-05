@@ -8,11 +8,11 @@ rule check_sm_tag:
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     shell:
-        """
+        r"""
         sample_name="{wildcards.sample}"
-        sm_tag=$(samtools view -H {input} | grep '^@RG' | sed "s/.*SM:\([^\\t]*\).*/\\1/g")
-        
-        if [[ $sample_name == $sm_tag ]]; then 
+        sm_tag=$(samtools view -H {input} | grep '^@RG' | sed "s/.*SM:\([^\t]*\).*/\1/g")
+
+        if [[ $sample_name == $sm_tag ]]; then
             echo "{input}: $sm_tag $sample_name OK" > {output}
             echo "{input}: $sm_tag $sample_name OK" > {log}
         else
