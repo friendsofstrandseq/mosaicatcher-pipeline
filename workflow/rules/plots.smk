@@ -40,14 +40,14 @@ rule divide_pdf:
         "{folder}/{sample}/plots/counts/CountComplete.raw.pdf",
     output:
         report(
-            "{folder}/{sample}/plots/counts_raw/{cell}.{i, \d+}.pdf",
+            r"{folder}/{sample}/plots/counts_raw/{cell}.{i, \d+}.pdf",
             caption="../report/mosaic_counts.rst",
             category="Mosaic counts cellwise",
             subcategory="{sample}",
             labels={"Cell": "{cell}", "Nb": "{i}", "Type": "raw"},
         ),
     log:
-        "{folder}/log/{sample}/plots/counts_raw/{cell}.{i, \d+}.log",
+        r"{folder}/log/{sample}/plots/counts_raw/{cell}.{i, \d+}.log",
     conda:
         "../envs/mc_base.yaml"
     resources:
