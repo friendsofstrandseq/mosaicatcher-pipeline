@@ -32,6 +32,7 @@ def process_sample_folder(
         # Extract index (PE20 or iTRU)
         regex = re.compile(r"iTRU\d+|PE20\d+", re.IGNORECASE)
         match = regex.search(original_sample_name)
+        index = None
 
         if match:
             index = match.group(0)
@@ -95,6 +96,7 @@ def main(
     exclude_samples=None,
     force=False,
     bypass_prefix=False,
+    direct_folder=False,
 ):
     """
     Main function to iterate over sample folders in the source_base directory,
@@ -109,60 +111,69 @@ def main(
         # Create destination base directory if it doesn't exist
         os.makedirs(dest_base, exist_ok=True)
 
-    samples_path_mapping = collections.defaultdict()
-    for entry in os.listdir(source_base):
-        if not os.path.isdir(os.path.join(source_base, entry)):
-            continue
-        # extract sample names from the source directory by excluding the index and the rest of the name
-        index_regex = re.compile(r"iTRU\d+|PE20\d+", re.IGNORECASE)
-        match = index_regex.search(entry)
-        logging.info(f"Processing sample folder: {entry}")
+    if not direct_folder:
+        samples_path_mapping = collections.defaultdict()
+        for entry in os.listdir(source_base):
+            if not os.path.isdir(os.path.join(source_base, entry)):
+                continue
+            # extract sample names from the source directory by excluding the index and the rest of the name
+            index_regex = re.compile(r"iTRU\d+|PE20\d+", re.IGNORECASE)
+            match = index_regex.search(entry)
+            logging.info(f"Processing sample folder: {entry}")
 
-        if not bypass_prefix:
-            if match:
-                index = match.group(0)
-                print(f"Extracted index: {index}")
+            if not bypass_prefix:
+                if match:
+                    index = match.group(0)
+                    print(f"Extracted index: {index}")
+                else:
+                    print("No matching index found.")
+                    index = None
+
+                if not index:
+                    logging.warning(f"Could not extract index from {entry}")
+                    continue
+
+                else:
+                    sample_name = entry.split(index)[0]
+                    samples_path_mapping[entry] = sample_name
             else:
-                print("No matching index found.")
-                index = None
+                sample_name = entry
+                samples_path_mapping[entry] = sample_name
 
-            if not index:
-                logging.warning(f"Could not extract index from {entry}")
+        # Iterate over entries in the source base directory
+        for entry in os.listdir(source_base):
+            # Check if only_samples is provided and skip if not in the list
+            if only_samples and entry not in only_samples:
+                logging.info(f"Skipping sample folder: {entry}")
+                continue
+            # Check if exclude_samples is provided and skip if in the list
+            if exclude_samples and entry in exclude_samples:
+                logging.info(f"Skipping sample folder: {entry}")
                 continue
 
-            else:
-                sample_name = entry.split(index)[0]
-                samples_path_mapping[entry] = sample_name
-        else:
-            sample_name = entry
-            samples_path_mapping[entry] = sample_name
+            if entry not in samples_path_mapping:
+                logging.info(f"Skipping sample folder: {entry}")
+                continue
 
-    # Iterate over entries in the source base directory
-    for entry in os.listdir(source_base):
-        # Check if only_samples is provided and skip if not in the list
-        if only_samples and entry not in only_samples:
-            logging.info(f"Skipping sample folder: {entry}")
-            continue
-        # Check if exclude_samples is provided and skip if in the list
-        if exclude_samples and entry in exclude_samples:
-            logging.info(f"Skipping sample folder: {entry}")
-            continue
-
-        if entry not in samples_path_mapping:
-            logging.info("Skipping sample folder: {entry}")
-            continue
-
-        entry_path = os.path.join(source_base, entry)
-        # Check if entry is a directory and matches the pattern starting with "Lanex"
-        if os.path.isdir(entry_path):
-            logging.info(f"Processing sample folder: {entry_path}")
-            process_sample_folder(
-                entry_path,
-                dest_base,
-                dry_run=dry_run,
-                force=force,
-                bypass_prefix=bypass_prefix,
-            )
+            entry_path = os.path.join(source_base, entry)
+            # Check if entry is a directory and matches the pattern starting with "Lanex"
+            if os.path.isdir(entry_path):
+                logging.info(f"Processing sample folder: {entry_path}")
+                process_sample_folder(
+                    entry_path,
+                    dest_base,
+                    dry_run=dry_run,
+                    force=force,
+                    bypass_prefix=bypass_prefix,
+                )
+    else:
+        process_sample_folder(
+            source_base,
+            dest_base,
+            dry_run=dry_run,
+            force=force,
+            bypass_prefix=bypass_prefix,
+        )
 
     logging.info("All sample folders processed successfully.")
 
@@ -209,6 +220,12 @@ if __name__ == "__main__":
         help="List of sample names to exclude (comma-separated).",
     )
 
+    parser.add_argument(
+        "--direct-folder",
+        help="Directly process the folder where files are directly located.",
+        action="store_true",
+    )
+
     args = parser.parse_args()
 
     logging.info(f"Source directory: {args.source}")
@@ -217,6 +234,8 @@ if __name__ == "__main__":
     logging.info(f"Force overwrite: {args.force}")
     logging.info(f"Bypass prefix: {args.bypass_prefix}")
     logging.info(f"Only samples: {args.only_samples}")
+    logging.info(f"Exclude samples: {args.exclude_samples}")
+    logging.info(f"Direct folder: {args.direct_folder}")
 
     # Call main with the provided arguments
     main(
@@ -227,4 +246,5 @@ if __name__ == "__main__":
         args.exclude_samples,
         args.force,
         args.bypass_prefix,
+        args.direct_folder,
     )
