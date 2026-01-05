@@ -169,3 +169,9 @@ rule ashleys_final_results:
         "../envs/mc_base.yaml"
     shell:
         "touch {output}"
+
+
+rule ashleys_all:
+    input:
+        get_final_result(),
+    default_target: True

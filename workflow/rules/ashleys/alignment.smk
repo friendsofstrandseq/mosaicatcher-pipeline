@@ -35,7 +35,6 @@ if config["genecore"] is True and config["genecore_date_folder"]:
     ruleorder: ashleys_genecore_symlink > ashleys_bwa_strandseq_to_reference_alignment
 
 
-# if config["use_light_data"] is False:
 localrules:
     ashleys_symlink_bam_ashleys,
 
