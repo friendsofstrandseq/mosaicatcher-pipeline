@@ -23,6 +23,8 @@ if config["ashleys_pipeline"] is False:
             ),
         log:
             "{folder}/log/plot_mosaic_counts/{sample}.log",
+        params: 
+            mouse_assembly=True if config["reference"] in ["mm10", "mm39"] else False,
         conda:
             "../envs/rtools.yaml"
         resources:
@@ -402,4 +404,4 @@ rule generate_igv_session:
     resources:
         mem_mb=get_mem_mb,
     shell:
-        "sh workflow/scripts/plotting/generate_IGV_session.sh {input.splitted_files_dir} {params.reference} {output.xml_session}"
+        "sh workflow/scripts/plotting/generate_IGV_session.sh {input.splitted_files_dir} {output.xml_session} {params.reference}"
