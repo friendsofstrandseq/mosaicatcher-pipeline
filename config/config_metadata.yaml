@@ -47,6 +47,12 @@ ashleys_threshold:
   required: False
   default: 0.5
   category: "Quality Control"
+keep_ashleys_predictions:
+  desc: "Keep ashleys predictions for later use"
+  type: bool
+  required: False
+  default: True
+  category: "Quality Control"
 window:
   desc: "Mosaic bin window size"
   type: int

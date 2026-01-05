@@ -233,6 +233,7 @@ class HandleInput:
                 "file_prefix": "",
                 "plate_type": "",
                 "index_pattern": "",
+                "cell_ids": set(),
             }
         )
 
@@ -244,20 +245,28 @@ class HandleInput:
                 sample_name = match.group(2)
                 file_counts_per_sample[sample_name] += 1
 
+        # from pprint import pprint
+
+        # pprint(file_counts_per_sample)
+
         # Second pass: Process files and determine plate type per sample
         for j, file_path in enumerate(sorted(l)):
             match = pattern.search(file_path)
             if match:
+                # for index_j, group in enumerate(match.groups()):
+                #     print(group, index_j)
                 sample_name = match.group(2)
                 index = match.group(4)
+                cell_id = match.group(5)
                 indexes.append(index)
                 d_master[sample_name]["indexes"].add(index)
+                d_master[sample_name]["cell_ids"].add(cell_id)
                 file_count = file_counts_per_sample[sample_name]
 
                 # Determine plate type using modulo 96 operation
-                if file_count % 96 != 0:
+                if file_count % config["default_modulo"] != 0:
                     raise ValueError(
-                        f"Invalid file count for sample {sample_name} with file count {file_count}. Must be a multiple of 96."
+                        f"Invalid file count for sample {sample_name} with file count {file_count}. Must be a multiple of {config['default_modulo']}."
                     )
                 plate_type = int(file_count / 2)
 
@@ -269,6 +278,7 @@ class HandleInput:
                     samples.append(sample_name)
                     plate_types.append(plate_type)
                     d_master[sample_name]["plate_type"] = plate_type
+        # pprint(d_master)
 
         samples_to_process = (
             config["samples_to_process"]
@@ -288,13 +298,15 @@ class HandleInput:
                 sample=sample,
                 regex_element=d_master[sample]["index_pattern"],
                 index=d_master[sample]["indexes"],
-                cell_nb=[str(e).zfill(2) for e in list(range(1, 97))],
+                cell_nb=d_master[sample]["cell_ids"],
+                # cell_nb=[str(e).zfill(2) for e in list(range(1, 97))],
                 pair=pair,
             )
             for sample in d_master
             if sample in samples_to_process
         ]
         genecore_list = [sub_e for e in genecore_list for sub_e in e]
+        # pprint(genecore_list)
         # pprint(d_master)
 
         complete_df_list = list()
@@ -402,7 +414,7 @@ class HandleInput:
         complete_df = complete_df.sort_values(by=["Cell", "File"]).reset_index(
             drop=True
         )
-        # print(complete_df)
+        print(complete_df)
         return complete_df
 
 
@@ -745,6 +757,10 @@ def get_final_output():
         )
     final_list = return_config_output(final_list)
 
+    from pprint import pprint
+
+    pprint(final_list)
+
     return final_list
 
 
@@ -851,23 +867,23 @@ def get_all_plots(wildcards):
 
         # SV_consistency section
 
-        l_outputs.extend(
-            [
-                sub_e
-                for e in [
-                    expand(
-                        "{folder}/{sample}/plots/sv_consistency/{method}_filter{filter}.consistency-barplot-{plottype}.pdf",
-                        folder=config["data_location"],
-                        sample=wildcards.sample,
-                        method=method,
-                        plottype=config["plottype_consistency"],
-                        filter=config["methods"][method]["filter"],
-                    )
-                    for method in config["methods"]
-                ]
-                for sub_e in e
-            ]
-        )
+        # l_outputs.extend(
+        #     [
+        #         sub_e
+        #         for e in [
+        #             expand(
+        #                 "{folder}/{sample}/plots/sv_consistency/{method}_filter{filter}.consistency-barplot-{plottype}.pdf",
+        #                 folder=config["data_location"],
+        #                 sample=wildcards.sample,
+        #                 method=method,
+        #                 plottype=config["plottype_consistency"],
+        #                 filter=config["methods"][method]["filter"],
+        #             )
+        #             for method in config["methods"]
+        #         ]
+        #         for sub_e in e
+        #     ]
+        # )
 
         l_outputs.extend(
             [
