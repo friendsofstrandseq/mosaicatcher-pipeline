@@ -17,19 +17,14 @@ containerized: docker_container
 
 if config["ashleys_pipeline"] is True:
 
-    module ashleys_qc:
-        snakefile:
-            "../../ashleys-qc-pipeline-friendsofstrandseq/workflow/Snakefile"
-            # github(
-            #     "friendsofstrandseq/ashleys-qc-pipeline",
-            #     path="workflow/Snakefile",
-            #     tag=str(config["ashleys_pipeline_version"]),
-            #     # branch="dev",
-            # )
-        config:
-            config
-
-    use rule * from ashleys_qc as ashleys_*
+    include: "rules/ashleys/common.smk"
+    include: "rules/ashleys/alignment.smk"
+    include: "rules/ashleys/qc.smk"
+    include: "rules/ashleys/count.smk"
+    include: "rules/ashleys/gc.smk"
+    include: "rules/ashleys/multiqc.smk"
+    include: "rules/ashleys/aggregate_fct.smk"
+    include: "rules/ashleys/external_data.smk"
 
     if config["ashleys_pipeline_only"] is True:
 
