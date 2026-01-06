@@ -14,14 +14,30 @@ lint = "snakemake --configfile .tests/config/simple_config_mosaicatcher.yaml --l
 pre-commit-install = "pre-commit install"
 pre-commit-run = "pre-commit run --all-files"
 
+# Core dependencies (always installed)
 [dependencies]
 python = ">=3.11"
-conda = ">=24.7.1"
-mamba = "*"
+
+# Feature: formatting only (minimal, fast)
+[feature.format.dependencies]
+snakefmt = "*"
+
+# Feature: linting only
+[feature.lint.dependencies]
 snakemake = ">=9.0"
 snakemake-storage-plugin-http = "*"
-snakemake-executor-plugin-slurm = "*"
-snakefmt = "*"
-pre-commit = "*"
 pandas = "*"
 pyyaml = "*"
+
+# Feature: full development environment
+[feature.dev.dependencies]
+conda = ">=24.7.1"
+mamba = "*"
+snakemake-executor-plugin-slurm = "*"
+pre-commit = "*"
+
+# Environments: combine features as needed
+[environments]
+format = ["format"]
+lint = ["lint"]
+default = ["format", "lint", "dev"]

@@ -19,10 +19,11 @@ jobs:
           pixi-version: latest
           cache: true
           locked: false
+          environments: format
 
       - name: Check Snakemake formatting with snakefmt
         run: |
-          pixi run format
+          pixi run -e format format
 
   Linting:
     runs-on: ubuntu-latest
@@ -40,10 +41,12 @@ jobs:
         with:
           pixi-version: latest
           cache: true
+          locked: false
+          environments: lint
 
       - name: Run Snakemake Lint (v9)
         run: |
-          pixi run snakemake \
+          pixi run -e lint snakemake \
             --config data_location=github-actions-runner/.tests-mock/data_CHR17 \
             --lint
 
