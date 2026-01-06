@@ -77,11 +77,21 @@ def locate_snv_vcf(wildcards):
         if (
             "snv_sites_to_genotype" in config["references_data"][config["reference"]]
             and config["references_data"][config["reference"]]["snv_sites_to_genotype"]
-            != ""
+            not in ("", [])  # Handle both empty string and empty list
         ):
             # Handle list/Namedlist for Snakemake v9 compatibility
             snv_path = config["references_data"][config["reference"]]["snv_sites_to_genotype"]
-            snv_path_str = str(snv_path[0]) if isinstance(snv_path, list) else str(snv_path)
+
+            # Check if it's a non-empty list/Namedlist
+            if isinstance(snv_path, (list, tuple)) and len(snv_path) > 0:
+                snv_path_str = str(snv_path[0])
+            elif isinstance(snv_path, (list, tuple)) and len(snv_path) == 0:
+                # Empty list - use snv_calls path
+                return "{}/{}/snv_calls/{}.vcf".format(
+                    wildcards.folder, wildcards.sample, wildcards.chrom
+                )
+            else:
+                snv_path_str = str(snv_path)
 
             if os.path.isfile(snv_path_str):
                 return "{}/{}/snv_genotyping/{}.vcf".format(
