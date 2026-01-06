@@ -42,7 +42,6 @@ jobs:
           pixi-version: latest
           cache: true
           locked: false
-          environments: lint
 
       - name: Run Snakemake Lint (v9)
         run: |
