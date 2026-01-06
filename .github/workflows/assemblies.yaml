@@ -130,43 +130,37 @@ jobs:
 
   Testing-with-mm10:
     runs-on: ubuntu-latest
-    # needs:
-    #   - Formatting
-    #   - Linting
-    #   - Testing-basic-v7
-    #   - Testing-basic-with-ashleys
-    # - Testing-basic-with-slurm
     steps:
-      - name: Checkout repository with submodules and LFS
+      - name: Checkout repository with submodules
         uses: actions/checkout@v4
         with:
           submodules: recursive
-          # lfs: true
 
       - name: Git Submodule Update
         run: |
-          # git pull --recurse-submodules
           git submodule update --remote --recursive --force --init
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Setup Pixi
+        uses: prefix-dev/setup-pixi@v0.9.3
         with:
-          python-version: "3.12"
+          pixi-version: latest
+          cache: true
+          locked: false
 
-      - name: Add Conda to system path
-        run: echo "$CONDA/bin" >> $GITHUB_PATH
+      - name: Cache Conda environments
+        uses: actions/cache@v4
+        with:
+          path: .snakemake/conda
+          key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
+          restore-keys: |
+            conda-envs-
 
-      - name: Install dependencies
-        run: conda install -c conda-forge mamba
-
-      - name: Setup Snakemake
-        run: mamba install -c conda-forge -c bioconda snakemake==7.32.4
-
-      - name: List options of workflow
+      - name: Run workflow (mm10 v9)
         run: |
-          snakemake --cores 1 --config list_commands=True --verbose --debug
-
-      - name: Run workflow
-        run: |
-          snakemake --cores 1 --use-conda --config reference=T2T use_light_data=True chromosomes=[chr17] ashleys_pipeline=True \
-          --conda-frontend mamba -p --verbose --debug --snakefile workflow/Snakefile
+          pixi run snakemake \
+            --cores 1 \
+            --sdm conda \
+            --config reference=mm10 use_light_data=True chromosomes=[chr17] ashleys_pipeline=True \
+            --conda-cleanup-pkgs cache \
+            -p \
+            --snakefile workflow/Snakefile
