@@ -79,9 +79,11 @@ def locate_snv_vcf(wildcards):
             and config["references_data"][config["reference"]]["snv_sites_to_genotype"]
             != ""
         ):
-            if os.path.isfile(
-                config["references_data"][config["reference"]]["snv_sites_to_genotype"]
-            ):
+            # Handle list/Namedlist for Snakemake v9 compatibility
+            snv_path = config["references_data"][config["reference"]]["snv_sites_to_genotype"]
+            snv_path_str = str(snv_path[0]) if isinstance(snv_path, list) else str(snv_path)
+
+            if os.path.isfile(snv_path_str):
                 return "{}/{}/snv_genotyping/{}.vcf".format(
                     wildcards.folder, wildcards.sample, wildcards.chrom
                 )

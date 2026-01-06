@@ -1,6 +1,8 @@
 import pandas as pd
 
-df = pd.read_csv(snakemake.input.folder, sep="\t")
+# Handle Namedlist from Snakemake v9 - convert to string
+input_file = str(snakemake.input.folder[0]) if isinstance(snakemake.input.folder, list) else str(snakemake.input.folder)
+df = pd.read_csv(input_file, sep="\t")
 df["prediction"] = 1
 df["probability"] = 1
 df.loc[df["cell"].str.contains("BM510x04_PE20305"), "prediction"] = 0
