@@ -1,6 +1,9 @@
 name: MosaiCatcher assemblies checks
 
 on:
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       logLevel:
@@ -12,8 +15,6 @@ on:
           - info
           - warning
           - debug
-  schedule:
-    - cron: "0 0 * * 0"
 
 jobs:
   Testing-with-hg38:

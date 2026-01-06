@@ -11,18 +11,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4.1.7
+        uses: actions/checkout@v4
 
-      - name: Formatting using Super-Linter
-        uses: github/super-linter@v4
-        env:
-          VALIDATE_ALL_CODEBASE: false
-          DEFAULT_BRANCH: master
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VALIDATE_SNAKEMAKE_SNAKEFMT: true
+      - name: Setup Pixi
+        uses: prefix-dev/setup-pixi@v0.9.3
+        with:
+          pixi-version: latest
+          cache: true
+
+      - name: Check Snakemake formatting with snakefmt
+        run: |
+          pixi run format
 
   Linting:
     runs-on: ubuntu-latest
+    needs: Formatting
     steps:
       - name: Checkout repository without submodules
         uses: actions/checkout@v4
@@ -45,6 +48,9 @@ jobs:
 
   Testing-basic:
     runs-on: ubuntu-latest
+    needs:
+      - Formatting
+      - Linting
     steps:
       - name: Checkout repository with submodules
         uses: actions/checkout@v4
@@ -77,9 +83,7 @@ jobs:
         run: |
           pixi run snakemake \
             --cores 1 \
-            --config list_commands=True \
-            --verbose \
-            --debug
+            --config list_commands=True
 
       - name: Run workflow (MosaiCatcher v9)
         run: |
@@ -92,6 +96,9 @@ jobs:
 
   Testing-ashleys-basic:
     runs-on: ubuntu-latest
+    needs:
+      - Formatting
+      - Linting
     steps:
       - name: Checkout repository with submodules
         uses: actions/checkout@v4

@@ -1,7 +1,12 @@
 import pandas as pd
 
-# Handle Namedlist from Snakemake v9 - convert to string
-input_file = str(snakemake.input.folder[0]) if isinstance(snakemake.input.folder, list) else str(snakemake.input.folder)
+# Handle Namedlist from Snakemake v9 - select_ashleys_labels returns expand() which is always a list/Namedlist
+# Even with one element, we need to index it: snakemake.input.folder[0]
+try:
+    input_file = str(snakemake.input.folder[0])
+except (TypeError, IndexError, AttributeError):
+    input_file = str(snakemake.input.folder)
+
 df = pd.read_csv(input_file, sep="\t")
 df["prediction"] = 1
 df["probability"] = 1
