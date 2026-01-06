@@ -17,6 +17,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/argparse-dataclass-2.0.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/attrs-25.4.0-pyhcf101f3_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/backports.zstd-1.3.0-py311h6b1f9c4_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/black-24.10.0-py311h38be061_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/blinker-1.9.0-pyhff2d567_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/boltons-25.0.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/brotli-python-1.2.0-py311h66f275b_1.conda
@@ -110,6 +111,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/mdurl-0.1.2-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/menuinst-2.4.2-py311h38be061_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/msgpack-python-1.1.2-py311hdf67eae_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/mypy_extensions-1.1.0-pyha770c72_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/nbformat-5.10.4-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/ncurses-6.5-h2d0b736_3.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/nlohmann_json-abi-3.12.0-h0f90c79_1.conda
@@ -118,6 +120,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/openssl-3.6.0-h26f9b46_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/packaging-25.0-pyh29332c3_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/pandas-2.3.3-py311hed34c8f_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/pathspec-1.0.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pephubclient-0.4.4-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/peppy-0.40.8-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/platformdirs-4.5.1-pyhcf101f3_0.conda
@@ -160,6 +163,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/slack_sdk-3.39.0-hd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/smart_open-7.5.0-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/smmap-5.0.2-pyhd8ed1ab_0.conda
+      - conda: https://conda.anaconda.org/bioconda/noarch/snakefmt-0.11.2-pyha6daafd_0.conda
       - conda: https://conda.anaconda.org/bioconda/noarch/snakemake-9.14.5-hdfd78af_0.conda
       - conda: https://conda.anaconda.org/bioconda/noarch/snakemake-executor-plugin-slurm-2.0.3-pyhdfd78af_0.conda
       - conda: https://conda.anaconda.org/bioconda/noarch/snakemake-executor-plugin-slurm-jobstep-0.3.0-pyhdfd78af_0.tar.bz2
@@ -282,6 +286,21 @@ packages:
   license: BSD-3-Clause AND MIT AND EPL-2.0
   size: 244920
   timestamp: 1767044984647
+- conda: https://conda.anaconda.org/conda-forge/linux-64/black-24.10.0-py311h38be061_0.conda
+  sha256: fad9bf51c6574af15900a4e1226f45d315fe79a5424f9fc97db35e3f74927e70
+  md5: fceab39cec6b08375a81d1406e30ea1e
+  depends:
+  - click >=8.0.0
+  - mypy_extensions >=0.4.3
+  - packaging >=22.0
+  - pathspec >=0.9
+  - platformdirs >=2
+  - python >=3.11,<3.12.0a0
+  - python_abi 3.11.* *_cp311
+  license: MIT
+  license_family: MIT
+  size: 398766
+  timestamp: 1728503879231
 - conda: https://conda.anaconda.org/conda-forge/noarch/blinker-1.9.0-pyhff2d567_0.conda
   sha256: f7efd22b5c15b400ed84a996d777b6327e5c402e79e3c534a7e086236f1eb2dc
   md5: 42834439227a4551b939beeeb8a4b085
@@ -1433,6 +1452,15 @@ packages:
   license_family: Apache
   size: 102979
   timestamp: 1762504186626
+- conda: https://conda.anaconda.org/conda-forge/noarch/mypy_extensions-1.1.0-pyha770c72_0.conda
+  sha256: 6ed158e4e5dd8f6a10ad9e525631e35cee8557718f83de7a4e3966b1f772c4b1
+  md5: e9c622e0d00fa24a6292279af3ab6d06
+  depends:
+  - python >=3.9
+  license: MIT
+  license_family: MIT
+  size: 11766
+  timestamp: 1745776666688
 - conda: https://conda.anaconda.org/conda-forge/noarch/nbformat-5.10.4-pyhd8ed1ab_1.conda
   sha256: 7a5bd30a2e7ddd7b85031a5e2e14f290898098dc85bea5b3a5bf147c25122838
   md5: bbe1963f1e47f594070ffe87cdf612ea
@@ -1563,6 +1591,15 @@ packages:
   license_family: BSD
   size: 15180047
   timestamp: 1764615050121
+- conda: https://conda.anaconda.org/conda-forge/noarch/pathspec-1.0.0-pyhd8ed1ab_0.conda
+  sha256: 1493d56d7a02bdcaacc28a4fc2c1249230a6cf24750608e2b30bdf5c9154bb70
+  md5: c27944cfd04162af4832834f5f110bd0
+  depends:
+  - python >=3.10
+  license: MPL-2.0
+  license_family: MOZILLA
+  size: 52840
+  timestamp: 1767679251580
 - conda: https://conda.anaconda.org/conda-forge/noarch/pephubclient-0.4.4-pyhd8ed1ab_1.conda
   sha256: fe53097b62d73a991a9233659d47aac28e973e055d931ae5bfbcce4d824c03ee
   md5: 08d92912686d87b05d53ce04f00142c8
@@ -2056,6 +2093,17 @@ packages:
   license_family: BSD
   size: 26051
   timestamp: 1739781801801
+- conda: https://conda.anaconda.org/bioconda/noarch/snakefmt-0.11.2-pyha6daafd_0.conda
+  sha256: d1a08fca3b788331d2c38a8dbc2b154625d60c2701e7ff2e5f9ff85bf5322f91
+  md5: e24e657d087c778d77da633912e8c163
+  depends:
+  - black >=24.3,<25.0
+  - click >=8.2.0
+  - python >=3.11
+  license: MIT
+  license_family: MIT
+  size: 33339
+  timestamp: 1756948827679
 - conda: https://conda.anaconda.org/bioconda/noarch/snakemake-9.14.5-hdfd78af_0.conda
   sha256: 5b3544351c1848ad3db64066b70ae214ebe7951a010181c8a3e1df35268f3c81
   md5: f58d59bad6b87b017ed678571ec76577

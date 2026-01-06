@@ -1,21 +1,21 @@
+# Pre-commit hooks for MosaiCatcher pipeline
+# Install: pixi run pre-commit-install
+# Run manually: pixi run pre-commit-run
+
 repos:
-  - hooks:
-      - id: trailing-whitespace
-      - id: check-added-large-files
-      - id: check-yaml
-        #  - args:
-        #    - --branch
-        #    - master
-        #    id: no-commit-to-branch
-    repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.4.0
-  # - hooks:
-  #     - id: snakefmt
-  #   repo: https://github.com/snakemake/snakefmt
-  #   rev: 0.4.0
-  # - hooks:
-  #     - id: commitizen
-  #       stages:
-  #         - commit-msg
-  #   repo: https://github.com/commitizen-tools/commitizen
-  #   rev: v2.17.12
+  - repo: https://github.com/snakemake/snakefmt
+    rev: v0.10.2
+    hooks:
+      - id: snakefmt
+        name: Format Snakemake files
+        args: [--compact-diff]
+
+  - repo: local
+    hooks:
+      - id: snakemake-lint
+        name: Lint Snakemake workflow
+        entry: bash -c 'pixi run lint'
+        language: system
+        pass_filenames: false
+        files: \.(smk|py)$
+        stages: [commit]
