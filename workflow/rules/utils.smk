@@ -204,17 +204,6 @@ rule save_conda_versions_rtools:
         "conda env export > {output}"
 
 
-rule save_conda_versions_scNOVA_bioinfo_tools:
-    output:
-        "{folder}/{sample}/config/conda_export/scNOVA_bioinfo_tools.yaml",
-    log:
-        "{folder}/log/save_conda_versions/{sample}/scNOVA_bioinfo_tools.log",
-    conda:
-        "../envs/scNOVA/scNOVA_bioinfo_tools.yaml"
-    shell:
-        "conda env export > {output}"
-
-
 rule save_conda_versions_scNOVA_DL:
     output:
         "{folder}/{sample}/config/conda_export/scNOVA_DL.yaml",

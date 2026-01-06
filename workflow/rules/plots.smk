@@ -317,8 +317,6 @@ rule scTRIP_multiplot:
         "{folder}/log/scTRIP_multiplot/{sample}/{cell}/{chrom}.log",
     conda:
         "../envs/rtools.yaml"
-    container:
-        None
     resources:
         mem_mb=get_mem_mb,
     shell:

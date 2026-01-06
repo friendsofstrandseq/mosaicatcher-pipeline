@@ -88,8 +88,6 @@ jobs:
             --sdm conda \
             --configfile .tests/config/simple_config_mosaicatcher.yaml \
             -p \
-            --verbose \
-            --debug \
             --snakefile workflow/Snakefile
 
   Testing-ashleys-basic:
@@ -129,6 +127,4 @@ jobs:
             --sdm conda \
             --configfile .tests/config/simple_config_ashleys.yaml \
             -p \
-            --verbose \
-            --debug \
             --snakefile workflow/Snakefile

@@ -40,5 +40,4 @@ dependencies:
   - r-stringi=1.7.12
   - r-stringr
   - r-tidyr
-  - r-tidyr
   - strandphaser
