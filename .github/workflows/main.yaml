@@ -18,6 +18,7 @@ jobs:
         with:
           pixi-version: latest
           cache: true
+          locked: false
 
       - name: Check Snakemake formatting with snakefmt
         run: |
