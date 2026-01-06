@@ -171,3 +171,42 @@ jobs:
             --conda-cleanup-pkgs cache \
             -p \
             --snakefile workflow/Snakefile
+
+  Testing-ashleys-full-fastq:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Git Submodule Update
+        run: |
+          git submodule update --remote --recursive --force --init
+
+      - name: Setup Pixi
+        uses: prefix-dev/setup-pixi@v0.9.3
+        with:
+          pixi-version: latest
+          cache: true
+          locked: false
+
+      - name: Cache Conda environments
+        uses: actions/cache@v4
+        with:
+          path: .snakemake/conda
+          key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
+          restore-keys: |
+            conda-envs-
+
+      - name: Run workflow (Ashleys full FASTQ pipeline v9)
+        run: |
+          pixi run snakemake \
+            --cores 1 \
+            --sdm conda \
+            --configfile .tests/config/simple_config_ashleys.yaml \
+            --config ashleys_pipeline=True ashleys_pipeline_only=False use_light_data=True \
+            --forceall \
+            --conda-cleanup-pkgs cache \
+            -p \
+            --snakefile workflow/Snakefile

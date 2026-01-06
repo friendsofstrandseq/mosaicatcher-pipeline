@@ -24,7 +24,6 @@ if config["ashleys_pipeline"] is True:
     include: "rules/ashleys/count.smk"
     include: "rules/ashleys/gc.smk"
     include: "rules/ashleys/multiqc.smk"
-    include: "rules/ashleys/external_data.smk"
 
     if config["ashleys_pipeline_only"] is True:
 

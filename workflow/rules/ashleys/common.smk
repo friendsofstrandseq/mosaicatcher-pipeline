@@ -537,6 +537,16 @@ def get_final_result():
         )
     )
 
+    # MultiQC outputs
+    if config["MultiQC"] is True:
+        final_list.extend(
+            expand(
+                "{folder}/{sample}/multiqc/multiqc_report/multiqc_report.html",
+                folder=config["data_location"],
+                sample=samples,
+            )
+        )
+
     return final_list
 
 
