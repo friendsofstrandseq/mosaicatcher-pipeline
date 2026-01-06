@@ -74,13 +74,18 @@ def locate_snv_vcf(wildcards):
         ]
         == ""
     ):
-        if (
-            "snv_sites_to_genotype" in config["references_data"][config["reference"]]
-            and config["references_data"][config["reference"]]["snv_sites_to_genotype"]
-            not in ("", [])  # Handle both empty string and empty list
-        ):
+        if "snv_sites_to_genotype" in config["references_data"][
+            config["reference"]
+        ] and config["references_data"][config["reference"]][
+            "snv_sites_to_genotype"
+        ] not in (
+            "",
+            [],
+        ):  # Handle both empty string and empty list
             # Handle list/Namedlist for Snakemake v9 compatibility
-            snv_path = config["references_data"][config["reference"]]["snv_sites_to_genotype"]
+            snv_path = config["references_data"][config["reference"]][
+                "snv_sites_to_genotype"
+            ]
 
             # Check if it's a non-empty list/Namedlist
             if isinstance(snv_path, (list, tuple)) and len(snv_path) > 0:
@@ -204,7 +209,6 @@ def unselected_input_bam(wildcards):
     )
     cell_list = df.cell.tolist()
     # # print(cell_list)
-
 
     # if len(cell_list)>0:
     return expand(

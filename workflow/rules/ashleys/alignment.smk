@@ -185,5 +185,3 @@ rule ashleys_symlink_bam_ashleys:
         "../../envs/mc_base.yaml"
     script:
         "../../scripts/ashleys/utils/symlink_selected_bam.py"
-
-
