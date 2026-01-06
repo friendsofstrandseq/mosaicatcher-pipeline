@@ -164,3 +164,40 @@ jobs:
             --conda-cleanup-pkgs cache \
             -p \
             --snakefile workflow/Snakefile
+
+  Testing-with-mm39:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Git Submodule Update
+        run: |
+          git submodule update --remote --recursive --force --init
+
+      - name: Setup Pixi
+        uses: prefix-dev/setup-pixi@v0.9.3
+        with:
+          pixi-version: latest
+          cache: true
+          locked: false
+
+      - name: Cache Conda environments
+        uses: actions/cache@v4
+        with:
+          path: .snakemake/conda
+          key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
+          restore-keys: |
+            conda-envs-
+
+      - name: Run workflow (mm39 v9)
+        run: |
+          pixi run snakemake \
+            --cores 1 \
+            --sdm conda \
+            --config reference=mm39 use_light_data=True chromosomes=[chr17] ashleys_pipeline=True \
+            --conda-cleanup-pkgs cache \
+            -p \
+            --snakefile workflow/Snakefile
