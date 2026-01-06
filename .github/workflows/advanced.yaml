@@ -34,6 +34,15 @@ jobs:
         with:
           pixi-version: latest
           cache: true
+          locked: false
+
+      - name: Cache Conda environments
+        uses: actions/cache@v4
+        with:
+          path: .snakemake/conda
+          key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
+          restore-keys: |
+            conda-envs-
 
       - name: Run workflow (BreakpointR only v9)
         run: |
@@ -42,6 +51,7 @@ jobs:
             --sdm conda \
             --configfile .tests/config/simple_config_mosaicatcher.yaml \
             --config breakpointR=True breakpointR_only=True \
+            --conda-cleanup-pkgs cache \
             -p \
             --snakefile workflow/Snakefile
 
@@ -62,6 +72,15 @@ jobs:
         with:
           pixi-version: latest
           cache: true
+          locked: false
+
+      - name: Cache Conda environments
+        uses: actions/cache@v4
+        with:
+          path: .snakemake/conda
+          key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
+          restore-keys: |
+            conda-envs-
 
       - name: Run workflow (WhatsHap only v9)
         run: |
@@ -70,6 +89,7 @@ jobs:
             --sdm conda \
             --configfile .tests/config/simple_config_mosaicatcher.yaml \
             --config whatshap_only=True \
+            --conda-cleanup-pkgs cache \
             -p \
             --snakefile workflow/Snakefile
 
@@ -90,6 +110,15 @@ jobs:
         with:
           pixi-version: latest
           cache: true
+          locked: false
+
+      - name: Cache Conda environments
+        uses: actions/cache@v4
+        with:
+          path: .snakemake/conda
+          key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
+          restore-keys: |
+            conda-envs-
 
       - name: Run workflow (Ashleys with multistep normalisation v9)
         run: |
@@ -98,6 +127,7 @@ jobs:
             --sdm conda \
             --configfile .tests/config/simple_config_ashleys.yaml \
             --config multistep_normalisation=True \
+            --conda-cleanup-pkgs cache \
             -p \
             --snakefile workflow/Snakefile
 
@@ -118,6 +148,15 @@ jobs:
         with:
           pixi-version: latest
           cache: true
+          locked: false
+
+      - name: Cache Conda environments
+        uses: actions/cache@v4
+        with:
+          path: .snakemake/conda
+          key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
+          restore-keys: |
+            conda-envs-
 
       - name: Run workflow (Ashleys with MultiQC v9)
         run: |
@@ -126,5 +165,6 @@ jobs:
             --sdm conda \
             --configfile .tests/config/simple_config_ashleys.yaml \
             --config MultiQC=True \
+            --conda-cleanup-pkgs cache \
             -p \
             --snakefile workflow/Snakefile
