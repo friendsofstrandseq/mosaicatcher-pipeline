@@ -23,7 +23,7 @@ if config["ashleys_pipeline"] is False:
             ),
         log:
             "{folder}/log/plot_mosaic_counts/{sample}.log",
-        params: 
+        params:
             mouse_assembly=True if config["reference"] in ["mm10", "mm39"] else False,
         conda:
             "../envs/rtools.yaml"
@@ -40,14 +40,14 @@ rule divide_pdf:
         "{folder}/{sample}/plots/counts/CountComplete.raw.pdf",
     output:
         report(
-            r"{folder}/{sample}/plots/counts_raw/{cell}.{i, \d+}.pdf",
+            "{folder}/{sample}/plots/counts_raw/{cell}.{i, \d+}.pdf",
             caption="../report/mosaic_counts.rst",
             category="Mosaic counts cellwise",
             subcategory="{sample}",
             labels={"Cell": "{cell}", "Nb": "{i}", "Type": "raw"},
         ),
     log:
-        r"{folder}/log/{sample}/plots/counts_raw/{cell}.{i, \d+}.log",
+        "{folder}/log/{sample}/plots/counts_raw/{cell}.{i, \d+}.log",
     conda:
         "../envs/mc_base.yaml"
     resources:

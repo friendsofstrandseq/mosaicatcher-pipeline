@@ -1,6 +1,6 @@
 if config["multistep_normalisation"] is True and config["window"] == 200000:
 
-    rule library_size_normalisation:
+    rule ashleys_library_size_normalisation:
         input:
             counts="{folder}/{sample}/counts/{sample}.txt.raw.gz",
             info_raw="{folder}/{sample}/counts/{sample}.info_raw",
@@ -13,11 +13,11 @@ if config["multistep_normalisation"] is True and config["window"] == 200000:
         resources:
             mem_mb=get_mem_mb,
         conda:
-            "../envs/rtools.yaml"
+            "../../envs/rtools.yaml"
         script:
-            "../scripts/ashleys/GC/library_size_normalisation.R"
+            "../../scripts/ashleys/GC/library_size_normalisation.R"
 
-    rule GC_correction:
+    rule ashleys_GC_correction:
         input:
             counts_scaled="{folder}/{sample}/counts/multistep_normalisation/{sample}.txt.scaled.gz",
         output:
@@ -45,11 +45,11 @@ if config["multistep_normalisation"] is True and config["window"] == 200000:
         resources:
             mem_mb=get_mem_mb,
         conda:
-            "../envs/rtools.yaml"
+            "../../envs/rtools.yaml"
         script:
-            "../scripts/ashleys/GC/GC_correction.R"
+            "../../scripts/ashleys/GC/GC_correction.R"
 
-    rule VST_correction:
+    rule ashleys_VST_correction:
         input:
             counts_scaled_gc="{folder}/{sample}/counts/multistep_normalisation/{sample}.txt.scaled.GC.gz",
         output:
@@ -68,11 +68,11 @@ if config["multistep_normalisation"] is True and config["window"] == 200000:
         resources:
             mem_mb=get_mem_mb,
         conda:
-            "../envs/rtools.yaml"
+            "../../envs/rtools.yaml"
         script:
-            "../scripts/ashleys/GC/variance_stabilizing_transformation.R"
+            "../../scripts/ashleys/GC/variance_stabilizing_transformation.R"
 
-    rule reformat_ms_norm:
+    rule ashleys_reformat_ms_norm:
         input:
             "{folder}/{sample}/counts/multistep_normalisation/{sample}.txt.scaled.GC.VST.gz",
         output:
@@ -80,13 +80,13 @@ if config["multistep_normalisation"] is True and config["window"] == 200000:
         log:
             "{folder}/{sample}/log/reformat_ms_norm/{sample}.log",
         conda:
-            "../envs/mc_base.yaml"
+            "../../envs/mc_base.yaml"
         resources:
             mem_mb=get_mem_mb,
         script:
-            "../scripts/ashleys/utils/reformat_ms_norm.py"
+            "../../scripts/ashleys/utils/reformat_ms_norm.py"
 
-    rule populate_counts_GC:
+    rule ashleys_populate_counts_GC:
         input:
             bin_bed=ancient(select_binbed),
             counts="{folder}/{sample}/counts/multistep_normalisation/{sample}.txt.scaled.GC.VST.reformat.gz",
@@ -95,13 +95,13 @@ if config["multistep_normalisation"] is True and config["window"] == 200000:
         log:
             "{folder}/log/plot_mosaic_counts/{sample}.log",
         conda:
-            "../envs/mc_base.yaml"
+            "../../envs/mc_base.yaml"
         resources:
             mem_mb=get_mem_mb,
         script:
-            "../scripts/ashleys/utils/populated_counts_for_qc_plot.py"
+            "../../scripts/ashleys/utils/populated_counts_for_qc_plot.py"
 
-    rule plot_mosaic_gc_norm_counts:
+    rule ashleys_plot_mosaic_gc_norm_counts:
         input:
             counts="{folder}/{sample}/counts/multistep_normalisation/{sample}.txt.scaled.GC.VST.populated.gz",
             info="{folder}/{sample}/counts/{sample}.info_raw",
@@ -116,7 +116,7 @@ if config["multistep_normalisation"] is True and config["window"] == 200000:
         log:
             "{folder}/{sample}/log/plot_mosaic_counts/{sample}.log",
         conda:
-            "../envs/rtools.yaml"
+            "../../envs/rtools.yaml"
         params:
             mouse_assembly=True if config["reference"] == "mm10" else False,
         resources:

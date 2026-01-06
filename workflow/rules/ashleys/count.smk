@@ -18,7 +18,7 @@ rule ashleys_generate_exclude_file_for_mosaic_count:
     log:
         "{folder}/log/config/{sample}/exclude_file.log",
     conda:
-        "../envs/mc_base.yaml"
+        "../../envs/mc_base.yaml"
     params:
         chroms=config["chromosomes"]
         if config["reference"] not in ["mm10", "mm39"]
@@ -46,7 +46,7 @@ rule ashleys_generate_exclude_file_for_mosaic_count:
             "chrY",
         ],
     script:
-        "../scripts/ashleys/utils/generate_exclude_file.py"
+        "../../scripts/ashleys/utils/generate_exclude_file.py"
 
 
 checkpoint mosaic_count:
@@ -70,7 +70,7 @@ checkpoint mosaic_count:
     log:
         "{folder}/log/counts/{sample}/mosaic_count.log",
     conda:
-        "../envs/mc_base.yaml"
+        "../../envs/mc_base.yaml"
     params:
         window=config["window"],
     resources:
@@ -99,11 +99,11 @@ rule ashleys_populate_counts:
     log:
         "{folder}/log/plot_mosaic_counts/{sample}.log",
     conda:
-        "../envs/mc_base.yaml"
+        "../../envs/mc_base.yaml"
     resources:
         mem_mb=get_mem_mb,
     script:
-        "../scripts/ashleys/utils/populated_counts_for_qc_plot.py"
+        "../../scripts/ashleys/utils/populated_counts_for_qc_plot.py"
 
 
 rule ashleys_plot_mosaic_counts:
@@ -123,7 +123,7 @@ rule ashleys_plot_mosaic_counts:
     params:
         mouse_assembly=True if config["reference"] in ["mm10", "mm39"] else False,
     conda:
-        "../envs/rtools.yaml"
+        "../../envs/rtools.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
     shell:

@@ -46,13 +46,10 @@ if config["mosaicatcher_pipeline"] == False:
             "chr" + str(e) for e in list(range(1, 20)) + ["X", "Y"]
         ]
 
-    from scripts.utils import pipeline_aesthetic_start_ashleys
-
-    if config["list_commands"] is True:
-        pipeline_aesthetic_start_ashleys.argparse_help(config)
+    # Use mosaicatcher's pipeline_aesthetic_start instead of ashleys-specific version
+    # The functionality is already provided by workflow/rules/common.smk
 
     onstart:
-        pipeline_aesthetic_start_ashleys.pipeline_aesthetic_start(config)
         subprocess.Popen(
             "mkdir -p {folder_path}/config".format(
                 folder_path=config["data_location"]

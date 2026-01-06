@@ -65,13 +65,7 @@ rule ashleys_bwa_index:
         "v1.7.0/bio/bwa/index"
 
 
-if config["mosaicatcher_pipeline"] is False:
-
-    ruleorder: ashleys_bwa_strandseq_to_reference_alignment > ashleys_samtools_sort_bam > ashleys_mark_duplicates > ashleys_samtools_index
-
-else:
-
-    ruleorder: ashleys_bwa_strandseq_to_reference_alignment > ashleys_samtools_sort_bam > ashleys_mark_duplicates
+ruleorder: ashleys_bwa_strandseq_to_reference_alignment > ashleys_samtools_sort_bam > ashleys_mark_duplicates
 
 
 if config["paired_end"] is True:
@@ -103,7 +97,7 @@ if config["paired_end"] is True:
             mem_mb=get_mem_mb_heavy,
             time="01:00:00",
         conda:
-            "../envs/mc_base.yaml"
+            "../../envs/mc_base.yaml"
         shell:
             "bwa mem -t {threads}"
             ' -R "@RG\\tID:{wildcards.cell}\\tPL:Illumina\\tSM:{wildcards.sample}"'
@@ -138,7 +132,7 @@ else:
             mem_mb=get_mem_mb_heavy,
             time="01:00:00",
         conda:
-            "../envs/mc_base.yaml"
+            "../../envs/mc_base.yaml"
         shell:
             "bwa mem -t {threads}"
             ' -R "@RG\\tID:{wildcards.cell}\\tPL:Illumina\\tSM:{wildcards.sample}"'
@@ -157,7 +151,7 @@ rule ashleys_samtools_sort_bam:
         mem_mb=get_mem_mb,
         time="01:00:00",
     conda:
-        "../envs/mc_base.yaml"
+        "../../envs/mc_base.yaml"
     shell:
         "samtools sort -O BAM -o {output} {input} 2>&1 > {log}"
 
@@ -170,44 +164,12 @@ rule ashleys_mark_duplicates:
     log:
         "{folder}/{sample}/log/markdup/{cell}.log",
     conda:
-        "../envs/mc_base.yaml"
+        "../../envs/mc_base.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
         time="01:00:00",
     shell:
         "sambamba markdup {input.bam} {output} 2>&1 > {log}"
-
-
-if config["mosaicatcher_pipeline"] is False:
-
-    rule samtools_index:
-        input:
-            "{folder}/{sample}/bam/{cell}.sort.mdup.bam",
-        output:
-            "{folder}/{sample}/bam/{cell}.sort.mdup.bam.bai",
-        log:
-            "{folder}/{sample}/log/samtools_index/{cell}.log",
-        conda:
-            "../envs/mc_base.yaml"
-        resources:
-            mem_mb=get_mem_mb,
-            time="02:00:00",
-        shell:
-            "samtools index {input} 2>&1 > {log}"
-
-    rule gunzip_fasta:
-        input:
-            ancient("{file}.fa.gz"),
-        output:
-            "{file}.fa",
-        log:
-            "{file}.log",
-        conda:
-            "../envs/mc_base.yaml"
-        resources:
-            mem_mb=get_mem_mb_heavy,
-        shell:
-            "gunzip -cd {input} > {output}"
 
 
 rule ashleys_symlink_bam_ashleys:
@@ -220,8 +182,8 @@ rule ashleys_symlink_bam_ashleys:
     log:
         "{folder}/log/symlink_selected_bam/{sample}/{cell}.log",
     conda:
-        "../envs/mc_base.yaml"
+        "../../envs/mc_base.yaml"
     script:
-        "../scripts/ashleys/utils/symlink_selected_bam.py"
+        "../../scripts/ashleys/utils/symlink_selected_bam.py"
 
 

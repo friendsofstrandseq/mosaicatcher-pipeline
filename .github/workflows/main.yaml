@@ -26,60 +26,40 @@ jobs:
     steps:
       - name: Checkout repository without submodules
         uses: actions/checkout@v4
-        # with:
-        #   submodules: "recursive" # Ensures all submodules are checked out
-        # lfs: true # Ensures LFS objects for the main repo are pulled
-
-      # - name: Pull LFS objects in submodules
-      #   run: |
-      #     git submodule foreach --recursive 'git pull origin main'
 
       - name: List contents of .tests-mock
         run: |
           tree -h github-actions-runner/.tests-mock
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Setup Pixi
+        uses: prefix-dev/setup-pixi@v0.9.3
         with:
-          python-version: "3.12"
+          pixi-version: latest
+          cache: true
 
-      - name: Add Conda to system path
+      - name: Run Snakemake Lint (v9)
         run: |
-          echo $CONDA/bin >> $GITHUB_PATH
+          pixi run snakemake \
+            --config data_location=github-actions-runner/.tests-mock/data_CHR17 \
+            --lint
 
-      - name: Install dependencies
-        run: |
-          conda install -c conda-forge mamba
-
-      - name: Setup snakemake
-        run: |
-          mamba install -c conda-forge -c bioconda snakemake==7.32.4
-
-      - name: Run Snakemake Lint
-        run: |
-          snakemake --config data_location=github-actions-runner/.tests-mock/data_CHR17 --lint
-
-  Testing-basic-v7:
+  Testing-basic:
     runs-on: ubuntu-latest
-    # needs:
-    #   - Formatting
-    #   - Linting
     steps:
       - name: Checkout repository with submodules
         uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      # Update references
       - name: Git Submodule Update
         run: |
-          # git pull --recurse-submodules
           git submodule update --remote --recursive --force --init
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Setup Pixi
+        uses: prefix-dev/setup-pixi@v0.9.3
         with:
-          python-version: "3.12"
+          pixi-version: latest
+          cache: true
 
       - name: List contents of .tests
         run: |
@@ -93,72 +73,62 @@ jobs:
         run: |
           tree -h workflow/data
 
-      - name: Add Conda to system path
-        run: echo "$CONDA/bin" >> $GITHUB_PATH
-
-      - name: Install dependencies
-        run: conda install -c conda-forge mamba
-
-      - name: Setup Snakemake
-        run: mamba install -c conda-forge -c bioconda snakemake==7.32.4
-
       - name: List options of workflow
         run: |
-          snakemake --cores 1 --config list_commands=True --verbose --debug
+          pixi run snakemake \
+            --cores 1 \
+            --config list_commands=True \
+            --verbose \
+            --debug
 
-      - name: Run workflow
+      - name: Run workflow (MosaiCatcher v9)
         run: |
-          snakemake --cores 1 --use-conda --configfile .tests/config/simple_config_mosaicatcher.yaml \
-          --conda-frontend mamba -p --verbose --debug --snakefile workflow/Snakefile
+          pixi run snakemake \
+            --cores 1 \
+            --sdm conda \
+            --configfile .tests/config/simple_config_mosaicatcher.yaml \
+            -p \
+            --verbose \
+            --debug \
+            --snakefile workflow/Snakefile
 
-  Testing-basic-with-ashleys:
+  Testing-ashleys-basic:
     runs-on: ubuntu-latest
-    # needs:
-    #   - Formatting
-    #   - Linting
     steps:
       - name: Checkout repository with submodules
         uses: actions/checkout@v4
         with:
           submodules: recursive
-          # lfs: true
 
       - name: Git Submodule Update
         run: |
-          # git pull --recurse-submodules
           git submodule update --remote --recursive --force --init
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Setup Pixi
+        uses: prefix-dev/setup-pixi@v0.9.3
         with:
-          python-version: "3.12"
+          pixi-version: latest
+          cache: true
 
       - name: List contents of .tests
         run: |
           tree -h .tests
 
-      - name: Show config file
+      - name: Show ashleys config file
         run: |
-          cat .tests/config/simple_config_mosaicatcher.yaml
+          cat .tests/config/simple_config_ashleys.yaml
 
-      - name: List contents of workflow/data
+      - name: List ashleys rules
         run: |
-          tree -h workflow/data
+          ls -la workflow/rules/ashleys/
 
-      - name: Add Conda to system path
-        run: echo "$CONDA/bin" >> $GITHUB_PATH
-
-      - name: Install dependencies
-        run: conda install -c conda-forge mamba
-
-      - name: Setup Snakemake
-        run: mamba install -c conda-forge -c bioconda snakemake==7.32.4
-
-      - name: List options of workflow
+      - name: Run workflow (Ashleys basic v9)
         run: |
-          snakemake --cores 1 --config list_commands=True --verbose --debug
-
-      - name: Run workflow
-        run: |
-          snakemake --cores 1 --use-conda --configfile .tests/config/simple_config_mosaicatcher.yaml --config ashleys_pipeline=True \
-          --conda-frontend mamba -p --verbose --debug --snakefile workflow/Snakefile
+          pixi run snakemake \
+            --cores 1 \
+            --sdm conda \
+            --configfile .tests/config/simple_config_ashleys.yaml \
+            -p \
+            --verbose \
+            --debug \
+            --snakefile workflow/Snakefile

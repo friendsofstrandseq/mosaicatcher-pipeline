@@ -6,7 +6,7 @@ rule ashleys_generate_features:
     log:
         "{folder}/log/ashleys/{sample}/features.log",
     conda:
-        "../envs/mc_base.yaml"
+        "../../envs/mc_base.yaml"
     threads: 64
     params:
         windows="5000000 2000000 1000000 800000 600000 400000 200000",
@@ -29,7 +29,7 @@ rule ashleys_predict:
     log:
         "{folder}/log/ashleys/{sample}/prediction_ashleys.log",
     conda:
-        "../envs/mc_base.yaml"
+        "../../envs/mc_base.yaml"
     params:
         model_default="./workflow/ashleys_models/svc_default.pkl",
         model_stringent="./workflow/ashleys_models/svc_stringent.pkl",
@@ -48,7 +48,7 @@ rule ashleys_generate_default_labels:
     log:
         "{folder}/log/generate_default_labels/{sample}.log",
     conda:
-        "../envs/mc_base.yaml"
+        "../../envs/mc_base.yaml"
     shell:
         """
         echo "cell\tprediction\tprobability\tsample" > {output}
@@ -62,7 +62,7 @@ rule ashleys_generate_default_labels:
 
 if config["use_light_data"] is False:
 
-    rule positive_negative_control_bypass:
+    rule ashleys_positive_negative_control_bypass:
         input:
             labels=select_ashleys_labels,
             info="{folder}/{sample}/counts/{sample}.info_raw",
@@ -72,9 +72,9 @@ if config["use_light_data"] is False:
         log:
             "{folder}/log/positive_control_bypass/{sample}.log",
         conda:
-            "../envs/mc_base.yaml"
+            "../../envs/mc_base.yaml"
         script:
-            "../scripts/ashleys/utils/positive_negative_control_bypass.py"
+            "../../scripts/ashleys/utils/positive_negative_control_bypass.py"
 
     checkpoint tune_predictions_based_on_threshold:
         input:
@@ -84,11 +84,11 @@ if config["use_light_data"] is False:
         log:
             "{folder}/log/cp_predictions/{sample}.log",
         conda:
-            "../envs/mc_base.yaml"
+            "../../envs/mc_base.yaml"
         script:
-            "../scripts/ashleys/utils/tune_predictions_based_on_threshold.py"
+            "../../scripts/ashleys/utils/tune_predictions_based_on_threshold.py"
 
-    rule plot_plate:
+    rule ashleys_plot_plate:
         input:
             labels="{folder}/{sample}/cell_selection/labels.tsv",
         output:
@@ -108,13 +108,13 @@ if config["use_light_data"] is False:
         log:
             "{folder}/log/plot_plate/{sample}.log",
         conda:
-            "../envs/rtools.yaml"
+            "../../envs/rtools.yaml"
         script:
-            "../scripts/ashleys/plotting/plot_plate.R"
+            "../../scripts/ashleys/plotting/plot_plate.R"
 
 elif config["use_light_data"] is True:
 
-    rule dev_all_cells_correct:
+    rule ashleys_dev_all_cells_correct:
         input:
             # folder="{folder}/{sample}/cell_selection/labels_notebook.tsv",
             folder=select_ashleys_labels,
@@ -123,14 +123,14 @@ elif config["use_light_data"] is True:
         log:
             "{folder}/log/dev_all_cells_correct/{sample}.log",
         conda:
-            "../envs/mc_base.yaml"
+            "../../envs/mc_base.yaml"
         script:
-            "../scripts/ashleys/utils/dev_all_cells_correct.py"
+            "../../scripts/ashleys/utils/dev_all_cells_correct.py"
 
 
 if config["publishdir"] != "":
 
-    rule publishdir_outputs_ashleys:
+    rule ashleys_publishdir_outputs_ashleys:
         input:
             list_publishdir=publishdir_fct,
         output:
@@ -138,9 +138,9 @@ if config["publishdir"] != "":
         log:
             "{folder}/log/publishdir_outputs_ashleys/{sample}.log",
         conda:
-            "../envs/mc_base.yaml"
+            "../../envs/mc_base.yaml"
         script:
-            "../scripts/ashleys/utils/publishdir.py"
+            "../../scripts/ashleys/utils/publishdir.py"
 
 
 rule ashleys_save_config:
@@ -151,11 +151,11 @@ rule ashleys_save_config:
     log:
         "{folder}/log/save_config/{sample}.log",
     conda:
-        "../envs/mc_base.yaml"
+        "../../envs/mc_base.yaml"
     resources:
         mem_mb=get_mem_mb,
     script:
-        "../scripts/ashleys/utils/dump_config.py"
+        "../../scripts/ashleys/utils/dump_config.py"
 
 
 rule ashleys_final_results:
@@ -166,7 +166,7 @@ rule ashleys_final_results:
     log:
         "{folder}/log/ashleys_final_results/{sample}.log",
     conda:
-        "../envs/mc_base.yaml"
+        "../../envs/mc_base.yaml"
     shell:
         "touch {output}"
 

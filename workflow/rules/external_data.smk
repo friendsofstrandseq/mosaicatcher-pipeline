@@ -3,6 +3,10 @@
 #
 # HTTP = HTTPRemoteProvider()
 
+# Register HTTP storage provider for downloading reference genomes
+storage http:
+    provider="http",
+    max_requests_per_second=10
 
 
 rule dl_example_data:

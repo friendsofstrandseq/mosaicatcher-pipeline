@@ -44,7 +44,7 @@ rule ashleys_samtools_idxstats:
     resources:
         mem_mb=get_mem_mb,
     conda:
-        "../envs/mc_base.yaml"
+        "../../envs/mc_base.yaml"
     shell:
         "samtools idxstats {input} > {output}"
 
@@ -73,7 +73,7 @@ rule ashleys_samtools_flagstats:
     resources:
         mem_mb=get_mem_mb,
     conda:
-        "../envs/mc_base.yaml"
+        "../../envs/mc_base.yaml"
     shell:
         "samtools flagstats {input} > {output}"
 
@@ -102,7 +102,7 @@ rule ashleys_samtools_stats:
     resources:
         mem_mb=get_mem_mb,
     conda:
-        "../envs/mc_base.yaml"
+        "../../envs/mc_base.yaml"
     shell:
         "samtools stats {input} > {output}"
 
@@ -144,6 +144,6 @@ rule ashleys_multiqc:
             abs_path=config["abs_path"]
         ).join(input.fastqc.split("/")[:-3]),
     conda:
-        "../envs/mc_base.yaml"
+        "../../envs/mc_base.yaml"
     shell:
         "multiqc {params.multiqc_input} --outdir {output.outdir}"

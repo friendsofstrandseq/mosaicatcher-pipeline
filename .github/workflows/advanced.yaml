@@ -183,3 +183,49 @@ jobs:
         run: |
           snakemake --cores 1 --use-conda --configfile .tests/config/simple_config_mosaicatcher.yaml --config whatshap_only=True \
           --conda-frontend mamba -p --verbose --debug --snakefile workflow/Snakefile
+
+  Testing-ashleys-multistep-norm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Git Submodule Update
+        run: |
+          git submodule update --remote --recursive --force --init
+
+      - name: Setup Pixi
+        uses: prefix-dev/setup-pixi@v0.9.3
+        with:
+          pixi-version: latest
+          cache: true
+
+      - name: Run workflow (Ashleys with multistep normalisation v9)
+        run: |
+          pixi run snakemake --cores 1 --sdm conda --configfile .tests/config/simple_config_ashleys.yaml \
+          --config multistep_normalisation=True -p --verbose --debug
+
+  Testing-ashleys-multiqc:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Git Submodule Update
+        run: |
+          git submodule update --remote --recursive --force --init
+
+      - name: Setup Pixi
+        uses: prefix-dev/setup-pixi@v0.9.3
+        with:
+          pixi-version: latest
+          cache: true
+
+      - name: Run workflow (Ashleys with MultiQC v9)
+        run: |
+          pixi run snakemake --cores 1 --sdm conda --configfile .tests/config/simple_config_ashleys.yaml \
+          --config MultiQC=True -p --verbose --debug

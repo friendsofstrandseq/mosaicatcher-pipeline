@@ -11,7 +11,35 @@ MosaiCatcher-pipeline is a Snakemake workflow for structural variant (SV) callin
 
 ## Common Commands
 
-### Dry-run (validate workflow)
+### Using Pixi (Recommended for Snakemake v9+)
+
+The project now uses Pixi for package management. Pixi provides better dependency resolution and is configured in `pixi.toml`.
+
+**Dry-run (validate workflow) - MosaiCatcher:**
+```bash
+~/.pixi/bin/pixi run snakemake --cores 1 \
+    --configfile .tests/config/simple_config_mosaicatcher.yaml \
+    --sdm conda --conda-frontend mamba --dry-run
+```
+
+**Dry-run - Ashleys pipeline:**
+```bash
+~/.pixi/bin/pixi run snakemake --cores 1 \
+    --configfile .tests/config/simple_config_ashleys.yaml \
+    --sdm conda --conda-frontend mamba --dry-run
+```
+
+**Lint workflow:**
+```bash
+~/.pixi/bin/pixi run snakemake \
+    --configfile .tests/config/simple_config_mosaicatcher.yaml --lint
+```
+
+**Note:** Pixi commands use `--sdm conda` (software deployment method) instead of `--use-conda`, and `--conda-frontend mamba` is deprecated in Snakemake v9 (libmamba is built-in).
+
+### Legacy Commands (Snakemake v7)
+
+**Dry-run with profiles:**
 ```bash
 snakemake --cores 6 \
     --configfile .tests/config/simple_config_mosaicatcher.yaml \
@@ -19,7 +47,7 @@ snakemake --cores 6 \
     --dry-run
 ```
 
-### Run with test data (local, conda + singularity)
+**Run with conda + singularity:**
 ```bash
 snakemake --cores 1 \
     --configfile .tests/config/simple_config_mosaicatcher.yaml \
@@ -27,28 +55,7 @@ snakemake --cores 1 \
     --singularity-args "-B /disk:/disk"
 ```
 
-### Run with conda only (no containers)
-```bash
-snakemake --cores 8 \
-    --configfile .tests/config/simple_config_mosaicatcher.yaml \
-    --profile workflow/snakemake_profiles/mosaicatcher-pipeline/v7/local/conda/
-```
-
-### Generate HTML report
-```bash
-snakemake --cores 1 \
-    --configfile .tests/config/simple_config_mosaicatcher.yaml \
-    --profile workflow/snakemake_profiles/mosaicatcher-pipeline/v7/local/conda_singularity/ \
-    --report report.zip \
-    --report-stylesheet workflow/report/custom-stylesheet.css
-```
-
-### Lint workflow
-```bash
-snakemake --configfile .tests/config/simple_config_mosaicatcher.yaml --lint
-```
-
-### HPC execution (SLURM at EMBL)
+**HPC execution (SLURM at EMBL):**
 ```bash
 snakemake --profile workflow/snakemake_profiles/mosaicatcher-pipeline/v7/HPC/slurm_EMBL/ \
     --configfile config/config.yaml
@@ -135,6 +142,54 @@ Test configurations are in `.tests/config/`:
 - `simple_config_ashleys.yaml` - With ashleys-qc preprocessing
 
 Test data uses chromosome 17 only for speed.
+
+### Testing Ashleys Modules
+
+Ashleys modules can be activated using `--config` flag overrides. Key module flags from `config/config.yaml`:
+
+**Module Configuration Flags:**
+
+*Ashleys-specific modules:*
+- `multistep_normalisation=True` - Enable GC/VST normalization (requires `window=200000`)
+  - Activates: `ashleys_library_size_normalisation`, `ashleys_GC_correction`, `ashleys_VST_correction`, `ashleys_reformat_ms_norm`, `ashleys_populate_counts_GC`, `ashleys_plot_mosaic_gc_norm_counts`
+- `use_light_data=False` - Enable QC with positive/negative controls
+  - Activates: `ashleys_positive_negative_control_bypass`, `ashleys_plot_plate`
+- `genecore=True` - Enable Genecore symlinks (requires `genecore_date_folder`)
+  - Activates: `ashleys_genecore_symlink`
+- `publishdir="/path"` - Enable output publishing to directory
+  - Activates: `ashleys_publishdir_outputs_ashleys`
+- `MultiQC=True` - Enable MultiQC reports (tested in CI)
+
+*MosaiCatcher-specific modules:*
+- `breakpointR=True` - Enable BreakpointR for SV calling
+- `breakpointR_only=True` - Run only BreakpointR pipeline
+- `whatshap_only=True` - Run only WhatsHap phasing
+- `list_commands=True` - List available rules without execution
+
+*Reference genome selection:*
+- `reference=hg19` / `hg38` / `T2T` / `mm10` / `mm39`
+- `chromosomes=[chr17]` - Limit analysis to specific chromosomes
+
+**Always Active (when ashleys_pipeline=True):**
+- MultiQC rules: `ashleys_fastqc`, `ashleys_multiqc`, `ashleys_samtools_idxstats`, `ashleys_samtools_flagstats`, `ashleys_samtools_stats`
+- Core alignment: `ashleys_bwa_strandseq_to_reference_alignment`, `ashleys_samtools_sort_bam`, `ashleys_mark_duplicates`
+- Counting: `ashleys_generate_exclude_file_for_mosaic_count`, `ashleys_mosaic_count`, `ashleys_plot_mosaic_counts`
+
+**Example - Test with multistep normalization:**
+```bash
+~/.pixi/bin/pixi run snakemake --cores 1 \
+    --configfile .tests/config/simple_config_ashleys.yaml \
+    --config multistep_normalisation=True \
+    --sdm conda --conda-frontend mamba --dry-run
+```
+
+**Example - Test with control bypass:**
+```bash
+~/.pixi/bin/pixi run snakemake --cores 1 \
+    --configfile .tests/config/simple_config_ashleys.yaml \
+    --config use_light_data=False \
+    --sdm conda --conda-frontend mamba --dry-run
+```
 
 ## CI/CD
 

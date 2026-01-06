@@ -1,0 +1,21 @@
+[workspace]
+name = "mosaicatcher-pipeline"
+version = "2.3.5"
+description = "Snakemake workflow for SV calling from single-cell Strand-seq data"
+channels = ["conda-forge", "bioconda"]
+platforms = ["linux-64"]
+
+[tasks]
+snakemake-dry-run = "snakemake --cores 1 --configfile .tests/config/simple_config_mosaicatcher.yaml --sdm conda --conda-frontend mamba --dry-run"
+snakemake-dry-run-ashleys = "snakemake --cores 1 --configfile .tests/config/simple_config_ashleys.yaml --sdm conda --conda-frontend mamba --dry-run"
+lint = "snakemake --configfile .tests/config/simple_config_mosaicatcher.yaml --lint"
+
+[dependencies]
+python = ">=3.11"
+conda = ">=24.7.1"
+mamba = "*"
+snakemake = ">=9.0"
+snakemake-storage-plugin-http = "*"
+snakemake-executor-plugin-slurm = "*"
+pandas = "*"
+pyyaml = "*"
