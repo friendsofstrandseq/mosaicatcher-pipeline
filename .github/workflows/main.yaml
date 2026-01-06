@@ -129,6 +129,14 @@ jobs:
           cache: true
           locked: false
 
+      - name: Cache Conda environments
+        uses: actions/cache@v4
+        with:
+          path: .snakemake/conda
+          key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
+          restore-keys: |
+            conda-envs-
+
       - name: List contents of .tests
         run: |
           tree -h .tests
@@ -147,5 +155,6 @@ jobs:
             --cores 1 \
             --sdm conda \
             --configfile .tests/config/simple_config_ashleys.yaml \
+            --conda-cleanup-pkgs cache \
             -p \
             --snakefile workflow/Snakefile
