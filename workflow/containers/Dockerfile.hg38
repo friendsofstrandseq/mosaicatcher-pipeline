@@ -28,61 +28,17 @@ RUN echo "========================================" && \
     /opt/conda/bin/conda env list && \
     echo "========================================"
 
-# Install BSgenome with multiple fallback methods
-RUN set -x && \
-    echo "=== METHOD 1: Try finding rtools by name pattern ===" && \
-    RTOOLS_ENV=$(find /conda-envs -type d -name "*rtools*" | head -1) && \
-    if [ -n "$RTOOLS_ENV" ]; then \
-        echo "Found rtools env at: $RTOOLS_ENV" && \
-        echo "Attempting conda install..." && \
-        /opt/conda/bin/conda install -p "$RTOOLS_ENV" -y -c bioconda bioconductor-bsgenome.hsapiens.ucsc.hg38 && \
-        /opt/conda/bin/conda clean --all -y && \
-        echo "METHOD 1: SUCCESS" && \
-        exit 0; \
-    fi && \
-    echo "METHOD 1: FAILED - rtools env not found by name" && \
+# Find R environment via Rscript binary and install BSgenome
+RUN echo "=== Finding R environment ===" && \
+    RSCRIPT_PATH=$(find /conda-envs -name "Rscript" -type f -path "*/bin/Rscript" | head -1) && \
+    echo "Found Rscript at: $RSCRIPT_PATH" && \
+    RTOOLS_ENV=$(dirname $(dirname "$RSCRIPT_PATH")) && \
+    echo "R environment path: $RTOOLS_ENV" && \
     echo "" && \
-    echo "=== METHOD 2: Try finding rtools by hash ===" && \
-    RTOOLS_ENV=$(find /conda-envs -type d -name "*de34670*" | head -1) && \
-    if [ -n "$RTOOLS_ENV" ]; then \
-        echo "Found rtools env at: $RTOOLS_ENV" && \
-        echo "Attempting conda install..." && \
-        /opt/conda/bin/conda install -p "$RTOOLS_ENV" -y -c bioconda bioconductor-bsgenome.hsapiens.ucsc.hg38 && \
-        /opt/conda/bin/conda clean --all -y && \
-        echo "METHOD 2: SUCCESS" && \
-        exit 0; \
-    fi && \
-    echo "METHOD 2: FAILED - rtools env not found by hash" && \
-    echo "" && \
-    echo "=== METHOD 3: Find env containing R binary ===" && \
-    RSCRIPT_PATH=$(find /conda-envs -name "Rscript" -type f | head -1) && \
-    if [ -n "$RSCRIPT_PATH" ]; then \
-        RTOOLS_ENV=$(dirname $(dirname "$RSCRIPT_PATH")) && \
-        echo "Found R environment at: $RTOOLS_ENV" && \
-        echo "Attempting conda install..." && \
-        /opt/conda/bin/conda install -p "$RTOOLS_ENV" -y -c bioconda bioconductor-bsgenome.hsapiens.ucsc.hg38 && \
-        /opt/conda/bin/conda clean --all -y && \
-        echo "METHOD 3: SUCCESS" && \
-        exit 0; \
-    fi && \
-    echo "METHOD 3: FAILED - No Rscript found" && \
-    echo "" && \
-    echo "=== METHOD 4: Try BiocManager install with direct path ===" && \
-    RSCRIPT_PATH=$(find /conda-envs -name "Rscript" -type f | head -1) && \
-    if [ -n "$RSCRIPT_PATH" ]; then \
-        RTOOLS_ENV=$(dirname $(dirname "$RSCRIPT_PATH")) && \
-        echo "Found Rscript at: $RSCRIPT_PATH" && \
-        echo "R environment: $RTOOLS_ENV" && \
-        chmod -R 0777 "${RTOOLS_ENV}/lib/R/library" || true && \
-        echo "Attempting BiocManager install..." && \
-        "$RSCRIPT_PATH" -e 'BiocManager::install("BSgenome.Hsapiens.UCSC.hg38", update = FALSE, ask = FALSE)' && \
-        echo "METHOD 4: SUCCESS" && \
-        exit 0; \
-    fi && \
-    echo "METHOD 4: FAILED" && \
-    echo "" && \
-    echo "=== ALL METHODS FAILED ===" && \
-    exit 1
+    echo "=== Installing BSgenome.Hsapiens.UCSC.hg38 via conda ===" && \
+    /opt/conda/bin/conda install -p "$RTOOLS_ENV" -y -c bioconda bioconductor-bsgenome.hsapiens.ucsc.hg38 && \
+    /opt/conda/bin/conda clean --all -y && \
+    echo "=== Installation complete ==="
 
 # Verify installation
 RUN echo "=== Verifying BSgenome installation ===" && \
