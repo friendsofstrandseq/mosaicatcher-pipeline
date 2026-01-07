@@ -4,7 +4,6 @@
 # HTTP = HTTPRemoteProvider()
 
 
-
 rule dl_example_data:
     input:
         # HTTP.remote(

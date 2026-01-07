@@ -14,8 +14,7 @@ with open("VERSION", "r") as f:
 
 # Use assembly-specific container image based on reference genome
 docker_container = "docker://ghcr.io/friendsofstrandseq/mosaicatcher-pipeline:{assembly}-{version}".format(
-    assembly=config["reference"],
-    version=__version__
+    assembly=config["reference"], version=__version__
 )
 
 
