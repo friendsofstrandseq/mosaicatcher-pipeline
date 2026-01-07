@@ -3,9 +3,7 @@ name: "Create tag & release"
 on:
   push:
     tags:
-      - 'v*'
-      - '[0-9]+.[0-9]+.[0-9]+'
-      - '[0-9]+.[0-9]+.[0-9]+-beta.[0-9]+'
+      - 'v*'  # Standard: v2.4.0, v2.4.0-beta.1
   workflow_dispatch:
     inputs:
       logLevel:
