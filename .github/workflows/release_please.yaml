@@ -1,6 +1,11 @@
 name: "Create tag & release"
 
 on:
+  push:
+    tags:
+      - 'v*'
+      - '[0-9]+.[0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+-beta.[0-9]+'
   workflow_dispatch:
     inputs:
       logLevel:
@@ -23,10 +28,12 @@ jobs:
         with:
           fetch-depth: 0  # Need full history for changelog generation
 
-      - name: Read version from VERSION file
+      - name: Get version from tag
         id: version-data
         run: |
-          VERSION=$(cat VERSION)
+          # Extract version from pushed tag (remove 'v' prefix if present)
+          VERSION="${{ github.ref_name }}"
+          VERSION="${VERSION#v}"
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
           # Determine if this is a pre-release (contains 'beta')
@@ -35,15 +42,6 @@ jobs:
           else
             echo "prerelease=false" >> $GITHUB_OUTPUT
           fi
-
-      - name: Bump version and push tag
-        id: tag_version
-        uses: mathieudutour/github-tag-action@v6.2
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          custom_tag: ${{ steps.version-data.outputs.version }}
-          default_prerelease_bump: false
-          tag_prefix: ""
 
       - name: Generate changelog
         id: changelog
