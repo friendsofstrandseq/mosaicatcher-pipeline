@@ -8,13 +8,15 @@ CURRENT_REF=${2:-HEAD}
 
 # If no previous tag provided, find the last tag before current
 if [ -z "$PREVIOUS_TAG" ]; then
-  # Get all tags sorted by version, exclude current tag, get the first one (most recent)
+  # Get all tags sorted by version, exclude current tag and beta tags
   if [ "$CURRENT_REF" != "HEAD" ]; then
-    # For a specific tag, find the previous tag
-    PREVIOUS_TAG=$(git tag -l --sort=-version:refname | grep -v "^${CURRENT_REF}$" | grep -v "beta" | head -1)
+    # Remove v prefix from current ref for comparison
+    CURRENT_TAG_NO_V=${CURRENT_REF#v}
+    # Find the previous tag (could be with or without v prefix)
+    PREVIOUS_TAG=$(git tag -l --sort=-version:refname | grep -v "beta" | grep -E "^v?${CURRENT_TAG_NO_V}$" -v | head -1)
   else
-    # For HEAD, get the most recent tag
-    PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || git tag -l --sort=-version:refname | head -1)
+    # For HEAD, get the most recent non-beta tag
+    PREVIOUS_TAG=$(git tag -l --sort=-version:refname | grep -v "beta" | head -1)
   fi
 fi
 
