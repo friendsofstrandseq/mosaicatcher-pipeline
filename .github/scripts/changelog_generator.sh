@@ -6,21 +6,32 @@
 PREVIOUS_TAG=${1:-""}
 CURRENT_REF=${2:-HEAD}
 
-# If no previous tag provided, try to find the last release tag (excluding current)
-if [ -z "$PREVIOUS_TAG" ] && [ "$CURRENT_REF" != "HEAD" ]; then
-  PREVIOUS_TAG=$(git tag -l --sort=-version:refname | grep -v "^${CURRENT_REF}$" | head -1)
-fi
-
-# Final fallback to git describe if still no tag found
+# If no previous tag provided, find the last tag before current
 if [ -z "$PREVIOUS_TAG" ]; then
-  PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+  # Get all tags sorted by version, exclude current tag, get the first one (most recent)
+  if [ "$CURRENT_REF" != "HEAD" ]; then
+    # For a specific tag, find the previous tag
+    PREVIOUS_TAG=$(git tag -l --sort=-version:refname | grep -v "^${CURRENT_REF}$" | grep -v "beta" | head -1)
+  else
+    # For HEAD, get the most recent tag
+    PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || git tag -l --sort=-version:refname | head -1)
+  fi
 fi
 
 CURRENT_VERSION=${CURRENT_REF#v}
+PREVIOUS_VERSION=${PREVIOUS_TAG#v}
 REPO=${GITHUB_REPOSITORY:-friendsofstrandseq/mosaicatcher-pipeline}
 MAX_ITEMS=5
 
-# Start with Container Images section
+echo "Generating changelog from ${PREVIOUS_TAG} to ${CURRENT_REF}..." >&2
+
+# Start with version comparison
+echo "## What's Changed"
+echo ""
+echo "**Full Changelog**: https://github.com/$REPO/compare/${PREVIOUS_TAG}...${CURRENT_REF}"
+echo ""
+
+# Container Images section
 echo "### Container Images 🐳"
 echo ""
 echo "All images available on **GitHub Container Registry**:"

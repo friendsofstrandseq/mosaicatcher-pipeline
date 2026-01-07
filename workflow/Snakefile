@@ -68,7 +68,7 @@ include: "rules/ploidy.smk"
 include: "rules/stats.smk"
 include: "rules/arbigent_rules.smk"
 include: "rules/arbigent.smk"
-include: "rules/scNOVA.smk"
+# include: "rules/scNOVA.smk"
 include: "rules/gc.smk"
 
 
