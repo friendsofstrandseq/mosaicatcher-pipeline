@@ -4,7 +4,7 @@
 FROM mosaicatcher:base
 
 LABEL assembly="T2T"
-LABEL bsgenome="BSgenome.Hsapiens.NCBI.T2T.CHM13v2.0"
+LABEL bsgenome="BSgenome.T2T.CHM13.V2"
 LABEL zenodo="https://zenodo.org/record/7697400"
 
 # Download custom T2T BSgenome tarball from Zenodo
@@ -33,4 +33,4 @@ RUN rm /tmp/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz
 RUN echo "=== Verifying BSgenome installation ===" && \
     RSCRIPT_PATH=$(find /conda-envs -name "Rscript" -type f | head -1) && \
     echo "Using Rscript at: $RSCRIPT_PATH" && \
-    "$RSCRIPT_PATH" -e 'library(BSgenome.Hsapiens.NCBI.T2T.CHM13v2.0); print(BSgenome.Hsapiens.NCBI.T2T.CHM13v2.0)'
+    "$RSCRIPT_PATH" -e 'library(BSgenome.T2T.CHM13.V2); print(BSgenome.T2T.CHM13.V2)'
