@@ -30,7 +30,7 @@ RUN echo "========================================" && \
 
 # Find R environment via Rscript binary and install BSgenome
 RUN echo "=== Finding R environment ===" && \
-    RSCRIPT_PATH=$(find /conda-envs -name "Rscript" -type f -path "*/bin/Rscript" | head -1) && \
+    RSCRIPT_PATH=$(find /conda-envs -name "Rscript" -type f -path "*/bin/Rscript" -not -path "*/lib/R/*" | head -1) && \
     echo "Found Rscript at: $RSCRIPT_PATH" && \
     RTOOLS_ENV=$(dirname $(dirname "$RSCRIPT_PATH")) && \
     echo "R environment path: $RTOOLS_ENV" && \
