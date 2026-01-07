@@ -17,6 +17,8 @@ if [ -z "$PREVIOUS_TAG" ]; then
 fi
 
 CURRENT_VERSION=${CURRENT_REF#v}
+REPO=${GITHUB_REPOSITORY:-friendsofstrandseq/mosaicatcher-pipeline}
+MAX_ITEMS=5
 
 # Start with Container Images section
 echo "### Container Images 🐳"
@@ -47,17 +49,30 @@ echo "weber8thomas/mosaicatcher-pipeline:<tag>"
 echo "\`\`\`"
 echo ""
 
-# Get commits
+# Get commits (short hash for summary)
 if [ -z "$PREVIOUS_TAG" ]; then
   COMMITS=$(git log --pretty=format:"* %s [%h]" "$CURRENT_REF" | grep -v "Merge" | sed '/^$/d')
+  ALL_COMMITS=$(git log --pretty=format:"%H|%s" "$CURRENT_REF" | grep -v "Merge" | sed '/^$/d')
 else
   COMMITS=$(git log --pretty=format:"* %s [%h]" "$PREVIOUS_TAG".."$CURRENT_REF" | grep -v "Merge" | sed '/^$/d')
+  ALL_COMMITS=$(git log --pretty=format:"%H|%s" "$PREVIOUS_TAG".."$CURRENT_REF" | grep -v "Merge" | sed '/^$/d')
 fi
 
 # Extract PR numbers and add links
-CHANGELOG=$(echo "$COMMITS" | sed -E 's|\(#([0-9]+)\)|([#\1](https://github.com/'"${GITHUB_REPOSITORY:-friendsofstrandseq/mosaicatcher-pipeline}"'/pull/\1))|g')
+CHANGELOG=$(echo "$COMMITS" | sed -E 's|\(#([0-9]+)\)|([#\1](https://github.com/'"$REPO"'/pull/\1))|g')
 
-echo -e "\n<details>\n<summary>Click to expand the changelog for $CURRENT_VERSION</summary>\n"
+# Helper function to show limited items from a category
+show_limited_items() {
+  local items="$1"
+  local count=$(echo "$items" | wc -l)
+
+  if [ "$count" -le "$MAX_ITEMS" ]; then
+    echo "$items"
+  else
+    echo "$items" | head -n "$MAX_ITEMS"
+    echo "* ... and $((count - MAX_ITEMS)) more"
+  fi
+}
 
 echo "### Changes 📜"
 echo ""
@@ -67,7 +82,7 @@ FEATURES=$(echo "$CHANGELOG" | grep -E "^\\* (feat|feature|add):" || echo "")
 if [ -n "$FEATURES" ]; then
   echo "#### New Features ✨"
   echo ""
-  echo "$FEATURES"
+  show_limited_items "$FEATURES"
   echo ""
 fi
 
@@ -76,7 +91,7 @@ FIXES=$(echo "$CHANGELOG" | grep -E "^\\* (fix|bug|issue):" || echo "")
 if [ -n "$FIXES" ]; then
   echo "#### Bug Fixes 🐛"
   echo ""
-  echo "$FIXES"
+  show_limited_items "$FIXES"
   echo ""
 fi
 
@@ -85,7 +100,7 @@ IMPROVEMENTS=$(echo "$CHANGELOG" | grep -E "^\\* (refactor|perf|style|improve|up
 if [ -n "$IMPROVEMENTS" ]; then
   echo "#### Improvements 🚀"
   echo ""
-  echo "$IMPROVEMENTS"
+  show_limited_items "$IMPROVEMENTS"
   echo ""
 fi
 
@@ -105,7 +120,7 @@ CHORES=$(echo "$CHANGELOG" | grep -E "^\\* (chore|build|ci):" || echo "")
 if [ -n "$CHORES" ]; then
   echo "#### Chores 🧹"
   echo ""
-  echo "$CHORES"
+  show_limited_items "$CHORES"
   echo ""
 fi
 
@@ -114,7 +129,7 @@ DOCS_COMMITS=$(echo "$CHANGELOG" | grep -E "^\\* (docs):" || echo "")
 if [ -n "$DOCS_COMMITS" ]; then
   echo "#### Documentation Updates 📚"
   echo ""
-  echo "$DOCS_COMMITS"
+  show_limited_items "$DOCS_COMMITS"
   echo ""
 fi
 
@@ -123,11 +138,26 @@ OTHER=$(echo "$CHANGELOG" | grep -v -E "^\\* (feat|feature|add|fix|bug|issue|ref
 if [ -n "$OTHER" ]; then
   echo "#### Other Changes 📝"
   echo ""
-  echo "$OTHER"
+  show_limited_items "$OTHER"
   echo ""
 fi
 
-echo -e "\n</details>\n"
+# Full commit history with GitHub links
+echo ""
+echo "<details>"
+echo "<summary>📝 Full Commit History (click to expand)</summary>"
+echo ""
+echo ""
+
+while IFS='|' read -r hash message; do
+  # Extract PR numbers and add links to the message
+  message_with_pr=$(echo "$message" | sed -E 's|\(#([0-9]+)\)|([#\1](https://github.com/'"$REPO"'/pull/\1))|g')
+  echo "* [\`${hash:0:7}\`](https://github.com/$REPO/commit/$hash) - $message_with_pr"
+done <<< "$ALL_COMMITS"
+
+echo ""
+echo "</details>"
+echo ""
 
 # Documentation section
 echo "### Documentation 📖"
