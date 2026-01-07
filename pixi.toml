@@ -1,6 +1,6 @@
 [workspace]
 name = "mosaicatcher-pipeline"
-version = "2.3.5"
+version = "2.4.0"
 description = "Snakemake workflow for SV calling from single-cell Strand-seq data"
 channels = ["conda-forge", "bioconda"]
 platforms = ["linux-64"]

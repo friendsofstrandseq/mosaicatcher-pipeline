@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 MosaiCatcher-pipeline is a Snakemake workflow for structural variant (SV) calling from single-cell Strand-seq sequencing data. The pipeline processes BAM files through binning, strand state detection, segmentation, haplotype resolution, and SV classification.
 
-**Current Version:** 2.3.5
+**Current Version:** 2.4.0
 **Documentation:** https://friendsofstrandseq.github.io/mosaicatcher-docs/
 
 ## Version Management
