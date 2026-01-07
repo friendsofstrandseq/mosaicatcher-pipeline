@@ -195,6 +195,16 @@ jobs:
           flavor: |
             latest=false
 
+      - name: Check if assembly image exists
+        id: check-assembly
+        continue-on-error: true
+        run: |
+          if docker manifest inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.assembly }}-latest > /dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build and push ${{ matrix.assembly }} image
         uses: docker/build-push-action@v5
         with:
@@ -207,7 +217,7 @@ jobs:
             assembly=${{ matrix.assembly }}
             org.opencontainers.image.title=MosaiCatcher Pipeline (${{ matrix.assembly }})
           cache-from: |
-            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.assembly }}-latest
+            ${{ steps.check-assembly.outputs.exists == 'true' && format('type=registry,ref={0}/{1}:{2}-latest', env.REGISTRY, env.IMAGE_NAME, matrix.assembly) || '' }}
             type=gha,scope=${{ matrix.assembly }}
           cache-to: type=gha,mode=max,scope=${{ matrix.assembly }}
           platforms: linux/amd64
