@@ -38,7 +38,22 @@ jobs:
           cache: true
           locked: false
 
+      - name: Calculate conda env hash
+        id: conda-hash
+        run: |
+          HASH=$(cat workflow/envs/*.yaml workflow/envs/*/*.yaml 2>/dev/null | sha256sum | cut -d' ' -f1)
+          echo "hash=$HASH" >> $GITHUB_OUTPUT
+          echo "Conda environments hash: $HASH"
+
+      - name: Cache Dockerfile.base
+        id: cache-dockerfile
+        uses: actions/cache@v4
+        with:
+          path: workflow/containers/Dockerfile.base
+          key: dockerfile-base-${{ steps.conda-hash.outputs.hash }}
+
       - name: Generate Dockerfile.base
+        if: steps.cache-dockerfile.outputs.cache-hit != 'true'
         run: |
           pixi run snakemake \
             --cores 1 \
@@ -119,9 +134,13 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
+          cache-from: |
+            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:base-latest
+            type=gha
           cache-to: type=gha,mode=max
           platforms: linux/amd64
+          build-args: |
+            BUILDKIT_INLINE_CACHE=1
 
   build-assembly-images:
     name: Build ${{ matrix.assembly }} Image
@@ -186,9 +205,13 @@ jobs:
             ${{ steps.meta.outputs.labels }}
             assembly=${{ matrix.assembly }}
             org.opencontainers.image.title=MosaiCatcher Pipeline (${{ matrix.assembly }})
-          cache-from: type=gha,scope=${{ matrix.assembly }}
+          cache-from: |
+            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.assembly }}-latest
+            type=gha,scope=${{ matrix.assembly }}
           cache-to: type=gha,mode=max,scope=${{ matrix.assembly }}
           platforms: linux/amd64
+          build-args: |
+            BUILDKIT_INLINE_CACHE=1
 
       - name: Verify image
         run: |
