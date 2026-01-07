@@ -228,9 +228,88 @@ jobs:
           docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.assembly }}-${{ steps.version.outputs.VERSION }} \
             /opt/conda/bin/conda env list
 
+  validate-conda-environments:
+    name: Validate Conda Environments in Container
+    needs: build-assembly-images
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Git Submodule Update
+        run: |
+          git submodule update --remote --recursive --force --init
+
+      - name: Setup Pixi
+        uses: prefix-dev/setup-pixi@v0.9.3
+        with:
+          pixi-version: latest
+          cache: true
+          locked: false
+
+      - name: Install Apptainer via Pixi
+        run: |
+          pixi global install apptainer
+
+      - name: Verify Apptainer installation
+        run: |
+          apptainer --version
+
+      - name: Set version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "release" ]; then
+            VERSION="${{ github.event.release.tag_name }}"
+          else
+            VERSION="${{ inputs.version }}"
+          fi
+          echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Pull hg38 container for validation
+        run: |
+          apptainer pull docker://${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:hg38-${{ steps.version.outputs.VERSION }}
+
+      - name: Run save_conda_versions rules with apptainer
+        run: |
+          pixi run snakemake \
+            --cores 1 \
+            --sdm conda apptainer \
+            --configfile .tests/config/simple_config_mosaicatcher.yaml \
+            --apptainer-args "--bind /tmp:/tmp --bind $PWD:$PWD" \
+            --apptainer-prefix .snakemake/apptainer \
+            -p \
+            pipeline_test/RPE-BM510/config/conda_export/mc_base.yaml \
+            pipeline_test/RPE-BM510/config/conda_export/mc_bioinfo_tools.yaml \
+            pipeline_test/RPE-BM510/config/conda_export/rtools.yaml
+
+      - name: Display generated conda export files
+        if: success()
+        run: |
+          echo "=== mc_base.yaml export (first 30 lines) ==="
+          head -30 pipeline_test/RPE-BM510/config/conda_export/mc_base.yaml
+          echo ""
+          echo "=== mc_bioinfo_tools.yaml export (first 30 lines) ==="
+          head -30 pipeline_test/RPE-BM510/config/conda_export/mc_bioinfo_tools.yaml
+          echo ""
+          echo "=== rtools.yaml export (first 30 lines) ==="
+          head -30 pipeline_test/RPE-BM510/config/conda_export/rtools.yaml
+          echo ""
+          echo "✅ Conda environment validation PASSED"
+
+      - name: Upload conda export artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: conda-exports-validation
+          path: pipeline_test/RPE-BM510/config/conda_export/
+          retention-days: 7
+
   create-manifest:
     name: Create Release Manifest
-    needs: build-assembly-images
+    needs: validate-conda-environments
     runs-on: ubuntu-latest
     if: github.event_name == 'release'
 
