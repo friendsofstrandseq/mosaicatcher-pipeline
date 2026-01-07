@@ -5,6 +5,7 @@ FROM mosaicatcher:base
 
 LABEL assembly="mm39"
 LABEL bsgenome="BSgenome.Mmusculus.UCSC.mm39"
+LABEL org.opencontainers.image.description="MosaiCatcher Pipeline for Mouse GRCm39/mm39 assembly. Includes BSgenome.Mmusculus.UCSC.mm39 for structural variant calling from single-cell Strand-seq data."
 
 # Find R environment via Rscript binary and install BSgenome
 RUN echo "=== Finding R environment ===" && \

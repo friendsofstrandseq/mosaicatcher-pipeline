@@ -5,6 +5,7 @@ FROM mosaicatcher:base
 
 LABEL assembly="hg38"
 LABEL bsgenome="BSgenome.Hsapiens.UCSC.hg38"
+LABEL org.opencontainers.image.description="MosaiCatcher Pipeline for Human GRCh38/hg38 assembly. Includes BSgenome.Hsapiens.UCSC.hg38 for structural variant calling from single-cell Strand-seq data."
 
 # Extensive debug logging
 RUN echo "========================================" && \

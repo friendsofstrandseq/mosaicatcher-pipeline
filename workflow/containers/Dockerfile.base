@@ -1,6 +1,7 @@
 FROM condaforge/miniforge3:latest
 LABEL io.github.snakemake.containerized="true"
 LABEL io.github.snakemake.conda_env_hash="1cddebade6bb7a9bef67630a8a2e51970cf695b7b9576d79d87bbc99e8b33a42"
+LABEL org.opencontainers.image.description="MosaiCatcher Pipeline base image with all conda environments (mc_base, mc_bioinfo_tools, rtools, scNOVA). Assembly-specific BSgenome packages not included."
 
 # Step 2: Retrieve conda environments
 

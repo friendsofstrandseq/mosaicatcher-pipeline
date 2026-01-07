@@ -5,6 +5,7 @@ FROM mosaicatcher:base
 
 LABEL assembly="hg19"
 LABEL bsgenome="BSgenome.Hsapiens.UCSC.hg19"
+LABEL org.opencontainers.image.description="MosaiCatcher Pipeline for Human GRCh37/hg19 assembly. Includes BSgenome.Hsapiens.UCSC.hg19 for structural variant calling from single-cell Strand-seq data."
 
 # Find R environment via Rscript binary and install BSgenome
 RUN echo "=== Finding R environment ===" && \

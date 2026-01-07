@@ -6,6 +6,7 @@ FROM mosaicatcher:base
 LABEL assembly="T2T"
 LABEL bsgenome="BSgenome.T2T.CHM13.V2"
 LABEL zenodo="https://zenodo.org/record/7697400"
+LABEL org.opencontainers.image.description="MosaiCatcher Pipeline for Human T2T-CHM13v2.0 assembly. Includes custom BSgenome.T2T.CHM13.V2 for structural variant calling from single-cell Strand-seq data."
 
 # Download custom T2T BSgenome tarball from Zenodo
 RUN wget -q https://zenodo.org/record/7697400/files/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz \
