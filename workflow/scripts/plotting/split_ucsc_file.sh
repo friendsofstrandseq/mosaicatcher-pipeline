@@ -13,25 +13,31 @@ mkdir -p "$output_dir"
 
 # Process the gzipped file and split it into separate tracks
 zcat "$input_gz_file" | awk -v outdir="$output_dir" '
+BEGIN { filename = "" }
 /^track/ {
-    if(filename != "") close(filename);
+    if (filename != "") close(filename);
 
     # Extract track name and modify it for filename
-    if($0 ~ /name="([^"]+)"/) {
-        filename = gensub(/.*name="([^"]+)".*/, "\\1", 1);
+    if ($0 ~ /name="([^"]+)"/) {
+        filename = gensub(/.*name="([^"]+)".*/, "\\1", "g", $0);
     } else if ($0 ~ /name=([^ ]+)/) {
-        filename = gensub(/.*name=([^ ]+).*/, "\\1", 1);
+        filename = gensub(/.*name=([^ ]+).*/, "\\1", "g", $0);
     }
 
-    filename = (filename ~ /_W$/ ? gensub(/_W$/, "_1W.bedGraph", 1, filename) :
-                (filename ~ /_C$/ ? gensub(/_C$/, "_2C.bedGraph", 1, filename) :
-                (filename ~ /_SV_stringent$/ ? gensub(/_SV_stringent$/, "_3SVstringent.bed", 1, filename) : filename)));
+    # Apply substitutions based on the suffix
+    if (filename ~ /_W$/) {
+        filename = gensub(/_W$/, "_1W.bedGraph", "g", filename);
+    } else if (filename ~ /_C$/) {
+        filename = gensub(/_C$/, "_2C.bedGraph", "g", filename);
+    } else if (filename ~ /_SV_stringent$/) {
+        filename = gensub(/_SV_stringent$/, "_3SVstringent.bed", "g", filename);
+    }
 
     # Redirect to the specified output directory
     filename = outdir "/" filename;
 }
 {
-    print $0 > filename;
+    print > filename;
 }'
 
 echo "Tracks have been saved to $output_dir/"

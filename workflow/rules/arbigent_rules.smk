@@ -34,9 +34,11 @@ if config["arbigent"] is True:
     rule watson_crick_counts:
         input:
             bam_cells=selected_input_bam,
-            bed=config["arbigent_bed_file"]
-            if len(config["chromosomes"]) == 24
-            else "{folder}/{sample}/arbigent/manual_segmentation_custom.bed",
+            bed=(
+                config["arbigent_bed_file"]
+                if len(config["chromosomes"]) == 24
+                else "{folder}/{sample}/arbigent/manual_segmentation_custom.bed"
+            ),
             mapping=config["arbigent_data"]["arbigent_mapability_track"],
             mapping_h5=config["arbigent_data"]["arbigent_mapability_track_h5"],
         output:
@@ -49,9 +51,11 @@ if config["arbigent"] is True:
             "../envs/mc_base.yaml"
         params:
             bam_folder="{folder}/{sample}/selected",
-            genome_chromosome_param="genome"
-            if len(config["chromosomes"]) == 24
-            else ",".join(config["chromosomes"]),
+            genome_chromosome_param=(
+                "genome"
+                if len(config["chromosomes"]) == 24
+                else ",".join(config["chromosomes"])
+            ),
         threads: 12
         script:
             "../scripts/arbigent_utils/watson_crick.py"
@@ -91,6 +95,9 @@ if config["arbigent"] is True:
             bp="{folder}/{sample}/arbigent/arbigent_counts/manual_segments_counts.txt",
         output:
             output="{folder}/{sample}/arbigent_mosaiclassifier/sv_probabilities/probabilities.Rdata",
+        resources:
+            mem_mb=get_mem_mb,
+            time="10:00:00",
         log:
             "{folder}/log/arbigent/mosaiClassifier_calc_probs_arbigent/{sample}.log",
         conda:

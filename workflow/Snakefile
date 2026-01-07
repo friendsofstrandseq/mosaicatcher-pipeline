@@ -7,8 +7,15 @@ configfile: configfile_location
 report: "report/workflow.rst"
 
 
-docker_container = "docker://weber8thomas/mosaicatcher-pipeline:{version}".format(
-    version=str(config["version"])
+# Read version from centralized VERSION file
+with open("VERSION", "r") as f:
+    __version__ = f.read().strip()
+
+
+# Use assembly-specific container image based on reference genome
+docker_container = "docker://ghcr.io/friendsofstrandseq/mosaicatcher-pipeline:{assembly}-{version}".format(
+    assembly=config["reference"],
+    version=__version__
 )
 
 
@@ -17,19 +24,13 @@ containerized: docker_container
 
 if config["ashleys_pipeline"] is True:
 
-    module ashleys_qc:
-        snakefile:
-            # "../../ashleys-qc-pipeline-friendsofstrandseq/workflow/Snakefile"
-            github(
-                "friendsofstrandseq/ashleys-qc-pipeline",
-                path="workflow/Snakefile",
-                tag=str(config["ashleys_pipeline_version"]),
-                # branch="dev",
-            )
-        config:
-            config
-
-    use rule * from ashleys_qc as ashleys_*
+    include: "rules/ashleys/common.smk"
+    include: "rules/ashleys/aggregate_fct.smk"
+    include: "rules/ashleys/alignment.smk"
+    include: "rules/ashleys/qc.smk"
+    include: "rules/ashleys/count.smk"
+    include: "rules/ashleys/gc.smk"
+    include: "rules/ashleys/multiqc.smk"
 
     if config["ashleys_pipeline_only"] is True:
 
@@ -51,72 +52,25 @@ else:
 
 
 include: "rules/common.smk"
-
-
 include: "rules/aggregate_fct.smk"
-
-
-if snakemake.__version__.split(".")[0] == "7":
-
-    include: "rules/external_data_v7.smk"
-
-elif snakemake.__version__.split(".")[0] == "9":
-
-    include: "rules/external_data_v9.smk"
-
-
+include: "rules/external_data.smk"
 include: "rules/setup.smk"
-
-
 include: "rules/utils.smk"
-
-
 include: "rules/count.smk"
-
-
 include: "rules/segmentation.smk"
-
-
 include: "rules/plots.smk"
-
-
 include: "rules/regenotyping.smk"
-
-
 include: "rules/strandphaser.smk"
-
-
 include: "rules/breakpointr.smk"
-
-
 include: "rules/haplotagging.smk"
-
-
 include: "rules/mosaiclassifier.smk"
-
-
 include: "rules/postprocessing.smk"
-
-
 include: "rules/ploidy.smk"
-
-
 include: "rules/stats.smk"
-
-
 include: "rules/arbigent_rules.smk"
-
-
 include: "rules/arbigent.smk"
-
-
 include: "rules/scNOVA.smk"
-
-
 include: "rules/gc.smk"
-
-
-include: "rules/debug.smk"
 
 
 if config["list_commands"] is False:

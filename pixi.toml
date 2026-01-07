@@ -1,0 +1,50 @@
+[workspace]
+name = "mosaicatcher-pipeline"
+version = "2.3.5"
+description = "Snakemake workflow for SV calling from single-cell Strand-seq data"
+channels = ["conda-forge", "bioconda"]
+platforms = ["linux-64"]
+
+[tasks]
+snakemake-dry-run = "snakemake --cores 1 --configfile .tests/config/simple_config_mosaicatcher.yaml --sdm conda --conda-frontend mamba --dry-run"
+snakemake-dry-run-ashleys = "snakemake --cores 1 --configfile .tests/config/simple_config_ashleys.yaml --sdm conda --conda-frontend mamba --dry-run"
+format = "snakefmt --check --compact-diff workflow/"
+format-fix = "snakefmt workflow/"
+lint = "snakemake --configfile .tests/config/simple_config_mosaicatcher.yaml --lint"
+pre-commit-install = "pre-commit install"
+pre-commit-run = "pre-commit run --all-files"
+bump-patch = "bump2version patch"
+bump-minor = "bump2version minor"
+bump-major = "bump2version major"
+bump-beta = "bump2version beta"
+bump-release = "bump2version release"
+generate-changelog = "bash .github/scripts/changelog_generator.sh"
+
+# Core dependencies (always installed)
+[dependencies]
+python = ">=3.11"
+
+# Feature: formatting only (minimal, fast)
+[feature.format.dependencies]
+snakefmt = "*"
+
+# Feature: linting only
+[feature.lint.dependencies]
+snakemake = ">=9.0"
+snakemake-storage-plugin-http = "*"
+pandas = "*"
+pyyaml = "*"
+
+# Feature: full development environment
+[feature.dev.dependencies]
+conda = ">=24.7.1"
+mamba = "*"
+snakemake-executor-plugin-slurm = "*"
+pre-commit = "*"
+bump2version = "*"
+
+# Environments: combine features as needed
+[environments]
+format = ["format"]
+lint = ["lint"]
+default = ["format", "lint", "dev"]

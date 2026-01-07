@@ -46,6 +46,9 @@ MultiQC: False
 # Enable or disable ashleys-qc automatic classification
 bypass_ashleys: False
 
+# Keep ashleys predictions for later use
+keep_ashleys_predictions: True
+
 # Whether to use paired-end data or not
 paired_end: True
 
@@ -79,14 +82,14 @@ references_data:
     reference_fasta: "workflow/data/ref_genomes/hg38.fa"
     R_reference: "BSgenome.Hsapiens.UCSC.hg38"
     segdups: "workflow/data/segdups/segDups_hg38_UCSCtrack.bed.gz"
-    snv_sites_to_genotype: ""
+    snv_sites_to_genotype: []
     reference_file_location: https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/analysisSet/hg38.analysisSet.fa.gz
 
   "hg19":
     reference_fasta: "workflow/data/ref_genomes/hg19.fa"
     R_reference: "BSgenome.Hsapiens.UCSC.hg19"
     segdups: "workflow/data/segdups/segDups_hg19_UCSCtrack.bed.gz"
-    snv_sites_to_genotype: ""
+    snv_sites_to_genotype: []
     # snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/ALL.chr1-22plusXY_hg19_sites.20170504.renamedCHR.vcf.gz"
     reference_file_location: https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/analysisSet/hg19.p13.plusMT.no_alt_analysis_set.fa.gz
   "T2T":
@@ -94,14 +97,20 @@ references_data:
     R_reference: "BSgenome.T2T.CHM13.V2"
     # R_reference_tarball: "/g/korbel2/weber/MosaiCatcher_files/EXTERNAL_DATA/R_reference//BSgenome.T2T.CHM13.V2_1.0.0.tar.gz"
     segdups: "workflow/data/segdups/segDups_T2T_UCSCtrack.bed.gz"
-    snv_sites_to_genotype: ""
+    snv_sites_to_genotype: []
     reference_file_location: https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/CHM13/assemblies/analysis_set/chm13v2.0.fa.gz
   "mm10":
     reference_fasta: "workflow/data/ref_genomes/mm10.fa"
     R_reference: "BSgenome.Mmusculus.UCSC.mm10"
     segdups: "workflow/data/segdups/segDups_mm10_UCSCtrack.bed.gz"
-    snv_sites_to_genotype: ""
+    snv_sites_to_genotype: []
     reference_file_location: https://hgdownload.soe.ucsc.edu/goldenPath/mm10/bigZips/mm10.fa.gz
+  "mm39":
+    reference_fasta: "workflow/data/ref_genomes/mm39.fa"
+    R_reference: "BSgenome.Mmusculus.UCSC.mm39"
+    segdups: "workflow/data/segdups/segDups_mm39_UCSCtrack.bed.gz"
+    snv_sites_to_genotype: []
+    reference_file_location: https://hgdownload.soe.ucsc.edu/goldenPath/mm39/bigZips/mm39.fa.gz
 
 # List of chromosomes to process
 chromosomes:
@@ -278,3 +287,5 @@ abs_path: "/"
 
 # Option to display all potential options - listed in config_metadata.yaml
 list_commands: False
+
+default_modulo: 96

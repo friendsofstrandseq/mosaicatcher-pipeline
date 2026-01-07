@@ -3,8 +3,12 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
+  - ashleys-qc
+  - bwa
   - intervaltree
   - matplotlib
+  - mosaicatcher
+  - multiqc
   - pandas
   - parmap
   - perl
@@ -13,8 +17,13 @@ dependencies:
   - pysam
   - pytables
   - pyyaml
+  - python=3.10
+  - rsync
+  - sambamba
   - samtools
+  - scikit-learn=1.2.2
   - scipy
   - seaborn
+  - tabix
   - tqdm
   - xopen

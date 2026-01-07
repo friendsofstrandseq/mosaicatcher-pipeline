@@ -1,0 +1,13 @@
+# Assembly-specific Dockerfile for mm10
+# Extends base image with BSgenome.Mmusculus.UCSC.mm10
+
+FROM mosaicatcher:base
+
+LABEL assembly="mm10"
+LABEL bsgenome="BSgenome.Mmusculus.UCSC.mm10"
+
+# Install BSgenome for mm10 via BiocManager
+RUN /opt/conda/bin/Rscript -e 'BiocManager::install("BSgenome.Mmusculus.UCSC.mm10", update = FALSE, ask = FALSE)'
+
+# Verify installation
+RUN /opt/conda/bin/Rscript -e 'library(BSgenome.Mmusculus.UCSC.mm10); print(BSgenome.Mmusculus.UCSC.mm10)'

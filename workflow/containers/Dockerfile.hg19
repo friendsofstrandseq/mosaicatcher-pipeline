@@ -1,0 +1,13 @@
+# Assembly-specific Dockerfile for hg19
+# Extends base image with BSgenome.Hsapiens.UCSC.hg19
+
+FROM mosaicatcher:base
+
+LABEL assembly="hg19"
+LABEL bsgenome="BSgenome.Hsapiens.UCSC.hg19"
+
+# Install BSgenome for hg19 via BiocManager
+RUN /opt/conda/bin/Rscript -e 'BiocManager::install("BSgenome.Hsapiens.UCSC.hg19", update = FALSE, ask = FALSE)'
+
+# Verify installation
+RUN /opt/conda/bin/Rscript -e 'library(BSgenome.Hsapiens.UCSC.hg19); print(BSgenome.Hsapiens.UCSC.hg19)'

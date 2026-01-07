@@ -1,0 +1,24 @@
+# Assembly-specific Dockerfile for T2T (CHM13v2.0)
+# Extends base image with custom BSgenome tarball from Zenodo
+
+FROM mosaicatcher:base
+
+LABEL assembly="T2T"
+LABEL bsgenome="BSgenome.Hsapiens.NCBI.T2T.CHM13v2.0"
+LABEL zenodo="https://zenodo.org/record/7697400"
+
+# Download custom T2T BSgenome tarball from Zenodo
+RUN wget -q https://zenodo.org/record/7697400/files/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz \
+    -O /tmp/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz
+
+# Install GenomeInfoDbData dependency first
+RUN /opt/conda/bin/Rscript -e 'BiocManager::install("GenomeInfoDbData", update = FALSE, ask = FALSE)'
+
+# Install custom T2T BSgenome from tarball
+RUN /opt/conda/bin/Rscript -e 'install.packages("/tmp/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz", repos = NULL, type = "source")'
+
+# Clean up tarball
+RUN rm /tmp/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz
+
+# Verify installation
+RUN /opt/conda/bin/Rscript -e 'library(BSgenome.Hsapiens.NCBI.T2T.CHM13v2.0); print(BSgenome.Hsapiens.NCBI.T2T.CHM13v2.0)'

@@ -1,0 +1,100 @@
+import glob
+import os
+
+
+configfile: "config.yaml"
+
+
+data_location = config["data_location"]
+
+print(f"Data location: {data_location}")
+
+# Get all BAMs inside old_bam folders
+bam_files_dict = {
+    sample: [
+        os.path.basename(f).replace(".sort.mdup.bam", "")
+        for f in glob.glob(os.path.join(data_location, sample, "old_bam", "*.bam"))
+    ]
+    for sample in os.listdir(data_location)
+    if os.path.isdir(os.path.join(data_location, sample))
+    and os.path.exists(os.path.join(data_location, sample, "old_bam"))
+    and sample not in ["log", "config"]
+}
+
+from pprint import pprint
+
+pprint(bam_files_dict)
+
+
+rule all:
+    input:
+        [
+            expand(
+                "{data_location}/{sample}/bam/{cell}.sort.mdup.bam",
+                data_location=data_location,
+                sample=sample,
+                cell=bam_files_dict[sample],
+            )
+            for sample in bam_files_dict
+        ],
+        # [
+        #     expand(
+        #         "{data_location}/{sample}/checks/delete_old_bam_{cell}.ok",
+        #         data_location=data_location,
+        #         sample=sample,
+        #         cell=bam_files_dict[sample],
+        #     )
+        #     for sample in bam_files_dict
+        # ],
+
+
+rule update_sm_tag:
+    input:
+        bam="{data_location}/{sample}/old_bam/{cell}.sort.mdup.bam",
+    output:
+        bam="{data_location}/{sample}/bam/{cell}.sort.mdup.bam",  # Using the same BAM as both input and output
+        bai="{data_location}/{sample}/bam/{cell}.sort.mdup.bam.bai",  # Adding the index file as output
+    log:
+        "{data_location}/{sample}/logs/update_sm_tag/{cell}.sm_tag_update.log",
+    threads: 4
+    resources:
+        mem_mb=4000,
+    envmodules:
+        "SAMtools/1.14-GCC-11.2.0",
+    shell:
+        """
+        set -euo pipefail
+        
+        # Extract sample name from path
+        SAMPLE=$(basename $(dirname $(dirname "{input.bam}")))
+        
+        # Extract current SM tag value
+        OLD_SM=$(samtools view -H "{input.bam}" | grep "^@RG" | grep -o "SM:[^[:space:]]*" | cut -d':' -f2 | head -n 1)
+        
+        echo "Updating {input.bam}: $OLD_SM → $SAMPLE" > {log}
+        
+        # Process directly to output file in a single pipeline
+        samtools view -H "{input.bam}" | 
+            sed "s/SM:$OLD_SM/SM:$SAMPLE/" |
+            samtools reheader - "{input.bam}" |
+            samtools sort -@ {threads} -m $(({resources.mem_mb} / {threads}))M -O bam -o "{output.bam}"
+        
+        # Index the output file with explicit output path
+        samtools index -@ {threads} "{output.bam}"
+        """
+
+
+# rule delete_old_bam:
+#     input:
+#         old_bam="{data_location}/{sample}/old_bam/{cell}.sort.mdup.bam",
+#         bam="{data_location}/{sample}/bam/{cell}.sort.mdup.bam",
+#     output:
+#         "{data_location}/{sample}/checks/delete_old_bam_{cell}.ok",
+#     log:
+#         "{data_location}/{sample}/logs/delete_old_bam/{cell}.old_bam_delete.log",
+#     shell:
+#         """
+#         set -euo pipefail
+#         echo "Deleting {input.old_bam}" > {log}
+#         rm -f "{input.old_bam}"
+#         """

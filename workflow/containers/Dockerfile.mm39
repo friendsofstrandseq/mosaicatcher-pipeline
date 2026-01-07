@@ -1,0 +1,13 @@
+# Assembly-specific Dockerfile for mm39
+# Extends base image with BSgenome.Mmusculus.UCSC.mm39
+
+FROM mosaicatcher:base
+
+LABEL assembly="mm39"
+LABEL bsgenome="BSgenome.Mmusculus.UCSC.mm39"
+
+# Install BSgenome for mm39 via BiocManager
+RUN /opt/conda/bin/Rscript -e 'BiocManager::install("BSgenome.Mmusculus.UCSC.mm39", update = FALSE, ask = FALSE)'
+
+# Verify installation
+RUN /opt/conda/bin/Rscript -e 'library(BSgenome.Mmusculus.UCSC.mm39); print(BSgenome.Mmusculus.UCSC.mm39)'

@@ -4,6 +4,8 @@ channels:
   - bioconda
 dependencies:
   - bcftools
+  - bedtools
+  - biobambam
   - freebayes
   - mosaicatcher
   - samtools

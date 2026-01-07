@@ -6,7 +6,6 @@ dependencies:
   - bioconductor-biocparallel
   - bioconductor-breakpointr
   - bioconductor-bsgenome
-  - bioconductor-bsgenome.hsapiens.ucsc.hg38
   - bioconductor-complexheatmap
   - bioconductor-edger
   - bioconductor-genomicalignments
@@ -39,6 +38,5 @@ dependencies:
   - r-scales
   - r-stringi=1.7.12
   - r-stringr
-  - r-tidyr
   - r-tidyr
   - strandphaser

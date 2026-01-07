@@ -1,0 +1,323 @@
+name: Build and Publish Container Images
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g., 2.3.5)'
+        required: true
+        type: string
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  generate-base-dockerfile:
+    name: Generate Base Dockerfile
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Git Submodule Update
+        run: |
+          git submodule update --remote --recursive --force --init
+
+      - name: Setup Pixi
+        uses: prefix-dev/setup-pixi@v0.9.3
+        with:
+          pixi-version: latest
+          cache: true
+          locked: false
+
+      - name: Generate Dockerfile.base
+        run: |
+          pixi run snakemake \
+            --cores 1 \
+            --configfile .tests/config/simple_config_mosaicatcher.yaml \
+            --config \
+              multistep_normalisation=True \
+              MultiQC=True \
+              genome_browsing_files_generation=True \
+              ashleys_pipeline=True \
+              breakpointR=True \
+              scNOVA=False \
+            --containerize 2>&1 | sed -n '/^FROM condaforge/,$p' > workflow/containers/Dockerfile.base
+
+      - name: Verify Dockerfile.base
+        run: |
+          echo "Dockerfile.base size: $(wc -l < workflow/containers/Dockerfile.base) lines"
+          head -20 workflow/containers/Dockerfile.base
+
+      - name: Upload Dockerfile.base artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dockerfile-base
+          path: workflow/containers/Dockerfile.base
+          retention-days: 1
+
+  build-base-image:
+    name: Build Base Image
+    needs: generate-base-dockerfile
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download Dockerfile.base
+        uses: actions/download-artifact@v4
+        with:
+          name: dockerfile-base
+          path: workflow/containers/
+
+      - name: Set version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "release" ]; then
+            VERSION="${{ github.event.release.tag_name }}"
+          else
+            VERSION="${{ inputs.version }}"
+          fi
+          echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to Docker Hub (optional)
+        if: github.event_name == 'release'
+        uses: docker/login-action@v3
+        with:
+          username: weber8thomas
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Extract metadata for base image
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+            weber8thomas/mosaicatcher-pipeline
+          tags: |
+            type=raw,value=base-${{ steps.version.outputs.VERSION }}
+            type=raw,value=base-latest
+
+      - name: Build and push base image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: workflow/containers/Dockerfile.base
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64
+
+  build-assembly-images:
+    name: Build ${{ matrix.assembly }} Image
+    needs: build-base-image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    strategy:
+      matrix:
+        assembly: [hg38, hg19, T2T, mm10, mm39]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "release" ]; then
+            VERSION="${{ github.event.release.tag_name }}"
+          else
+            VERSION="${{ inputs.version }}"
+          fi
+          echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to Docker Hub (optional)
+        if: github.event_name == 'release'
+        uses: docker/login-action@v3
+        with:
+          username: weber8thomas
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Update Dockerfile to use versioned base
+        run: |
+          sed -i 's|FROM mosaicatcher:base|FROM ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:base-${{ steps.version.outputs.VERSION }}|' \
+            workflow/containers/Dockerfile.${{ matrix.assembly }}
+
+      - name: Extract metadata for ${{ matrix.assembly }}
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+            weber8thomas/mosaicatcher-pipeline
+          tags: |
+            type=raw,value=${{ matrix.assembly }}-${{ steps.version.outputs.VERSION }}
+            type=raw,value=${{ matrix.assembly }}-latest
+          flavor: |
+            latest=false
+
+      - name: Build and push ${{ matrix.assembly }} image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: workflow/containers/Dockerfile.${{ matrix.assembly }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: |
+            ${{ steps.meta.outputs.labels }}
+            assembly=${{ matrix.assembly }}
+            org.opencontainers.image.title=MosaiCatcher Pipeline (${{ matrix.assembly }})
+          cache-from: type=gha,scope=${{ matrix.assembly }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.assembly }}
+          platforms: linux/amd64
+
+      - name: Verify image
+        run: |
+          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.assembly }}-${{ steps.version.outputs.VERSION }} \
+            /opt/conda/bin/conda env list
+
+  create-manifest:
+    name: Create Release Manifest
+    needs: build-assembly-images
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release'
+
+    steps:
+      - name: Set version
+        id: version
+        run: |
+          VERSION="${{ github.event.release.tag_name }}"
+          echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Create manifest
+        run: |
+          cat > container-manifest.md << EOF
+          # Container Images for MosaiCatcher Pipeline v${{ steps.version.outputs.VERSION }}
+
+          ## Available Images
+
+          All images are available on:
+          - **GitHub Container Registry**: \`ghcr.io/${{ github.repository }}\`
+          - **Docker Hub**: \`weber8thomas/mosaicatcher-pipeline\`
+
+          ### Base Image
+
+          \`\`\`bash
+          # GitHub Container Registry
+          docker pull ghcr.io/${{ github.repository }}:base-${{ steps.version.outputs.VERSION }}
+
+          # Docker Hub
+          docker pull weber8thomas/mosaicatcher-pipeline:base-${{ steps.version.outputs.VERSION }}
+          \`\`\`
+
+          **Size:** ~2.5GB
+          **Contains:** All conda environments without assembly-specific BSgenome
+
+          ### Assembly-Specific Images
+
+          | Assembly | Reference | Image Tag | Size |
+          |----------|-----------|-----------|------|
+          | hg38 | Human GRCh38 | \`hg38-${{ steps.version.outputs.VERSION }}\` | ~3.5GB |
+          | hg19 | Human GRCh37 | \`hg19-${{ steps.version.outputs.VERSION }}\` | ~3.5GB |
+          | T2T | Human CHM13v2.0 | \`T2T-${{ steps.version.outputs.VERSION }}\` | ~3.5GB |
+          | mm10 | Mouse GRCm38 | \`mm10-${{ steps.version.outputs.VERSION }}\` | ~3.5GB |
+          | mm39 | Mouse GRCm39 | \`mm39-${{ steps.version.outputs.VERSION }}\` | ~3.5GB |
+
+          #### Pull Commands
+
+          \`\`\`bash
+          # hg38 (Human GRCh38)
+          docker pull ghcr.io/${{ github.repository }}:hg38-${{ steps.version.outputs.VERSION }}
+          docker pull weber8thomas/mosaicatcher-pipeline:hg38-${{ steps.version.outputs.VERSION }}
+
+          # hg19 (Human GRCh37)
+          docker pull ghcr.io/${{ github.repository }}:hg19-${{ steps.version.outputs.VERSION }}
+
+          # T2T (Human CHM13v2.0)
+          docker pull ghcr.io/${{ github.repository }}:T2T-${{ steps.version.outputs.VERSION }}
+
+          # mm10 (Mouse GRCm38)
+          docker pull ghcr.io/${{ github.repository }}:mm10-${{ steps.version.outputs.VERSION }}
+
+          # mm39 (Mouse GRCm39)
+          docker pull ghcr.io/${{ github.repository }}:mm39-${{ steps.version.outputs.VERSION }}
+          \`\`\`
+
+          ### Latest Tags
+
+          Each assembly also has a \`-latest\` tag pointing to the most recent version:
+
+          \`\`\`bash
+          docker pull ghcr.io/${{ github.repository }}:hg38-latest
+          docker pull ghcr.io/${{ github.repository }}:mm10-latest
+          # ... etc
+          \`\`\`
+
+          ## Usage
+
+          \`\`\`bash
+          # With Docker
+          docker run -v /path/to/data:/data \\
+            ghcr.io/${{ github.repository }}:hg38-${{ steps.version.outputs.VERSION }} \\
+            snakemake --config reference=hg38 ...
+
+          # With Singularity
+          singularity pull docker://ghcr.io/${{ github.repository }}:hg38-${{ steps.version.outputs.VERSION }}
+          singularity exec mosaicatcher-pipeline_hg38-${{ steps.version.outputs.VERSION }}.sif \\
+            snakemake --config reference=hg38 ...
+          \`\`\`
+
+          ## Image Details
+
+          - **Platform:** linux/amd64
+          - **Base:** condaforge/miniforge3:latest
+          - **Conda environments:** mc_base, mc_bioinfo_tools, rtools, scNOVA_DL, scNOVA_R
+          - **BSgenome installation:** Dynamic (per assembly)
+
+          Generated: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          EOF
+
+          cat container-manifest.md
+
+      - name: Upload manifest to release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: container-manifest.md
+          tag_name: ${{ github.event.release.tag_name }}

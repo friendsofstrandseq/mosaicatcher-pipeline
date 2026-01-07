@@ -8,11 +8,11 @@ rule check_sm_tag:
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     shell:
-        """
+        r"""
         sample_name="{wildcards.sample}"
-        sm_tag=$(samtools view -H {input} | grep '^@RG' | sed "s/.*SM:\([^\\t]*\).*/\\1/g")
-        
-        if [[ $sample_name == $sm_tag ]]; then 
+        sm_tag=$(samtools view -H {input} | grep '^@RG' | sed "s/.*SM:\([^\t]*\).*/\1/g")
+
+        if [[ $sample_name == $sm_tag ]]; then
             echo "{input}: $sm_tag $sample_name OK" > {output}
             echo "{input}: $sm_tag $sample_name OK" > {log}
         else
@@ -200,17 +200,6 @@ rule save_conda_versions_rtools:
         "{folder}/log/save_conda_versions/{sample}/rtools.log",
     conda:
         "../envs/rtools.yaml"
-    shell:
-        "conda env export > {output}"
-
-
-rule save_conda_versions_scNOVA_bioinfo_tools:
-    output:
-        "{folder}/{sample}/config/conda_export/scNOVA_bioinfo_tools.yaml",
-    log:
-        "{folder}/log/save_conda_versions/{sample}/scNOVA_bioinfo_tools.log",
-    conda:
-        "../envs/scNOVA/scNOVA_bioinfo_tools.yaml"
     shell:
         "conda env export > {output}"
 

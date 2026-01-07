@@ -290,6 +290,13 @@ def check_bin_window_compatibility(count_data, window_size, shift_size):
     :param shift_size:
     :return:
     """
+    if len(count_data) < 2:
+        raise ValueError(
+            "Insufficient data in count file: expected at least 2 rows, got {}. "
+            "This may occur when testing with limited chromosomes (e.g., chr17 only) "
+            "on genomes where that chromosome has no data.".format(len(count_data))
+        )
+
     bin1 = count_data.at[0, "end"] - count_data.at[0, "start"]
     bin2 = count_data.at[1, "end"] - count_data.at[1, "start"]
     if not bin1 == bin2:
