@@ -270,6 +270,14 @@ jobs:
           fi
           echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
 
+      - name: Cache Apptainer SIF
+        uses: actions/cache@v4
+        with:
+          path: ~/.apptainer/cache
+          key: apptainer-sif-hg38-${{ steps.version.outputs.VERSION }}
+          restore-keys: |
+            apptainer-sif-hg38-
+
       - name: Log in to GitHub Container Registry
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin

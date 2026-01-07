@@ -13,7 +13,8 @@ with open("VERSION", "r") as f:
 
 
 # Use assembly-specific container image based on reference genome
-docker_container = "docker://ghcr.io/friendsofstrandseq/mosaicatcher-pipeline:{assembly}-{version}".format(
+# Add 'v' prefix to match git tag convention (e.g., v2.4.0-beta.2)
+docker_container = "docker://ghcr.io/friendsofstrandseq/mosaicatcher-pipeline:{assembly}-v{version}".format(
     assembly=config["reference"], version=__version__
 )
 
