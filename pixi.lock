@@ -21,6 +21,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/blinker-1.9.0-pyhff2d567_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/boltons-25.0.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/brotli-python-1.2.0-py311h66f275b_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/bump2version-1.0.1-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/bzip2-1.0.8-hda65f42_8.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/c-ares-1.34.6-hb03c661_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/ca-certificates-2026.1.4-hbd8a1cb_0.conda
@@ -567,6 +568,15 @@ packages:
   license_family: MIT
   size: 367721
   timestamp: 1764017371123
+- conda: https://conda.anaconda.org/conda-forge/noarch/bump2version-1.0.1-pyhd8ed1ab_1.conda
+  sha256: 53d8d4616bf5ed5f617f417a66094a7ad3bc1acdecdd91652ad9d684db2ecab3
+  md5: 7e546c3cec19d40f04a35547c1698dc3
+  depends:
+  - python >=3.9
+  license: MIT
+  license_family: MIT
+  size: 25889
+  timestamp: 1734860952832
 - conda: https://conda.anaconda.org/conda-forge/linux-64/bzip2-1.0.8-hda65f42_8.conda
   sha256: c30daba32ddebbb7ded490f0e371eae90f51e72db620554089103b4a6934b0d5
   md5: 51a19bba1b8ebfb60df25cde030b7ebc
