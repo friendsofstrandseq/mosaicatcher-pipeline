@@ -26,8 +26,11 @@ When you bump version:
 1. `VERSION`, `pixi.toml`, `config/config.yaml`, and `CLAUDE.md` are automatically updated
 2. Git commit and tag are created automatically
 3. Push tag to trigger container build workflow
+4. Release creation automatically generates formatted changelog from commits
 
-Beta releases support iterative testing before stable release. See `docs/version-management.md` for detailed documentation.
+Beta releases support iterative testing before stable release. Changelog generator categorizes commits (feat/fix/refactor/docs/etc) and includes PR links.
+
+See `docs/version-management.md` for detailed documentation.
 
 ## Common Commands
 

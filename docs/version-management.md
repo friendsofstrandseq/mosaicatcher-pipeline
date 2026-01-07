@@ -150,6 +150,44 @@ ghcr.io/friendsofstrandseq/mosaicatcher-pipeline:T2T-2.4.0-beta.1
 
 The Snakefile automatically selects the correct container based on `config["reference"]` and current VERSION.
 
+## Automated Changelog Generation
+
+The project includes an automated changelog generator that categorizes commits by type and generates formatted release notes.
+
+### Manual Changelog Generation
+
+Preview changelog before creating a release:
+
+```bash
+# Generate changelog between two tags
+pixi run generate-changelog v2.3.5 v2.3.6
+
+# Generate changelog from last tag to HEAD
+pixi run generate-changelog
+
+# Generate from specific tag to HEAD
+pixi run generate-changelog v2.3.5
+```
+
+### Automated in Release Workflow
+
+When you create a release via `release_please.yaml` workflow, the changelog is **automatically generated and included** in the release notes.
+
+**Categories**:
+- ✨ New Features (feat:, feature:, add:)
+- 🐛 Bug Fixes (fix:, bug:, issue:)
+- 🚀 Improvements (refactor:, perf:, style:, improve:, update:, enhance:)
+- ⚠️ Breaking Changes (commit body contains "BREAKING CHANGE:")
+- 🧹 Chores (chore:, build:, ci:)
+- 📚 Documentation (docs:)
+- 📝 Other Changes
+
+**Includes**:
+- Container image tags (all assemblies + base)
+- PR links (automatically detected from #123 in commit messages)
+- Commit hashes
+- Documentation links
+
 ## Release Workflow
 
 ### Step-by-Step Release Process
@@ -166,11 +204,15 @@ The Snakefile automatically selects the correct container based on `config["refe
    git push --tags
    ```
 
-3. **Create GitHub release** (optional manual method):
-   - Go to GitHub → Releases → "Draft a new release"
-   - Select the tag created by bump2version (e.g., `v2.3.6`)
-   - Add release notes
-   - Publish
+3. **Create GitHub release** (automated via workflow):
+   - Go to Actions → "Create tag & release"
+   - Click "Run workflow"
+   - Workflow will:
+     - Read VERSION file
+     - Create git tag
+     - Generate changelog automatically
+     - Create release with formatted changelog
+     - Detect beta releases (auto-marks as pre-release)
 
 4. **Automated container builds**:
    - Publishing a release automatically triggers `.github/workflows/build-containers.yaml`

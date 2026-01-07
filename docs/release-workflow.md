@@ -28,12 +28,23 @@ Use `bump2version` to automatically update version across all files and create a
    git push --tags
    ```
 
-3. **Create GitHub release**:
+3. **Create GitHub release via workflow** (recommended):
+   - Go to Actions → "Create tag & release"
+   - Click "Run workflow"
+   - Workflow automatically:
+     - Reads VERSION file
+     - Creates git tag
+     - **Generates formatted changelog from commits**
+     - Creates release with changelog as body
+     - Detects beta versions (auto-marks as pre-release)
+   - Container build workflow triggers automatically
+
+**Alternative - Manual release**:
    - Go to GitHub → Releases → "Draft a new release"
    - Select tag created by bump2version (e.g., `v2.3.6`)
    - Title: `Release v2.3.6`
-   - Add release notes
-   - Publish release → **Workflow triggers automatically**
+   - Run `pixi run generate-changelog` to preview changelog, paste into description
+   - Publish release → **Container build triggers automatically**
 
 ### Option 2: Manual Tag Creation
 
@@ -105,6 +116,76 @@ git push && git push --tags
 - Beta: `ghcr.io/.../mosaicatcher-pipeline:hg38-2.3.6-beta.1`
 - Stable: `ghcr.io/.../mosaicatcher-pipeline:hg38-2.3.6`
 - Latest: `ghcr.io/.../mosaicatcher-pipeline:hg38-latest` (only updated on stable releases)
+
+## Automated Changelog Generation
+
+Releases automatically include formatted changelogs generated from commit history.
+
+### Changelog Format
+
+The changelog script (`.github/scripts/changelog_generator.sh`) generates release notes with:
+
+**Header**:
+- Container image tags (base + all 5 assemblies)
+- Pull commands for ghcr.io and Docker Hub
+
+**Categorized Changes**:
+- ✨ **New Features** - Commits starting with `feat:`, `feature:`, or `add:`
+- 🐛 **Bug Fixes** - Commits starting with `fix:`, `bug:`, or `issue:`
+- 🚀 **Improvements** - Commits starting with `refactor:`, `perf:`, `style:`, `improve:`, `update:`, `enhance:`
+- ⚠️ **Breaking Changes** - Commit bodies containing `BREAKING CHANGE:`
+- 🧹 **Chores** - Commits starting with `chore:`, `build:`, or `ci:`
+- 📚 **Documentation** - Commits starting with `docs:`
+- 📝 **Other Changes** - Any other commits
+
+**Features**:
+- Automatic PR linking: `(#123)` → `([#123](https://github.com/org/repo/pull/123))`
+- Commit hashes included: `[abc123]`
+- Collapsible details section
+- Links to documentation
+
+### Manual Changelog Preview
+
+Test changelog generation locally:
+
+```bash
+# Preview what changelog would look like
+pixi run generate-changelog
+
+# Generate between specific tags
+pixi run generate-changelog v2.3.5 v2.3.6
+```
+
+### Commit Message Best Practices
+
+For better changelogs, use conventional commit format:
+
+```bash
+# Features
+git commit -m "feat: add support for mm39 assembly"
+git commit -m "feature: implement dynamic container selection"
+
+# Bug fixes
+git commit -m "fix: resolve ploidy estimator error on empty data"
+git commit -m "bug: correct container tag format"
+
+# Improvements
+git commit -m "refactor: consolidate scNOVA conda environments"
+git commit -m "perf: optimize Dockerfile layer caching"
+
+# Breaking changes
+git commit -m "feat: change container registry to ghcr.io
+
+BREAKING CHANGE: Container images now hosted on ghcr.io instead of Docker Hub.
+Update your container: directives to use ghcr.io/friendsofstrandseq/mosaicatcher-pipeline"
+
+# Documentation
+git commit -m "docs: add version management guide"
+
+# Chores
+git commit -m "chore: update pixi.lock"
+git commit -m "ci: fix assemblies workflow trigger"
+```
 
 ## What Happens During Build
 

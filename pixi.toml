@@ -18,6 +18,7 @@ bump-minor = "bump2version minor"
 bump-major = "bump2version major"
 bump-beta = "bump2version beta"
 bump-release = "bump2version release"
+generate-changelog = "bash .github/scripts/changelog_generator.sh"
 
 # Core dependencies (always installed)
 [dependencies]

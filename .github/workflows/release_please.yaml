@@ -20,12 +20,21 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4.1.7
+        with:
+          fetch-depth: 0  # Need full history for changelog generation
 
       - name: Read version from VERSION file
         id: version-data
         run: |
           VERSION=$(cat VERSION)
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+          # Determine if this is a pre-release (contains 'beta')
+          if [[ "$VERSION" == *"beta"* ]]; then
+            echo "prerelease=true" >> $GITHUB_OUTPUT
+          else
+            echo "prerelease=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Bump version and push tag
         id: tag_version
@@ -36,8 +45,27 @@ jobs:
           default_prerelease_bump: false
           tag_prefix: ""
 
+      - name: Generate changelog
+        id: changelog
+        run: |
+          chmod +x .github/scripts/changelog_generator.sh
+
+          # Find previous tag
+          CURRENT_TAG="${{ steps.version-data.outputs.version }}"
+          PREVIOUS_TAG=$(git tag -l --sort=-version:refname | grep -v "^${CURRENT_TAG}$" | head -1)
+
+          # Generate changelog
+          .github/scripts/changelog_generator.sh "$PREVIOUS_TAG" "$CURRENT_TAG" > /tmp/CHANGELOG.md
+
+          # Save changelog to output (escape for JSON)
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          cat /tmp/CHANGELOG.md >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          prerelease: false
+          prerelease: ${{ steps.version-data.outputs.prerelease }}
           automatic_release_tag: ${{ steps.version-data.outputs.version }}
+          title: "Release v${{ steps.version-data.outputs.version }}"
+          body: ${{ steps.changelog.outputs.changelog }}
