@@ -7,9 +7,13 @@ LABEL assembly="hg38"
 LABEL bsgenome="BSgenome.Hsapiens.UCSC.hg38"
 
 # Install BSgenome for hg38 via BiocManager
-RUN RSCRIPT=$(find /conda-envs -name "Rscript" -type f | head -1) && \
-    $RSCRIPT -e 'BiocManager::install("BSgenome.Hsapiens.UCSC.hg38", update = FALSE, ask = FALSE)'
+RUN RTOOLS_ENV=$(find /conda-envs -name "Rscript" -type f | head -1 | xargs dirname | xargs dirname) && \
+    export PATH="$RTOOLS_ENV/bin:$PATH" && \
+    export R_LIBS_USER="$RTOOLS_ENV/lib/R/library" && \
+    Rscript -e 'BiocManager::install("BSgenome.Hsapiens.UCSC.hg38", update = FALSE, ask = FALSE)'
 
 # Verify installation
-RUN RSCRIPT=$(find /conda-envs -name "Rscript" -type f | head -1) && \
-    $RSCRIPT -e 'library(BSgenome.Hsapiens.UCSC.hg38); print(BSgenome.Hsapiens.UCSC.hg38)'
+RUN RTOOLS_ENV=$(find /conda-envs -name "Rscript" -type f | head -1 | xargs dirname | xargs dirname) && \
+    export PATH="$RTOOLS_ENV/bin:$PATH" && \
+    export R_LIBS_USER="$RTOOLS_ENV/lib/R/library" && \
+    Rscript -e 'library(BSgenome.Hsapiens.UCSC.hg38); print(BSgenome.Hsapiens.UCSC.hg38)'
