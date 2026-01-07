@@ -163,7 +163,7 @@ jobs:
           pixi run snakemake \
             --cores 1 \
             --sdm conda \
-            --config reference=mm10 use_light_data=True chromosomes=[chr17] ashleys_pipeline=True \
+            --config reference=mm10 use_light_data=True chromosomes=[chr15] ashleys_pipeline=True \
             --conda-cleanup-pkgs cache \
             -p \
             --snakefile workflow/Snakefile
@@ -200,7 +200,7 @@ jobs:
           pixi run snakemake \
             --cores 1 \
             --sdm conda \
-            --config reference=mm39 use_light_data=True chromosomes=[chr17] ashleys_pipeline=True \
+            --config reference=mm39 use_light_data=True chromosomes=[chr15] ashleys_pipeline=True \
             --conda-cleanup-pkgs cache \
             -p \
             --snakefile workflow/Snakefile

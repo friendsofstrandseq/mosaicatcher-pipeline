@@ -158,8 +158,8 @@ if config["strandscape_labels_path"]:
     assert os.path.isfile(labels_path)
     ashleys_labels = pd.read_csv(labels_path, sep="\t")
     strandscape_labels = pd.read_csv(config["strandscape_labels_path"], sep="\t")
-    print(ashleys_labels)
-    print(strandscape_labels)
+    # print(ashleys_labels)
+    # print(strandscape_labels)
     assert ashleys_labels.shape[0] == strandscape_labels.shape[0]
     assert (
         ashleys_labels.cell.values.tolist() == strandscape_labels.cell.values.tolist()
@@ -414,7 +414,7 @@ class HandleInput:
         complete_df = complete_df.sort_values(by=["Cell", "File"]).reset_index(
             drop=True
         )
-        print(complete_df)
+        # print(complete_df)
         return complete_df
 
 
@@ -757,9 +757,8 @@ def get_final_output():
         )
     final_list = return_config_output(final_list)
 
-    from pprint import pprint
-
-    pprint(final_list)
+    # from pprint import pprint
+    # pprint(final_list)
 
     return final_list
 

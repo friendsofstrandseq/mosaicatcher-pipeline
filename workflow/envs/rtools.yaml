@@ -6,7 +6,6 @@ dependencies:
   - bioconductor-biocparallel
   - bioconductor-breakpointr
   - bioconductor-bsgenome
-  - bioconductor-bsgenome.hsapiens.ucsc.hg38
   - bioconductor-complexheatmap
   - bioconductor-edger
   - bioconductor-genomicalignments

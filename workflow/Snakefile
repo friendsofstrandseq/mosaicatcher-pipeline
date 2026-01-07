@@ -64,7 +64,6 @@ include: "rules/arbigent_rules.smk"
 include: "rules/arbigent.smk"
 include: "rules/scNOVA.smk"
 include: "rules/gc.smk"
-include: "rules/debug.smk"
 
 
 if config["list_commands"] is False:

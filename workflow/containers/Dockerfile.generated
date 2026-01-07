@@ -1,0 +1,176 @@
+ WARN Ignoring 'cache-dir' in at /home/tweber//.pixi/config.toml
+Config file config/config.yaml is extended by additional config specified via the command line.
+rule regenotype_SNVs, line 128, /g/korbel2/weber/workspace/StrandSeq_workspace/DEV/mosaicatcher-pipeline-friendsofstrandseq/workflow/rules/regenotyping.smk: Empty file path encountered. Snakemake cannot understand this. If you want to indicate 'no file', please use an empty list ([]) instead of an empty string ('').
+Building DAG of jobs...
+Hashing conda environment workflow/envs/mc_base.yaml.
+Hashing conda environment workflow/envs/mc_bioinfo_tools.yaml.
+Hashing conda environment workflow/envs/rtools.yaml.
+Hashing conda environment workflow/envs/scNOVA/scNOVA_DL.yaml.
+Hashing conda environment workflow/envs/scNOVA/scNOVA_R.yaml.
+Your conda installation is not configured to use strict channel priorities. This is however important for having robust and correct environments (for details, see https://conda-forge.org/docs/user/tipsandtricks.html). Please consider to configure strict priorities by executing 'conda config --set channel_priority strict'.
+FROM condaforge/miniforge3:latest
+LABEL io.github.snakemake.containerized="true"
+LABEL io.github.snakemake.conda_env_hash="7327ea2a8be1645c4117aae7a9e3d58ad38e9a9d15601978df8a31f0c4395991"
+
+# Step 2: Retrieve conda environments
+
+# Conda environment:
+#   source: workflow/envs/mc_base.yaml
+#   prefix: /conda-envs/5779be0fdcb83243309236d7b8551c11
+#   name: mc-base
+#   channels:
+#     - conda-forge
+#     - bioconda
+#   dependencies:
+#     - ashleys-qc
+#     - bwa
+#     - intervaltree
+#     - matplotlib
+#     - mosaicatcher
+#     - multiqc
+#     - pandas
+#     - parmap
+#     - perl
+#     - pybigwig
+#     - pypdf2
+#     - pysam
+#     - pytables
+#     - pyyaml
+#     - python=3.10
+#     - rsync
+#     - sambamba
+#     - samtools
+#     - scikit-learn=1.2.2
+#     - scipy
+#     - seaborn
+#     - tabix
+#     - tqdm
+#     - xopen
+RUN mkdir -p /conda-envs/5779be0fdcb83243309236d7b8551c11
+COPY workflow/envs/mc_base.yaml /conda-envs/5779be0fdcb83243309236d7b8551c11/environment.yaml
+
+# Conda environment:
+#   source: workflow/envs/mc_bioinfo_tools.yaml
+#   prefix: /conda-envs/3afe2bebce5cf5fcd9f74d5f84aa3c10
+#   name: mc-bioinfo-tools
+#   channels:
+#     - conda-forge
+#     - bioconda
+#   dependencies:
+#     - bcftools
+#     - bedtools
+#     - biobambam
+#     - freebayes
+#     - mosaicatcher
+#     - samtools
+#     - tabix
+#     - whatshap
+RUN mkdir -p /conda-envs/3afe2bebce5cf5fcd9f74d5f84aa3c10
+COPY workflow/envs/mc_bioinfo_tools.yaml /conda-envs/3afe2bebce5cf5fcd9f74d5f84aa3c10/environment.yaml
+
+# Conda environment:
+#   source: workflow/envs/rtools.yaml
+#   prefix: /conda-envs/e83237d35beef5fea658a772394d13eb
+#   name: rtools
+#   channels:
+#     - bioconda
+#     - conda-forge
+#   dependencies:
+#     - bioconductor-biocparallel
+#     - bioconductor-breakpointr
+#     - bioconductor-bsgenome
+#     - bioconductor-bsgenome.hsapiens.ucsc.hg38
+#     - bioconductor-complexheatmap
+#     - bioconductor-edger
+#     - bioconductor-genomicalignments
+#     - bioconductor-genomicranges
+#     - bioconductor-rsamtools
+#     - fonts-conda-forge
+#     - r-assertthat
+#     - r-base
+#     - r-biocmanager
+#     - r-cairo
+#     - r-cowplot
+#     - r-data.table
+#     - r-devtools
+#     - r-doparallel
+#     - r-dplyr
+#     - r-foreach
+#     - r-ggbeeswarm
+#     - r-ggnewscale
+#     - r-ggplot2
+#     - r-ggpubr
+#     - r-gplots
+#     - r-gtools
+#     - r-mc2d
+#     - r-optparse
+#     - r-pheatmap
+#     - r-r.utils
+#     - r-rcolorbrewer
+#     - r-reshape
+#     - r-reshape2
+#     - r-scales
+#     - r-stringi=1.7.12
+#     - r-stringr
+#     - r-tidyr
+#     - strandphaser
+RUN mkdir -p /conda-envs/e83237d35beef5fea658a772394d13eb
+COPY workflow/envs/rtools.yaml /conda-envs/e83237d35beef5fea658a772394d13eb/environment.yaml
+
+# Conda environment:
+#   source: workflow/envs/scNOVA/scNOVA_DL.yaml
+#   prefix: /conda-envs/1500b5655a7c1aa812aa710896ca7666
+#   name: scNOVA_DL
+#   channels:
+#     - conda-forge
+#     - anaconda
+#   dependencies:
+#     - h5py=2.10.0
+#     - matplotlib=3.1.1
+#     - numpy
+#     - pandas=0.25.3
+#     - python=3.7.4
+#     - scikit-learn=0.21.3
+#     - tensorflow=1.15.0
+#     - unzip
+#     - pip:
+#         - cffi
+RUN mkdir -p /conda-envs/1500b5655a7c1aa812aa710896ca7666
+COPY workflow/envs/scNOVA/scNOVA_DL.yaml /conda-envs/1500b5655a7c1aa812aa710896ca7666/environment.yaml
+
+# Conda environment:
+#   source: workflow/envs/scNOVA/scNOVA_R.yaml
+#   prefix: /conda-envs/e4c4fbc0d8d5fdeeb1f51bb8c0e86716
+#   name: scNOVA
+#   channels:
+#     - bioconda
+#     - conda-forge
+#   dependencies:
+#     - bioconductor-bsgenome.hsapiens.ucsc.hg38=1.4.3
+#     - bioconductor-chromvar=1.12.0
+#     - bioconductor-deseq2=1.30.0
+#     - bioconductor-jaspar2016=1.18.0
+#     - bioconductor-motifmatchr=1.12.0
+#     - r-codetools=0.2_18
+#     - r-doparallel
+#     - r-factoextra=1.0.7
+#     - r-fitdistrplus
+#     - r-foreach
+#     - r-gplots=3.1.1
+#     - r-matrixstats=0.58.0
+#     - r-nabor=0.5.0
+#     - r-pheatmap=1.0.12
+#     - r-pracma=2.3.3
+#     - r-rtsne=0.15
+#     - r-umap=0.2.7.0
+RUN mkdir -p /conda-envs/e4c4fbc0d8d5fdeeb1f51bb8c0e86716
+COPY workflow/envs/scNOVA/scNOVA_R.yaml /conda-envs/e4c4fbc0d8d5fdeeb1f51bb8c0e86716/environment.yaml
+
+# Step 3: Generate conda environments
+
+RUN conda env create --prefix /conda-envs/5779be0fdcb83243309236d7b8551c11 --file /conda-envs/5779be0fdcb83243309236d7b8551c11/environment.yaml && \
+    conda env create --prefix /conda-envs/3afe2bebce5cf5fcd9f74d5f84aa3c10 --file /conda-envs/3afe2bebce5cf5fcd9f74d5f84aa3c10/environment.yaml && \
+    conda env create --prefix /conda-envs/e83237d35beef5fea658a772394d13eb --file /conda-envs/e83237d35beef5fea658a772394d13eb/environment.yaml && \
+    conda env create --prefix /conda-envs/1500b5655a7c1aa812aa710896ca7666 --file /conda-envs/1500b5655a7c1aa812aa710896ca7666/environment.yaml && \
+    conda env create --prefix /conda-envs/e4c4fbc0d8d5fdeeb1f51bb8c0e86716 --file /conda-envs/e4c4fbc0d8d5fdeeb1f51bb8c0e86716/environment.yaml && \
+    conda clean --all -y
