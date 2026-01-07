@@ -232,6 +232,9 @@ jobs:
     name: Validate Conda Environments in Container
     needs: build-assembly-images
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
 
     steps:
       - name: Checkout repository with submodules
@@ -268,6 +271,10 @@ jobs:
           fi
           echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
 
+      - name: Log in to GitHub Container Registry
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
+
       - name: Pull hg38 container for validation
         run: |
           apptainer pull docker://${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:hg38-${{ steps.version.outputs.VERSION }}
@@ -281,21 +288,21 @@ jobs:
             --apptainer-args "--bind /tmp:/tmp --bind $PWD:$PWD" \
             --apptainer-prefix .snakemake/apptainer \
             -p \
-            pipeline_test/RPE-BM510/config/conda_export/mc_base.yaml \
-            pipeline_test/RPE-BM510/config/conda_export/mc_bioinfo_tools.yaml \
-            pipeline_test/RPE-BM510/config/conda_export/rtools.yaml
+            .tests/data_CHR17/RPE-BM510/config/conda_export/mc_base.yaml \
+            .tests/data_CHR17/RPE-BM510/config/conda_export/mc_bioinfo_tools.yaml \
+            .tests/data_CHR17/RPE-BM510/config/conda_export/rtools.yaml
 
       - name: Display generated conda export files
         if: success()
         run: |
           echo "=== mc_base.yaml export (first 30 lines) ==="
-          head -30 pipeline_test/RPE-BM510/config/conda_export/mc_base.yaml
+          head -30 .tests/data_CHR17/RPE-BM510/config/conda_export/mc_base.yaml
           echo ""
           echo "=== mc_bioinfo_tools.yaml export (first 30 lines) ==="
-          head -30 pipeline_test/RPE-BM510/config/conda_export/mc_bioinfo_tools.yaml
+          head -30 .tests/data_CHR17/RPE-BM510/config/conda_export/mc_bioinfo_tools.yaml
           echo ""
           echo "=== rtools.yaml export (first 30 lines) ==="
-          head -30 pipeline_test/RPE-BM510/config/conda_export/rtools.yaml
+          head -30 .tests/data_CHR17/RPE-BM510/config/conda_export/rtools.yaml
           echo ""
           echo "✅ Conda environment validation PASSED"
 
@@ -304,7 +311,7 @@ jobs:
         if: always()
         with:
           name: conda-exports-validation
-          path: pipeline_test/RPE-BM510/config/conda_export/
+          path: .tests/data_CHR17/RPE-BM510/config/conda_export/
           retention-days: 7
 
   create-manifest:
