@@ -18,4 +18,4 @@ repos:
         language: system
         pass_filenames: false
         files: \.(smk|py)$
-        stages: [commit]
+        stages: [pre-commit]
