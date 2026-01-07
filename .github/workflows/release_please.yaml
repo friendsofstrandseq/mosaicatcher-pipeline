@@ -78,6 +78,6 @@ jobs:
           body: ${{ needs.changelog.outputs.changelog }}
           draft: false
           prerelease: ${{ needs.changelog.outputs.is_beta == 'true' }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GH_PAT }}
           # Force overwrite existing release
           generate_release_notes: false
