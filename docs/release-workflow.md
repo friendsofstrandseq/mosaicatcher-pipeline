@@ -10,9 +10,34 @@ The release process automatically builds 6 container images:
 
 ## Triggering a Release
 
-### Option 1: GitHub Release (Recommended)
+### Option 1: Automated Version Bump (Recommended)
 
-1. Create a new release on GitHub:
+Use `bump2version` to automatically update version across all files and create a release:
+
+1. **Bump version** (updates VERSION, pixi.toml, config.yaml, CLAUDE.md):
+   ```bash
+   pixi run bump-patch    # 2.3.5 → 2.3.6
+   pixi run bump-minor    # 2.3.5 → 2.4.0
+   pixi run bump-major    # 2.3.5 → 3.0.0
+   ```
+   This creates a git commit and tag automatically.
+
+2. **Push changes and tag**:
+   ```bash
+   git push
+   git push --tags
+   ```
+
+3. **Create GitHub release**:
+   - Go to GitHub → Releases → "Draft a new release"
+   - Select tag created by bump2version (e.g., `v2.3.6`)
+   - Title: `Release v2.3.6`
+   - Add release notes
+   - Publish release → **Workflow triggers automatically**
+
+### Option 2: Manual Tag Creation
+
+1. Manually create and push tag:
    ```bash
    git tag v2.3.6
    git push origin v2.3.6
@@ -25,12 +50,61 @@ The release process automatically builds 6 container images:
 
 3. Publish release → **Workflow triggers automatically**
 
-### Option 2: Manual Workflow Dispatch
+**Note**: With manual tagging, you must also manually update VERSION, pixi.toml, config.yaml, and CLAUDE.md.
+
+### Option 3: Manual Workflow Dispatch
 
 1. Go to Actions → "Build and Publish Container Images"
 2. Click "Run workflow"
-3. Enter version (e.g., `2.3.6`)
+3. Enter version (e.g., `2.3.6` or `2.3.6-beta.1`)
 4. Click "Run workflow"
+
+## Beta Releases
+
+Beta releases allow testing new features before stable release.
+
+### Creating a Beta Release
+
+1. **Bump to beta version**:
+   ```bash
+   pixi run bump-patch     # 2.3.5 -> 2.3.6
+   pixi run bump-release   # 2.3.6 -> 2.3.6-beta.1
+   git push && git push --tags
+   ```
+
+2. **Create GitHub pre-release**:
+   - Go to GitHub → Releases → "Draft a new release"
+   - Select tag `v2.3.6-beta.1`
+   - Title: `Release v2.3.6-beta.1`
+   - **Check "This is a pre-release"** ← Important!
+   - Add release notes
+   - Publish
+
+3. **Container build triggers automatically** for pre-releases too
+
+### Iterating Beta Versions
+
+```bash
+# Test, find issues, fix...
+pixi run bump-beta      # 2.3.6-beta.1 -> 2.3.6-beta.2
+git push && git push --tags
+# Create new pre-release on GitHub
+```
+
+### Promoting Beta to Stable
+
+When beta testing is complete:
+
+```bash
+pixi run bump-release   # 2.3.6-beta.2 -> 2.3.6 (removes beta)
+git push && git push --tags
+# Create normal release (not pre-release) on GitHub
+```
+
+**Container tags**:
+- Beta: `ghcr.io/.../mosaicatcher-pipeline:hg38-2.3.6-beta.1`
+- Stable: `ghcr.io/.../mosaicatcher-pipeline:hg38-2.3.6`
+- Latest: `ghcr.io/.../mosaicatcher-pipeline:hg38-latest` (only updated on stable releases)
 
 ## What Happens During Build
 

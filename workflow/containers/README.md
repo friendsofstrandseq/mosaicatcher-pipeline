@@ -77,18 +77,43 @@ docker push weber8thomas/mosaicatcher-pipeline:latest
 
 ## Usage
 
+### Automatic Container Selection (Recommended)
+
+The Snakefile automatically selects the correct container based on `config["reference"]`:
+
+```python
+# In workflow/Snakefile
+with open("VERSION", "r") as f:
+    __version__ = f.read().strip()
+
+docker_container = "docker://ghcr.io/friendsofstrandseq/mosaicatcher-pipeline:{assembly}-{version}".format(
+    assembly=config["reference"],  # e.g., "hg38", "mm10", etc.
+    version=__version__
+)
+containerized: docker_container
+```
+
+**Usage**: Simply set `reference` in your config, Snakefile handles the rest:
+
+```bash
+snakemake --config reference=hg38 --use-singularity
+snakemake --config reference=mm10 --use-singularity
+```
+
+### Manual Container Usage
+
 ```bash
 # With Docker
 docker run -v /path/to/data:/data \
-  weber8thomas/mosaicatcher-pipeline:hg38-VERSION \
+  ghcr.io/friendsofstrandseq/mosaicatcher-pipeline:hg38-VERSION \
   snakemake --config reference=hg38 ...
 
 # With Singularity (convert from Docker)
-singularity pull docker://weber8thomas/mosaicatcher-pipeline:hg38-VERSION
+singularity pull docker://ghcr.io/friendsofstrandseq/mosaicatcher-pipeline:hg38-VERSION
 singularity exec mosaicatcher-pipeline_hg38-VERSION.sif snakemake ...
 
 # In Snakemake profile
-containerized: "docker://weber8thomas/mosaicatcher-pipeline:hg38-VERSION"
+containerized: "docker://ghcr.io/friendsofstrandseq/mosaicatcher-pipeline:hg38-VERSION"
 ```
 
 ## Size Comparison

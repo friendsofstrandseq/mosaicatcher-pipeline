@@ -9,6 +9,26 @@ MosaiCatcher-pipeline is a Snakemake workflow for structural variant (SV) callin
 **Current Version:** 2.3.5
 **Documentation:** https://friendsofstrandseq.github.io/mosaicatcher-docs/
 
+## Version Management
+
+The project uses a centralized version management system with support for stable and beta releases:
+
+- **Version file**: `VERSION` (single-line file at repo root)
+- **Automated bumping**:
+  - Stable: `pixi run bump-patch|bump-minor|bump-major`
+  - Beta: `pixi run bump-beta` (increment beta), `pixi run bump-release` (toggle beta/stable)
+- **Config file**: `.bumpversion.cfg` (defines which files to update)
+- **Container tags**: Assembly-specific with version
+  - Stable: `ghcr.io/.../mosaicatcher-pipeline:hg38-2.3.5`
+  - Beta: `ghcr.io/.../mosaicatcher-pipeline:hg38-2.3.6-beta.1`
+
+When you bump version:
+1. `VERSION`, `pixi.toml`, `config/config.yaml`, and `CLAUDE.md` are automatically updated
+2. Git commit and tag are created automatically
+3. Push tag to trigger container build workflow
+
+Beta releases support iterative testing before stable release. See `docs/version-management.md` for detailed documentation.
+
 ## Common Commands
 
 ### Using Pixi (Recommended for Snakemake v9+)

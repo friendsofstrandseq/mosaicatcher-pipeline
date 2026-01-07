@@ -13,6 +13,11 @@ format-fix = "snakefmt workflow/"
 lint = "snakemake --configfile .tests/config/simple_config_mosaicatcher.yaml --lint"
 pre-commit-install = "pre-commit install"
 pre-commit-run = "pre-commit run --all-files"
+bump-patch = "bump2version patch"
+bump-minor = "bump2version minor"
+bump-major = "bump2version major"
+bump-beta = "bump2version beta"
+bump-release = "bump2version release"
 
 # Core dependencies (always installed)
 [dependencies]
@@ -35,6 +40,7 @@ conda = ">=24.7.1"
 mamba = "*"
 snakemake-executor-plugin-slurm = "*"
 pre-commit = "*"
+bump2version = "*"
 
 # Environments: combine features as needed
 [environments]

@@ -7,8 +7,15 @@ configfile: configfile_location
 report: "report/workflow.rst"
 
 
-docker_container = "docker://weber8thomas/mosaicatcher-pipeline:{version}".format(
-    version=str(config["version"])
+# Read version from centralized VERSION file
+with open("VERSION", "r") as f:
+    __version__ = f.read().strip()
+
+
+# Use assembly-specific container image based on reference genome
+docker_container = "docker://ghcr.io/friendsofstrandseq/mosaicatcher-pipeline:{assembly}-{version}".format(
+    assembly=config["reference"],
+    version=__version__
 )
 
 
