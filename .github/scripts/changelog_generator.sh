@@ -23,7 +23,7 @@ MAX_ITEMS=5
 # Start with Container Images section
 echo "### Container Images 🐳"
 echo ""
-echo "All images available on **GitHub Container Registry** and **Docker Hub**:"
+echo "All images available on **GitHub Container Registry**:"
 echo ""
 echo "\`\`\`plaintext"
 echo "# Base image (all conda environments, no BSgenome)"
@@ -43,9 +43,6 @@ echo "ghcr.io/friendsofstrandseq/mosaicatcher-pipeline:hg19-latest"
 echo "ghcr.io/friendsofstrandseq/mosaicatcher-pipeline:T2T-latest"
 echo "ghcr.io/friendsofstrandseq/mosaicatcher-pipeline:mm10-latest"
 echo "ghcr.io/friendsofstrandseq/mosaicatcher-pipeline:mm39-latest"
-echo ""
-echo "# Also available on Docker Hub"
-echo "weber8thomas/mosaicatcher-pipeline:<tag>"
 echo "\`\`\`"
 echo ""
 

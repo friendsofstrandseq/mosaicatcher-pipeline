@@ -102,20 +102,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Log in to Docker Hub (optional)
-        if: github.event_name == 'release'
-        uses: docker/login-action@v3
-        with:
-          username: weber8thomas
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
       - name: Extract metadata for base image
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-            weber8thomas/mosaicatcher-pipeline
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=base-${{ steps.version.outputs.VERSION }}
             type=raw,value=base-latest
@@ -168,13 +159,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Log in to Docker Hub (optional)
-        if: github.event_name == 'release'
-        uses: docker/login-action@v3
-        with:
-          username: weber8thomas
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
       - name: Update Dockerfile to use versioned base
         run: |
           sed -i 's|FROM mosaicatcher:base|FROM ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:base-${{ steps.version.outputs.VERSION }}|' \
@@ -184,9 +168,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-            weber8thomas/mosaicatcher-pipeline
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=${{ matrix.assembly }}-${{ steps.version.outputs.VERSION }}
             type=raw,value=${{ matrix.assembly }}-latest
@@ -233,18 +215,12 @@ jobs:
 
           ## Available Images
 
-          All images are available on:
-          - **GitHub Container Registry**: \`ghcr.io/${{ github.repository }}\`
-          - **Docker Hub**: \`weber8thomas/mosaicatcher-pipeline\`
+          All images are available on **GitHub Container Registry**: \`ghcr.io/${{ github.repository }}\`
 
           ### Base Image
 
           \`\`\`bash
-          # GitHub Container Registry
           docker pull ghcr.io/${{ github.repository }}:base-${{ steps.version.outputs.VERSION }}
-
-          # Docker Hub
-          docker pull weber8thomas/mosaicatcher-pipeline:base-${{ steps.version.outputs.VERSION }}
           \`\`\`
 
           **Size:** ~2.5GB
@@ -265,7 +241,6 @@ jobs:
           \`\`\`bash
           # hg38 (Human GRCh38)
           docker pull ghcr.io/${{ github.repository }}:hg38-${{ steps.version.outputs.VERSION }}
-          docker pull weber8thomas/mosaicatcher-pipeline:hg38-${{ steps.version.outputs.VERSION }}
 
           # hg19 (Human GRCh37)
           docker pull ghcr.io/${{ github.repository }}:hg19-${{ steps.version.outputs.VERSION }}
