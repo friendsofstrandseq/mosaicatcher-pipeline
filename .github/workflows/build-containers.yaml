@@ -152,8 +152,7 @@ jobs:
 
     strategy:
       matrix:
-        assembly: [hg38]
-        # Temporarily disabled for testing: hg19, T2T, mm10, mm39
+        assembly: [hg38, hg19, T2T, mm10, mm39]
 
     steps:
       - name: Checkout repository

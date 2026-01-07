@@ -11,14 +11,26 @@ LABEL zenodo="https://zenodo.org/record/7697400"
 RUN wget -q https://zenodo.org/record/7697400/files/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz \
     -O /tmp/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz
 
-# Install GenomeInfoDbData dependency first
-RUN /opt/conda/bin/Rscript -e 'BiocManager::install("GenomeInfoDbData", update = FALSE, ask = FALSE)'
-
-# Install custom T2T BSgenome from tarball
-RUN /opt/conda/bin/Rscript -e 'install.packages("/tmp/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz", repos = NULL, type = "source")'
+# Find R environment, install dependencies and custom BSgenome
+RUN echo "=== Finding R environment ===" && \
+    RSCRIPT_PATH=$(find /conda-envs -name "Rscript" -type f -path "*/bin/Rscript" -not -path "*/lib/R/*" | head -1) && \
+    echo "Found Rscript at: $RSCRIPT_PATH" && \
+    RTOOLS_ENV=$(dirname $(dirname "$RSCRIPT_PATH")) && \
+    echo "R environment path: $RTOOLS_ENV" && \
+    echo "" && \
+    echo "=== Installing GenomeInfoDbData dependency via conda ===" && \
+    /opt/conda/bin/conda install -p "$RTOOLS_ENV" -y -c bioconda bioconductor-genomeinfodb && \
+    echo "" && \
+    echo "=== Installing custom T2T BSgenome from tarball ===" && \
+    "$RSCRIPT_PATH" -e 'install.packages("/tmp/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz", repos = NULL, type = "source")' && \
+    /opt/conda/bin/conda clean --all -y && \
+    echo "=== Installation complete ==="
 
 # Clean up tarball
 RUN rm /tmp/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz
 
 # Verify installation
-RUN /opt/conda/bin/Rscript -e 'library(BSgenome.Hsapiens.NCBI.T2T.CHM13v2.0); print(BSgenome.Hsapiens.NCBI.T2T.CHM13v2.0)'
+RUN echo "=== Verifying BSgenome installation ===" && \
+    RSCRIPT_PATH=$(find /conda-envs -name "Rscript" -type f | head -1) && \
+    echo "Using Rscript at: $RSCRIPT_PATH" && \
+    "$RSCRIPT_PATH" -e 'library(BSgenome.Hsapiens.NCBI.T2T.CHM13v2.0); print(BSgenome.Hsapiens.NCBI.T2T.CHM13v2.0)'

@@ -6,8 +6,20 @@ FROM mosaicatcher:base
 LABEL assembly="mm39"
 LABEL bsgenome="BSgenome.Mmusculus.UCSC.mm39"
 
-# Install BSgenome for mm39 via BiocManager
-RUN /opt/conda/bin/Rscript -e 'BiocManager::install("BSgenome.Mmusculus.UCSC.mm39", update = FALSE, ask = FALSE)'
+# Find R environment via Rscript binary and install BSgenome
+RUN echo "=== Finding R environment ===" && \
+    RSCRIPT_PATH=$(find /conda-envs -name "Rscript" -type f -path "*/bin/Rscript" -not -path "*/lib/R/*" | head -1) && \
+    echo "Found Rscript at: $RSCRIPT_PATH" && \
+    RTOOLS_ENV=$(dirname $(dirname "$RSCRIPT_PATH")) && \
+    echo "R environment path: $RTOOLS_ENV" && \
+    echo "" && \
+    echo "=== Installing BSgenome.Mmusculus.UCSC.mm39 via conda ===" && \
+    /opt/conda/bin/conda install -p "$RTOOLS_ENV" -y -c bioconda bioconductor-bsgenome.mmusculus.ucsc.mm39 && \
+    /opt/conda/bin/conda clean --all -y && \
+    echo "=== Installation complete ==="
 
 # Verify installation
-RUN /opt/conda/bin/Rscript -e 'library(BSgenome.Mmusculus.UCSC.mm39); print(BSgenome.Mmusculus.UCSC.mm39)'
+RUN echo "=== Verifying BSgenome installation ===" && \
+    RSCRIPT_PATH=$(find /conda-envs -name "Rscript" -type f | head -1) && \
+    echo "Using Rscript at: $RSCRIPT_PATH" && \
+    "$RSCRIPT_PATH" -e 'library(BSgenome.Mmusculus.UCSC.mm39); print(BSgenome.Mmusculus.UCSC.mm39)'
