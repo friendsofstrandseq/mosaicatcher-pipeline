@@ -225,8 +225,7 @@ jobs:
 
       - name: Verify image
         run: |
-          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.assembly }}-${{ steps.version.outputs.VERSION }} \
-            /opt/conda/bin/conda env list
+          docker manifest inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.assembly }}-${{ steps.version.outputs.VERSION }}
 
   validate-conda-environments:
     name: Validate Conda Environments in Container
