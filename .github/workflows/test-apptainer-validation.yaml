@@ -39,11 +39,11 @@ jobs:
         run: |
           apptainer --version
 
-      - name: Configure Apptainer for GitHub Actions
+      - name: Disable apparmor namespace restrictions for apptainer
         run: |
-          mkdir -p ~/.apptainer
-          echo "allow setuid = no" > ~/.apptainer/apptainer.conf
-          cat ~/.apptainer/apptainer.conf
+          sudo sh -c 'echo kernel.apparmor_restrict_unprivileged_userns=0 \
+          >/etc/sysctl.d/90-disable-userns-restrictions.conf'
+          sudo sysctl -p /etc/sysctl.d/90-disable-userns-restrictions.conf
 
       - name: Cache Apptainer SIF
         uses: actions/cache@v4
