@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - feat/test-apptainer
+      - main
 
 jobs:
   test-validation:
@@ -61,11 +61,11 @@ jobs:
 
       - name: Pull hg38 container for validation
         run: |
-          apptainer pull --fakeroot docker://ghcr.io/friendsofstrandseq/mosaicatcher-pipeline:hg38-v2.4.0-beta.2
+          apptainer pull docker://ghcr.io/friendsofstrandseq/mosaicatcher-pipeline:hg38-v2.4.0-beta.2
 
       - name: Test container with simple command
         run: |
-          apptainer exec --fakeroot mosaicatcher-pipeline_hg38-v2.4.0-beta.2.sif conda info --json
+          apptainer exec mosaicatcher-pipeline_hg38-v2.4.0-beta.2.sif conda info --json
 
       - name: Run save_conda_versions rules with apptainer
         run: |
@@ -73,7 +73,7 @@ jobs:
             --cores 1 \
             --sdm conda apptainer \
             --configfile .tests/config/simple_config_mosaicatcher.yaml \
-            --apptainer-args "--fakeroot --bind /tmp:/tmp --bind $PWD:$PWD" \
+            --apptainer-args "--bind /tmp:/tmp --bind $PWD:$PWD" \
             --apptainer-prefix .snakemake/apptainer \
             -p \
             .tests/data_CHR17/RPE-BM510/config/conda_export/mc_base.yaml \
