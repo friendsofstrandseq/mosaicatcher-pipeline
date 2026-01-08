@@ -1,0 +1,103 @@
+name: Test Apptainer Validation
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feat/test-apptainer
+
+jobs:
+  test-validation:
+    name: Test Conda Validation with Apptainer
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+
+    steps:
+      - name: Checkout repository with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Git Submodule Update
+        run: |
+          git submodule update --remote --recursive --force --init
+
+      - name: Setup Pixi
+        uses: prefix-dev/setup-pixi@v0.9.3
+        with:
+          pixi-version: latest
+          cache: true
+          locked: false
+
+      - name: Install Apptainer via Pixi
+        run: |
+          pixi global install apptainer
+
+      - name: Verify Apptainer installation
+        run: |
+          apptainer --version
+
+      - name: Configure Apptainer for GitHub Actions
+        run: |
+          mkdir -p ~/.apptainer
+          echo "allow setuid = no" > ~/.apptainer/apptainer.conf
+          cat ~/.apptainer/apptainer.conf
+
+      - name: Cache Apptainer SIF
+        uses: actions/cache@v4
+        with:
+          path: ~/.apptainer/cache
+          key: apptainer-test-hg38-v2.4.0-beta.2
+          restore-keys: |
+            apptainer-test-hg38-
+
+      - name: Log in to GitHub Container Registry
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
+        env:
+          REGISTRY: ghcr.io
+
+      - name: Pull hg38 container for validation
+        run: |
+          apptainer pull --fakeroot docker://ghcr.io/friendsofstrandseq/mosaicatcher-pipeline:hg38-v2.4.0-beta.2
+
+      - name: Test container with simple command
+        run: |
+          apptainer exec --fakeroot mosaicatcher-pipeline_hg38-v2.4.0-beta.2.sif conda info --json
+
+      - name: Run save_conda_versions rules with apptainer
+        run: |
+          pixi run snakemake \
+            --cores 1 \
+            --sdm conda apptainer \
+            --configfile .tests/config/simple_config_mosaicatcher.yaml \
+            --apptainer-args "--fakeroot --bind /tmp:/tmp --bind $PWD:$PWD" \
+            --apptainer-prefix .snakemake/apptainer \
+            -p \
+            .tests/data_CHR17/RPE-BM510/config/conda_export/mc_base.yaml \
+            .tests/data_CHR17/RPE-BM510/config/conda_export/mc_bioinfo_tools.yaml \
+            .tests/data_CHR17/RPE-BM510/config/conda_export/rtools.yaml
+
+      - name: Display generated conda export files
+        if: success()
+        run: |
+          echo "=== mc_base.yaml export (first 30 lines) ==="
+          head -30 .tests/data_CHR17/RPE-BM510/config/conda_export/mc_base.yaml
+          echo ""
+          echo "=== mc_bioinfo_tools.yaml export (first 30 lines) ==="
+          head -30 .tests/data_CHR17/RPE-BM510/config/conda_export/mc_bioinfo_tools.yaml
+          echo ""
+          echo "=== rtools.yaml export (first 30 lines) ==="
+          head -30 .tests/data_CHR17/RPE-BM510/config/conda_export/rtools.yaml
+          echo ""
+          echo "✅ Conda environment validation PASSED"
+
+      - name: Upload conda export artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: conda-exports-test
+          path: .tests/data_CHR17/RPE-BM510/config/conda_export/
+          retention-days: 7
