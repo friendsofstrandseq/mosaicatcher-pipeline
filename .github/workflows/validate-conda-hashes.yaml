@@ -1,0 +1,140 @@
+name: Validate Conda Environment Hashes
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  validate-hashes:
+    name: Compare YAML Hashes vs Container Labels
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+
+    steps:
+      - name: Checkout repository (clean)
+        uses: actions/checkout@v4
+
+      - name: Calculate current conda env hashes from YAML files
+        id: current
+        run: |
+          echo "Calculating hashes for current YAML files:"
+          MC_BASE_HASH=$(md5sum workflow/envs/mc_base.yaml | cut -d' ' -f1)
+          MC_BIOINFO_HASH=$(md5sum workflow/envs/mc_bioinfo_tools.yaml | cut -d' ' -f1)
+          RTOOLS_HASH=$(md5sum workflow/envs/rtools.yaml | cut -d' ' -f1)
+
+          echo "mc_base=$MC_BASE_HASH" >> $GITHUB_OUTPUT
+          echo "mc_bioinfo=$MC_BIOINFO_HASH" >> $GITHUB_OUTPUT
+          echo "rtools=$RTOOLS_HASH" >> $GITHUB_OUTPUT
+
+          echo "Current YAML hashes:"
+          echo "  mc_base.yaml: $MC_BASE_HASH"
+          echo "  mc_bioinfo_tools.yaml: $MC_BIOINFO_HASH"
+          echo "  rtools.yaml: $RTOOLS_HASH"
+
+      - name: Read VERSION file
+        id: version
+        run: |
+          VERSION=$(cat VERSION | tr -d '\n')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Pipeline version: $VERSION"
+
+      - name: Inspect container labels without pulling
+        id: container
+        run: |
+          echo "Inspecting container labels for hg38-v${{ steps.version.outputs.version }}:"
+
+          # Use docker buildx imagetools to inspect without pulling
+          LABELS=$(docker buildx imagetools inspect \
+            ghcr.io/friendsofstrandseq/mosaicatcher-pipeline:hg38-v${{ steps.version.outputs.version }} \
+            --format '{{json .Manifest.Config}}' | jq -r '.Labels')
+
+          echo "Container labels:"
+          echo "$LABELS" | jq '.'
+
+          # Extract conda env hash labels
+          MC_BASE_CONTAINER=$(echo "$LABELS" | jq -r '.["conda.env.mc_base.hash"]')
+          MC_BIOINFO_CONTAINER=$(echo "$LABELS" | jq -r '.["conda.env.mc_bioinfo_tools.hash"]')
+          RTOOLS_CONTAINER=$(echo "$LABELS" | jq -r '.["conda.env.rtools.hash"]')
+
+          echo "mc_base=$MC_BASE_CONTAINER" >> $GITHUB_OUTPUT
+          echo "mc_bioinfo=$MC_BIOINFO_CONTAINER" >> $GITHUB_OUTPUT
+          echo "rtools=$RTOOLS_CONTAINER" >> $GITHUB_OUTPUT
+
+          echo "Container conda env hashes:"
+          echo "  mc_base: $MC_BASE_CONTAINER"
+          echo "  mc_bioinfo_tools: $MC_BIOINFO_CONTAINER"
+          echo "  rtools: $RTOOLS_CONTAINER"
+
+      - name: Compare hashes and report
+        run: |
+          echo "========================================="
+          echo "Conda Environment Hash Validation Report"
+          echo "========================================="
+          echo ""
+          echo "Pipeline Version: ${{ steps.version.outputs.version }}"
+          echo "Container: ghcr.io/friendsofstrandseq/mosaicatcher-pipeline:hg38-v${{ steps.version.outputs.version }}"
+          echo ""
+          echo "Comparing source YAML files to container labels"
+          echo ""
+
+          MISMATCHES=0
+
+          echo "mc_base.yaml:"
+          echo "  Current YAML: ${{ steps.current.outputs.mc_base }}"
+          echo "  Container:    ${{ steps.container.outputs.mc_base }}"
+          if [ "${{ steps.current.outputs.mc_base }}" != "${{ steps.container.outputs.mc_base }}" ]; then
+            echo "  ❌ MISMATCH - Container needs to be rebuilt"
+            MISMATCHES=$((MISMATCHES + 1))
+          else
+            echo "  ✅ MATCH"
+          fi
+          echo ""
+
+          echo "mc_bioinfo_tools.yaml:"
+          echo "  Current YAML: ${{ steps.current.outputs.mc_bioinfo }}"
+          echo "  Container:    ${{ steps.container.outputs.mc_bioinfo }}"
+          if [ "${{ steps.current.outputs.mc_bioinfo }}" != "${{ steps.container.outputs.mc_bioinfo }}" ]; then
+            echo "  ❌ MISMATCH - Container needs to be rebuilt"
+            MISMATCHES=$((MISMATCHES + 1))
+          else
+            echo "  ✅ MATCH"
+          fi
+          echo ""
+
+          echo "rtools.yaml:"
+          echo "  Current YAML: ${{ steps.current.outputs.rtools }}"
+          echo "  Container:    ${{ steps.container.outputs.rtools }}"
+          if [ "${{ steps.current.outputs.rtools }}" != "${{ steps.container.outputs.rtools }}" ]; then
+            echo "  ❌ MISMATCH - Container needs to be rebuilt"
+            MISMATCHES=$((MISMATCHES + 1))
+          else
+            echo "  ✅ MATCH"
+          fi
+          echo ""
+
+          if [ $MISMATCHES -gt 0 ]; then
+            echo "========================================="
+            echo "⚠️  VALIDATION FAILED: $MISMATCHES mismatch(es)"
+            echo "========================================="
+            echo ""
+            echo "The conda environment YAML files have changed since"
+            echo "the container was built. The container needs to be"
+            echo "rebuilt to match the current environment specifications."
+            echo ""
+            echo "This is the same check that Snakemake performs at runtime"
+            echo "to ensure reproducibility."
+            exit 1
+          else
+            echo "========================================="
+            echo "✅ VALIDATION PASSED: All hashes match!"
+            echo "========================================="
+            echo ""
+            echo "Container is up-to-date with current YAML files."
+            echo "Snakemake will be able to use this container without"
+            echo "detecting any environment mismatches."
+          fi

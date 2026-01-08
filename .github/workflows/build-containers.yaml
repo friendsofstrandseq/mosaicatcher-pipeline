@@ -67,6 +67,24 @@ jobs:
               scNOVA=False \
             --containerize 2>&1 | sed -n '/^FROM condaforge/,$p' > workflow/containers/Dockerfile.base
 
+      - name: Add conda env hash labels to Dockerfile.base
+        if: steps.cache-dockerfile.outputs.cache-hit != 'true'
+        run: |
+          # Calculate individual conda env hashes
+          MC_BASE_HASH=$(md5sum workflow/envs/mc_base.yaml | cut -d' ' -f1)
+          MC_BIOINFO_HASH=$(md5sum workflow/envs/mc_bioinfo_tools.yaml | cut -d' ' -f1)
+          RTOOLS_HASH=$(md5sum workflow/envs/rtools.yaml | cut -d' ' -f1)
+
+          echo "Conda environment hashes:"
+          echo "  mc_base.yaml: $MC_BASE_HASH"
+          echo "  mc_bioinfo_tools.yaml: $MC_BIOINFO_HASH"
+          echo "  rtools.yaml: $RTOOLS_HASH"
+
+          # Insert labels after the existing description label
+          sed -i "/org.opencontainers.image.description=/a LABEL conda.env.mc_base.hash=\"$MC_BASE_HASH\"" workflow/containers/Dockerfile.base
+          sed -i "/conda.env.mc_base.hash=/a LABEL conda.env.mc_bioinfo_tools.hash=\"$MC_BIOINFO_HASH\"" workflow/containers/Dockerfile.base
+          sed -i "/conda.env.mc_bioinfo_tools.hash=/a LABEL conda.env.rtools.hash=\"$RTOOLS_HASH\"" workflow/containers/Dockerfile.base
+
       - name: Verify Dockerfile.base
         run: |
           echo "Dockerfile.base size: $(wc -l < workflow/containers/Dockerfile.base) lines"
@@ -227,8 +245,8 @@ jobs:
         run: |
           docker manifest inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.assembly }}-${{ steps.version.outputs.VERSION }}
 
-  validate-conda-environments:
-    name: Validate Conda Environments in Container
+  validate-conda-hashes:
+    name: Validate Conda Environment Hashes
     needs: build-assembly-images
     runs-on: ubuntu-latest
     permissions:
