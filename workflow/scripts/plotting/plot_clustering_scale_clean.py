@@ -106,7 +106,7 @@ binbed["end"] = binbed["end"].astype(int)
 
 binbed["ID"] = binbed["chrom"] + "_" + binbed["start"].astype(str) + "_" + binbed["end"].astype(str)
 
-# Use chromosomes from config
+# Get chromosome list from config
 cats = snakemake.config["chromosomes"]
 
 # Turn chrom into categorical

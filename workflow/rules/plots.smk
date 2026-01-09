@@ -23,17 +23,12 @@ if config["ashleys_pipeline"] is False:
             ),
         log:
             "{folder}/log/plot_mosaic_counts/{sample}.log",
-        params:
-            mouse_assembly=True if get_common_name() == "mouse" else False,
         conda:
             "../envs/rtools.yaml"
         resources:
             mem_mb=get_mem_mb,
-            runtime=600,
-        shell:
-            """
-            LC_CTYPE=C Rscript workflow/scripts/plotting/qc.R {input.counts} {input.info} {output} > {log} 2>&1
-            """
+        script:
+            "../scripts/plotting/qc.R"
 
 
 rule divide_pdf:
@@ -222,6 +217,8 @@ rule plot_SV_calls:
         "../envs/rtools.yaml"
     resources:
         mem_mb=get_mem_mb,
+    params:
+        chromosomes=lambda wc: ",".join(config["chromosomes"]),
     shell:
         """
         Rscript workflow/scripts/plotting/plot-sv-calls.R \
@@ -231,6 +228,7 @@ rule plot_SV_calls:
             complex={input.complex_calls} \
             groups={input.grouptrack} \
             calls={input.calls} \
+            chromosomes={params.chromosomes} \
             {input.counts} \
             {wildcards.chrom} \
             {output} > {log} 2>&1
@@ -268,6 +266,8 @@ rule plot_SV_calls_dev:
         "../envs/rtools.yaml"
     resources:
         mem_mb=get_mem_mb,
+    params:
+        chromosomes=lambda wc: ",".join(config["chromosomes"]),
     shell:
         """
         Rscript workflow/scripts/plotting/plot-sv-calls_dev.R \
@@ -277,6 +277,7 @@ rule plot_SV_calls_dev:
             complex={input.complex_calls} \
             groups={input.grouptrack} \
             calls={input.calls} \
+            chromosomes={params.chromosomes} \
             {input.counts} \
             {wildcards.chrom} \
             {output} > {log} 2>&1

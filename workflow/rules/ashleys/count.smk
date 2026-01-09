@@ -97,13 +97,9 @@ rule ashleys_plot_mosaic_counts:
         ),
     log:
         "{folder}/log/plot_mosaic_counts/{sample}.log",
-    params:
-        mouse_assembly=True if get_common_name() == "mouse" else False,
     conda:
         "../../envs/rtools.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
-    shell:
-        """
-        LC_CTYPE=C Rscript workflow/scripts/plotting/qc.R {input.counts} {input.info} {output}  > {log} 2>&1
-        """
+    script:
+        "../../scripts/plotting/qc.R"

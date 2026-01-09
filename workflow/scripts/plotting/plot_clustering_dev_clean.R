@@ -14,7 +14,7 @@ library(tidyr)
 # pdf("TEST_R_dev.pdf", width = 20, height = 10)
 pdf(snakemake@output[["pdf"]], width = 20, height = 10)
 
-# Chromosome order from config
+# Chromosome order - get from config
 chrOrder <- snakemake@config[["chromosomes"]]
 # Load SV data
 
