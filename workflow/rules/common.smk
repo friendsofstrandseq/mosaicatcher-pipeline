@@ -102,6 +102,140 @@ exclude = [
 ]
 
 
+# ========================================
+# Genome Registry Helper Functions
+# ========================================
+
+def get_genome_metadata(key=None):
+    """
+    Get metadata for the current reference genome.
+
+    Args:
+        key: Specific metadata field to retrieve (optional)
+    Returns:
+        Full metadata dict if key=None, else specific value
+    """
+    ref = config["reference"]
+    if ref not in config["references_data"]:
+        raise ValueError(f"Reference genome '{ref}' not found in references_data configuration")
+
+    metadata = config["references_data"][ref]
+
+    if key is None:
+        return metadata
+    elif key in metadata:
+        return metadata[key]
+    else:
+        raise KeyError(f"Metadata key '{key}' not found for reference '{ref}'")
+
+
+def get_species():
+    """Get species name for current genome (e.g., 'Hsapiens', 'Mmusculus')"""
+    return get_genome_metadata("species")
+
+
+def get_common_name():
+    """Get common species name (e.g., 'human', 'mouse', 'dog')"""
+    return get_genome_metadata("common_name")
+
+
+def get_chromosomes():
+    """
+    Get chromosome list for current genome.
+    Respects user-defined chromosomes or uses default from metadata.
+    """
+    # If user specified custom chromosomes, use those
+    user_chroms = config.get("chromosomes", None)
+    default_chroms = get_genome_metadata("chromosomes")
+
+    # Check if user_chroms matches default (unmodified)
+    if user_chroms and user_chroms != default_chroms:
+        return user_chroms
+    else:
+        return default_chroms
+
+
+def get_bin_bed_file():
+    """Get bin BED file path for current genome"""
+    return get_genome_metadata("bin_bed_file")
+
+
+def get_gc_matrix_file():
+    """Get GC matrix file path for current genome"""
+    return get_genome_metadata("gc_matrix_file")
+
+
+def supports_module(module_name):
+    """
+    Check if current genome supports a specific module.
+
+    Args:
+        module_name: One of 'scnova', 'hgsvc_normalization', 'arbigent', 'multistep_normalization'
+    Returns:
+        bool: True if module is supported
+    """
+    key = f"supports_{module_name}"
+    return get_genome_metadata(key)
+
+
+def get_chromosome_display_string():
+    """Get formatted chromosome string for display (e.g., 'chr1..22,chrX,chrY')"""
+    pattern = get_genome_metadata("chromosome_pattern")
+    return pattern
+
+
+def validate_genome_metadata():
+    """
+    Validate that current genome has all required metadata fields.
+    Called during pipeline startup.
+    """
+    required_fields = [
+        "reference_fasta",
+        "R_reference",
+        "species",
+        "common_name",
+        "chromosome_count",
+        "chromosomes",
+        "bin_bed_file",
+        "gc_matrix_file",
+        "supports_scnova",
+        "supports_hgsvc_normalization",
+        "supports_arbigent",
+        "supports_multistep_normalization",
+    ]
+
+    ref = config["reference"]
+    metadata = config["references_data"][ref]
+
+    missing = [f for f in required_fields if f not in metadata]
+    if missing:
+        raise ValueError(
+            f"Genome '{ref}' is missing required metadata fields: {', '.join(missing)}\n"
+            f"Please update references_data in config.yaml"
+        )
+
+    # Validate chromosome list matches count
+    chrom_count = len(metadata["chromosomes"])
+    expected = metadata["chromosome_count"]
+    if chrom_count != expected:
+        raise ValueError(
+            f"Genome '{ref}' chromosome count mismatch: "
+            f"found {chrom_count} chromosomes but metadata specifies {expected}"
+        )
+
+
+# ========================================
+# Genome Registry Initialization
+# ========================================
+
+# Validate genome metadata on startup
+validate_genome_metadata()
+
+# Set chromosomes from genome metadata if not already set by user
+if "chromosomes" not in config or not config["chromosomes"]:
+    config["chromosomes"] = get_chromosomes()
+
+
 if config["chromosomes_to_exclude"]:
     chroms_init = config["chromosomes"]
     chroms = [e for e in chroms_init if e not in config["chromosomes_to_exclude"]]
