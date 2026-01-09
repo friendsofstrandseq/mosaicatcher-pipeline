@@ -15,33 +15,7 @@ if config["ashleys_pipeline"] is False:
         conda:
             "../envs/mc_base.yaml"
         params:
-            chroms=(
-                config["chromosomes"]
-                if config["reference"] not in ["mm10", "mm39"]
-                else [
-                    "chr1",
-                    "chr2",
-                    "chr3",
-                    "chr4",
-                    "chr5",
-                    "chr6",
-                    "chr7",
-                    "chr8",
-                    "chr9",
-                    "chr10",
-                    "chr11",
-                    "chr12",
-                    "chr13",
-                    "chr14",
-                    "chr15",
-                    "chr16",
-                    "chr17",
-                    "chr18",
-                    "chr19",
-                    "chrX",
-                    "chrY",
-                ]
-            ),
+            chroms=config["chromosomes"],
         script:
             "../scripts/utils/generate_exclude_file.py"
 
@@ -217,7 +191,7 @@ checkpoint filter_bad_cells_from_mosaic_count:
 if (
     config["hgsvc_based_normalized_counts"] is True
     and (config["window"] in [50000, 100000, 200000])
-    and (config["reference"] == "hg38")
+    and supports_module("hgsvc_normalization")
 ):
 
     rule merge_blacklist_bins_for_norm:
