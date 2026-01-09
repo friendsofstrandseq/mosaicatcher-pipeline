@@ -82,38 +82,257 @@ reference: "hg38"
 # Reference assemblies data
 references_data:
   "hg38":
+    # Existing fields
     reference_fasta: "workflow/data/ref_genomes/hg38.fa"
     R_reference: "BSgenome.Hsapiens.UCSC.hg38"
     segdups: "workflow/data/segdups/segDups_hg38_UCSCtrack.bed.gz"
     snv_sites_to_genotype: []
     reference_file_location: https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/analysisSet/hg38.analysisSet.fa.gz
 
+    # Genome metadata
+    species: "Hsapiens"
+    common_name: "human"
+    chromosome_count: 24
+    chromosome_pattern: "chr1..22,chrX,chrY"
+    chromosomes:
+      - chr1
+      - chr2
+      - chr3
+      - chr4
+      - chr5
+      - chr6
+      - chr7
+      - chr8
+      - chr9
+      - chr10
+      - chr11
+      - chr12
+      - chr13
+      - chr14
+      - chr15
+      - chr16
+      - chr17
+      - chr18
+      - chr19
+      - chr20
+      - chr21
+      - chr22
+      - chrX
+      - chrY
+
+    # Genome-specific data files
+    bin_bed_file: "workflow/data/bin_200kb_all.bed"
+    gc_matrix_file: "workflow/data/GC/hg38.GC_matrix.txt.gz"
+
+    # Module compatibility flags
+    supports_scnova: true
+    supports_hgsvc_normalization: true
+    supports_arbigent: true
+    supports_multistep_normalization: true
+
+    # Custom BSgenome tarball (null if using standard BioConductor package)
+    custom_bsgenome_tarball: null
+
   "hg19":
+    # Existing fields
     reference_fasta: "workflow/data/ref_genomes/hg19.fa"
     R_reference: "BSgenome.Hsapiens.UCSC.hg19"
     segdups: "workflow/data/segdups/segDups_hg19_UCSCtrack.bed.gz"
     snv_sites_to_genotype: []
     # snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/ALL.chr1-22plusXY_hg19_sites.20170504.renamedCHR.vcf.gz"
     reference_file_location: https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/analysisSet/hg19.p13.plusMT.no_alt_analysis_set.fa.gz
+
+    # Genome metadata
+    species: "Hsapiens"
+    common_name: "human"
+    chromosome_count: 24
+    chromosome_pattern: "chr1..22,chrX,chrY"
+    chromosomes:
+      - chr1
+      - chr2
+      - chr3
+      - chr4
+      - chr5
+      - chr6
+      - chr7
+      - chr8
+      - chr9
+      - chr10
+      - chr11
+      - chr12
+      - chr13
+      - chr14
+      - chr15
+      - chr16
+      - chr17
+      - chr18
+      - chr19
+      - chr20
+      - chr21
+      - chr22
+      - chrX
+      - chrY
+
+    # Genome-specific data files
+    bin_bed_file: "workflow/data/bin_200kb_all.bed"
+    gc_matrix_file: "workflow/data/GC/hg19.GC_matrix.txt.gz"
+
+    # Module compatibility flags
+    supports_scnova: true
+    supports_hgsvc_normalization: false
+    supports_arbigent: true
+    supports_multistep_normalization: true
+
+    # Custom BSgenome tarball (null if using standard BioConductor package)
+    custom_bsgenome_tarball: null
   "T2T":
+    # Existing fields
     reference_fasta: "workflow/data/ref_genomes/T2T.fa"
     R_reference: "BSgenome.T2T.CHM13.V2"
     # R_reference_tarball: "/g/korbel2/weber/MosaiCatcher_files/EXTERNAL_DATA/R_reference//BSgenome.T2T.CHM13.V2_1.0.0.tar.gz"
     segdups: "workflow/data/segdups/segDups_T2T_UCSCtrack.bed.gz"
     snv_sites_to_genotype: []
     reference_file_location: https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/CHM13/assemblies/analysis_set/chm13v2.0.fa.gz
+
+    # Genome metadata
+    species: "Hsapiens"
+    common_name: "human"
+    chromosome_count: 24
+    chromosome_pattern: "chr1..22,chrX,chrY"
+    chromosomes:
+      - chr1
+      - chr2
+      - chr3
+      - chr4
+      - chr5
+      - chr6
+      - chr7
+      - chr8
+      - chr9
+      - chr10
+      - chr11
+      - chr12
+      - chr13
+      - chr14
+      - chr15
+      - chr16
+      - chr17
+      - chr18
+      - chr19
+      - chr20
+      - chr21
+      - chr22
+      - chrX
+      - chrY
+
+    # Genome-specific data files
+    bin_bed_file: "workflow/data/bin_200kb_all.bed"
+    gc_matrix_file: "workflow/data/GC/T2T.GC_matrix.txt.gz"
+
+    # Module compatibility flags
+    supports_scnova: true
+    supports_hgsvc_normalization: false
+    supports_arbigent: true
+    supports_multistep_normalization: true
+
+    # Custom BSgenome tarball (null if using standard BioConductor package)
+    custom_bsgenome_tarball: null
   "mm10":
+    # Existing fields
     reference_fasta: "workflow/data/ref_genomes/mm10.fa"
     R_reference: "BSgenome.Mmusculus.UCSC.mm10"
     segdups: "workflow/data/segdups/segDups_mm10_UCSCtrack.bed.gz"
     snv_sites_to_genotype: []
     reference_file_location: https://hgdownload.soe.ucsc.edu/goldenPath/mm10/bigZips/mm10.fa.gz
+
+    # Genome metadata
+    species: "Mmusculus"
+    common_name: "mouse"
+    chromosome_count: 21
+    chromosome_pattern: "chr1..19,chrX,chrY"
+    chromosomes:
+      - chr1
+      - chr2
+      - chr3
+      - chr4
+      - chr5
+      - chr6
+      - chr7
+      - chr8
+      - chr9
+      - chr10
+      - chr11
+      - chr12
+      - chr13
+      - chr14
+      - chr15
+      - chr16
+      - chr17
+      - chr18
+      - chr19
+      - chrX
+      - chrY
+
+    # Genome-specific data files
+    bin_bed_file: "workflow/data/mm10.bin_200kb_all.bed"
+    gc_matrix_file: "workflow/data/GC/mm10.GC_matrix.txt.gz"
+
+    # Module compatibility flags
+    supports_scnova: false
+    supports_hgsvc_normalization: false
+    supports_arbigent: true
+    supports_multistep_normalization: true
+
+    # Custom BSgenome tarball (null if using standard BioConductor package)
+    custom_bsgenome_tarball: null
   "mm39":
+    # Existing fields
     reference_fasta: "workflow/data/ref_genomes/mm39.fa"
     R_reference: "BSgenome.Mmusculus.UCSC.mm39"
     segdups: ""  # mm39 has no genomicSuperDups track on UCSC, only tandemDups
     snv_sites_to_genotype: []
     reference_file_location: https://hgdownload.soe.ucsc.edu/goldenPath/mm39/bigZips/mm39.fa.gz
+
+    # Genome metadata
+    species: "Mmusculus"
+    common_name: "mouse"
+    chromosome_count: 21
+    chromosome_pattern: "chr1..19,chrX,chrY"
+    chromosomes:
+      - chr1
+      - chr2
+      - chr3
+      - chr4
+      - chr5
+      - chr6
+      - chr7
+      - chr8
+      - chr9
+      - chr10
+      - chr11
+      - chr12
+      - chr13
+      - chr14
+      - chr15
+      - chr16
+      - chr17
+      - chr18
+      - chr19
+      - chrX
+      - chrY
+
+    # Genome-specific data files
+    bin_bed_file: "workflow/data/mm10.bin_200kb_all.bed"
+    gc_matrix_file: "workflow/data/GC/mm39.GC_matrix.txt.gz"
+
+    # Module compatibility flags
+    supports_scnova: false
+    supports_hgsvc_normalization: false
+    supports_arbigent: true
+    supports_multistep_normalization: true
+
+    # Custom BSgenome tarball (null if using standard BioConductor package)
+    custom_bsgenome_tarball: null
 
 # List of chromosomes to process
 chromosomes:
