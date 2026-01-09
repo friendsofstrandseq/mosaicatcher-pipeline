@@ -18,7 +18,7 @@ library(RColorBrewer) %>% invisible()
 ################################################################################
 
 zcat_command <- "zcat"
-# FIXME : tmp solution
+# Default chromosome list (will be overridden by chromosomes= parameter if provided)
 chroms <- c("chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9", "chr10", "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17", "chr18", "chr19", "chr20", "chr21", "chr22", "chrX")
 
 format_Mb <- function(x) {
@@ -122,8 +122,8 @@ cells_per_page <- 8
 show_none <- T
 
 if (length(args) > 3) {
-  if (!all(grepl("^(strand|calls|segments|per-page|truth|no-none|complex|singlecellsegments|groups)=?", args[1:(length(args) - 3)]))) {
-    print_usage_and_stop("[Error]: Options must be one of `calls`, `segments`, `per-page`, or `truth`")
+  if (!all(grepl("^(strand|calls|segments|per-page|truth|no-none|complex|singlecellsegments|groups|chromosomes)=?", args[1:(length(args) - 3)]))) {
+    print_usage_and_stop("[Error]: Options must be one of `calls`, `segments`, `per-page`, `truth`, `chromosomes`, etc.")
   }
   for (op in args[1:(length(args) - 3)]) {
     if (grepl("^segments=", op)) f_segments <- str_sub(op, 10)
@@ -139,6 +139,10 @@ if (length(args) > 3) {
     if (grepl("^complex=", op)) f_complex <- str_sub(op, 9)
     if (grepl("^groups=", op)) f_groups <- str_sub(op, 8)
     if (grepl("^singlecellsegments=", op)) f_scsegments <- str_sub(op, 20)
+    if (grepl("^chromosomes=", op)) {
+      chrom_string <- str_sub(op, 13)
+      chroms <- unlist(strsplit(chrom_string, ","))
+    }
     if (grepl("^no-none$", op)) show_none <- F
   }
 }

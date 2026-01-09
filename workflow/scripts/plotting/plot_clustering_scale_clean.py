@@ -80,11 +80,8 @@ binbed = pd.read_csv(
 
 binbed["ID"] = binbed["chrom"] + "_" + binbed["start"].astype(str) + "_" + binbed["end"].astype(str)
 
-cats = (
-    ["chr{}".format(e) for e in range(1, 23)] + ["chrX", "chrY"]
-    if snakemake.config["reference"] != "mm10"
-    else ["chr{}".format(e) for e in range(1, 20)] + ["chrX", "chrY"]
-)
+# Get chromosome list from config
+cats = snakemake.config["chromosomes"]
 
 # Turn chrom into categorical
 binbed["chrom"] = pd.Categorical(

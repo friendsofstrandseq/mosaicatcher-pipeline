@@ -36,7 +36,7 @@ library(ggnewscale)
 ################################################################################
 
 # zcat_command <- "zcat"
-# FIXME : tmp solution
+# Default chromosome list (will be overridden by chromosomes= parameter if provided)
 chroms <-
   c(
     "chr1",
@@ -222,11 +222,11 @@ show_none <- T
 if (length(args) > 3) {
   if (!all(
     grepl(
-      "^(strand|calls|segments|per-page|truth|no-none|complex|singlecellsegments|groups)=?",
+      "^(strand|calls|segments|per-page|truth|no-none|complex|singlecellsegments|groups|chromosomes)=?",
       args[1:(length(args) - 3)]
     )
   )) {
-    print_usage_and_stop("[Error]: Options must be one of `calls`, `segments`, `per-page`, or `truth`")
+    print_usage_and_stop("[Error]: Options must be one of `calls`, `segments`, `per-page`, `truth`, `chromosomes`, etc.")
   }
   for (op in args[1:(length(args) - 3)]) {
     if (grepl("^segments=", op)) {
@@ -255,6 +255,10 @@ if (length(args) > 3) {
     }
     if (grepl("^singlecellsegments=", op)) {
       f_scsegments <- str_sub(op, 20)
+    }
+    if (grepl("^chromosomes=", op)) {
+      chrom_string <- str_sub(op, 13)
+      chroms <- unlist(strsplit(chrom_string, ","))
     }
     if (grepl("^no-none$", op)) {
       show_none <- F

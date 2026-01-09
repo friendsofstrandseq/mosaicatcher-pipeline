@@ -14,15 +14,23 @@ suppressMessages(library(cowplot))
 add_overview_plot <- T
 
 
-args <- commandArgs(trailingOnly = T)
-print(args)
-if (length(args) < 2 || length(args) > 4 || !grepl("\\.pdf$", args[length(args)]) || any(!file.exists(args[1:(length(args) - 1)]))) {
-    warning("Usage: Rscript R/qc.R input-file [SCE-file] [cell-info-file] output-pdf")
-    quit(status = 1)
+# Get inputs from Snakemake (when run via script: directive)
+# Falls back to commandArgs for standalone execution
+if (exists("snakemake")) {
+    f_in <- snakemake@input[[1]]
+    info <- snakemake@input[[2]]
+    pdf_out <- snakemake@output[[1]]
+} else {
+    args <- commandArgs(trailingOnly = T)
+    print(args)
+    if (length(args) < 2 || length(args) > 4 || !grepl("\\.pdf$", args[length(args)]) || any(!file.exists(args[1:(length(args) - 1)]))) {
+        warning("Usage: Rscript R/qc.R input-file [SCE-file] [cell-info-file] output-pdf")
+        quit(status = 1)
+    }
+    f_in <- args[1]
+    info <- args[2]
+    pdf_out <- args[3]
 }
-f_in <- args[1]
-info <- args[2]
-pdf_out <- args[3]
 
 
 
@@ -76,14 +84,22 @@ if (substr(f_in, nchar(f_in) - 2, nchar(f_in)) == ".gz") {
     f_in <- paste(zcat_command, f_in)
 }
 
-# Read counts & filter chromosomes (this is human-specific)
+# Read counts & filter chromosomes
 d <- fread(f_in)
 print(d)
-mouse_bool <- any(d$chrom == "chr22")
-if (mouse_bool == FALSE) {
-    chrom_levels <- as.character(c(1:19, "X", "Y"))
+
+# Get chromosome levels from Snakemake config or auto-detect from data
+if (exists("snakemake")) {
+    # Use chromosomes from config, strip "chr" prefix
+    chrom_levels <- sub("^chr", "", snakemake@config[["chromosomes"]])
 } else {
-    chrom_levels <- as.character(c(1:22, "X", "Y"))
+    # Fallback: auto-detect from data for standalone execution
+    mouse_bool <- any(d$chrom == "chr22")
+    if (mouse_bool == FALSE) {
+        chrom_levels <- as.character(c(1:19, "X", "Y"))
+    } else {
+        chrom_levels <- as.character(c(1:22, "X", "Y"))
+    }
 }
 print(chrom_levels)
 
