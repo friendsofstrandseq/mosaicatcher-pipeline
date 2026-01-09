@@ -270,7 +270,7 @@ rule plot_SV_calls_dev:
         chromosomes=lambda wc: ",".join(config["chromosomes"]),
     shell:
         """
-        Rscript workflow/scripts/plotting/plot-sv-calls_dev.R \
+        Rscript workflow/scripts/plotting/plot-sv-calls.R \
             segments={input.segments} \
             singlecellsegments={input.scsegments} \
             strand={input.strand} \

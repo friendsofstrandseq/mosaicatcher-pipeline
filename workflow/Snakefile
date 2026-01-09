@@ -30,6 +30,14 @@ if config["ashleys_pipeline"] is True:
     include: "rules/ashleys/qc.smk"
     include: "rules/ashleys/multiqc.smk"
 
+    localrules:
+        ashleys_genecore_symlink,
+
+else:
+
+    localrules:
+        symlink_selected_bam,
+
 
 include: "rules/common.smk"
 include: "rules/aggregate_fct.smk"

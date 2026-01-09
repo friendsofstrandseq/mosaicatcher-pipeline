@@ -33,7 +33,7 @@ if config["genecore"] is True and config["genecore_date_folder"]:
 
 rule ashleys_bwa_index:
     input:
-        ancient(config["references_data"][config["reference"]]["reference_fasta"]),
+        fasta=ancient(config["references_data"][config["reference"]]["reference_fasta"]),
     output:
         idx=multiext(
             config["references_data"][config["reference"]]["reference_fasta"],
@@ -47,19 +47,20 @@ rule ashleys_bwa_index:
         "{}.log".format(
             config["references_data"][config["reference"]]["reference_fasta"]
         ),
+    conda:
+        "../../envs/mc_base.yaml"
+    cache: True
     params:
         algorithm="bwtsw",
         prefix=config["references_data"][config["reference"]]["reference_fasta"],
     threads: 16
     resources:
         mem_mb=get_mem_mb_heavy,
-        runtime=600,
-    conda:
-        "../../envs/mc_bioinfo_tools.yaml"
-    envmodules:
-        "BWA/0.7.19-GCCcore-14.2.0",
+        time="10:00:00",
     shell:
-        "bwa index -a {params.algorithm} -p {params.prefix} {input} 2> {log}"
+        """
+        bwa index -a {params.algorithm} {input.fasta} > {log} 2>&1
+        """
 
 
 ruleorder: ashleys_bwa_strandseq_to_reference_alignment > ashleys_samtools_sort_bam > ashleys_mark_duplicates

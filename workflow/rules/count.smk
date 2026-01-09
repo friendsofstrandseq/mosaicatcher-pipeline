@@ -81,55 +81,55 @@ rule populate_counts:
     script:
         "../scripts/utils/populated_counts_for_qc_plot.py"
 
+if not config["ashleys_pipeline"]:
 
-if config["input_bam_legacy"] is True:
+    if config["input_bam_legacy"]:
 
-    rule selected_cells:
+        rule selected_cells:
+            input:
+                path=ancient("{folder}/{sample}"),
+            output:
+                "{folder}/{sample}/cell_selection/labels.tsv",
+            log:
+                "{folder}/log/{sample}/selected_cells/labels.log",
+            conda:
+                "../envs/mc_base.yaml"
+            script:
+                "../scripts/utils/handle_input_old_behavior.py"
+
+    else:
+
+        rule touch_labels:
+            # input:
+            #     info_raw="{folder}/{sample}/counts/{sample}.info_raw",
+            output:
+                "{folder}/{sample}/cell_selection/labels.tsv",
+            log:
+                "{folder}/log/{sample}/touch_labels/labels.log",
+            conda:
+                "../envs/mc_base.yaml"
+            shell:
+                """
+                # Create the output file
+                echo 'cell\tprobability\tprediction' > {output}
+                # # Process table and append to the output
+                # tail -n+15 {{input.info_raw}} | \
+                # awk '{{print $2".sort.mdup.bam\t"$10"\t"$10}}' >> {output}
+                # cat {output}
+                """
+
+
+    rule copy_labels:
         input:
-            path=ancient("{folder}/{sample}"),
+            select_labels,
         output:
-            "{folder}/{sample}/cell_selection/labels.tsv",
+            "{folder}/{sample}/config/labels.tsv",
         log:
-            "{folder}/log/{sample}/selected_cells/labels.log",
-        conda:
-            "../envs/mc_base.yaml"
-        script:
-            "../scripts/utils/handle_input_old_behavior.py"
-
-else:
-
-    rule touch_labels:
-        # input:
-        #     info_raw="{folder}/{sample}/counts/{sample}.info_raw",
-        output:
-            "{folder}/{sample}/cell_selection/labels.tsv",
-        log:
-            "{folder}/log/{sample}/touch_labels/labels.log",
+            "{folder}/log/copy_labels/{sample}.log",
         conda:
             "../envs/mc_base.yaml"
         shell:
-            """
-            # Create the output file
-            echo 'cell\tprobability\tprediction' > {output}
-            # # Process table and append to the output
-            # tail -n+15 {{input.info_raw}} | \
-            # awk '{{print $2".sort.mdup.bam\t"$10"\t"$10}}' >> {output}
-            # cat {output}
-            """
-
-
-rule copy_labels:
-    localrule: True
-    input:
-        select_labels,
-    output:
-        "{folder}/{sample}/config/labels.tsv",
-    log:
-        "{folder}/log/copy_labels/{sample}.log",
-    conda:
-        "../envs/mc_base.yaml"
-    shell:
-        "cp {input} {output}"
+            "cp {input} {output}"
 
 
 rule symlink_selected_bam:
