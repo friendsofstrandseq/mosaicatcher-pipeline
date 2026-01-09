@@ -140,6 +140,110 @@ rule download_mm39_reference:
         """
 
 
+rule download_canFam3_reference:
+    input:
+        storage.http(
+            "https://hgdownload.soe.ucsc.edu/goldenPath/canFam3/bigZips/canFam3.fa.gz",
+            keep_local=True,
+        ),
+    output:
+        "workflow/data/ref_genomes/canFam3.fa",
+    log:
+        "workflow/data/ref_genomes/log/canFam3.ok",
+    conda:
+        "../envs/mc_base.yaml"
+    shell:
+        """
+        directory="workflow/data/ref_genomes/"
+        mkdir -p "$directory"
+        mv {input} workflow/data/ref_genomes/canFam3.fa.gz
+        gunzip workflow/data/ref_genomes/canFam3.fa.gz
+        """
+
+
+rule download_canFam4_reference:
+    input:
+        storage.http(
+            "https://hgdownload.soe.ucsc.edu/goldenPath/canFam4/bigZips/canFam4.fa.gz",
+            keep_local=True,
+        ),
+    output:
+        "workflow/data/ref_genomes/canFam4.fa",
+    log:
+        "workflow/data/ref_genomes/log/canFam4.ok",
+    conda:
+        "../envs/mc_base.yaml"
+    shell:
+        """
+        directory="workflow/data/ref_genomes/"
+        mkdir -p "$directory"
+        mv {input} workflow/data/ref_genomes/canFam4.fa.gz
+        gunzip workflow/data/ref_genomes/canFam4.fa.gz
+        """
+
+
+rule generate_canFam3_bin_bed:
+    input:
+        fasta="workflow/data/ref_genomes/canFam3.fa",
+    output:
+        bed="workflow/data/canFam3.bin_200kb_all.bed",
+    log:
+        "workflow/data/log/canFam3_bin_bed.log",
+    conda:
+        "../envs/mc_base.yaml"
+    shell:
+        """
+        bash workflow/scripts/utils/generate_bin_bed.sh {input.fasta} {output.bed} 200000 > {log} 2>&1
+        """
+
+
+rule generate_canFam4_bin_bed:
+    input:
+        fasta="workflow/data/ref_genomes/canFam4.fa",
+    output:
+        bed="workflow/data/canFam4.bin_200kb_all.bed",
+    log:
+        "workflow/data/log/canFam4_bin_bed.log",
+    conda:
+        "../envs/mc_base.yaml"
+    shell:
+        """
+        bash workflow/scripts/utils/generate_bin_bed.sh {input.fasta} {output.bed} 200000 > {log} 2>&1
+        """
+
+
+rule generate_canFam3_gc_matrix:
+    input:
+        fasta="workflow/data/ref_genomes/canFam3.fa",
+        bin_bed="workflow/data/canFam3.bin_200kb_all.bed",
+    output:
+        gc_matrix="workflow/data/GC/canFam3.GC_matrix.txt.gz",
+    log:
+        "workflow/data/log/canFam3_gc_matrix.log",
+    conda:
+        "../envs/mc_base.yaml"
+    shell:
+        """
+        python workflow/scripts/utils/generate_gc_matrix.py {input.bin_bed} {input.fasta} {output.gc_matrix} > {log} 2>&1
+        """
+
+
+rule generate_canFam4_gc_matrix:
+    input:
+        fasta="workflow/data/ref_genomes/canFam4.fa",
+        bin_bed="workflow/data/canFam4.bin_200kb_all.bed",
+    output:
+        gc_matrix="workflow/data/GC/canFam4.GC_matrix.txt.gz",
+    log:
+        "workflow/data/log/canFam4_gc_matrix.log",
+    conda:
+        "../envs/mc_base.yaml"
+    shell:
+        """
+        python workflow/scripts/utils/generate_gc_matrix.py {input.bin_bed} {input.fasta} {output.gc_matrix} > {log} 2>&1
+        """
+
+
 rule download_T2T_tarball:
     localrule: True
     input:

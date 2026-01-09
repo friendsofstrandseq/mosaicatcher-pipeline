@@ -7,6 +7,7 @@ plot.clustering(
     inputfile = snakemake@input[["sv_calls"]],
     bin.bed.filename = snakemake@input[["binbed"]],
     position.outputfile = snakemake@output[["position"]],
+    chromosomes = snakemake@config[["chromosomes"]]
 )
 # chromosome.outputfile <- snakemake@output[["chromosome"]]
 

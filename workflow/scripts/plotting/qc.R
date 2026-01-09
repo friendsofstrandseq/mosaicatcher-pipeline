@@ -86,14 +86,28 @@ if (substr(f_in, nchar(f_in) - 2, nchar(f_in)) == ".gz") {
 
 # Read counts & filter chromosomes
 d <- fread(f_in)
-print(d)
 
-# Get chromosome levels from Snakemake config or auto-detect from data
+# Get chromosome levels from Snakemake config, command line args, or auto-detect
+chrom_levels <- NULL
+
 if (exists("snakemake")) {
-    # Use chromosomes from config, strip "chr" prefix
-    chrom_levels <- sub("^chr", "", snakemake@config[["chromosomes"]])
+    if (!is.null(snakemake@config[["chromosomes"]])) {
+        chrom_levels <- snakemake@config[["chromosomes"]]
+    }
+} else {
+    # Check if chromosomes= was passed in command line
+    chrom_arg <- grep("^chromosomes=", args, value = TRUE)
+    if (length(chrom_arg) > 0) {
+        chrom_levels <- unlist(strsplit(sub("^chromosomes=", "", chrom_arg[length(chrom_arg)]), ","))
+    }
+}
+
+if (!is.null(chrom_levels)) {
+    # Normalize chromosome names (remove "chr" if present, to match data cleaning later)
+    chrom_levels <- sub("^chr", "", chrom_levels)
 } else {
     # Fallback: auto-detect from data for standalone execution
+    # This logic is kept for backward compatibility but is unreliable for non-human/mouse organisms
     mouse_bool <- any(d$chrom == "chr22")
     if (mouse_bool == FALSE) {
         chrom_levels <- as.character(c(1:19, "X", "Y"))

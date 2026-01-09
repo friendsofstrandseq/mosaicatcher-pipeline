@@ -1,121 +1,121 @@
-if config["ashleys_pipeline"] is False:
 
-    rule generate_exclude_file_for_mosaic_count:
+rule generate_exclude_file_for_mosaic_count:
+    input:
+        bam=lambda wc: expand(
+            "{folder}/{sample}/bam/{cell}.sort.mdup.bam",
+            folder=config["data_location"],
+            sample=wc.sample,
+            cell=cell_per_sample[str(wc.sample)],
+        ),
+    output:
+        excl="{folder}/{sample}/config/chroms_to_exclude.txt",
+    log:
+        "{folder}/log/config/{sample}/exclude_file.log",
+    conda:
+        "../envs/mc_base.yaml"
+    params:
+        chroms=config["chromosomes"],
+    script:
+        "../scripts/utils/generate_exclude_file.py"
+
+
+checkpoint mosaic_count:
+    input:
+        bam=lambda wc: expand(
+            "{folder}/{sample}/bam/{cell}.sort.mdup.bam",
+            folder=config["data_location"],
+            sample=wc.sample,
+            cell=bam_per_sample_local[str(wc.sample)],
+        ),
+        bai=lambda wc: expand(
+            "{folder}/{sample}/bam/{cell}.sort.mdup.bam.bai",
+            folder=config["data_location"],
+            sample=wc.sample,
+            cell=bam_per_sample_local[str(wc.sample)],
+        ),
+        excl="{folder}/{sample}/config/chroms_to_exclude.txt",
+        checks=lambda wc: expand(
+            "{folder}/{sample}/checks/{cell}.sm_check.ok",
+            folder=config["data_location"],
+            sample=wc.sample,
+            cell=bam_per_sample_local[str(wc.sample)],
+        ),
+    output:
+        counts="{folder}/{sample}/counts/{sample}.txt.raw.gz",
+        info="{folder}/{sample}/counts/{sample}.info_raw",
+    log:
+        "{folder}/log/counts/{sample}/mosaic_count.log",
+    conda:
+        "../envs/mc_bioinfo_tools.yaml"
+    params:
+        window=config["window"],
+    resources:
+        mem_mb=get_mem_mb_heavy,
+        time="24:00:00",
+    shell:
+        """
+        mosaicatcher count \
+            --verbose \
+            --do-not-blacklist-hmm \
+            -o {output.counts} \
+            -i {output.info} \
+            -x {input.excl} \
+            -w {params.window} \
+            {input.bam} \
+        > {log} 2>&1
+        """
+
+
+rule populate_counts:
+    input:
+        bin_bed=ancient("workflow/data/bin_200kb_all.bed"),
+        counts="{folder}/{sample}/counts/{sample}.txt.raw.gz",
+    output:
+        populated_counts="{folder}/{sample}/counts/{sample}.txt.populated.gz",
+    log:
+        "{folder}/log/plot_mosaic_counts/{sample}.log",
+    conda:
+        "../envs/mc_base.yaml"
+    resources:
+        mem_mb=get_mem_mb,
+    script:
+        "../scripts/utils/populated_counts_for_qc_plot.py"
+
+
+if config["input_bam_legacy"] is True:
+
+    rule selected_cells:
         input:
-            bam=lambda wc: expand(
-                "{folder}/{sample}/bam/{cell}.sort.mdup.bam",
-                folder=config["data_location"],
-                sample=wc.sample,
-                cell=cell_per_sample[str(wc.sample)],
-            ),
+            path=ancient("{folder}/{sample}"),
         output:
-            excl="{folder}/{sample}/config/chroms_to_exclude.txt",
+            "{folder}/{sample}/cell_selection/labels.tsv",
         log:
-            "{folder}/log/config/{sample}/exclude_file.log",
+            "{folder}/log/{sample}/selected_cells/labels.log",
         conda:
             "../envs/mc_base.yaml"
-        params:
-            chroms=config["chromosomes"],
         script:
-            "../scripts/utils/generate_exclude_file.py"
+            "../scripts/utils/handle_input_old_behavior.py"
 
-    checkpoint mosaic_count:
-        input:
-            bam=lambda wc: expand(
-                "{folder}/{sample}/bam/{cell}.sort.mdup.bam",
-                folder=config["data_location"],
-                sample=wc.sample,
-                cell=bam_per_sample_local[str(wc.sample)],
-            ),
-            bai=lambda wc: expand(
-                "{folder}/{sample}/bam/{cell}.sort.mdup.bam.bai",
-                folder=config["data_location"],
-                sample=wc.sample,
-                cell=bam_per_sample_local[str(wc.sample)],
-            ),
-            excl="{folder}/{sample}/config/chroms_to_exclude.txt",
-            checks=lambda wc: expand(
-                "{folder}/{sample}/checks/{cell}.sm_check.ok",
-                folder=config["data_location"],
-                sample=wc.sample,
-                cell=bam_per_sample_local[str(wc.sample)],
-            ),
+else:
+
+    rule touch_labels:
+        # input:
+        #     info_raw="{folder}/{sample}/counts/{sample}.info_raw",
         output:
-            counts="{folder}/{sample}/counts/{sample}.txt.raw.gz",
-            info="{folder}/{sample}/counts/{sample}.info_raw",
+            "{folder}/{sample}/cell_selection/labels.tsv",
         log:
-            "{folder}/log/counts/{sample}/mosaic_count.log",
+            "{folder}/log/{sample}/touch_labels/labels.log",
         conda:
-            "../envs/mc_bioinfo_tools.yaml"
-        params:
-            window=config["window"],
-        resources:
-            mem_mb=get_mem_mb_heavy,
-            runtime=1440,
+            "../envs/mc_base.yaml"
         shell:
             """
-            mosaicatcher count \
-                --verbose \
-                --do-not-blacklist-hmm \
-                -o {output.counts} \
-                -i {output.info} \
-                -x {input.excl} \
-                -w {params.window} \
-                {input.bam} \
-            > {log} 2>&1
+            # Create the output file
+            echo 'cell\tprobability\tprediction' > {output}
+            # # Process table and append to the output
+            # tail -n+15 {{input.info_raw}} | \
+            # awk '{{print $2".sort.mdup.bam\t"$10"\t"$10}}' >> {output}
+            # cat {output}
             """
-
-    rule populate_counts:
-        input:
-            bin_bed=ancient("workflow/data/bin_200kb_all.bed"),
-            counts="{folder}/{sample}/counts/{sample}.txt.raw.gz",
-        output:
-            populated_counts="{folder}/{sample}/counts/{sample}.txt.populated.gz",
-        log:
-            "{folder}/log/plot_mosaic_counts/{sample}.log",
-        conda:
-            "../envs/mc_base.yaml"
-        resources:
-            mem_mb=get_mem_mb,
-            runtime=600,
-        script:
-            "../scripts/utils/populated_counts_for_qc_plot.py"
-
-    if config["input_bam_legacy"] is True:
-
-        rule selected_cells:
-            input:
-                path=ancient("{folder}/{sample}"),
-            output:
-                "{folder}/{sample}/cell_selection/labels.tsv",
-            log:
-                "{folder}/log/{sample}/selected_cells/labels.log",
-            conda:
-                "../envs/mc_base.yaml"
-            script:
-                "../scripts/utils/handle_input_old_behavior.py"
-
-    else:
-
-        rule touch_labels:
-            localrule: True
-            # input:
-            #     info_raw="{folder}/{sample}/counts/{sample}.info_raw",
-            output:
-                "{folder}/{sample}/cell_selection/labels.tsv",
-            log:
-                "{folder}/log/{sample}/touch_labels/labels.log",
-            conda:
-                "../envs/mc_base.yaml"
-            shell:
-                """
-                # Create the output file
-                echo 'cell\tprobability\tprediction' > {output}
-                # # Process table and append to the output
-                # tail -n+15 {{input.info_raw}} | \
-                # awk '{{print $2".sort.mdup.bam\t"$10"\t"$10}}' >> {output}
-                # cat {output}
-                """
 
 
 rule copy_labels:

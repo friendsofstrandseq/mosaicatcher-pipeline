@@ -155,7 +155,7 @@ rule plot_clustering_position_dev:
     resources:
         mem_mb=get_mem_mb,
     script:
-        "../scripts/plotting/plot_clustering_dev_clean.R"
+        "../scripts/plotting/plot-clustering.R"
 
 
 rule plot_clustering_chromosome_dev:
@@ -183,7 +183,7 @@ rule plot_clustering_chromosome_dev:
     resources:
         mem_mb=get_mem_mb,
     script:
-        "../scripts/plotting/plot_clustering_scale_clean.py"
+        "../scripts/plotting/plot-clustering-scale.py"
 
 
 rule plot_SV_calls:

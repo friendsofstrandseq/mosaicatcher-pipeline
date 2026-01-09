@@ -338,6 +338,142 @@ references_data:
 
     # Custom BSgenome tarball (null if using standard BioConductor package)
     custom_bsgenome_tarball: null
+  "canFam3":
+    # Existing fields
+    reference_fasta: "workflow/data/ref_genomes/canFam3.fa"
+    R_reference: "BSgenome.Cfamiliaris.UCSC.canFam3"
+    segdups: "workflow/data/segdups/segDups_canFam3_UCSCtrack.bed.gz"
+    snv_sites_to_genotype: []
+    reference_file_location: https://hgdownload.soe.ucsc.edu/goldenPath/canFam3/bigZips/canFam3.fa.gz
+
+    # Genome metadata
+    species: "Cfamiliaris"
+    species_id: 9615  # NCBI Taxonomy ID (Canis lupus familiaris)
+    common_name: "dog"
+    chromosome_count: 40
+    chromosome_pattern: "chr1..38,chrX,chrY"
+    chromosomes:
+      - chr1
+      - chr2
+      - chr3
+      - chr4
+      - chr5
+      - chr6
+      - chr7
+      - chr8
+      - chr9
+      - chr10
+      - chr11
+      - chr12
+      - chr13
+      - chr14
+      - chr15
+      - chr16
+      - chr17
+      - chr18
+      - chr19
+      - chr20
+      - chr21
+      - chr22
+      - chr23
+      - chr24
+      - chr25
+      - chr26
+      - chr27
+      - chr28
+      - chr29
+      - chr30
+      - chr31
+      - chr32
+      - chr33
+      - chr34
+      - chr35
+      - chr36
+      - chr37
+      - chr38
+      - chrX
+      - chrY
+
+    # Genome-specific data files
+    bin_bed_file: "workflow/data/canFam3.bin_200kb_all.bed"
+    gc_matrix_file: "workflow/data/GC/canFam3.GC_matrix.txt.gz"
+
+    # Module compatibility flags
+    supports_scnova: false
+    supports_hgsvc_normalization: false
+    supports_arbigent: false
+    supports_multistep_normalization: true
+
+    # Custom BSgenome tarball (null if using standard BioConductor package)
+    custom_bsgenome_tarball: null
+  "canFam4":
+    # Existing fields
+    reference_fasta: "workflow/data/ref_genomes/canFam4.fa"
+    R_reference: "BSgenome.Cfamiliaris.NCBI.canFam4"
+    segdups: "workflow/data/segdups/segDups_canFam4_UCSCtrack.bed.gz"
+    snv_sites_to_genotype: []
+    reference_file_location: https://hgdownload.soe.ucsc.edu/goldenPath/canFam4/bigZips/canFam4.fa.gz
+
+    # Genome metadata
+    species: "Cfamiliaris"
+    species_id: 9615  # NCBI Taxonomy ID (Canis lupus familiaris)
+    common_name: "dog"
+    chromosome_count: 40
+    chromosome_pattern: "chr1..38,chrX,chrY"
+    chromosomes:
+      - chr1
+      - chr2
+      - chr3
+      - chr4
+      - chr5
+      - chr6
+      - chr7
+      - chr8
+      - chr9
+      - chr10
+      - chr11
+      - chr12
+      - chr13
+      - chr14
+      - chr15
+      - chr16
+      - chr17
+      - chr18
+      - chr19
+      - chr20
+      - chr21
+      - chr22
+      - chr23
+      - chr24
+      - chr25
+      - chr26
+      - chr27
+      - chr28
+      - chr29
+      - chr30
+      - chr31
+      - chr32
+      - chr33
+      - chr34
+      - chr35
+      - chr36
+      - chr37
+      - chr38
+      - chrX
+      - chrY
+
+    # Genome-specific data files
+    bin_bed_file: "workflow/data/canFam4.bin_200kb_all.bed"
+    gc_matrix_file: "workflow/data/GC/canFam4.GC_matrix.txt.gz"
+
+    # Module compatibility flags
+    supports_scnova: false
+    supports_hgsvc_normalization: false
+    supports_arbigent: false
+    supports_multistep_normalization: true
+
+    # Custom BSgenome tarball (requires custom package generation)
+    custom_bsgenome_tarball: "workflow/data/ref_genomes/BSgenome.Cfamiliaris.NCBI.canFam4_1.0.0.tar.gz"
 
 # List of chromosomes to process
 chromosomes:
