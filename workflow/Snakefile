@@ -28,8 +28,6 @@ if config["ashleys_pipeline"] is True:
     include: "rules/ashleys/aggregate_fct.smk"
     include: "rules/ashleys/alignment.smk"
     include: "rules/ashleys/qc.smk"
-    include: "rules/ashleys/count.smk"
-    include: "rules/ashleys/gc.smk"
     include: "rules/ashleys/multiqc.smk"
 
 
