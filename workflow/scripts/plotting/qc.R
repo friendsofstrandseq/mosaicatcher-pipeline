@@ -18,8 +18,17 @@ add_overview_plot <- T
 # Falls back to commandArgs for standalone execution
 if (exists("snakemake")) {
     f_in <- snakemake@input[[1]]
-    info <- snakemake@input[[2]]
+    info_file <- snakemake@input[[2]]
     pdf_out <- snakemake@output[[1]]
+
+    # Read info file if it exists and is an info file
+    if (file.exists(info_file)) {
+        info_data <- fread(info_file)
+        if (all(c("sample", "cell", "pass1", "dupl", "mapped", "nb_p", "nb_r", "nb_a") %in% colnames(info_data))) {
+            message("* Using INFO file ", info_file)
+            info <- info_data
+        }
+    }
 } else {
     args <- commandArgs(trailingOnly = T)
     print(args)
