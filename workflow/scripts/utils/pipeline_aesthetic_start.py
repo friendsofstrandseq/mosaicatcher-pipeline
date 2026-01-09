@@ -93,17 +93,11 @@ def pipeline_aesthetic_start(config):
 
     print(fg.ENDC)
     # Genome & chrom
-    chroms = (
-        ["chr{e}".format(e=str(e)) for e in range(1, 23)] + ["chrX", "chrY"]
-        if config["reference"] != "mm10"
-        else ["chr{e}".format(e=str(e)) for e in range(1, 20)] + ["chrX", "chrY"]
-    )
-    if config["chromosomes"] == chroms:
-        print_chroms = (
-            "chr1..22,chrX,chrY"
-            if config["reference"] != "mm10"
-            else "chr1..19,chrX,chrY"
-        )
+    metadata = config["references_data"][config["reference"]]
+    default_chroms = metadata["chromosomes"]
+
+    if config["chromosomes"] == default_chroms:
+        print_chroms = metadata["chromosome_pattern"]
     else:
         print_chroms = ",".join(config["chromosomes"])
     print("\033[1m{}\033[0m".format("Reference genome & Chromosomes options:"))

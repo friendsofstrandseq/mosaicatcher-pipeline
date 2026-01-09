@@ -41,10 +41,8 @@ if config["mosaicatcher_pipeline"] == False:
         chroms = [e for e in chroms_init if e not in config["chromosomes_to_exclude"]]
         config["chromosomes"] = chroms
 
-    if (config["reference"] == "mm10") or (config["reference"] == "mm39"):
-        config["chromosomes"] = [
-            "chr" + str(e) for e in list(range(1, 20)) + ["X", "Y"]
-        ]
+    # Chromosome initialization is now handled by workflow/rules/common.smk
+    # using the centralized genome registry system
 
     # Use mosaicatcher's pipeline_aesthetic_start instead of ashleys-specific version
     # The functionality is already provided by workflow/rules/common.smk

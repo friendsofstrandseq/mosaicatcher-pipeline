@@ -19,11 +19,8 @@ rule install_BSgenome_package:
         ),
     params:
         selected_package=lambda wc, input: (
-            "BSgenome.{}.UCSC.{}".format(
-                "Mmusculus" if config["reference"] == "mm10" else "Hsapiens",
-                config["reference"],
-            )
-            if config["reference"] in ["hg38", "hg19", "mm10"]
+            get_genome_metadata("R_reference")
+            if get_genome_metadata().get("custom_bsgenome_tarball") is None
             else input.package
         ),
     conda:
