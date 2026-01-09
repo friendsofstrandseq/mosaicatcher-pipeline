@@ -240,7 +240,7 @@ if (add_overview_plot == T) {
     }
 
     title <- ggdraw() + draw_label(paste("Overview across", n_cells, "cells from", n_samples, "samples"), fontface = "bold")
-    side <- ggdraw() + draw_label(label = paste0(args[1], "\n", date()), angle = 90, size = 10, vjust = 1)
+    side <- ggdraw() + draw_label(label = paste0(f_in, "\n", date()), angle = 90, size = 10, vjust = 1)
 
     final <- plot_grid(title, content, ncol = 1, rel_heights = c(0.07, 1))
     xxx <- plot_grid(side, final, nrow = 1, rel_widths = c(0.05, 1))
