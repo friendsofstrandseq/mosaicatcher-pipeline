@@ -20,7 +20,7 @@ rule ashleys_generate_exclude_file_for_mosaic_count:
     conda:
         "../../envs/mc_base.yaml"
     params:
-        chroms=config["chromosomes"],  # Use config directly for all references
+        chroms=config["chromosomes"],
     script:
         "../../scripts/ashleys/utils/generate_exclude_file.py"
 
@@ -98,7 +98,7 @@ rule ashleys_plot_mosaic_counts:
     log:
         "{folder}/log/plot_mosaic_counts/{sample}.log",
     params:
-        mouse_assembly=True if config["reference"] in ["mm10", "mm39"] else False,
+        mouse_assembly=True if get_common_name() == "mouse" else False,
     conda:
         "../../envs/rtools.yaml"
     resources:

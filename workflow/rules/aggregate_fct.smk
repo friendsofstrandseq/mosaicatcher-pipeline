@@ -352,17 +352,15 @@ def select_counts_for_SV_calling(wildcards):
 
 
 def bsgenome_install(wildcards):
-    if config["reference"] == "T2T":
-        return "workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz"
+    tarball = get_genome_metadata().get("custom_bsgenome_tarball")
+    if tarball:
+        return tarball
     else:
         return "workflow/data/ref_genomes/log/fake_package.ok"
 
 
 def select_binbed(wildcards):
-    if get_species_from_reference(config["reference"]) != "Hsapiens":
-        return "workflow/data/mm10.bin_200kb_all.bed"
-    else:
-        return "workflow/data/bin_200kb_all.bed"
+    return get_bin_bed_file()
 
 
 def select_labels(wildcards):
