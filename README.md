@@ -1,6 +1,11 @@
 ![MosaiCatcher](docs/images/mosaic_logo.png)
+
 [![mosaicatcher-pipeline workflow checks](https://github.com/friendsofstrandseq/mosaicatcher-pipeline/actions/workflows/main.yaml/badge.svg)](https://github.com/friendsofstrandseq/mosaicatcher-pipeline/actions/workflows/main.yaml)
 [![Snakemake](https://img.shields.io/badge/snakemake-%E2%89%A59.0-brightgreen.svg)](https://snakemake.github.io)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Documentation](https://img.shields.io/badge/docs-online-blue.svg)](https://friendsofstrandseq.github.io/mosaicatcher-docs/)
+[![DOI](https://img.shields.io/badge/DOI-10.1093%2Fbioinformatics%2Fbtad633-blue)](https://doi.org/10.1093/bioinformatics/btad633)
+[![GitHub release](https://img.shields.io/github/v/release/friendsofstrandseq/mosaicatcher-pipeline?include_prereleases)](https://github.com/friendsofstrandseq/mosaicatcher-pipeline/releases)
 
 Structural variant calling from single-cell Strand-seq data [Snakemake](https://github.com/snakemake/snakemake) pipeline.
 
@@ -28,6 +33,12 @@ the workflow goes through the following steps:
 ## Documentation
 
 **📚 Homepage:** [https://friendsofstrandseq.github.io/mosaicatcher-docs/](https://friendsofstrandseq.github.io/mosaicatcher-docs/)
+
+**📖 Technical Documentation:** See [docs/](docs/) for detailed technical documentation, including:
+- Usage instructions and command examples
+- Configuration parameters reference
+- Output files documentation
+- Development guides (version management, releases, pre-commit hooks)
 
 ## 💂‍♂️ Authors (alphabetical order)
 

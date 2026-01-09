@@ -91,6 +91,7 @@ references_data:
 
     # Genome metadata
     species: "Hsapiens"
+    species_id: 9606  # NCBI Taxonomy ID (Homo sapiens)
     common_name: "human"
     chromosome_count: 24
     chromosome_pattern: "chr1..22,chrX,chrY"
@@ -144,6 +145,7 @@ references_data:
 
     # Genome metadata
     species: "Hsapiens"
+    species_id: 9606  # NCBI Taxonomy ID (Homo sapiens)
     common_name: "human"
     chromosome_count: 24
     chromosome_pattern: "chr1..22,chrX,chrY"
@@ -196,6 +198,7 @@ references_data:
 
     # Genome metadata
     species: "Hsapiens"
+    species_id: 9606  # NCBI Taxonomy ID (Homo sapiens)
     common_name: "human"
     chromosome_count: 24
     chromosome_pattern: "chr1..22,chrX,chrY"
@@ -247,6 +250,7 @@ references_data:
 
     # Genome metadata
     species: "Mmusculus"
+    species_id: 10090  # NCBI Taxonomy ID (Mus musculus)
     common_name: "mouse"
     chromosome_count: 21
     chromosome_pattern: "chr1..19,chrX,chrY"
@@ -295,6 +299,7 @@ references_data:
 
     # Genome metadata
     species: "Mmusculus"
+    species_id: 10090  # NCBI Taxonomy ID (Mus musculus)
     common_name: "mouse"
     chromosome_count: 21
     chromosome_pattern: "chr1..19,chrX,chrY"

@@ -118,7 +118,7 @@ if config["multistep_normalisation"] is True and config["window"] == 200000:
         conda:
             "../../envs/rtools.yaml"
         params:
-            mouse_assembly=True if config["reference"] == "mm10" else False,
+            mouse_assembly=True if get_common_name() == "mouse" else False,
         resources:
             mem_mb=get_mem_mb,
         shell:

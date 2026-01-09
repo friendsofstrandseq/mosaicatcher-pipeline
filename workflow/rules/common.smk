@@ -134,6 +134,11 @@ def get_species():
     return get_genome_metadata("species")
 
 
+def get_species_id():
+    """Get NCBI Taxonomy ID for current genome (e.g., 9606 for human, 10090 for mouse)"""
+    return get_genome_metadata("species_id")
+
+
 def get_common_name():
     """Get common species name (e.g., 'human', 'mouse', 'dog')"""
     return get_genome_metadata("common_name")
@@ -193,6 +198,7 @@ def validate_genome_metadata():
         "reference_fasta",
         "R_reference",
         "species",
+        "species_id",
         "common_name",
         "chromosome_count",
         "chromosomes",
@@ -294,10 +300,26 @@ if config["whatshap_only"] is True:
     ), "whatshap_only and breakpointR_only parameters cannot both be set to True, parameters are mutually exclusive"
 
 if config["scNOVA"] is True:
+    if not supports_module("scnova"):
+        supported_genomes = [k for k, v in config["references_data"].items() if v.get("supports_scnova")]
+        raise ValueError(
+            f"scNOVA module is not supported for reference genome '{config['reference']}'. "
+            f"scNOVA requires human-specific gene annotations. "
+            f"Supported genomes: {supported_genomes}"
+        )
     # print(config["chromosomes_to_exclude"])
     assert (
         "chrY" in config["chromosomes_to_exclude"]
-    ), "chrY is not handled by scNOVA yet, please remove it for config['chromosomes'] and add it in config['chomosomes_to_exclude']"
+    ), "chrY is not handled by scNOVA yet, please remove it from config['chromosomes'] and add it to config['chromosomes_to_exclude']"
+
+# HGSVC normalization check
+if config["hgsvc_based_normalized_counts"] is True:
+    if not supports_module("hgsvc_normalization"):
+        raise ValueError(
+            f"HGSVC-based normalization is not supported for reference genome '{config['reference']}'. "
+            f"HGSVC normalization requires population-level human Strand-seq data (currently hg38 only). "
+            f"Consider using multistep_normalisation instead."
+        )
 
 
 # Ploidy configuration validation
