@@ -1,9 +1,3 @@
-# import os
-# from snakemake.remote.HTTP import RemoteProvider as HTTPRemoteProvider
-#
-# HTTP = HTTPRemoteProvider()
-
-
 # Register HTTP storage provider for downloading reference genomes
 storage http:
     provider="http",

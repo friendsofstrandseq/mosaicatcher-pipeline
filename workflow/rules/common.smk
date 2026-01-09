@@ -106,6 +106,7 @@ exclude = [
 # Genome Registry Helper Functions
 # ========================================
 
+
 def get_genome_metadata(key=None):
     """
     Get metadata for the current reference genome.
@@ -117,7 +118,9 @@ def get_genome_metadata(key=None):
     """
     ref = config["reference"]
     if ref not in config["references_data"]:
-        raise ValueError(f"Reference genome '{ref}' not found in references_data configuration")
+        raise ValueError(
+            f"Reference genome '{ref}' not found in references_data configuration"
+        )
 
     metadata = config["references_data"][ref]
 
@@ -301,7 +304,9 @@ if config["whatshap_only"] is True:
 
 if config["scNOVA"] is True:
     if not supports_module("scnova"):
-        supported_genomes = [k for k, v in config["references_data"].items() if v.get("supports_scnova")]
+        supported_genomes = [
+            k for k, v in config["references_data"].items() if v.get("supports_scnova")
+        ]
         raise ValueError(
             f"scNOVA module is not supported for reference genome '{config['reference']}'. "
             f"scNOVA requires human-specific gene annotations. "
