@@ -159,3 +159,61 @@ rule ashleys_save_config:
         "../../scripts/ashleys/utils/dump_config.py"
 
 
+def get_ashleys_outputs(wildcards):
+    """
+    Get final outputs for ashleys pipeline
+    """
+    final_list = []
+
+    # Cell selection labels
+    final_list.append(
+        "{folder}/{sample}/cell_selection/labels.tsv".format(
+            folder=config["data_location"], sample=wildcards.sample
+        )
+    )
+
+    # Config
+    final_list.append(
+        "{folder}/{sample}/config/config_ashleys.yaml".format(
+            folder=config["data_location"], sample=wildcards.sample
+        )
+    )
+
+    # MultiQC if enabled
+    if config["MultiQC"] is True:
+        final_list.append(
+            "{folder}/{sample}/multiqc/multiqc_report/multiqc_report.html".format(
+                folder=config["data_location"], sample=wildcards.sample
+            )
+        )
+
+    # Plate plots if applicable
+    sample = wildcards.sample
+    if len(cell_per_sample[sample]) in [96, 384]:
+        if config["use_light_data"] is False:
+            final_list.extend(
+                [
+                    "{folder}/{sample}/plots/plate/ashleys_plate_predictions.pdf".format(
+                        folder=config["data_location"], sample=sample
+                    ),
+                    "{folder}/{sample}/plots/plate/ashleys_plate_probabilities.pdf".format(
+                        folder=config["data_location"], sample=sample
+                    ),
+                ]
+            )
+
+    # Publishdir if configured
+    if config["publishdir"] != "":
+        final_list.append(
+            "{folder}/{sample}/config/publishdir_outputs_ashleys.ok".format(
+                folder=config["data_location"], sample=wildcards.sample
+            )
+        )
+
+    return final_list
+
+
+rule ashleys_all:
+    input:
+        get_ashleys_outputs,
+    default_target: True
