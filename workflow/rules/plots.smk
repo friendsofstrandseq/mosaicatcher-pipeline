@@ -7,28 +7,26 @@ envvars:
     "OPENBLAS_NUM_THREADS",
 
 
-if config["ashleys_pipeline"] is False:
-
-    rule plot_mosaic_counts:
-        input:
-            counts="{folder}/{sample}/counts/{sample}.txt.populated.gz",
-            info="{folder}/{sample}/counts/{sample}.info_raw",
-        output:
-            # "{folder}/{sample}/plots/counts/CountComplete.raw.pdf",
-            report(
-                "{folder}/{sample}/plots/counts/CountComplete.raw.pdf",
-                category="Mosaic counts",
-                subcategory="{sample}",
-                labels={"Cell": "ALL", "Type": "raw"},
-            ),
-        log:
-            "{folder}/log/plot_mosaic_counts/{sample}.log",
-        conda:
-            "../envs/rtools.yaml"
-        resources:
-            mem_mb=get_mem_mb,
-        script:
-            "../scripts/plotting/qc.R"
+rule plot_mosaic_counts:
+    input:
+        counts="{folder}/{sample}/counts/{sample}.txt.populated.gz",
+        info="{folder}/{sample}/counts/{sample}.info_raw",
+    output:
+        # "{folder}/{sample}/plots/counts/CountComplete.raw.pdf",
+        report(
+            "{folder}/{sample}/plots/counts/CountComplete.raw.pdf",
+            category="Mosaic counts",
+            subcategory="{sample}",
+            labels={"Cell": "ALL", "Type": "raw"},
+        ),
+    log:
+        "{folder}/log/plot_mosaic_counts/{sample}.log",
+    conda:
+        "../envs/rtools.yaml"
+    resources:
+        mem_mb=get_mem_mb,
+    script:
+        "../scripts/plotting/qc.R"
 
 
 rule divide_pdf:
