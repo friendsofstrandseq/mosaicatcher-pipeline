@@ -419,7 +419,6 @@ cell_per_sample = (
 )
 
 
-
 def publishdir_fct(wildcards):
     """
     Restricted for ASHLEYS at the moment
