@@ -131,14 +131,14 @@ rule plot_clustering:
         "../scripts/plotting/plot-clustering.snakemake.R"
 
 
-rule plot_clustering_position_dev:
+rule plot_clustering_position:
     input:
         sv_calls=(
             "{folder}/{sample}/mosaiclassifier/sv_calls/{method}_filter{filter}.tsv"
         ),
     output:
         pdf=report(
-            "{folder}/{sample}/plots/sv_clustering_dev/{method}-filter{filter}-position.pdf",
+            "{folder}/{sample}/plots/sv_clustering/{method}-filter{filter}-position.pdf",
             category="SV Clustering",
             subcategory="{sample}",
             labels={
@@ -147,9 +147,9 @@ rule plot_clustering_position_dev:
                 "Chr size scaled": "False",
             },
         ),
-        cluster_order_df="{folder}/{sample}/plots/sv_clustering_dev/clustering_{method}-filter{filter}-position.tsv",
+        cluster_order_df="{folder}/{sample}/plots/sv_clustering/clustering_{method}-filter{filter}-position.tsv",
     log:
-        "{folder}/log/plot_clustering_dev/{sample}/{method}_filter{filter}.log",
+        "{folder}/log/plot_clustering/{sample}/{method}_filter{filter}.log",
     conda:
         "../envs/rtools.yaml"
     resources:
@@ -158,16 +158,16 @@ rule plot_clustering_position_dev:
         "../scripts/plotting/plot-clustering.R"
 
 
-rule plot_clustering_chromosome_dev:
+rule plot_clustering_chromosome:
     input:
         sv_calls=(
             "{folder}/{sample}/mosaiclassifier/sv_calls/{method}_filter{filter}.tsv"
         ),
         binbed=ancient(select_binbed),
-        cluster_order_df="{folder}/{sample}/plots/sv_clustering_dev/clustering_{method}-filter{filter}-position.tsv",
+        cluster_order_df="{folder}/{sample}/plots/sv_clustering/clustering_{method}-filter{filter}-position.tsv",
     output:
         pdf=report(
-            "{folder}/{sample}/plots/sv_clustering_dev/{method}-filter{filter}-chromosome.pdf",
+            "{folder}/{sample}/plots/sv_clustering/{method}-filter{filter}-chromosome.pdf",
             category="SV Clustering",
             subcategory="{sample}",
             labels={
@@ -177,7 +177,7 @@ rule plot_clustering_chromosome_dev:
             },
         ),
     log:
-        "{folder}/log/plot_clustering_chromosome_dev/{sample}/{method}_filter{filter}.log",
+        "{folder}/log/plot_clustering_chromosome/{sample}/{method}_filter{filter}.log",
     conda:
         "../envs/mc_base.yaml"
     resources:
@@ -235,53 +235,6 @@ rule plot_SV_calls:
         """
 
 
-rule plot_SV_calls_dev:
-    input:
-        counts="{folder}/{sample}/counts/{sample}.txt.gz",
-        calls="{folder}/{sample}/mosaiclassifier/sv_calls/{method}_filter{filter}.tsv",
-        complex_calls=(
-            "{folder}/{sample}/mosaiclassifier/complex/{method}_filter{filter}.tsv"
-        ),
-        strand="{folder}/{sample}/strandphaser/StrandPhaseR_final_output.txt",
-        segments="{folder}/{sample}/segmentation/Selection_jointseg.txt",
-        scsegments="{folder}/{sample}/segmentation/Selection_singleseg.txt",
-        grouptrack=(
-            "{folder}/{sample}/mosaiclassifier/postprocessing/group-table/{method}.tsv"
-        ),
-    output:
-        report(
-            "{folder}/{sample}/plots/sv_calls_dev/{method}_filter{filter}/{chrom}.pdf",
-            category="SV Calls",
-            subcategory="{sample}",
-            caption="../report/sv_calls.rst",
-            labels={
-                "method": "{method}",
-                "filter": "{filter}",
-                "Chrom": "{chrom}",
-            },
-        ),
-    log:
-        "{folder}/log/plot_SV_calls_dev/{sample}/{method}_filter{filter}/{chrom}.log",
-    conda:
-        "../envs/rtools.yaml"
-    resources:
-        mem_mb=get_mem_mb,
-    params:
-        chromosomes=lambda wc: ",".join(config["chromosomes"]),
-    shell:
-        """
-        Rscript workflow/scripts/plotting/plot-sv-calls.R \
-            segments={input.segments} \
-            singlecellsegments={input.scsegments} \
-            strand={input.strand} \
-            complex={input.complex_calls} \
-            groups={input.grouptrack} \
-            calls={input.calls} \
-            chromosomes={params.chromosomes} \
-            {input.counts} \
-            {wildcards.chrom} \
-            {output} > {log} 2>&1
-        """
 
 
 rule plot_ploidy:
