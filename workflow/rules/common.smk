@@ -1044,7 +1044,7 @@ def get_all_plots(wildcards):
                 sub_e
                 for e in [
                     expand(
-                        "{folder}/{sample}/plots/sv_clustering_dev/{method}-filter{filter}-{plottype}.pdf",
+                        "{folder}/{sample}/plots/sv_clustering/{method}-filter{filter}-{plottype}.pdf",
                         folder=config["data_location"],
                         sample=wildcards.sample,
                         method=method,
