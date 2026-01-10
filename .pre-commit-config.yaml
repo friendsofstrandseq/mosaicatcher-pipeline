@@ -9,12 +9,13 @@ repos:
       - id: snakefmt
         name: Format Snakemake files
         args: [--compact-diff]
+        exclude: ^workflow/rules/external_data\.smk$
 
   - repo: local
     hooks:
       - id: snakemake-lint
         name: Lint Snakemake workflow
-        entry: bash -c 'pixi run lint'
+        entry: bash -c '~/.pixi/bin/pixi run lint'
         language: system
         pass_filenames: false
         files: \.(smk|py)$

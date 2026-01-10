@@ -14,15 +14,32 @@ suppressMessages(library(cowplot))
 add_overview_plot <- T
 
 
-args <- commandArgs(trailingOnly = T)
-print(args)
-if (length(args) < 2 || length(args) > 4 || !grepl("\\.pdf$", args[length(args)]) || any(!file.exists(args[1:(length(args) - 1)]))) {
-    warning("Usage: Rscript R/qc.R input-file [SCE-file] [cell-info-file] output-pdf")
-    quit(status = 1)
+# Get inputs from Snakemake (when run via script: directive)
+# Falls back to commandArgs for standalone execution
+if (exists("snakemake")) {
+    f_in <- snakemake@input[[1]]
+    info_file <- snakemake@input[[2]]
+    pdf_out <- snakemake@output[[1]]
+
+    # Read info file if it exists and is an info file
+    if (file.exists(info_file)) {
+        info_data <- fread(info_file)
+        if (all(c("sample", "cell", "pass1", "dupl", "mapped", "nb_p", "nb_r", "nb_a") %in% colnames(info_data))) {
+            message("* Using INFO file ", info_file)
+            info <- info_data
+        }
+    }
+} else {
+    args <- commandArgs(trailingOnly = T)
+    print(args)
+    if (length(args) < 2 || length(args) > 4 || !grepl("\\.pdf$", args[length(args)]) || any(!file.exists(args[1:(length(args) - 1)]))) {
+        warning("Usage: Rscript R/qc.R input-file [SCE-file] [cell-info-file] output-pdf")
+        quit(status = 1)
+    }
+    f_in <- args[1]
+    info <- args[2]
+    pdf_out <- args[3]
 }
-f_in <- args[1]
-info <- args[2]
-pdf_out <- args[3]
 
 
 
@@ -76,14 +93,36 @@ if (substr(f_in, nchar(f_in) - 2, nchar(f_in)) == ".gz") {
     f_in <- paste(zcat_command, f_in)
 }
 
-# Read counts & filter chromosomes (this is human-specific)
+# Read counts & filter chromosomes
 d <- fread(f_in)
-print(d)
-mouse_bool <- any(d$chrom == "chr22")
-if (mouse_bool == FALSE) {
-    chrom_levels <- as.character(c(1:19, "X", "Y"))
+
+# Get chromosome levels from Snakemake config, command line args, or auto-detect
+chrom_levels <- NULL
+
+if (exists("snakemake")) {
+    if (!is.null(snakemake@config[["chromosomes"]])) {
+        chrom_levels <- snakemake@config[["chromosomes"]]
+    }
 } else {
-    chrom_levels <- as.character(c(1:22, "X", "Y"))
+    # Check if chromosomes= was passed in command line
+    chrom_arg <- grep("^chromosomes=", args, value = TRUE)
+    if (length(chrom_arg) > 0) {
+        chrom_levels <- unlist(strsplit(sub("^chromosomes=", "", chrom_arg[length(chrom_arg)]), ","))
+    }
+}
+
+if (!is.null(chrom_levels)) {
+    # Normalize chromosome names (remove "chr" if present, to match data cleaning later)
+    chrom_levels <- sub("^chr", "", chrom_levels)
+} else {
+    # Fallback: auto-detect from data for standalone execution
+    # This logic is kept for backward compatibility but is unreliable for non-human/mouse organisms
+    mouse_bool <- any(d$chrom == "chr22")
+    if (mouse_bool == FALSE) {
+        chrom_levels <- as.character(c(1:19, "X", "Y"))
+    } else {
+        chrom_levels <- as.character(c(1:22, "X", "Y"))
+    }
 }
 print(chrom_levels)
 
@@ -201,7 +240,7 @@ if (add_overview_plot == T) {
     }
 
     title <- ggdraw() + draw_label(paste("Overview across", n_cells, "cells from", n_samples, "samples"), fontface = "bold")
-    side <- ggdraw() + draw_label(label = paste0(args[1], "\n", date()), angle = 90, size = 10, vjust = 1)
+    side <- ggdraw() + draw_label(label = paste0(f_in, "\n", date()), angle = 90, size = 10, vjust = 1)
 
     final <- plot_grid(title, content, ncol = 1, rel_heights = c(0.07, 1))
     xxx <- plot_grid(side, final, nrow = 1, rel_widths = c(0.05, 1))

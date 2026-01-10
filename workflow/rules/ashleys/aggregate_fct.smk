@@ -71,12 +71,7 @@ def aggregate_correct_cells_plot(wildcards):
 
 
 def select_binbed(wildcards):
-    if config["reference"] in ["mm10", "mm39"]:
-        return "workflow/data/mm10.bin_200kb_all.bed"
-    elif config["reference"] in ["hg38", "hg19", "T2T"]:
-        return "workflow/data/bin_200kb_all.bed"
-    else:
-        raise ValueError("Reference genome not recognized.")
+    return get_bin_bed_file()
 
 
 def select_ashleys_labels(wildcards):

@@ -1,8 +1,4 @@
-if (
-    (config["multistep_normalisation"] is True)
-    and (config["ashleys_pipeline"] is False)
-    and config["window"] == 200000
-):
+if config["multistep_normalisation"] is True and config["window"] == 200000:
 
     rule library_size_normalisation:
         input:

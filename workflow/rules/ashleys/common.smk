@@ -41,10 +41,8 @@ if config["mosaicatcher_pipeline"] == False:
         chroms = [e for e in chroms_init if e not in config["chromosomes_to_exclude"]]
         config["chromosomes"] = chroms
 
-    if (config["reference"] == "mm10") or (config["reference"] == "mm39"):
-        config["chromosomes"] = [
-            "chr" + str(e) for e in list(range(1, 20)) + ["X", "Y"]
-        ]
+    # Chromosome initialization is now handled by workflow/rules/common.smk
+    # using the centralized genome registry system
 
     # Use mosaicatcher's pipeline_aesthetic_start instead of ashleys-specific version
     # The functionality is already provided by workflow/rules/common.smk
@@ -419,135 +417,6 @@ samples = list(sorted(list(df_config_files.Sample.unique().tolist())))
 cell_per_sample = (
     df_config_files.groupby("Sample")["Cell"].unique().apply(list).to_dict()
 )
-
-# Plottype options for QC count plot
-plottype_counts = (
-    config["plottype_counts"]
-    if config["multistep_normalisation"] is True
-    else config["plottype_counts"][0]
-)
-# print(plottype_counts)
-
-
-def get_final_output(wildcards):
-    """
-    Function called by snakemake rule all to run the pipeline
-    """
-    final_list = list()
-
-    # MultiQC outputs
-
-    if config["MultiQC"] is True:
-        final_list.extend(
-            expand(
-                "{path}/{sample}/multiqc/multiqc_report/multiqc_report.html",
-                path=config["data_location"],
-                sample=wildcards.sample,
-            ),
-        )
-
-    if config["bypass_ashleys"] is True and config["keep_ashleys_predictions"] is True:
-        final_list.extend(
-            expand(
-                "{path}/{sample}/cell_selection/labels_ashleys.tsv",
-                path=config["data_location"],
-                sample=wildcards.sample,
-            )
-        )
-
-    if (
-        config["mosaicatcher_pipeline"] is False
-        or config["ashleys_pipeline_only"] is True
-    ):
-        final_list.extend(
-            expand(
-                "{path}/{sample}/cell_selection/labels.tsv",
-                path=config["data_location"],
-                sample=wildcards.sample,
-            )
-        )
-
-        # QC count plots (classic only or classic + corrected based on config multistep_normalisation option)
-
-        final_list.extend(
-            expand(
-                "{output_folder}/{sample}/plots/counts/CountComplete.{plottype_counts}.pdf",
-                output_folder=config["data_location"],
-                sample=wildcards.sample,
-                plottype_counts=plottype_counts,
-            ),
-        )
-
-    # Plate plots
-
-    for sample in [wildcards.sample]:
-        if len(cell_per_sample[sample]) in [96, 384]:
-            final_list.extend(
-                [
-                    sub_e
-                    for e in [
-                        expand(
-                            "{path}/{sample}/plots/plate/ashleys_plate_{plate_plot}.pdf",
-                            path=config["data_location"],
-                            sample=sample,
-                            plate_plot=["predictions", "probabilities"],
-                        )
-                    ]
-                    for sub_e in e
-                ]
-            )
-
-    if config["publishdir"] != "":
-        final_list.extend(
-            expand(
-                "{folder}/{sample}/config/publishdir_outputs_ashleys.ok",
-                folder=config["data_location"],
-                sample=wildcards.sample,
-            )
-        )
-
-    # Config section
-
-    final_list.extend(
-        expand(
-            "{folder}/{sample}/config/config_ashleys.yaml",
-            folder=config["data_location"],
-            sample=wildcards.sample,
-        ),
-    )
-
-    from pprint import pprint
-
-    pprint(final_list)
-
-    return final_list
-
-
-def get_final_result():
-    """
-    Input function of the pipeline, will retrieve all 'end' outputs
-    """
-    final_list = list()
-
-    final_list.extend(
-        expand(
-            "{folder}/{sample}/config/ashleys_final_results.ok",
-            folder=config["data_location"],
-            sample=samples,
-        )
-    )
-
-    # MultiQC outputs
-    if config["MultiQC"] is True:
-        final_list.extend(
-            expand(
-                "{folder}/{sample}/multiqc/multiqc_report/multiqc_report.html",
-                folder=config["data_location"],
-                sample=samples,
-            )
-        )
-
-    return final_list
 
 
 def publishdir_fct(wildcards):

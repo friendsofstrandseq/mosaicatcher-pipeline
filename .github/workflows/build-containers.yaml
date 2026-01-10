@@ -341,7 +341,7 @@ jobs:
 
   create-manifest:
     name: Create Release Manifest
-    needs: validate-conda-environments
+    needs: validate-conda-hashes
     runs-on: ubuntu-latest
     if: github.event_name == 'release'
 

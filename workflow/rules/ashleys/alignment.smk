@@ -41,7 +41,7 @@ localrules:
 
 rule ashleys_bwa_index:
     input:
-        ancient(config["references_data"][config["reference"]]["reference_fasta"]),
+        fasta=ancient(config["references_data"][config["reference"]]["reference_fasta"]),
     output:
         idx=multiext(
             config["references_data"][config["reference"]]["reference_fasta"],
@@ -55,14 +55,19 @@ rule ashleys_bwa_index:
         "{}.log".format(
             config["references_data"][config["reference"]]["reference_fasta"]
         ),
+    conda:
+        "../../envs/mc_base.yaml"
+    cache: True
     params:
         algorithm="bwtsw",
     threads: 16
     resources:
         mem_mb=get_mem_mb_heavy,
         time="10:00:00",
-    wrapper:
-        "v1.7.0/bio/bwa/index"
+    shell:
+        """
+        bwa index -a {params.algorithm} {input.fasta} > {log} 2>&1
+        """
 
 
 ruleorder: ashleys_bwa_strandseq_to_reference_alignment > ashleys_samtools_sort_bam > ashleys_mark_duplicates
