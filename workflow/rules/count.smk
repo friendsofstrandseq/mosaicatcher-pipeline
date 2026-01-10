@@ -81,6 +81,7 @@ rule populate_counts:
     script:
         "../scripts/utils/populated_counts_for_qc_plot.py"
 
+
 if not config["ashleys_pipeline"]:
 
     if config["input_bam_legacy"]:
@@ -117,7 +118,6 @@ if not config["ashleys_pipeline"]:
                 # awk '{{print $2".sort.mdup.bam\t"$10"\t"$10}}' >> {output}
                 # cat {output}
                 """
-
 
     rule copy_labels:
         input:
