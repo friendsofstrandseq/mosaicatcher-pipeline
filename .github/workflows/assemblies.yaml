@@ -144,7 +144,7 @@ jobs:
           pixi run snakemake \
             --cores 1 \
             --sdm conda \
-            --config reference=hg19 use_light_data=True chromosomes=[chr17] ashleys_pipeline=False \
+            --config reference=hg19 use_light_data=True chromosomes=[chr17] ashleys_pipeline=True hgsvc_based_normalized_counts=False \
             --conda-cleanup-pkgs cache \
             -p \
             --snakefile workflow/Snakefile
@@ -219,7 +219,7 @@ jobs:
           pixi run snakemake \
             --cores 1 \
             --sdm conda \
-            --config reference=T2T use_light_data=True chromosomes=[chr17] ashleys_pipeline=False \
+            --config reference=T2T use_light_data=True chromosomes=[chr17] ashleys_pipeline=True hgsvc_based_normalized_counts=False \
             --conda-cleanup-pkgs cache \
             --retries 3 \
             --latency-wait 60 \
@@ -296,7 +296,7 @@ jobs:
           pixi run snakemake \
             --cores 1 \
             --sdm conda \
-            --config reference=mm10 use_light_data=True chromosomes=[chr19] ashleys_pipeline=True data_location=.tests/data_chr19_mm ploidy=False \
+            --config reference=mm10 use_light_data=True chromosomes=[chr15] ashleys_pipeline=True hgsvc_based_normalized_counts=False \
             --conda-cleanup-pkgs cache \
             -p \
             --snakefile workflow/Snakefile
@@ -371,7 +371,7 @@ jobs:
           pixi run snakemake \
             --cores 1 \
             --sdm conda \
-            --config reference=mm39 use_light_data=True chromosomes=[chr19] ashleys_pipeline=True data_location=.tests/data_chr19_mm ploidy=False \
+            --config reference=mm39 use_light_data=True chromosomes=[chr15] ashleys_pipeline=True hgsvc_based_normalized_counts=False \
             --conda-cleanup-pkgs cache \
             -p \
             --snakefile workflow/Snakefile
