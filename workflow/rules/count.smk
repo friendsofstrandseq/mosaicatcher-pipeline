@@ -83,7 +83,6 @@ rule populate_counts:
 
 
 if not config["ashleys_pipeline"]:
-
     if config["input_bam_legacy"]:
 
         rule selected_cells:
@@ -119,17 +118,18 @@ if not config["ashleys_pipeline"]:
                 # cat {output}
                 """
 
-    rule copy_labels:
-        input:
-            select_labels,
-        output:
-            "{folder}/{sample}/config/labels.tsv",
-        log:
-            "{folder}/log/copy_labels/{sample}.log",
-        conda:
-            "../envs/mc_base.yaml"
-        shell:
-            "cp {input} {output}"
+
+rule copy_labels:
+    input:
+        select_labels,
+    output:
+        "{folder}/{sample}/config/labels.tsv",
+    log:
+        "{folder}/log/copy_labels/{sample}.log",
+    conda:
+        "../envs/mc_base.yaml"
+    shell:
+        "cp {input} {output}"
 
 
 rule symlink_selected_bam:
