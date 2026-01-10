@@ -159,20 +159,3 @@ rule ashleys_save_config:
         "../../scripts/ashleys/utils/dump_config.py"
 
 
-rule ashleys_final_results:
-    input:
-        get_final_output,
-    output:
-        "{folder}/{sample}/config/ashleys_final_results.ok",
-    log:
-        "{folder}/log/ashleys_final_results/{sample}.log",
-    conda:
-        "../../envs/mc_base.yaml"
-    shell:
-        "touch {output}"
-
-
-rule ashleys_all:
-    input:
-        get_final_result(),
-    default_target: True
