@@ -104,33 +104,6 @@ rule plot_SV_consistency_barplot:
         "../scripts/plotting/sv_consistency_barplot.snakemake.R"
 
 
-rule plot_clustering:
-    input:
-        sv_calls=(
-            "{folder}/{sample}/mosaiclassifier/sv_calls/{method}_filter{filter}.tsv"
-        ),
-        binbed=ancient("workflow/data/bin_200kb_all.bed"),
-    output:
-        position=report(
-            "{folder}/{sample}/plots/sv_clustering/{method}-filter{filter}-position.pdf",
-            category="SV Clustering",
-            subcategory="{sample}",
-            caption="../report/sv_clustering.rst",
-            labels={
-                "method": "{method}",
-                "filter": "{filter}",
-            },
-        ),
-    log:
-        "{folder}/log/plot_clustering/{sample}/{method}_filter{filter}.log",
-    conda:
-        "../envs/rtools.yaml"
-    resources:
-        mem_mb=get_mem_mb,
-    script:
-        "../scripts/plotting/plot-clustering.snakemake.R"
-
-
 rule plot_clustering_position:
     input:
         sv_calls=(
@@ -233,8 +206,6 @@ rule plot_SV_calls:
             {wildcards.chrom} \
             {output} > {log} 2>&1
         """
-
-
 
 
 rule plot_ploidy:
