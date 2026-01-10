@@ -1184,25 +1184,21 @@ def get_all_plots(wildcards):
 
     if config["genome_browsing_files_generation"] == True:
         l_outputs.extend(
-            expand(
-                "{folder}/{sample}/plots/IGV/{sample}_IGV_session.xml",
-                folder=config["data_location"],
-                sample=wildcards.sample,
-            ),
-        )
-        l_outputs.extend(
-            expand(
-                "{folder}/{sample}/plots/UCSC/{sample}.bedUCSC.gz",
-                folder=config["data_location"],
-                sample=wildcards.sample,
-            ),
-        )
-        l_outputs.extend(
-            expand(
-                "{folder}/{sample}/plots/JBROWSE/{sample}.ok",
-                folder=config["data_location"],
-                sample=wildcards.sample,
-            ),
+            [
+                sub_e
+                for e in [
+                    expand(
+                        "{folder}/{sample}/plots/sv_calls/{method}_filter{filter}/{chrom}.pdf",
+                        folder=config["data_location"],
+                        sample=wildcards.sample,
+                        method=method,
+                        chrom=config["chromosomes"],
+                        filter=config["methods"][method]["filter"],
+                    )
+                    for method in config["methods"]
+                ]
+                for sub_e in e
+            ]
         )
 
     if config["breakpointR"] is True:
