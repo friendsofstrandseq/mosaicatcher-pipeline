@@ -47,7 +47,7 @@ jobs:
 
       - name: Cache Dockerfile.base
         id: cache-dockerfile
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: workflow/containers/Dockerfile.base
           key: dockerfile-base-${{ steps.conda-hash.outputs.hash }}
@@ -289,7 +289,7 @@ jobs:
           echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
 
       - name: Cache Apptainer SIF
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.apptainer/cache
           key: apptainer-sif-hg38-${{ steps.version.outputs.VERSION }}

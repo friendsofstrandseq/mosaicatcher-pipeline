@@ -40,7 +40,7 @@ jobs:
           locked: false
 
       - name: Cache Conda environments
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .snakemake/conda
           key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
@@ -77,7 +77,7 @@ jobs:
           locked: false
 
       - name: Cache Conda environments
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .snakemake/conda
           key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
@@ -114,7 +114,7 @@ jobs:
           locked: false
 
       - name: Cache Conda environments
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .snakemake/conda
           key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
@@ -151,7 +151,7 @@ jobs:
           locked: false
 
       - name: Cache Conda environments
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .snakemake/conda
           key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
@@ -188,7 +188,7 @@ jobs:
           locked: false
 
       - name: Cache Conda environments
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .snakemake/conda
           key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
