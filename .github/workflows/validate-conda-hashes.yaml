@@ -17,7 +17,7 @@ jobs:
 
     steps:
       - name: Checkout repository (clean)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Calculate current conda env hashes from YAML files
         id: current
