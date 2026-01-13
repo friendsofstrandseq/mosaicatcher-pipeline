@@ -91,7 +91,7 @@ jobs:
           head -20 workflow/containers/Dockerfile.base
 
       - name: Upload Dockerfile.base artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: dockerfile-base
           path: workflow/containers/Dockerfile.base
@@ -332,7 +332,7 @@ jobs:
           echo "✅ Conda environment validation PASSED"
 
       - name: Upload conda export artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         if: always()
         with:
           name: conda-exports-validation
