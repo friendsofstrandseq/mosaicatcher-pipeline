@@ -23,7 +23,7 @@ jobs:
 
     steps:
       - name: Checkout repository with submodules
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: recursive
 
@@ -107,7 +107,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Download Dockerfile.base
         uses: actions/download-artifact@v4
@@ -174,7 +174,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set version
         id: version
@@ -255,7 +255,7 @@ jobs:
 
     steps:
       - name: Checkout repository with submodules
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: recursive
 
