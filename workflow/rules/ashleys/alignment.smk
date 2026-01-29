@@ -57,12 +57,15 @@ rule ashleys_bwa_index:
         ),
     params:
         algorithm="bwtsw",
+        prefix=config["references_data"][config["reference"]]["reference_fasta"],
     threads: 16
     resources:
         mem_mb=get_mem_mb_heavy,
         time="10:00:00",
-    wrapper:
-        "v1.7.0/bio/bwa/index"
+    conda:
+        "../../envs/mc_bioinfo_tools.yaml"
+    shell:
+        "bwa index -a {params.algorithm} -p {params.prefix} {input} 2> {log}"
 
 
 ruleorder: ashleys_bwa_strandseq_to_reference_alignment > ashleys_samtools_sort_bam > ashleys_mark_duplicates
@@ -97,7 +100,7 @@ if config["paired_end"] is True:
             mem_mb=get_mem_mb_heavy,
             time="01:00:00",
         conda:
-            "../../envs/mc_base.yaml"
+            "../../envs/mc_bioinfo_tools.yaml"
         shell:
             "bwa mem -t {threads}"
             ' -R "@RG\\tID:{wildcards.cell}\\tPL:Illumina\\tSM:{wildcards.sample}"'
@@ -132,7 +135,7 @@ else:
             mem_mb=get_mem_mb_heavy,
             time="01:00:00",
         conda:
-            "../../envs/mc_base.yaml"
+            "../../envs/mc_bioinfo_tools.yaml"
         shell:
             "bwa mem -t {threads}"
             ' -R "@RG\\tID:{wildcards.cell}\\tPL:Illumina\\tSM:{wildcards.sample}"'
@@ -151,7 +154,7 @@ rule ashleys_samtools_sort_bam:
         mem_mb=get_mem_mb,
         time="01:00:00",
     conda:
-        "../../envs/mc_base.yaml"
+        "../../envs/mc_bioinfo_tools.yaml"
     shell:
         "samtools sort -O BAM -o {output} {input} 2>&1 > {log}"
 
@@ -164,7 +167,7 @@ rule ashleys_mark_duplicates:
     log:
         "{folder}/{sample}/log/markdup/{cell}.log",
     conda:
-        "../../envs/mc_base.yaml"
+        "../../envs/mc_bioinfo_tools.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
         time="01:00:00",

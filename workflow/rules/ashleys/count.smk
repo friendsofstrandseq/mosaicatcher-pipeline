@@ -72,7 +72,7 @@ checkpoint mosaic_count:
     log:
         "{folder}/log/counts/{sample}/mosaic_count.log",
     conda:
-        "../../envs/mc_base.yaml"
+        "../../envs/mc_bioinfo_tools.yaml"
     params:
         window=config["window"],
     resources:

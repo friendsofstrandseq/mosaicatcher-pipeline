@@ -10,15 +10,21 @@ rule ashleys_fastqc:
             labels={"Sample": "{sample}", "Cell": "{cell}", "Pair": "{pair}"},
         ),
         zip="{folder}/{sample}/multiqc/fastqc/{cell}_{pair}_fastqc.zip",
-    params:
-        "--quiet",
     log:
         "{folder}/log/fastqc/{sample}/{cell}_{pair}.log",
     threads: 1
     resources:
         mem_mb=get_mem_mb,
-    wrapper:
-        "v1.7.0/bio/fastqc"
+    conda:
+        "../../envs/mc_bioinfo_tools.yaml"
+    shell:
+        """
+        tempdir=$(mktemp -d)
+        fastqc --quiet -t {threads} --outdir "$tempdir" {input} > {log} 2>&1
+        mv "$tempdir/{wildcards.cell}.{wildcards.pair}_fastqc.html" {output.html}
+        mv "$tempdir/{wildcards.cell}.{wildcards.pair}_fastqc.zip" {output.zip}
+        rm -rf "$tempdir"
+        """
 
 
 rule ashleys_fastqc_aggregate:
@@ -44,7 +50,7 @@ rule ashleys_samtools_idxstats:
     resources:
         mem_mb=get_mem_mb,
     conda:
-        "../../envs/mc_base.yaml"
+        "../../envs/mc_bioinfo_tools.yaml"
     shell:
         "samtools idxstats {input} > {output}"
 
@@ -73,7 +79,7 @@ rule ashleys_samtools_flagstats:
     resources:
         mem_mb=get_mem_mb,
     conda:
-        "../../envs/mc_base.yaml"
+        "../../envs/mc_bioinfo_tools.yaml"
     shell:
         "samtools flagstats {input} > {output}"
 
@@ -102,7 +108,7 @@ rule ashleys_samtools_stats:
     resources:
         mem_mb=get_mem_mb,
     conda:
-        "../../envs/mc_base.yaml"
+        "../../envs/mc_bioinfo_tools.yaml"
     shell:
         "samtools stats {input} > {output}"
 
@@ -144,6 +150,6 @@ rule ashleys_multiqc:
             abs_path=config["abs_path"]
         ).join(input.fastqc.split("/")[:-3]),
     conda:
-        "../../envs/mc_base.yaml"
+        "../../envs/mc_bioinfo_tools.yaml"
     shell:
         "multiqc {params.multiqc_input} --outdir {output.outdir}"
