@@ -158,6 +158,21 @@ jobs:
           restore-keys: |
             conda-envs-
 
+      - name: Cache mm10 reference genome and BWA indexes
+        uses: actions/cache@v4
+        with:
+          path: |
+            workflow/data/ref_genomes/mm10.fa
+            workflow/data/ref_genomes/mm10.fa.amb
+            workflow/data/ref_genomes/mm10.fa.ann
+            workflow/data/ref_genomes/mm10.fa.bwt
+            workflow/data/ref_genomes/mm10.fa.pac
+            workflow/data/ref_genomes/mm10.fa.sa
+            workflow/data/ref_genomes/mm10.fa.fai
+          key: mm10-reference-${{ hashFiles('workflow/data/ref_genomes/mm10.fa') }}
+          restore-keys: |
+            mm10-reference-
+
       - name: Run workflow (mm10 v9)
         run: |
           pixi run snakemake \
@@ -194,6 +209,21 @@ jobs:
           key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
           restore-keys: |
             conda-envs-
+
+      - name: Cache mm39 reference genome and BWA indexes
+        uses: actions/cache@v4
+        with:
+          path: |
+            workflow/data/ref_genomes/mm39.fa
+            workflow/data/ref_genomes/mm39.fa.amb
+            workflow/data/ref_genomes/mm39.fa.ann
+            workflow/data/ref_genomes/mm39.fa.bwt
+            workflow/data/ref_genomes/mm39.fa.pac
+            workflow/data/ref_genomes/mm39.fa.sa
+            workflow/data/ref_genomes/mm39.fa.fai
+          key: mm39-reference-${{ hashFiles('workflow/data/ref_genomes/mm39.fa') }}
+          restore-keys: |
+            mm39-reference-
 
       - name: Run workflow (mm39 v9)
         run: |
