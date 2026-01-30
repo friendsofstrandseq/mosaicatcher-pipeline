@@ -155,6 +155,17 @@ def aggregate_cells_haplotag_tables(wildcards):
         sep="\t",
     )
     cell_list = df.cell.tolist()
+
+    # Explicit warning when no cells pass QC
+    if len(cell_list) == 0:
+        import sys
+
+        print(
+            f"WARNING: No cells passed QC filter for sample {wildcards.sample}. "
+            f"Haplotag analysis will produce empty output.",
+            file=sys.stderr,
+        )
+
     # print(cell_list)
     # print(expand(
     #     "{folder}/{sample}/haplotag/table/by-cell/{cell}.tsv",
