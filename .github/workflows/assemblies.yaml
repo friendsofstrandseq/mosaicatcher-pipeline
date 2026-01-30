@@ -47,6 +47,21 @@ jobs:
           restore-keys: |
             conda-envs-
 
+      - name: Cache hg38 reference genome and BWA indexes
+        uses: actions/cache@v4
+        with:
+          path: |
+            workflow/data/ref_genomes/hg38.fa
+            workflow/data/ref_genomes/hg38.fa.amb
+            workflow/data/ref_genomes/hg38.fa.ann
+            workflow/data/ref_genomes/hg38.fa.bwt
+            workflow/data/ref_genomes/hg38.fa.pac
+            workflow/data/ref_genomes/hg38.fa.sa
+            workflow/data/ref_genomes/hg38.fa.fai
+          key: hg38-reference-${{ hashFiles('workflow/data/ref_genomes/hg38.fa') }}
+          restore-keys: |
+            hg38-reference-
+
       - name: Run workflow (hg38 v9)
         run: |
           pixi run snakemake \
@@ -84,6 +99,21 @@ jobs:
           restore-keys: |
             conda-envs-
 
+      - name: Cache hg19 reference genome and BWA indexes
+        uses: actions/cache@v4
+        with:
+          path: |
+            workflow/data/ref_genomes/hg19.fa
+            workflow/data/ref_genomes/hg19.fa.amb
+            workflow/data/ref_genomes/hg19.fa.ann
+            workflow/data/ref_genomes/hg19.fa.bwt
+            workflow/data/ref_genomes/hg19.fa.pac
+            workflow/data/ref_genomes/hg19.fa.sa
+            workflow/data/ref_genomes/hg19.fa.fai
+          key: hg19-reference-${{ hashFiles('workflow/data/ref_genomes/hg19.fa') }}
+          restore-keys: |
+            hg19-reference-
+
       - name: Run workflow (hg19 v9)
         run: |
           pixi run snakemake \
@@ -120,6 +150,21 @@ jobs:
           key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
           restore-keys: |
             conda-envs-
+
+      - name: Cache T2T reference genome and BWA indexes
+        uses: actions/cache@v4
+        with:
+          path: |
+            workflow/data/ref_genomes/T2T.fa
+            workflow/data/ref_genomes/T2T.fa.amb
+            workflow/data/ref_genomes/T2T.fa.ann
+            workflow/data/ref_genomes/T2T.fa.bwt
+            workflow/data/ref_genomes/T2T.fa.pac
+            workflow/data/ref_genomes/T2T.fa.sa
+            workflow/data/ref_genomes/T2T.fa.fai
+          key: T2T-reference-${{ hashFiles('workflow/data/ref_genomes/T2T.fa') }}
+          restore-keys: |
+            T2T-reference-
 
       - name: Run workflow (T2T v9)
         run: |
