@@ -39,16 +39,18 @@ jobs:
           cache: true
           locked: false
 
-      - name: Cache Conda environments
-        uses: actions/cache@v4
+      - name: Restore Conda environments cache
+        id: cache-conda-restore
+        uses: actions/cache/restore@v4
         with:
           path: .snakemake/conda
           key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
           restore-keys: |
             conda-envs-
 
-      - name: Cache hg38 reference genome and BWA indexes
-        uses: actions/cache@v4
+      - name: Restore hg38 reference genome and BWA indexes
+        id: cache-hg38-restore
+        uses: actions/cache/restore@v4
         with:
           path: |
             workflow/data/ref_genomes/hg38.fa
@@ -72,6 +74,27 @@ jobs:
             -p \
             --snakefile workflow/Snakefile
 
+      - name: Save Conda environments cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .snakemake/conda
+          key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
+
+      - name: Save hg38 reference genome and BWA indexes
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            workflow/data/ref_genomes/hg38.fa
+            workflow/data/ref_genomes/hg38.fa.amb
+            workflow/data/ref_genomes/hg38.fa.ann
+            workflow/data/ref_genomes/hg38.fa.bwt
+            workflow/data/ref_genomes/hg38.fa.pac
+            workflow/data/ref_genomes/hg38.fa.sa
+            workflow/data/ref_genomes/hg38.fa.fai
+          key: hg38-reference-${{ hashFiles('workflow/data/ref_genomes/hg38.fa') }}
+
   Testing-with-hg19:
     runs-on: ubuntu-latest
     steps:
@@ -91,16 +114,18 @@ jobs:
           cache: true
           locked: false
 
-      - name: Cache Conda environments
-        uses: actions/cache@v4
+      - name: Restore Conda environments cache
+        id: cache-conda-restore
+        uses: actions/cache/restore@v4
         with:
           path: .snakemake/conda
           key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
           restore-keys: |
             conda-envs-
 
-      - name: Cache hg19 reference genome and BWA indexes
-        uses: actions/cache@v4
+      - name: Restore hg19 reference genome and BWA indexes
+        id: cache-hg19-restore
+        uses: actions/cache/restore@v4
         with:
           path: |
             workflow/data/ref_genomes/hg19.fa
@@ -124,6 +149,27 @@ jobs:
             -p \
             --snakefile workflow/Snakefile
 
+      - name: Save Conda environments cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .snakemake/conda
+          key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
+
+      - name: Save hg19 reference genome and BWA indexes
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            workflow/data/ref_genomes/hg19.fa
+            workflow/data/ref_genomes/hg19.fa.amb
+            workflow/data/ref_genomes/hg19.fa.ann
+            workflow/data/ref_genomes/hg19.fa.bwt
+            workflow/data/ref_genomes/hg19.fa.pac
+            workflow/data/ref_genomes/hg19.fa.sa
+            workflow/data/ref_genomes/hg19.fa.fai
+          key: hg19-reference-${{ hashFiles('workflow/data/ref_genomes/hg19.fa') }}
+
   Testing-with-T2T:
     runs-on: ubuntu-latest
     steps:
@@ -143,16 +189,18 @@ jobs:
           cache: true
           locked: false
 
-      - name: Cache Conda environments
-        uses: actions/cache@v4
+      - name: Restore Conda environments cache
+        id: cache-conda-restore
+        uses: actions/cache/restore@v4
         with:
           path: .snakemake/conda
           key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
           restore-keys: |
             conda-envs-
 
-      - name: Cache T2T reference genome and BWA indexes
-        uses: actions/cache@v4
+      - name: Restore T2T reference genome and BWA indexes
+        id: cache-t2t-restore
+        uses: actions/cache/restore@v4
         with:
           path: |
             workflow/data/ref_genomes/T2T.fa
@@ -176,6 +224,27 @@ jobs:
             -p \
             --snakefile workflow/Snakefile
 
+      - name: Save Conda environments cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .snakemake/conda
+          key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
+
+      - name: Save T2T reference genome and BWA indexes
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            workflow/data/ref_genomes/T2T.fa
+            workflow/data/ref_genomes/T2T.fa.amb
+            workflow/data/ref_genomes/T2T.fa.ann
+            workflow/data/ref_genomes/T2T.fa.bwt
+            workflow/data/ref_genomes/T2T.fa.pac
+            workflow/data/ref_genomes/T2T.fa.sa
+            workflow/data/ref_genomes/T2T.fa.fai
+          key: T2T-reference-${{ hashFiles('workflow/data/ref_genomes/T2T.fa') }}
+
   Testing-with-mm10:
     runs-on: ubuntu-latest
     steps:
@@ -195,16 +264,18 @@ jobs:
           cache: true
           locked: false
 
-      - name: Cache Conda environments
-        uses: actions/cache@v4
+      - name: Restore Conda environments cache
+        id: cache-conda-restore
+        uses: actions/cache/restore@v4
         with:
           path: .snakemake/conda
           key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
           restore-keys: |
             conda-envs-
 
-      - name: Cache mm10 reference genome and BWA indexes
-        uses: actions/cache@v4
+      - name: Restore mm10 reference genome and BWA indexes
+        id: cache-mm10-restore
+        uses: actions/cache/restore@v4
         with:
           path: |
             workflow/data/ref_genomes/mm10.fa
@@ -228,6 +299,27 @@ jobs:
             -p \
             --snakefile workflow/Snakefile
 
+      - name: Save Conda environments cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .snakemake/conda
+          key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
+
+      - name: Save mm10 reference genome and BWA indexes
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            workflow/data/ref_genomes/mm10.fa
+            workflow/data/ref_genomes/mm10.fa.amb
+            workflow/data/ref_genomes/mm10.fa.ann
+            workflow/data/ref_genomes/mm10.fa.bwt
+            workflow/data/ref_genomes/mm10.fa.pac
+            workflow/data/ref_genomes/mm10.fa.sa
+            workflow/data/ref_genomes/mm10.fa.fai
+          key: mm10-reference-${{ hashFiles('workflow/data/ref_genomes/mm10.fa') }}
+
   Testing-with-mm39:
     runs-on: ubuntu-latest
     steps:
@@ -247,16 +339,18 @@ jobs:
           cache: true
           locked: false
 
-      - name: Cache Conda environments
-        uses: actions/cache@v4
+      - name: Restore Conda environments cache
+        id: cache-conda-restore
+        uses: actions/cache/restore@v4
         with:
           path: .snakemake/conda
           key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
           restore-keys: |
             conda-envs-
 
-      - name: Cache mm39 reference genome and BWA indexes
-        uses: actions/cache@v4
+      - name: Restore mm39 reference genome and BWA indexes
+        id: cache-mm39-restore
+        uses: actions/cache/restore@v4
         with:
           path: |
             workflow/data/ref_genomes/mm39.fa
@@ -279,3 +373,24 @@ jobs:
             --conda-cleanup-pkgs cache \
             -p \
             --snakefile workflow/Snakefile
+
+      - name: Save Conda environments cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .snakemake/conda
+          key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
+
+      - name: Save mm39 reference genome and BWA indexes
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            workflow/data/ref_genomes/mm39.fa
+            workflow/data/ref_genomes/mm39.fa.amb
+            workflow/data/ref_genomes/mm39.fa.ann
+            workflow/data/ref_genomes/mm39.fa.bwt
+            workflow/data/ref_genomes/mm39.fa.pac
+            workflow/data/ref_genomes/mm39.fa.sa
+            workflow/data/ref_genomes/mm39.fa.fai
+          key: mm39-reference-${{ hashFiles('workflow/data/ref_genomes/mm39.fa') }}
