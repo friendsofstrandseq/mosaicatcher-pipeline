@@ -20,12 +20,13 @@ The following mm39 reference files are available:
 - **Resolution**: 200 kb windows
 - **Generation**: Created using `faCount` tool on mm39.fa windows
 - **Format**: Contains A, C, G, T counts and %GC per bin
+- **Status**: Available in mosaicatcher-referencedata submodule
 
 ### Normalization/Blacklist File
 - **Location**: `workflow/data/normalization/mm39/HGSVC.200000.txt`
 - **Resolution**: 200 kb bins only
 - **Source**: Generated from two mouse Strand-seq samples
-- **Note**: File added locally, not yet in mosaicatcher-referencedata submodule
+- **Status**: Available in mosaicatcher-referencedata submodule
 
 ## Important Caveats
 
