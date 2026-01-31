@@ -80,12 +80,6 @@ exclude = [
 ]
 
 
-if config["reference"] == "mm10":
-    config["chromosomes"] = [
-        "chr{e}".format(e=str(e)) for e in list(range(1, 20)) + ["X", "Y"]
-    ]
-
-
 if config["chromosomes_to_exclude"]:
     chroms_init = config["chromosomes"]
     chroms = [e for e in chroms_init if e not in config["chromosomes_to_exclude"]]
