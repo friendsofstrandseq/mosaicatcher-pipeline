@@ -33,23 +33,33 @@ df["cell"] = df["cell"].str.replace(".sort.mdup.bam", "")
 # snakemake_log.write("input_bam_legacy parameter: {}".format(b_old))
 # snakemake_log.write("Computing intersection between lists ...")
 
-# IF BOTH MOSAIC INFO FILE & LABELS DF ARE AVAILABLE + SAME SIZE
-if labels.shape[0] == df.shape[0]:
-    if len(set(labels.cell.values.tolist()).intersection(set(df.cell.values.tolist()))) == labels.shape[0]:
-        print("labels.shape[0] == df.shape[0]")
-        cells_to_keep_labels = labels.loc[labels["prediction"] == 1]["cell"].str.replace(".sort.mdup.bam", "").sort_values().tolist()
-        cells_to_keep_mosaic = df.loc[df["pass1"] == 1]["cell"].unique().tolist()
-        cells_to_keep = list(sorted(list(set(cells_to_keep_labels).intersection(cells_to_keep_mosaic))))
-    else:
-        sys.exit("Ashleys labels & Mosaicatcher count info file do not share the same cell naming format")
+# Check if all label cells exist in mosaic info (cells in labels should be subset of mosaic info)
+labels_cells = set(labels.cell.values.tolist())
+mosaic_cells = set(df.cell.values.tolist())
 
+if not labels_cells.issubset(mosaic_cells):
+    sys.exit("Ashleys labels contain cells not found in Mosaicatcher count info file")
 
+# IF BOTH MOSAIC INFO FILE & LABELS DF ARE AVAILABLE
+# For ashleys_pipeline: labels may have fewer cells due to mapped>0 filter in selected_input_bam
+if snakemake.config["ashleys_pipeline"] is True:
+    print(f"Ashleys pipeline mode: using intersection of labels ({labels.shape[0]} cells) and mosaic info ({df.shape[0]} cells)")
+    cells_to_keep_labels = labels.loc[labels["prediction"] == 1]["cell"].str.replace(".sort.mdup.bam", "").sort_values().tolist()
+    cells_to_keep_mosaic = df.loc[df["pass1"] == 1]["cell"].unique().tolist()
+    cells_to_keep = list(sorted(list(set(cells_to_keep_labels).intersection(cells_to_keep_mosaic))))
+elif labels.shape[0] == df.shape[0]:
+    print("labels.shape[0] == df.shape[0]")
+    cells_to_keep_labels = labels.loc[labels["prediction"] == 1]["cell"].str.replace(".sort.mdup.bam", "").sort_values().tolist()
+    cells_to_keep_mosaic = df.loc[df["pass1"] == 1]["cell"].unique().tolist()
+    cells_to_keep = list(sorted(list(set(cells_to_keep_labels).intersection(cells_to_keep_mosaic))))
 else:
-    # CATCH ERROR IF DIFFERENT SIZES AND CONFIG ENABLED
-    if (snakemake.config["ashleys_pipeline"] is True) or (snakemake.config["input_bam_legacy"] is True):
-        sys.exit("Dataframes do not have the same dimensions:")
-        sys.exit("mosaic info: {} ; labels: {}".format(str(df.shape[0]), str(labels.shape[0])))
-
+    # CATCH ERROR IF DIFFERENT SIZES AND CONFIG ENABLED (non-ashleys mode)
+    if snakemake.config["input_bam_legacy"] is True:
+        error_msg = "Dataframes do not have the same dimensions:\n"
+        error_msg += "mosaic info: {} cells ; labels: {} cells\n".format(str(df.shape[0]), str(labels.shape[0]))
+        error_msg += "Mosaic info cells: {}\n".format(sorted(df["cell"].unique().tolist()[:5]))
+        error_msg += "Labels cells: {}".format(sorted(labels["cell"].unique().tolist()[:5]))
+        sys.exit(error_msg)
     # ELSE NORMAL MODE
     else:
         print("df.shape[0] only")
