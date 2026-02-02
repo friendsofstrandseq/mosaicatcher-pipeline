@@ -60,6 +60,9 @@ breakpointR: False
 breakpointR_only: False
 whatshap_only: False
 
+# Enable or disable ploidy estimation
+ploidy: True
+
 # --------------------------------------------------------
 # GENECORE Configuration
 # --------------------------------------------------------

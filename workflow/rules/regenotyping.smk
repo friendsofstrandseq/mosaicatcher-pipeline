@@ -88,19 +88,37 @@ rule regenotype_SNVs:
         """
 
 
+def get_call_SNVs_bcftools_inputs(wildcards):
+    """
+    Get inputs for call_SNVs_bcftools_chrom rule.
+    Makes ploidy input conditional based on ploidy config flag.
+    """
+    inputs = {
+        "bam": f"{wildcards.folder}/{wildcards.sample}/merged_bam/merged.bam",
+        "bai": f"{wildcards.folder}/{wildcards.sample}/merged_bam/merged.bam.bai",
+        "fasta": config["references_data"][config["reference"]]["reference_fasta"],
+        "fasta_index": f"{config['references_data'][config['reference']]['reference_fasta']}.fai",
+    }
+
+    if config.get("ploidy", True) is True:
+        inputs["ploidy"] = (
+            f"{wildcards.folder}/{wildcards.sample}/ploidy/ploidy_bcftools.txt"
+        )
+
+    return inputs
+
+
 rule call_SNVs_bcftools_chrom:
     input:
-        bam="{folder}/{sample}/merged_bam/merged.bam",
-        bai="{folder}/{sample}/merged_bam/merged.bam.bai",
-        fasta=config["references_data"][config["reference"]]["reference_fasta"],
-        fasta_index="{fasta}.fai".format(
-            fasta=config["references_data"][config["reference"]]["reference_fasta"]
-        ),
-        ploidy="{folder}/{sample}/ploidy/ploidy_bcftools.txt",
+        unpack(get_call_SNVs_bcftools_inputs),
     output:
         vcf="{folder}/{sample}/snv_calls/{chrom,chr[0-9A-Z]+}.vcf",
     log:
         "{folder}/log/snv_calls/{sample}/{chrom,chr[0-9A-Z]+}.vcf",
+    params:
+        ploidy_arg=lambda wildcards, input: (
+            f"--ploidy-file {input.ploidy}" if hasattr(input, "ploidy") else ""
+        ),
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     resources:
@@ -109,5 +127,5 @@ rule call_SNVs_bcftools_chrom:
     shell:
         """
         bcftools mpileup -r {wildcards.chrom} -f {input.fasta} {input.bam} \
-        | bcftools call -mv --ploidy-file {input.ploidy} | bcftools view --genotype het --types snps > {output} 2> {log}
+        | bcftools call -mv {params.ploidy_arg} | bcftools view --genotype het --types snps > {output} 2> {log}
         """

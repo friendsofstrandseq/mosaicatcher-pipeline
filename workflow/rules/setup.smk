@@ -51,12 +51,28 @@ rule install_sctrip_multiplot_package:
         "Rscript workflow/scripts/utils/install_R_package.R {params.selected_package}"
 
 
+def get_config_run_summary_inputs(wildcards):
+    """
+    Get inputs for config_run_summary rule.
+    Makes ploidy_summary input conditional based on ploidy config flag.
+    """
+    inputs = {
+        "labels": f"{wildcards.folder}/{wildcards.sample}/config/labels.tsv",
+        "info_raw": f"{wildcards.folder}/{wildcards.sample}/counts/{wildcards.sample}.info_raw",
+        "single_paired_end_detect": f"{wildcards.folder}/{wildcards.sample}/config/single_paired_end_detection.txt",
+    }
+
+    if config.get("ploidy", True) is True:
+        inputs["ploidy_summary"] = (
+            f"{wildcards.folder}/{wildcards.sample}/ploidy/ploidy_summary.txt"
+        )
+
+    return inputs
+
+
 rule config_run_summary:
     input:
-        labels="{folder}/{sample}/config/labels.tsv",
-        info_raw="{folder}/{sample}/counts/{sample}.info_raw",
-        ploidy_summary="{folder}/{sample}/ploidy/ploidy_summary.txt",
-        single_paired_end_detect="{folder}/{sample}/config/single_paired_end_detection.txt",
+        unpack(get_config_run_summary_inputs),
     output:
         summary=report(
             "{folder}/{sample}/config/run_summary.txt",
