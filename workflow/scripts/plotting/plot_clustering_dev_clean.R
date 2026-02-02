@@ -143,8 +143,19 @@ col_annotation <- sapply(strsplit(lite_data_pivot_clustering$pos, "_"), `[`, 1)
 
 col_test <- factor(sapply(strsplit(colnames(t_lite_data_pivot_clustering_num), "_"), `[`, 1), levels = unique(sapply(strsplit(colnames(t_lite_data_pivot_clustering_num), "_"), `[`, 1)))
 
+# Check if LLR values have sufficient variation for color scale
+# If all values are identical, add a small variation to enable plotting
+llr_values <- as.vector(t_lite_data_pivot_clustering_num)
+if (length(unique(llr_values)) < 2) {
+    message("Warning: Insufficient LLR variation detected. Using fixed color scale.")
+    # Create color function with explicit breaks
+    color_func <- circlize::colorRamp2(c(0, 1), c("white", "red"))
+} else {
+    color_func <- RColorBrewer::brewer.pal(name = "Reds", n = 9)
+}
+
 cl_h <- Heatmap(as.matrix(t_lite_data_pivot_clustering_num),
-    name = "LLR", col = RColorBrewer::brewer.pal(name = "Reds", n = 9),
+    name = "LLR", col = color_func,
     # column_title = "a discrete numeric matrix",
     rect_gp = gpar(col = "white", lwd = 1.5),
     top_annotation = ComplexHeatmap::HeatmapAnnotation(

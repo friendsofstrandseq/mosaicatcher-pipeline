@@ -9,10 +9,24 @@ g <- fread(snakemake@input[["initial_states"]])
 g
 
 d$bam <- basename(d$bam)
-e$bam <- e$cell
-e$cell <- NULL
-e$sample <- NULL
-f <- merge(d, e, by = "bam")[, .(chrom, start, end, sample, cell, class)]
+
+# Handle empty phased_states: ensure bam column is character type
+if (nrow(e) > 0) {
+    e$bam <- e$cell
+    e$cell <- NULL
+    e$sample <- NULL
+    f <- merge(d, e, by = "bam")[, .(chrom, start, end, sample, cell, class)]
+} else {
+    # When phased states are empty, create empty data.table with correct column types
+    f <- data.table(
+        chrom = character(0),
+        start = integer(0),
+        end = integer(0),
+        sample = character(0),
+        cell = character(0),
+        class = character(0)
+    )
+}
 f
 
 # Note that there is still a bug in Venla's strand state detection.
