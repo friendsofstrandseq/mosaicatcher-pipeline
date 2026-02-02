@@ -210,3 +210,79 @@ jobs:
             --conda-cleanup-pkgs cache \
             -p \
             --snakefile workflow/Snakefile
+
+  Testing-with-ploidy-enabled:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Git Submodule Update
+        run: |
+          git submodule update --remote --recursive --force --init
+
+      - name: Setup Pixi
+        uses: prefix-dev/setup-pixi@v0.9.3
+        with:
+          pixi-version: latest
+          cache: true
+          locked: false
+
+      - name: Cache Conda environments
+        uses: actions/cache@v4
+        with:
+          path: .snakemake/conda
+          key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
+          restore-keys: |
+            conda-envs-
+
+      - name: Run workflow (with ploidy estimation enabled v9)
+        run: |
+          pixi run snakemake \
+            --cores 1 \
+            --sdm conda \
+            --configfile .tests/config/simple_config_mosaicatcher.yaml \
+            --config ploidy=True \
+            --conda-cleanup-pkgs cache \
+            -p \
+            --snakefile workflow/Snakefile
+
+  Testing-with-ploidy-disabled:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Git Submodule Update
+        run: |
+          git submodule update --remote --recursive --force --init
+
+      - name: Setup Pixi
+        uses: prefix-dev/setup-pixi@v0.9.3
+        with:
+          pixi-version: latest
+          cache: true
+          locked: false
+
+      - name: Cache Conda environments
+        uses: actions/cache@v4
+        with:
+          path: .snakemake/conda
+          key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
+          restore-keys: |
+            conda-envs-
+
+      - name: Run workflow (with ploidy estimation disabled v9)
+        run: |
+          pixi run snakemake \
+            --cores 1 \
+            --sdm conda \
+            --configfile .tests/config/simple_config_mosaicatcher.yaml \
+            --config ploidy=False \
+            --conda-cleanup-pkgs cache \
+            -p \
+            --snakefile workflow/Snakefile
