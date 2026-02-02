@@ -88,26 +88,6 @@ rule regenotype_SNVs:
         """
 
 
-def get_call_SNVs_bcftools_inputs(wildcards):
-    """
-    Get inputs for call_SNVs_bcftools_chrom rule.
-    Makes ploidy input conditional based on ploidy config flag.
-    """
-    inputs = {
-        "bam": f"{wildcards.folder}/{wildcards.sample}/merged_bam/merged.bam",
-        "bai": f"{wildcards.folder}/{wildcards.sample}/merged_bam/merged.bam.bai",
-        "fasta": config["references_data"][config["reference"]]["reference_fasta"],
-        "fasta_index": f"{config['references_data'][config['reference']]['reference_fasta']}.fai",
-    }
-
-    if config.get("ploidy", True) is True:
-        inputs["ploidy"] = (
-            f"{wildcards.folder}/{wildcards.sample}/ploidy/ploidy_bcftools.txt"
-        )
-
-    return inputs
-
-
 rule call_SNVs_bcftools_chrom:
     input:
         unpack(get_call_SNVs_bcftools_inputs),
