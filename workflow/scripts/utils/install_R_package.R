@@ -43,8 +43,10 @@ if (!isTRUE(is_package_available)) {
             install.packages(package, repos = NULL, type = "source")
         })
 
-        # Condition 2: Install standard Bsgenome packages (hg38/hg19/mm10)
-    } else if (package %in% c("BSgenome.Hsapiens.UCSC.hg38", "BSgenome.Hsapiens.UCSC.hg19", "BSgenome.Mmusculus.UCSC.mm10")) {
+        # Condition 2: Install standard BSgenome packages from Bioconductor
+    # Matches: BSgenome.<Species>.UCSC.<assembly>
+    # Examples: BSgenome.Hsapiens.UCSC.hg38, BSgenome.Mmusculus.UCSC.mm39, etc.
+    } else if (grepl("^BSgenome\\.[A-Z][a-z]+\\.UCSC\\.", package, perl = TRUE)) {
         install_with_retry(function() {
             BiocManager::install(package, update = FALSE, ask = FALSE)
         })

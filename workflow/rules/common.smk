@@ -11,6 +11,27 @@ import os, sys
 os.environ["LC_CTYPE"] = "C"
 
 
+# Helper Functions
+
+def get_species_from_reference(reference):
+    """
+    Derive species name from reference genome identifier.
+    Returns species name for BSgenome package construction.
+
+    Examples:
+        mm10, mm39 -> Mmusculus
+        hg19, hg38 -> Hsapiens
+        T2T -> Hsapiens (human T2T assembly)
+    """
+    ref_lower = reference.lower()
+    if ref_lower.startswith('mm'):
+        return 'Mmusculus'
+    elif ref_lower.startswith('hg') or ref_lower == 't2t':
+        return 'Hsapiens'
+    else:
+        return None
+
+
 # CONDA ENVS
 
 conda_envs = ["mc_base", "rtools", "mc_bioinfo_tools"]

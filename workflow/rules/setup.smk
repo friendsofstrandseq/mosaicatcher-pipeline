@@ -20,10 +20,10 @@ rule install_BSgenome_package:
     params:
         selected_package=lambda wc, input: (
             "BSgenome.{}.UCSC.{}".format(
-                "Mmusculus" if config["reference"] == "mm10" else "Hsapiens",
+                get_species_from_reference(config["reference"]),
                 config["reference"],
             )
-            if config["reference"] in ["hg38", "hg19", "mm10"]
+            if get_species_from_reference(config["reference"]) is not None
             else input.package
         ),
     conda:
