@@ -39,8 +39,9 @@ jobs:
           cache: true
           locked: false
 
-      - name: Cache Conda environments
-        uses: actions/cache@v4
+      - name: Restore Conda environments cache
+        id: cache-conda-restore
+        uses: actions/cache/restore@v4
         with:
           path: .snakemake/conda
           key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
@@ -57,6 +58,13 @@ jobs:
             --conda-cleanup-pkgs cache \
             -p \
             --snakefile workflow/Snakefile
+
+      - name: Save Conda environments cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .snakemake/conda
+          key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
 
   Testing-with-whatshap-only:
     runs-on: ubuntu-latest
@@ -77,8 +85,9 @@ jobs:
           cache: true
           locked: false
 
-      - name: Cache Conda environments
-        uses: actions/cache@v4
+      - name: Restore Conda environments cache
+        id: cache-conda-restore
+        uses: actions/cache/restore@v4
         with:
           path: .snakemake/conda
           key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
@@ -95,6 +104,13 @@ jobs:
             --conda-cleanup-pkgs cache \
             -p \
             --snakefile workflow/Snakefile
+
+      - name: Save Conda environments cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .snakemake/conda
+          key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
 
   Testing-ashleys-multistep-norm:
     runs-on: ubuntu-latest
@@ -115,8 +131,9 @@ jobs:
           cache: true
           locked: false
 
-      - name: Cache Conda environments
-        uses: actions/cache@v4
+      - name: Restore Conda environments cache
+        id: cache-conda-restore
+        uses: actions/cache/restore@v4
         with:
           path: .snakemake/conda
           key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
@@ -133,6 +150,13 @@ jobs:
             --conda-cleanup-pkgs cache \
             -p \
             --snakefile workflow/Snakefile
+
+      - name: Save Conda environments cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .snakemake/conda
+          key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
 
   Testing-ashleys-multiqc:
     runs-on: ubuntu-latest
@@ -153,8 +177,9 @@ jobs:
           cache: true
           locked: false
 
-      - name: Cache Conda environments
-        uses: actions/cache@v4
+      - name: Restore Conda environments cache
+        id: cache-conda-restore
+        uses: actions/cache/restore@v4
         with:
           path: .snakemake/conda
           key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
@@ -171,6 +196,13 @@ jobs:
             --conda-cleanup-pkgs cache \
             -p \
             --snakefile workflow/Snakefile
+
+      - name: Save Conda environments cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .snakemake/conda
+          key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
 
   Testing-ashleys-full-fastq:
     runs-on: ubuntu-latest
@@ -191,8 +223,9 @@ jobs:
           cache: true
           locked: false
 
-      - name: Cache Conda environments
-        uses: actions/cache@v4
+      - name: Restore Conda environments cache
+        id: cache-conda-restore
+        uses: actions/cache/restore@v4
         with:
           path: .snakemake/conda
           key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
@@ -210,6 +243,13 @@ jobs:
             --conda-cleanup-pkgs cache \
             -p \
             --snakefile workflow/Snakefile
+
+      - name: Save Conda environments cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .snakemake/conda
+          key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
 
   Testing-with-ploidy-enabled:
     runs-on: ubuntu-latest
@@ -230,8 +270,9 @@ jobs:
           cache: true
           locked: false
 
-      - name: Cache Conda environments
-        uses: actions/cache@v4
+      - name: Restore Conda environments cache
+        id: cache-conda-restore
+        uses: actions/cache/restore@v4
         with:
           path: .snakemake/conda
           key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
@@ -248,6 +289,13 @@ jobs:
             --conda-cleanup-pkgs cache \
             -p \
             --snakefile workflow/Snakefile
+
+      - name: Save Conda environments cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .snakemake/conda
+          key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
 
   Testing-with-ploidy-disabled:
     runs-on: ubuntu-latest
@@ -268,8 +316,9 @@ jobs:
           cache: true
           locked: false
 
-      - name: Cache Conda environments
-        uses: actions/cache@v4
+      - name: Restore Conda environments cache
+        id: cache-conda-restore
+        uses: actions/cache/restore@v4
         with:
           path: .snakemake/conda
           key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
@@ -286,3 +335,10 @@ jobs:
             --conda-cleanup-pkgs cache \
             -p \
             --snakefile workflow/Snakefile
+
+      - name: Save Conda environments cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .snakemake/conda
+          key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
