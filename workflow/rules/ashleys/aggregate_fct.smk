@@ -80,17 +80,17 @@ def select_binbed(wildcards):
 
 
 def select_ashleys_labels(wildcards):
-    # if bypass_ashleys is False > pick labels_ashleys.tsv
-    if config["bypass_ashleys"] is False:
+    # if bypass_ashleys is True > pick labels_ashleys_bypass.tsv
+    if config["bypass_ashleys"] or config["use_light_data"]:
         return expand(
-            "{folder}/{sample}/cell_selection/labels_ashleys.tsv",
+            "{folder}/{sample}/cell_selection/labels_ashleys_bypass.tsv",
             folder=config["data_location"],
             sample=wildcards.sample,
         )
     else:
-        # if bypass_ashleys is True > pick labels_ashleys_bypass.tsv
+        # if bypass_ashleys is False > pick labels_ashleys.tsv
         return expand(
-            "{folder}/{sample}/cell_selection/labels_ashleys_bypass.tsv",
+            "{folder}/{sample}/cell_selection/labels_ashleys.tsv",
             folder=config["data_location"],
             sample=wildcards.sample,
         )

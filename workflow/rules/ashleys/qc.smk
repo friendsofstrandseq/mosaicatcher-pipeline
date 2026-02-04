@@ -88,29 +88,6 @@ if config["use_light_data"] is False:
         script:
             "../../scripts/ashleys/utils/tune_predictions_based_on_threshold.py"
 
-    rule ashleys_plot_plate:
-        input:
-            labels="{folder}/{sample}/cell_selection/labels.tsv",
-        output:
-            predictions=report(
-                "{folder}/{sample}/plots/plate/ashleys_plate_predictions.pdf",
-                category="Ashleys plate plots",
-                subcategory="{sample}",
-                labels={"Sample": "{sample}", "Plot Type": "Predictions"},
-            ),
-            probabilities=report(
-                "{folder}/{sample}/plots/plate/ashleys_plate_probabilities.pdf",
-                category="Ashleys plate plots",
-                subcategory="{sample}",
-                labels={"Sample": "{sample}", "Plot Type": "Probabilities"},
-            ),
-            well_table="{folder}/{sample}/plots/plate/ashleys_well_table.tsv",
-        log:
-            "{folder}/log/plot_plate/{sample}.log",
-        conda:
-            "../../envs/rtools.yaml"
-        script:
-            "../../scripts/ashleys/plotting/plot_plate.R"
 
 elif config["use_light_data"] is True:
 
@@ -126,6 +103,31 @@ elif config["use_light_data"] is True:
             "../../envs/mc_base.yaml"
         script:
             "../../scripts/ashleys/utils/dev_all_cells_correct.py"
+
+
+rule ashleys_plot_plate:
+    input:
+        labels="{folder}/{sample}/cell_selection/labels.tsv",
+    output:
+        predictions=report(
+            "{folder}/{sample}/plots/plate/ashleys_plate_predictions.pdf",
+            category="Ashleys plate plots",
+            subcategory="{sample}",
+            labels={"Sample": "{sample}", "Plot Type": "Predictions"},
+        ),
+        probabilities=report(
+            "{folder}/{sample}/plots/plate/ashleys_plate_probabilities.pdf",
+            category="Ashleys plate plots",
+            subcategory="{sample}",
+            labels={"Sample": "{sample}", "Plot Type": "Probabilities"},
+        ),
+        well_table="{folder}/{sample}/plots/plate/ashleys_well_table.tsv",
+    log:
+        "{folder}/log/plot_plate/{sample}.log",
+    conda:
+        "../../envs/rtools.yaml"
+    script:
+        "../../scripts/ashleys/plotting/plot_plate.R"
 
 
 if config["publishdir"] != "":
