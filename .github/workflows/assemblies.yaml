@@ -222,6 +222,7 @@ jobs:
             --config reference=T2T use_light_data=True chromosomes=[chr17] ashleys_pipeline=False \
             --conda-cleanup-pkgs cache \
             --retries 3 \
+            --latency-wait 60 \
             -p \
             --snakefile workflow/Snakefile
 
