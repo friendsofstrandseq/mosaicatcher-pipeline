@@ -17,6 +17,7 @@ rule summary_statistics:
 
 
 rule aggregate_summary_statistics:
+    localrule: True
     input:
         tsv=lambda wc: [
             sub_e

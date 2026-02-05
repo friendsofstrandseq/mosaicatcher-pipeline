@@ -57,7 +57,7 @@ rule run_strandphaser_per_chrom:
         "../envs/rtools.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
-        time="10:00:00",
+        runtime=600,
     params:
         input_bam=lambda wc: "{}/{}/selected".format(config["data_location"], wc.sample),
         output=lambda wc: "{}/{}/strandphaser/StrandPhaseR_analysis.{}".format(
@@ -85,6 +85,8 @@ rule merge_strandphaser_vcfs:
         "{folder}/log/merge_strandphaser_vcfs/{sample}.log",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
+    envmodules:
+        "BCFtools/1.21-GCC-13.3.0",
     resources:
         mem_mb=get_mem_mb,
     shell:
@@ -126,6 +128,7 @@ rule convert_strandphaser_output:
 
 
 rule keep_canonical_strandphaser_output:
+    localrule: True
     input:
         "{folder}/{sample}/strandphaser/StrandPhaseR_final_output.txt.raw",
     output:

@@ -37,6 +37,7 @@ rule haplotag_bams:
 
 
 rule create_haplotag_segment_bed:
+    localrule: True
     input:
         segments="{folder}/{sample}/segmentation/Selection_jointseg.txt",
     output:
@@ -75,6 +76,7 @@ rule create_haplotag_table:
 
 
 rule merge_haplotag_tables:
+    localrule: True
     input:
         # tsvs=lambda wc: [
         #     "{}/{}/haplotag/table/by-cell/{}.tsv".format(

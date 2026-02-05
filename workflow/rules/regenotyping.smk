@@ -17,6 +17,8 @@ rule mergeBams:
     threads: 10
     conda:
         "../envs/mc_bioinfo_tools.yaml"
+    envmodules:
+        "SAMtools/1.21-GCC-13.3.0",
     shell:
         "samtools merge -@ {threads} {output} {input.bam} 2>&1 > {log}"
 
@@ -34,6 +36,8 @@ rule mergeSortBams:
     threads: 10
     conda:
         "../envs/mc_bioinfo_tools.yaml"
+    envmodules:
+        "SAMtools/1.21-GCC-13.3.0",
     shell:
         "samtools sort -@ {threads} -o {output} {input} 2>&1 > {log}"
 
@@ -47,6 +51,8 @@ rule index_merged_bam:
         "{folder}/log/merged_bam/{sample}/merged.log",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
+    envmodules:
+        "SAMtools/1.21-GCC-13.3.0",
     resources:
         mem_mb=get_mem_mb,
     shell:
@@ -71,6 +77,8 @@ rule regenotype_SNVs:
         time="10:00:00",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
+    envmodules:
+        ["freebayes/1.3.6-foss-2021b-R-4.1.2", "BCFtools/1.21-GCC-13.3.0"],
     shell:
         """
         (freebayes \
@@ -101,6 +109,8 @@ rule call_SNVs_bcftools_chrom:
         ),
     conda:
         "../envs/mc_bioinfo_tools.yaml"
+    envmodules:
+        "BCFtools/1.21-GCC-13.3.0",
     resources:
         mem_mb=get_mem_mb_heavy,
         time="10:00:00",

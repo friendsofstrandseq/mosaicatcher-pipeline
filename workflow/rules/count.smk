@@ -51,7 +51,7 @@ if config["ashleys_pipeline"] is False:
             window=config["window"],
         resources:
             mem_mb=get_mem_mb_heavy,
-            time="24:00:00",
+            runtime=1440,
         shell:
             """
             mosaicatcher count \
@@ -77,6 +77,7 @@ if config["ashleys_pipeline"] is False:
             "../envs/mc_base.yaml"
         resources:
             mem_mb=get_mem_mb,
+            runtime=600,
         script:
             "../scripts/utils/populated_counts_for_qc_plot.py"
 
@@ -97,6 +98,7 @@ if config["ashleys_pipeline"] is False:
     else:
 
         rule touch_labels:
+            localrule: True
             # input:
             #     info_raw="{folder}/{sample}/counts/{sample}.info_raw",
             output:
@@ -117,6 +119,7 @@ if config["ashleys_pipeline"] is False:
 
 
 rule copy_labels:
+    localrule: True
     input:
         select_labels,
     output:
@@ -145,6 +148,7 @@ rule symlink_selected_bam:
 
 
 rule remove_unselected_bam:
+    localrule: True
     input:
         # labels="{folder}/{sample}/config/labels.tsv",
         labels="{folder}/{sample}/cell_selection/labels.tsv",
@@ -163,6 +167,7 @@ rule remove_unselected_bam:
 
 
 rule remove_unselected_bam_empty:
+    localrule: True
     output:
         touch("{folder}/{sample}/config/remove_unselected_bam_empty.ok"),
     log:
@@ -233,6 +238,7 @@ else:
 if config["blacklist_regions"] is True:
 
     rule correct_norm_for_blacklisting:
+        localrule: True
         input:
             "{folder}/{sample}/normalizations/{reference}/HGSVC.{window}.merged.tsv",
         output:
@@ -276,6 +282,7 @@ if config["blacklist_regions"] is True:
 else:
 
     rule cp_mosaic_count:
+        localrule: True
         input:
             "{folder}/{sample}/counts/{sample}.txt.filter.gz",
         output:

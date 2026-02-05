@@ -51,7 +51,7 @@ checkpoint mosaic_count:
         window=config["window"],
     resources:
         mem_mb=get_mem_mb_heavy,
-        time="24:00:00",
+        runtime=600,
     shell:
         """
         mosaicatcher count \
@@ -78,6 +78,7 @@ rule ashleys_populate_counts:
         "../../envs/mc_base.yaml"
     resources:
         mem_mb=get_mem_mb,
+        runtime=600,
     script:
         "../../scripts/ashleys/utils/populated_counts_for_qc_plot.py"
 

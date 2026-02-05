@@ -17,6 +17,8 @@ rule ashleys_fastqc:
         mem_mb=get_mem_mb,
     conda:
         "../../envs/mc_bioinfo_tools.yaml"
+    envmodules:
+        "FastQC/0.11.9-Java-11",
     shell:
         """
         tempdir=$(mktemp -d)
@@ -28,6 +30,7 @@ rule ashleys_fastqc:
 
 
 rule ashleys_fastqc_aggregate:
+    localrule: True
     input:
         lambda wc: expand(
             "{folder}/{sample}/multiqc/fastqc/{cell}_{pair}_fastqc.html",
@@ -51,11 +54,14 @@ rule ashleys_samtools_idxstats:
         mem_mb=get_mem_mb,
     conda:
         "../../envs/mc_bioinfo_tools.yaml"
+    envmodules:
+        "SAMtools/1.21-GCC-13.3.0",
     shell:
         "samtools idxstats {input} > {output}"
 
 
 rule ashleys_samtools_idxstats_aggr:
+    localrule: True
     input:
         lambda wc: expand(
             "{folder}/{sample}/multiqc/samtools_idxstats/{cell}.txt",
@@ -80,11 +86,14 @@ rule ashleys_samtools_flagstats:
         mem_mb=get_mem_mb,
     conda:
         "../../envs/mc_bioinfo_tools.yaml"
+    envmodules:
+        "SAMtools/1.21-GCC-13.3.0",
     shell:
         "samtools flagstats {input} > {output}"
 
 
 rule ashleys_samtools_flagstats_aggr:
+    localrule: True
     input:
         lambda wc: expand(
             "{folder}/{sample}/multiqc/samtools_flagstats/{cell}.txt",
@@ -109,11 +118,14 @@ rule ashleys_samtools_stats:
         mem_mb=get_mem_mb,
     conda:
         "../../envs/mc_bioinfo_tools.yaml"
+    envmodules:
+        "SAMtools/1.21-GCC-13.3.0",
     shell:
         "samtools stats {input} > {output}"
 
 
 rule ashleys_samtools_stats_aggr:
+    localrule: True
     input:
         lambda wc: expand(
             "{folder}/{sample}/multiqc/samtools_stats/{cell}.txt",
@@ -151,5 +163,7 @@ rule ashleys_multiqc:
         ).join(input.fastqc.split("/")[:-3]),
     conda:
         "../../envs/mc_bioinfo_tools.yaml"
+    envmodules:
+        "MultiQC/1.30-foss-2024a",
     shell:
         "multiqc {params.multiqc_input} --outdir {output.outdir}"

@@ -1,5 +1,6 @@
 
 rule fake_package:
+    localrule: True
     output:
         touch("workflow/data/ref_genomes/log/fake_package.ok"),
 

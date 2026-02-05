@@ -16,7 +16,7 @@ rule ashleys_generate_features:
         ),
     resources:
         mem_mb=get_mem_mb_heavy,
-        time="01:00:00",
+        runtime=3600,
     shell:
         "ashleys -j {threads} features -f {params.folder} -w {params.windows} -o {output} --recursive_collect -e {params.extension}"
 
@@ -35,7 +35,7 @@ rule ashleys_predict:
         model_stringent="./workflow/ashleys_models/svc_stringent.pkl",
     resources:
         mem_mb=get_mem_mb,
-        time="01:00:00",
+        runtime=3600,
     shell:
         "ashleys predict -p {input.folder} -o {output} -m {params.model_default}"
 
@@ -87,7 +87,6 @@ if config["use_light_data"] is False:
             "../../envs/mc_base.yaml"
         script:
             "../../scripts/ashleys/utils/tune_predictions_based_on_threshold.py"
-
 
 elif config["use_light_data"] is True:
 

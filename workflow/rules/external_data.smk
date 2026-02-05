@@ -11,6 +11,7 @@ storage http:
 
 
 rule dl_example_data:
+    localrule: True
     input:
         # HTTP.remote(
         storage.http(
@@ -26,6 +27,7 @@ rule dl_example_data:
 
 
 rule download_hg19_reference:
+    localrule: True
     input:
         # HTTP.remote(
         storage.http(
@@ -48,6 +50,7 @@ rule download_hg19_reference:
 
 
 rule download_hg38_reference:
+    localrule: True
     input:
         # HTTP.remote(
         storage.http(
@@ -70,6 +73,7 @@ rule download_hg38_reference:
 
 
 rule download_T2T_reference:
+    localrule: True
     input:
         # HTTP.remote(
         storage.http(
@@ -92,6 +96,7 @@ rule download_T2T_reference:
 
 
 rule download_mm10_reference:
+    localrule: True
     input:
         # HTTP.remote(
         storage.http(
@@ -114,6 +119,7 @@ rule download_mm10_reference:
 
 
 rule download_mm39_reference:
+    localrule: True
     input:
         storage.http(
             "https://hgdownload.soe.ucsc.edu/goldenPath/mm39/bigZips/mm39.fa.gz",
@@ -135,6 +141,7 @@ rule download_mm39_reference:
 
 
 rule download_T2T_tarball:
+    localrule: True
     input:
         # HTTP.remote(
         storage.http(
@@ -156,6 +163,7 @@ rule download_T2T_tarball:
 
 
 rule download_arbigent_mappability_track:
+    localrule: True
     input:
         # HTTP.remote(
         storage.http(
