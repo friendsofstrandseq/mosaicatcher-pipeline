@@ -96,7 +96,8 @@ if config["paired_end"] is True:
         conda:
             "../../envs/mc_bioinfo_tools.yaml"
         envmodules:
-            ["BWA/0.7.19-GCCcore-14.2.0", "SAMtools/1.21-GCC-13.3.0"],
+            "BWA/0.7.19-GCCcore-14.2.0",
+            "SAMtools/1.21-GCC-13.3.0",
         shell:
             "bwa mem -t {threads}"
             ' -R "@RG\\tID:{wildcards.cell}\\tPL:Illumina\\tSM:{wildcards.sample}"'
@@ -133,7 +134,8 @@ else:
         conda:
             "../../envs/mc_bioinfo_tools.yaml"
         envmodules:
-            ["BWA/0.7.19-GCCcore-14.2.0", "SAMtools/1.21-GCC-13.3.0"],
+            "BWA/0.7.19-GCCcore-14.2.0",
+            "SAMtools/1.21-GCC-13.3.0",
         shell:
             "bwa mem -t {threads}"
             ' -R "@RG\\tID:{wildcards.cell}\\tPL:Illumina\\tSM:{wildcards.sample}"'

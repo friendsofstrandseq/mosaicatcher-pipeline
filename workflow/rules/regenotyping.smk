@@ -78,7 +78,8 @@ rule regenotype_SNVs:
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     envmodules:
-        ["freebayes/1.3.6-foss-2021b-R-4.1.2", "BCFtools/1.21-GCC-13.3.0"],
+        "freebayes/1.3.6-foss-2021b-R-4.1.2",
+        "BCFtools/1.21-GCC-13.3.0",
     shell:
         """
         (freebayes \
