@@ -111,7 +111,7 @@ references_data:
   "mm39":
     reference_fasta: "workflow/data/ref_genomes/mm39.fa"
     R_reference: "BSgenome.Mmusculus.UCSC.mm39"
-    segdups: "workflow/data/segdups/segDups_mm39_UCSCtrack.bed.gz"
+    segdups: ""  # mm39 has no genomicSuperDups track on UCSC, only tandemDups
     snv_sites_to_genotype: []
     reference_file_location: https://hgdownload.soe.ucsc.edu/goldenPath/mm39/bigZips/mm39.fa.gz
 

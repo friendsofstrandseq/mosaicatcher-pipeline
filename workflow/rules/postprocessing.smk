@@ -15,9 +15,13 @@ rule postprocessing_filter:
         mem_mb=get_mem_mb,
     shell:
         """
-        export LC_CTYPE=en_US.UTF-8 
-        export LC_ALL=en_US.UTF-8 
-        workflow/scripts/postprocessing/filter_MosaiCatcher_calls.pl {input.calls} {params.segdups} > {output.calls}
+        export LC_CTYPE=en_US.UTF-8
+        export LC_ALL=en_US.UTF-8
+        if [ -n "{params.segdups}" ] && [ -f "{params.segdups}" ]; then
+            workflow/scripts/postprocessing/filter_MosaiCatcher_calls.pl {input.calls} {params.segdups} > {output.calls}
+        else
+            cp {input.calls} {output.calls}
+        fi
         """
 
 
