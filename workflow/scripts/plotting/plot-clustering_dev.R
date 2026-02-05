@@ -215,9 +215,8 @@ plot.clustering <- function(inputfile, bin.bed.filename, position.outputfile, ch
       data1_pos_uniq_sort[chrom_index_list, "color"] = colors_chroms[i]
     }
     
-    # Sort data based on define factor
-    chrOrder <-
-      c(paste("chr", 1:22, sep = ""), "chrX", "chrY", "chrM")
+    # Sort data based on define factor (use passed chromosomes parameter)
+    chrOrder <- chromosomes
     data1_pos_uniq_sort$chrom <-
       factor(data1_pos_uniq_sort$chr, levels = chrOrder)
     data1_pos_uniq_sort[order(data1_pos_uniq_sort$chrom),]
