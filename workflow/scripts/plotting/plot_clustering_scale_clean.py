@@ -1,3 +1,4 @@
+import sys
 import pandas as pd
 import numpy as np
 import seaborn as sns
@@ -61,10 +62,22 @@ colors = {
 # Read SV file
 df = pd.read_csv(snakemake.input.sv_calls, sep="\t")
 # df = pd.read_csv("../stringent_filterTRUE.tsv", sep="\t")
+
+# Handle empty data case
+if df.empty:
+    print("No SV calls found. Creating empty output.", file=sys.stderr)
+    with PdfPages(snakemake.output.pdf) as pdf:
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.text(0.5, 0.5, "No SV calls to display", ha='center', va='center', fontsize=16)
+        ax.axis('off')
+        pdf.savefig(fig)
+        plt.close()
+    sys.exit(0)
+
 df["ID"] = df["chrom"] + "_" + df["start"].astype(str) + "_" + df["end"].astype(str)
 
 
-if snakemake.config["reference"] != "mm10":
+if snakemake.config["reference"] not in ["mm10", "mm39"]:
     names = ["chrom", "start", "end", "bin_id"]
 else:
     names = ["chrom", "start", "end"]
@@ -80,11 +93,8 @@ binbed = pd.read_csv(
 
 binbed["ID"] = binbed["chrom"] + "_" + binbed["start"].astype(str) + "_" + binbed["end"].astype(str)
 
-cats = (
-    ["chr{}".format(e) for e in range(1, 23)] + ["chrX", "chrY"]
-    if snakemake.config["reference"] != "mm10"
-    else ["chr{}".format(e) for e in range(1, 20)] + ["chrX", "chrY"]
-)
+# Use chromosomes from config
+cats = snakemake.config["chromosomes"]
 
 # Turn chrom into categorical
 binbed["chrom"] = pd.Categorical(

@@ -49,6 +49,12 @@ def main():
     print("Reading", args.callset, file=sys.stderr)
     calls = pd.read_csv(args.callset, sep="\t")
 
+    # Handle empty data case
+    if calls.empty:
+        print("No SV calls found. Creating empty output.", file=sys.stderr)
+        print("chrom\tstart\tend")
+        sys.exit(0)
+
     # Identify "complex" intervals
     segments = (
         calls.groupby(by=["chrom", "start", "end"])
