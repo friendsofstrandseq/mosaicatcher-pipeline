@@ -359,10 +359,10 @@ def bsgenome_install(wildcards):
 
 
 def select_binbed(wildcards):
-    if config["reference"] != "mm10":
-        return "workflow/data/bin_200kb_all.bed"
-    else:
+    if get_species_from_reference(config["reference"]) != "Hsapiens":
         return "workflow/data/mm10.bin_200kb_all.bed"
+    else:
+        return "workflow/data/bin_200kb_all.bed"
 
 
 def select_labels(wildcards):
