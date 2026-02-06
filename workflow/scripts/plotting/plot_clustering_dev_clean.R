@@ -117,7 +117,10 @@ dd <- unique(select(data1, c("chrom", "color")))
 # Create subset for clustering
 
 lite_data_clustering <- select(data1, c("pos", "cell", "llr_to_ref"))
-lite_data_clustering[c("llr_to_ref")][sapply(lite_data_clustering[c("llr_to_ref")], is.infinite)] <- max(lite_data_clustering$llr_to_ref[is.finite(lite_data_clustering$llr_to_ref)])
+# Handle Inf values: replace with max finite value, or 0 if no finite values exist
+finite_llr <- lite_data_clustering$llr_to_ref[is.finite(lite_data_clustering$llr_to_ref)]
+max_finite_llr <- if (length(finite_llr) > 0) max(finite_llr) else 0
+lite_data_clustering[c("llr_to_ref")][sapply(lite_data_clustering[c("llr_to_ref")], is.infinite)] <- max_finite_llr
 lite_data_clustering[is.na(lite_data_clustering)] <- 0
 # lite_data_clustering$llr_to_ref <- range01(lite_data_clustering$llr_to_ref)
 
@@ -148,12 +151,13 @@ col_annotation <- sapply(strsplit(lite_data_pivot_clustering$pos, "_"), `[`, 1)
 
 col_test <- factor(sapply(strsplit(colnames(t_lite_data_pivot_clustering_num), "_"), `[`, 1), levels = unique(sapply(strsplit(colnames(t_lite_data_pivot_clustering_num), "_"), `[`, 1)))
 
-# Check if LLR values have sufficient variation for color scale
-# If all values are identical, add a small variation to enable plotting
+# Check if LLR values have sufficient variation for color scale and clustering
 llr_values <- as.vector(t_lite_data_pivot_clustering_num)
-if (length(unique(llr_values)) < 2) {
-    message("Warning: Insufficient LLR variation detected. Using fixed color scale.")
-    # Create color function with explicit breaks
+finite_llr_values <- llr_values[is.finite(llr_values)]
+can_cluster <- length(unique(finite_llr_values)) >= 2 && nrow(t_lite_data_pivot_clustering_num) >= 2
+
+if (!can_cluster) {
+    message("Warning: Insufficient LLR variation detected. Using fixed color scale and disabling clustering.")
     color_func <- circlize::colorRamp2(c(0, 1), c("white", "red"))
 } else {
     color_func <- RColorBrewer::brewer.pal(name = "Reds", n = 9)
@@ -172,6 +176,7 @@ cl_h <- Heatmap(as.matrix(t_lite_data_pivot_clustering_num),
     column_names_gp = gpar(fontsize = 4),
     column_title_gp = gpar(fontsize = 10),
     cluster_columns = FALSE,
+    cluster_rows = can_cluster,
     column_gap = unit(2, "mm"),
     cluster_column_slices = FALSE,
     column_title_rot = 90,
