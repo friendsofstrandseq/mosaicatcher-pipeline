@@ -48,7 +48,7 @@ rule ashleys_bwa_index:
             config["references_data"][config["reference"]]["reference_fasta"]
         ),
     conda:
-        "../../envs/mc_base.yaml"
+        "../../envs/mc_bioinfo_tools.yaml"
     cache: True
     params:
         algorithm="bwtsw",

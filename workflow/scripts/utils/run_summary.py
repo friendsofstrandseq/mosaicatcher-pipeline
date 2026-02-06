@@ -29,14 +29,16 @@ else:
 final_df = final_df.rename({"hand_labels": "Ashleys/hand labels"}, axis=1).sort_values(by="cell", ascending=True)
 
 
-df_ploidy = pd.read_csv(ploidy_summary, sep="\t")[["#chrom", "50%"]]
-df_ploidy = df_ploidy.loc[df_ploidy["#chrom"] != "genome"]
-# Get chromosome list from config
-chroms = snakemake.config["chromosomes"]
-df_ploidy["#chrom"] = pd.Categorical(df_ploidy["#chrom"], categories=chroms, ordered=True)
-df_ploidy = df_ploidy.sort_values(by=["#chrom"]).rename({"#chrom": "chrom", "50%": "ploidy_estimation"}, axis=1)
-df_ploidy.loc[df_ploidy["ploidy_estimation"] == 1, "StrandPhaseR_processed"] = 0
-df_ploidy["StrandPhaseR_processed"] = df_ploidy["StrandPhaseR_processed"].fillna(1)
+df_ploidy = None
+if ploidy_summary is not None:
+    df_ploidy = pd.read_csv(ploidy_summary, sep="\t")[["#chrom", "50%"]]
+    df_ploidy = df_ploidy.loc[df_ploidy["#chrom"] != "genome"]
+    # Get chromosome list from config
+    chroms = snakemake.config["chromosomes"]
+    df_ploidy["#chrom"] = pd.Categorical(df_ploidy["#chrom"], categories=chroms, ordered=True)
+    df_ploidy = df_ploidy.sort_values(by=["#chrom"]).rename({"#chrom": "chrom", "50%": "ploidy_estimation"}, axis=1)
+    df_ploidy.loc[df_ploidy["ploidy_estimation"] == 1, "StrandPhaseR_processed"] = 0
+    df_ploidy["StrandPhaseR_processed"] = df_ploidy["StrandPhaseR_processed"].fillna(1)
 
 with open(snakemake.output.summary, "w") as o:
     o.write("\n==============Library quality summary==============\n")

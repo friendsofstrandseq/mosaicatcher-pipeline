@@ -159,7 +159,13 @@ df.groupby("cell").apply(lambda r: process_sv(r))
 
 # Concat results
 if len(l) == 0:
-    print("Warning: No SV calls found to process")
+    print("Warning: No SV calls found to process. Creating empty output.", file=sys.stderr)
+    with PdfPages(snakemake.output.pdf) as pdf:
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.text(0.5, 0.5, "No SV calls to display", ha='center', va='center', fontsize=16)
+        ax.axis('off')
+        pdf.savefig(fig)
+        plt.close()
     sys.exit(0)
 
 processed_df = pd.concat(l)
