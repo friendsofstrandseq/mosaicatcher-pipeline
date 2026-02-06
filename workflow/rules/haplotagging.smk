@@ -37,6 +37,7 @@ rule haplotag_bams:
 
 
 rule create_haplotag_segment_bed:
+    localrule: True
     input:
         segments="{folder}/{sample}/segmentation/Selection_jointseg.txt",
     output:
@@ -75,6 +76,7 @@ rule create_haplotag_table:
 
 
 rule merge_haplotag_tables:
+    localrule: True
     input:
         # tsvs=lambda wc: [
         #     "{}/{}/haplotag/table/by-cell/{}.tsv".format(
@@ -92,4 +94,15 @@ rule merge_haplotag_tables:
     resources:
         mem_mb=get_mem_mb,
     shell:
-        "(head -n1 {input.tsvs[0]} && tail -q -n +2 {input.tsvs}) > {output.tsv}"
+        """
+        # Convert Snakemake's space-separated string to bash array
+        TSVS=({input.tsvs})
+
+        if [ ${{#TSVS[@]}} -eq 0 ]; then
+            echo "WARNING: No cells passed QC filter - creating empty haplotag table" >&2
+            # Create header-only output for downstream compatibility
+            echo -e "cell\\tchrom\\tstart\\tend\\tcrick.count\\twatson.count\\tcrick.H1\\tcrick.H2\\twatson.H1\\twatson.H2" > {output.tsv}
+        else
+            (head -n1 ${{TSVS[0]}} && tail -q -n +2 {input.tsvs}) > {output.tsv}
+        fi
+        """

@@ -1,5 +1,6 @@
 
 rule fake_package:
+    localrule: True
     output:
         touch("workflow/data/ref_genomes/log/fake_package.ok"),
 
@@ -20,10 +21,10 @@ rule install_BSgenome_package:
     params:
         selected_package=lambda wc, input: (
             "BSgenome.{}.UCSC.{}".format(
-                "Mmusculus" if config["reference"] == "mm10" else "Hsapiens",
+                get_species_from_reference(config["reference"]),
                 config["reference"],
             )
-            if config["reference"] in ["hg38", "hg19", "mm10"]
+            if get_species_from_reference(config["reference"]) is not None
             else input.package
         ),
     conda:
@@ -53,10 +54,7 @@ rule install_sctrip_multiplot_package:
 
 rule config_run_summary:
     input:
-        labels="{folder}/{sample}/config/labels.tsv",
-        info_raw="{folder}/{sample}/counts/{sample}.info_raw",
-        ploidy_summary="{folder}/{sample}/ploidy/ploidy_summary.txt",
-        single_paired_end_detect="{folder}/{sample}/config/single_paired_end_detection.txt",
+        unpack(get_config_run_summary_inputs),
     output:
         summary=report(
             "{folder}/{sample}/config/run_summary.txt",

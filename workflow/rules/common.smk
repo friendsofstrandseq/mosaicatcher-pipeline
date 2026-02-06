@@ -11,6 +11,28 @@ import os, sys
 os.environ["LC_CTYPE"] = "C"
 
 
+# Helper Functions
+
+
+def get_species_from_reference(reference):
+    """
+    Derive species name from reference genome identifier.
+    Returns species name for BSgenome package construction.
+
+    Examples:
+        mm10, mm39 -> Mmusculus
+        hg19, hg38 -> Hsapiens
+        T2T -> Hsapiens (human T2T assembly)
+    """
+    ref_lower = reference.lower()
+    if ref_lower.startswith("mm"):
+        return "Mmusculus"
+    elif ref_lower.startswith("hg") or ref_lower == "t2t":
+        return "Hsapiens"
+    else:
+        return None
+
+
 # CONDA ENVS
 
 conda_envs = ["mc_base", "rtools", "mc_bioinfo_tools"]
@@ -80,12 +102,6 @@ exclude = [
 ]
 
 
-if config["reference"] == "mm10":
-    config["chromosomes"] = [
-        "chr{e}".format(e=str(e)) for e in list(range(1, 20)) + ["X", "Y"]
-    ]
-
-
 if config["chromosomes_to_exclude"]:
     chroms_init = config["chromosomes"]
     chroms = [e for e in chroms_init if e not in config["chromosomes_to_exclude"]]
@@ -148,6 +164,16 @@ if config["scNOVA"] is True:
     assert (
         "chrY" in config["chromosomes_to_exclude"]
     ), "chrY is not handled by scNOVA yet, please remove it for config['chromosomes'] and add it in config['chomosomes_to_exclude']"
+
+
+# Ploidy configuration validation
+if config.get("ploidy", True) is False:
+    import sys
+
+    print(
+        "WARNING: Ploidy estimation is disabled. Using default diploid assumption for bcftools regenotyping.",
+        file=sys.stderr,
+    )
 
 
 if config["strandscape_labels_path"]:
@@ -615,6 +641,45 @@ def get_mem_mb_heavy(wildcards, attempt):
     return mem_avail[attempt - 1] * 1000
 
 
+def get_config_run_summary_inputs(wildcards):
+    """
+    Get inputs for config_run_summary rule.
+    Makes ploidy_summary input conditional based on ploidy config flag.
+    """
+    inputs = {
+        "labels": f"{wildcards.folder}/{wildcards.sample}/config/labels.tsv",
+        "info_raw": f"{wildcards.folder}/{wildcards.sample}/counts/{wildcards.sample}.info_raw",
+        "single_paired_end_detect": f"{wildcards.folder}/{wildcards.sample}/config/single_paired_end_detection.txt",
+    }
+
+    if config.get("ploidy", True) is True:
+        inputs["ploidy_summary"] = (
+            f"{wildcards.folder}/{wildcards.sample}/ploidy/ploidy_summary.txt"
+        )
+
+    return inputs
+
+
+def get_call_SNVs_bcftools_inputs(wildcards):
+    """
+    Get inputs for call_SNVs_bcftools_chrom rule.
+    Makes ploidy input conditional based on ploidy config flag.
+    """
+    inputs = {
+        "bam": f"{wildcards.folder}/{wildcards.sample}/merged_bam/merged.bam",
+        "bai": f"{wildcards.folder}/{wildcards.sample}/merged_bam/merged.bam.bai",
+        "fasta": config["references_data"][config["reference"]]["reference_fasta"],
+        "fasta_index": f"{config['references_data'][config['reference']]['reference_fasta']}.fai",
+    }
+
+    if config.get("ploidy", True) is True:
+        inputs["ploidy"] = (
+            f"{wildcards.folder}/{wildcards.sample}/ploidy/ploidy_bcftools.txt"
+        )
+
+    return inputs
+
+
 def onsuccess_fct(log):
     config_metadata = config_definitions = yaml.safe_load(
         open(configfile_location.replace("config.yaml", "config_metadata.yaml"), "r")
@@ -847,8 +912,8 @@ def get_all_plots(wildcards):
             )
         )
 
-    else:
-        # Ploidy section
+    # Add ploidy-specific outputs if ploidy estimation is enabled
+    if config["ploidy"] is True:
         l_outputs.extend(
             expand(
                 "{folder}/{sample}/plots/ploidy/{sample}.pdf",
@@ -864,156 +929,157 @@ def get_all_plots(wildcards):
             ),
         )
 
-        # SV_consistency section
+    # Always add SV calling and downstream outputs (regardless of ploidy setting)
+    # SV_consistency section
 
-        # l_outputs.extend(
-        #     [
-        #         sub_e
-        #         for e in [
-        #             expand(
-        #                 "{folder}/{sample}/plots/sv_consistency/{method}_filter{filter}.consistency-barplot-{plottype}.pdf",
-        #                 folder=config["data_location"],
-        #                 sample=wildcards.sample,
-        #                 method=method,
-        #                 plottype=config["plottype_consistency"],
-        #                 filter=config["methods"][method]["filter"],
-        #             )
-        #             for method in config["methods"]
-        #         ]
-        #         for sub_e in e
-        #     ]
-        # )
+    # l_outputs.extend(
+    #     [
+    #         sub_e
+    #         for e in [
+    #             expand(
+    #                 "{folder}/{sample}/plots/sv_consistency/{method}_filter{filter}.consistency-barplot-{plottype}.pdf",
+    #                 folder=config["data_location"],
+    #                 sample=wildcards.sample,
+    #                 method=method,
+    #                 plottype=config["plottype_consistency"],
+    #                 filter=config["methods"][method]["filter"],
+    #             )
+    #             for method in config["methods"]
+    #         ]
+    #         for sub_e in e
+    #     ]
+    # )
 
-        l_outputs.extend(
-            [
-                sub_e
-                for e in [
-                    expand(
-                        "{folder}/{sample}/plots/sv_clustering_dev/{method}-filter{filter}-{plottype}.pdf",
-                        folder=config["data_location"],
-                        sample=wildcards.sample,
-                        method=method,
-                        plottype=config["plottype_clustering"],
-                        # plottype=config["plottype_clustering"],
-                        filter=config["methods"][method]["filter"],
-                    )
-                    for method in config["methods"]
-                ]
-                for sub_e in e
+    l_outputs.extend(
+        [
+            sub_e
+            for e in [
+                expand(
+                    "{folder}/{sample}/plots/sv_clustering_dev/{method}-filter{filter}-{plottype}.pdf",
+                    folder=config["data_location"],
+                    sample=wildcards.sample,
+                    method=method,
+                    plottype=config["plottype_clustering"],
+                    # plottype=config["plottype_clustering"],
+                    filter=config["methods"][method]["filter"],
+                )
+                for method in config["methods"]
             ]
+            for sub_e in e
+        ]
+    )
+
+    l_outputs.extend(
+        [
+            sub_e
+            for e in [
+                expand(
+                    "{folder}/{sample}/plots/sv_calls_dev/{method}_filter{filter}/{chrom}.pdf",
+                    folder=config["data_location"],
+                    sample=wildcards.sample,
+                    method=method,
+                    chrom=config["chromosomes"],
+                    filter=config["methods"][method]["filter"],
+                )
+                for method in config["methods"]
+            ]
+            for sub_e in e
+        ]
+    )
+
+    # Complex section
+
+    l_outputs.extend(
+        [
+            sub_e
+            for e in [
+                expand(
+                    "{folder}/{sample}/mosaiclassifier/complex/{method}_filter{filter}.tsv",
+                    folder=config["data_location"],
+                    sample=wildcards.sample,
+                    method=method,
+                    filter=config["methods"][method]["filter"],
+                )
+                for method in config["methods"]
+            ]
+            for sub_e in e
+        ]
+    ),
+
+    # scTRIP multiplot
+
+    if config["scTRIP_multiplot"] == True:
+        l_outputs.extend(
+            expand(
+                "{folder}/{sample}/plots/scTRIP_multiplot_aggr.ok",
+                folder=config["data_location"],
+                sample=wildcards.sample,
+            )
         )
 
+    # UCSC + IGV
+
+    if config["genome_browsing_files_generation"] == True:
         l_outputs.extend(
-            [
-                sub_e
-                for e in [
-                    expand(
-                        "{folder}/{sample}/plots/sv_calls_dev/{method}_filter{filter}/{chrom}.pdf",
-                        folder=config["data_location"],
-                        sample=wildcards.sample,
-                        method=method,
-                        chrom=config["chromosomes"],
-                        filter=config["methods"][method]["filter"],
-                    )
-                    for method in config["methods"]
-                ]
-                for sub_e in e
-            ]
+            expand(
+                "{folder}/{sample}/plots/IGV/{sample}_IGV_session.xml",
+                folder=config["data_location"],
+                sample=wildcards.sample,
+            ),
+        )
+        l_outputs.extend(
+            expand(
+                "{folder}/{sample}/plots/UCSC/{sample}.bedUCSC.gz",
+                folder=config["data_location"],
+                sample=wildcards.sample,
+            ),
+        )
+        l_outputs.extend(
+            expand(
+                "{folder}/{sample}/plots/JBROWSE/{sample}.ok",
+                folder=config["data_location"],
+                sample=wildcards.sample,
+            ),
         )
 
-        # Complex section
-
+    if config["breakpointR"] is True:
         l_outputs.extend(
-            [
-                sub_e
-                for e in [
-                    expand(
-                        "{folder}/{sample}/mosaiclassifier/complex/{method}_filter{filter}.tsv",
-                        folder=config["data_location"],
-                        sample=wildcards.sample,
-                        method=method,
-                        filter=config["methods"][method]["filter"],
-                    )
-                    for method in config["methods"]
-                ]
-                for sub_e in e
-            ]
+            expand(
+                "{folder}/{sample}/breakpointR/output/plots/breaksPlot.pdf",
+                folder=config["data_location"],
+                sample=wildcards.sample,
+            )
+        )
+
+    # Stats section
+
+    l_outputs.extend(
+        expand(
+            "{folder}/{sample}/stats/stats-merged.html",
+            folder=config["data_location"],
+            sample=wildcards.sample,
         ),
+    )
 
-        # scTRIP multiplot
+    # Config section
 
-        if config["scTRIP_multiplot"] == True:
-            l_outputs.extend(
-                expand(
-                    "{folder}/{sample}/plots/scTRIP_multiplot_aggr.ok",
-                    folder=config["data_location"],
-                    sample=wildcards.sample,
-                )
-            )
+    l_outputs.extend(
+        expand(
+            "{folder}/{sample}/config/config.yaml",
+            folder=config["data_location"],
+            sample=wildcards.sample,
+        ),
+    )
 
-        # UCSC + IGV
+    # Run summary section
 
-        if config["genome_browsing_files_generation"] == True:
-            l_outputs.extend(
-                expand(
-                    "{folder}/{sample}/plots/IGV/{sample}_IGV_session.xml",
-                    folder=config["data_location"],
-                    sample=wildcards.sample,
-                ),
-            )
-            l_outputs.extend(
-                expand(
-                    "{folder}/{sample}/plots/UCSC/{sample}.bedUCSC.gz",
-                    folder=config["data_location"],
-                    sample=wildcards.sample,
-                ),
-            )
-            l_outputs.extend(
-                expand(
-                    "{folder}/{sample}/plots/JBROWSE/{sample}.ok",
-                    folder=config["data_location"],
-                    sample=wildcards.sample,
-                ),
-            )
-
-        if config["breakpointR"] is True:
-            l_outputs.extend(
-                expand(
-                    "{folder}/{sample}/breakpointR/output/plots/breaksPlot.pdf",
-                    folder=config["data_location"],
-                    sample=wildcards.sample,
-                )
-            )
-
-        # Stats section
-
-        l_outputs.extend(
-            expand(
-                "{folder}/{sample}/stats/stats-merged.html",
-                folder=config["data_location"],
-                sample=wildcards.sample,
-            ),
-        )
-
-        # Config section
-
-        l_outputs.extend(
-            expand(
-                "{folder}/{sample}/config/config.yaml",
-                folder=config["data_location"],
-                sample=wildcards.sample,
-            ),
-        )
-
-        # Run summary section
-
-        l_outputs.extend(
-            expand(
-                "{folder}/{sample}/config/run_summary.txt",
-                folder=config["data_location"],
-                sample=wildcards.sample,
-            ),
-        )
+    l_outputs.extend(
+        expand(
+            "{folder}/{sample}/config/run_summary.txt",
+            folder=config["data_location"],
+            sample=wildcards.sample,
+        ),
+    )
 
     # from pprint import pprint
 

@@ -17,6 +17,8 @@ rule mergeBams:
     threads: 10
     conda:
         "../envs/mc_bioinfo_tools.yaml"
+    envmodules:
+        "SAMtools/1.21-GCC-13.3.0",
     shell:
         "samtools merge -@ {threads} {output} {input.bam} 2>&1 > {log}"
 
@@ -34,6 +36,8 @@ rule mergeSortBams:
     threads: 10
     conda:
         "../envs/mc_bioinfo_tools.yaml"
+    envmodules:
+        "SAMtools/1.21-GCC-13.3.0",
     shell:
         "samtools sort -@ {threads} -o {output} {input} 2>&1 > {log}"
 
@@ -47,6 +51,8 @@ rule index_merged_bam:
         "{folder}/log/merged_bam/{sample}/merged.log",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
+    envmodules:
+        "SAMtools/1.21-GCC-13.3.0",
     resources:
         mem_mb=get_mem_mb,
     shell:
@@ -71,6 +77,9 @@ rule regenotype_SNVs:
         time="10:00:00",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
+    envmodules:
+        "freebayes/1.3.6-foss-2021b-R-4.1.2",
+        "BCFtools/1.21-GCC-13.3.0",
     shell:
         """
         (freebayes \
@@ -90,24 +99,24 @@ rule regenotype_SNVs:
 
 rule call_SNVs_bcftools_chrom:
     input:
-        bam="{folder}/{sample}/merged_bam/merged.bam",
-        bai="{folder}/{sample}/merged_bam/merged.bam.bai",
-        fasta=config["references_data"][config["reference"]]["reference_fasta"],
-        fasta_index="{fasta}.fai".format(
-            fasta=config["references_data"][config["reference"]]["reference_fasta"]
-        ),
-        ploidy="{folder}/{sample}/ploidy/ploidy_bcftools.txt",
+        unpack(get_call_SNVs_bcftools_inputs),
     output:
         vcf="{folder}/{sample}/snv_calls/{chrom,chr[0-9A-Z]+}.vcf",
     log:
         "{folder}/log/snv_calls/{sample}/{chrom,chr[0-9A-Z]+}.vcf",
+    params:
+        ploidy_arg=lambda wildcards, input: (
+            f"--ploidy-file {input.ploidy}" if hasattr(input, "ploidy") else ""
+        ),
     conda:
         "../envs/mc_bioinfo_tools.yaml"
+    envmodules:
+        "BCFtools/1.21-GCC-13.3.0",
     resources:
         mem_mb=get_mem_mb_heavy,
         time="10:00:00",
     shell:
         """
         bcftools mpileup -r {wildcards.chrom} -f {input.fasta} {input.bam} \
-        | bcftools call -mv --ploidy-file {input.ploidy} | bcftools view --genotype het --types snps > {output} 2> {log}
+        | bcftools call -mv {params.ploidy_arg} | bcftools view --genotype het --types snps > {output} 2> {log}
         """

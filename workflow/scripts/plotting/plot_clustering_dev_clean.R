@@ -14,14 +14,8 @@ library(tidyr)
 # pdf("TEST_R_dev.pdf", width = 20, height = 10)
 pdf(snakemake@output[["pdf"]], width = 20, height = 10)
 
-# Chromosome order
-if (snakemake@config[["reference"]] != "mm10") {
-    chrOrder <-
-        c(paste("chr", 1:22, sep = ""), "chrX", "chrY")
-} else {
-    chrOrder <-
-        c(paste("chr", 1:19, sep = ""), "chrX", "chrY")
-}
+# Chromosome order from config
+chrOrder <- snakemake@config[["chromosomes"]]
 # Load SV data
 
 # data_file = "../stringent_filterTRUE.tsv"
@@ -32,7 +26,18 @@ data1 <- read.table(data_file,
     header = T,
     comment.char = ""
 )
-# head(data1)
+
+# Handle empty data case (no SVs found)
+if (nrow(data1) == 0) {
+    message("No SV calls found in input file. Creating empty output.")
+    plot.new()
+    text(0.5, 0.5, "No SV calls to display", cex = 2)
+    dev.off()
+    # Create empty cluster order dataframe
+    cluster_order_df <- data.frame(index = integer(), row_order = integer(), cell = character())
+    write.table(cluster_order_df, file = snakemake@output[["cluster_order_df"]], sep = "\t", row.names = FALSE, quote = FALSE)
+    quit(save = "no", status = 0)
+}
 
 # Create Dataframe for chromosomes missing SVs
 
@@ -112,7 +117,10 @@ dd <- unique(select(data1, c("chrom", "color")))
 # Create subset for clustering
 
 lite_data_clustering <- select(data1, c("pos", "cell", "llr_to_ref"))
-lite_data_clustering[c("llr_to_ref")][sapply(lite_data_clustering[c("llr_to_ref")], is.infinite)] <- max(lite_data_clustering$llr_to_ref[is.finite(lite_data_clustering$llr_to_ref)])
+# Handle Inf values: replace with max finite value, or 0 if no finite values exist
+finite_llr <- lite_data_clustering$llr_to_ref[is.finite(lite_data_clustering$llr_to_ref)]
+max_finite_llr <- if (length(finite_llr) > 0) max(finite_llr) else 0
+lite_data_clustering[c("llr_to_ref")][sapply(lite_data_clustering[c("llr_to_ref")], is.infinite)] <- max_finite_llr
 lite_data_clustering[is.na(lite_data_clustering)] <- 0
 # lite_data_clustering$llr_to_ref <- range01(lite_data_clustering$llr_to_ref)
 
@@ -143,8 +151,20 @@ col_annotation <- sapply(strsplit(lite_data_pivot_clustering$pos, "_"), `[`, 1)
 
 col_test <- factor(sapply(strsplit(colnames(t_lite_data_pivot_clustering_num), "_"), `[`, 1), levels = unique(sapply(strsplit(colnames(t_lite_data_pivot_clustering_num), "_"), `[`, 1)))
 
+# Check if LLR values have sufficient variation for color scale and clustering
+llr_values <- as.vector(t_lite_data_pivot_clustering_num)
+finite_llr_values <- llr_values[is.finite(llr_values)]
+can_cluster <- length(unique(finite_llr_values)) >= 2 && nrow(t_lite_data_pivot_clustering_num) >= 2
+
+if (!can_cluster) {
+    message("Warning: Insufficient LLR variation detected. Using fixed color scale and disabling clustering.")
+    color_func <- circlize::colorRamp2(c(0, 1), c("white", "red"))
+} else {
+    color_func <- RColorBrewer::brewer.pal(name = "Reds", n = 9)
+}
+
 cl_h <- Heatmap(as.matrix(t_lite_data_pivot_clustering_num),
-    name = "LLR", col = RColorBrewer::brewer.pal(name = "Reds", n = 9),
+    name = "LLR", col = color_func,
     # column_title = "a discrete numeric matrix",
     rect_gp = gpar(col = "white", lwd = 1.5),
     top_annotation = ComplexHeatmap::HeatmapAnnotation(
@@ -156,6 +176,7 @@ cl_h <- Heatmap(as.matrix(t_lite_data_pivot_clustering_num),
     column_names_gp = gpar(fontsize = 4),
     column_title_gp = gpar(fontsize = 10),
     cluster_columns = FALSE,
+    cluster_rows = can_cluster,
     column_gap = unit(2, "mm"),
     cluster_column_slices = FALSE,
     column_title_rot = 90,

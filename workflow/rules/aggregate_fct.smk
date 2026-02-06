@@ -1,17 +1,24 @@
 def aggregate_phased_haps(wildcards):
     """
     Function based on checkpoint summarise_ploidy to process only chromosomes where
-    the median ploidy status is equal or above 2 for all segments
+    the median ploidy status is equal or above 2 for all segments.
+    When ploidy estimation is disabled, processes all configured chromosomes.
     Return phased_haps.txt as input for combine_strandphaser_output
     """
-    df = pd.read_csv(
-        checkpoints.summarise_ploidy.get(
-            sample=wildcards.sample, folder=config["data_location"]
-        ).output.summary,
-        sep="\t",
-    )
-    df = df.loc[df["50%"] >= 2]
-    chrom_list = [e for e in df["#chrom"].values.tolist() if e != "genome"]
+    if config["ploidy"] is True:
+        # Use ploidy checkpoint to filter chromosomes
+        df = pd.read_csv(
+            checkpoints.summarise_ploidy.get(
+                sample=wildcards.sample, folder=config["data_location"]
+            ).output.summary,
+            sep="\t",
+        )
+        df = df.loc[df["50%"] >= 2]
+        chrom_list = [e for e in df["#chrom"].values.tolist() if e != "genome"]
+    else:
+        # No ploidy filtering - use all configured chromosomes
+        chrom_list = config["chromosomes"]
+
     return expand(
         "{{folder}}/{{sample}}/strandphaser/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt",
         chrom=chrom_list,
@@ -21,17 +28,24 @@ def aggregate_phased_haps(wildcards):
 def aggregate_vcf_gz(wildcards):
     """
     Function based on checkpoint summarise_ploidy to process only chromosomes where
-    the median ploidy status is equal or above 2 for all segments
+    the median ploidy status is equal or above 2 for all segments.
+    When ploidy estimation is disabled, processes all configured chromosomes.
     Return {chrom}_phased.vcf.gz as input for merge_strandphaser_vcfs
     """
-    df = pd.read_csv(
-        checkpoints.summarise_ploidy.get(
-            sample=wildcards.sample, folder=config["data_location"]
-        ).output.summary,
-        sep="\t",
-    )
-    df = df.loc[df["50%"] >= 2]
-    chrom_list = [e for e in df["#chrom"].values.tolist() if e != "genome"]
+    if config["ploidy"] is True:
+        # Use ploidy checkpoint to filter chromosomes
+        df = pd.read_csv(
+            checkpoints.summarise_ploidy.get(
+                sample=wildcards.sample, folder=config["data_location"]
+            ).output.summary,
+            sep="\t",
+        )
+        df = df.loc[df["50%"] >= 2]
+        chrom_list = [e for e in df["#chrom"].values.tolist() if e != "genome"]
+    else:
+        # No ploidy filtering - use all configured chromosomes
+        chrom_list = config["chromosomes"]
+
     return expand(
         "{{folder}}/{{sample}}/strandphaser/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz",
         chrom=chrom_list,
@@ -41,17 +55,24 @@ def aggregate_vcf_gz(wildcards):
 def aggregate_vcf_gz_tbi(wildcards):
     """
     Function based on checkpoint summarise_ploidy to process only chromosomes where
-    the median ploidy status is equal or above 2 for all segments
+    the median ploidy status is equal or above 2 for all segments.
+    When ploidy estimation is disabled, processes all configured chromosomes.
     Return {chrom}_phased.vcf.gz.tbi as input for merge_strandphaser_vcfs
     """
-    df = pd.read_csv(
-        checkpoints.summarise_ploidy.get(
-            sample=wildcards.sample, folder=config["data_location"]
-        ).output.summary,
-        sep="\t",
-    )
-    df = df.loc[df["50%"] >= 2]
-    chrom_list = [e for e in df["#chrom"].values.tolist() if e != "genome"]
+    if config["ploidy"] is True:
+        # Use ploidy checkpoint to filter chromosomes
+        df = pd.read_csv(
+            checkpoints.summarise_ploidy.get(
+                sample=wildcards.sample, folder=config["data_location"]
+            ).output.summary,
+            sep="\t",
+        )
+        df = df.loc[df["50%"] >= 2]
+        chrom_list = [e for e in df["#chrom"].values.tolist() if e != "genome"]
+    else:
+        # No ploidy filtering - use all configured chromosomes
+        chrom_list = config["chromosomes"]
+
     return expand(
         "{{folder}}/{{sample}}/strandphaser/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz.tbi",
         chrom=chrom_list,
@@ -155,6 +176,17 @@ def aggregate_cells_haplotag_tables(wildcards):
         sep="\t",
     )
     cell_list = df.cell.tolist()
+
+    # Explicit warning when no cells pass QC
+    if len(cell_list) == 0:
+        import sys
+
+        print(
+            f"WARNING: No cells passed QC filter for sample {wildcards.sample}. "
+            f"Haplotag analysis will produce empty output.",
+            file=sys.stderr,
+        )
+
     # print(cell_list)
     # print(expand(
     #     "{folder}/{sample}/haplotag/table/by-cell/{cell}.tsv",
@@ -327,10 +359,10 @@ def bsgenome_install(wildcards):
 
 
 def select_binbed(wildcards):
-    if config["reference"] != "mm10":
-        return "workflow/data/bin_200kb_all.bed"
-    else:
+    if get_species_from_reference(config["reference"]) != "Hsapiens":
         return "workflow/data/mm10.bin_200kb_all.bed"
+    else:
+        return "workflow/data/bin_200kb_all.bed"
 
 
 def select_labels(wildcards):

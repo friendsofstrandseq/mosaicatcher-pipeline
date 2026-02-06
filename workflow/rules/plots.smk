@@ -29,6 +29,7 @@ if config["ashleys_pipeline"] is False:
             "../envs/rtools.yaml"
         resources:
             mem_mb=get_mem_mb,
+            runtime=600,
         shell:
             """
             LC_CTYPE=C Rscript workflow/scripts/plotting/qc.R {input.counts} {input.info} {output} > {log} 2>&1
@@ -57,6 +58,7 @@ rule divide_pdf:
 
 
 rule final_results:
+    localrule: True
     input:
         get_all_plots,
     output:

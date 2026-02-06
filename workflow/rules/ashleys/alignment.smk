@@ -11,13 +11,9 @@
 
 
 if config["genecore"] is True and config["genecore_date_folder"]:
-    if config["mosaicatcher_pipeline"] is False:
-
-        localrules:
-            ashleys_genecore_symlink,
-            ashleys_symlink_bam_ashleys,
 
     rule ashleys_genecore_symlink:
+        localrule: True
         input:
             lambda wc: df_config_files.loc[
                 (df_config_files["Sample"] == wc.sample)
@@ -33,10 +29,6 @@ if config["genecore"] is True and config["genecore_date_folder"]:
             "ln -f -s {input} {output}"
 
     ruleorder: ashleys_genecore_symlink > ashleys_bwa_strandseq_to_reference_alignment
-
-
-localrules:
-    ashleys_symlink_bam_ashleys,
 
 
 rule ashleys_bwa_index:
@@ -57,12 +49,17 @@ rule ashleys_bwa_index:
         ),
     params:
         algorithm="bwtsw",
+        prefix=config["references_data"][config["reference"]]["reference_fasta"],
     threads: 16
     resources:
         mem_mb=get_mem_mb_heavy,
-        time="10:00:00",
-    wrapper:
-        "v1.7.0/bio/bwa/index"
+        runtime=600,
+    conda:
+        "../../envs/mc_bioinfo_tools.yaml"
+    envmodules:
+        "BWA/0.7.19-GCCcore-14.2.0",
+    shell:
+        "bwa index -a {params.algorithm} -p {params.prefix} {input} 2> {log}"
 
 
 ruleorder: ashleys_bwa_strandseq_to_reference_alignment > ashleys_samtools_sort_bam > ashleys_mark_duplicates
@@ -95,9 +92,12 @@ if config["paired_end"] is True:
             idx_prefix=lambda wildcards, input: input.ref_index[0].rsplit(".", 1)[0],
         resources:
             mem_mb=get_mem_mb_heavy,
-            time="01:00:00",
+            runtime=60,
         conda:
-            "../../envs/mc_base.yaml"
+            "../../envs/mc_bioinfo_tools.yaml"
+        envmodules:
+            "BWA/0.7.19-GCCcore-14.2.0",
+            "SAMtools/1.21-GCC-13.3.0",
         shell:
             "bwa mem -t {threads}"
             ' -R "@RG\\tID:{wildcards.cell}\\tPL:Illumina\\tSM:{wildcards.sample}"'
@@ -130,9 +130,12 @@ else:
             idx_prefix=lambda wildcards, input: input.ref_index[0].rsplit(".", 1)[0],
         resources:
             mem_mb=get_mem_mb_heavy,
-            time="01:00:00",
+            runtime=60,
         conda:
-            "../../envs/mc_base.yaml"
+            "../../envs/mc_bioinfo_tools.yaml"
+        envmodules:
+            "BWA/0.7.19-GCCcore-14.2.0",
+            "SAMtools/1.21-GCC-13.3.0",
         shell:
             "bwa mem -t {threads}"
             ' -R "@RG\\tID:{wildcards.cell}\\tPL:Illumina\\tSM:{wildcards.sample}"'
@@ -149,9 +152,11 @@ rule ashleys_samtools_sort_bam:
         "{folder}/{sample}/log/samtools_sort/{cell}.log",
     resources:
         mem_mb=get_mem_mb,
-        time="01:00:00",
+        runtime=60,
     conda:
-        "../../envs/mc_base.yaml"
+        "../../envs/mc_bioinfo_tools.yaml"
+    envmodules:
+        "SAMtools/1.21-GCC-13.3.0",
     shell:
         "samtools sort -O BAM -o {output} {input} 2>&1 > {log}"
 
@@ -164,10 +169,12 @@ rule ashleys_mark_duplicates:
     log:
         "{folder}/{sample}/log/markdup/{cell}.log",
     conda:
-        "../../envs/mc_base.yaml"
+        "../../envs/mc_bioinfo_tools.yaml"
+    envmodules:
+        "sambamba/1.0.1-GCC-12.3.0",
     resources:
         mem_mb=get_mem_mb_heavy,
-        time="01:00:00",
+        runtime=60,
     shell:
         "sambamba markdup {input.bam} {output} 2>&1 > {log}"
 

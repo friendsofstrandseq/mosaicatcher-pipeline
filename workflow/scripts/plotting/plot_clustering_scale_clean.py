@@ -1,3 +1,4 @@
+import sys
 import pandas as pd
 import numpy as np
 import seaborn as sns
@@ -61,30 +62,52 @@ colors = {
 # Read SV file
 df = pd.read_csv(snakemake.input.sv_calls, sep="\t")
 # df = pd.read_csv("../stringent_filterTRUE.tsv", sep="\t")
+
+# Handle empty data case
+if df.empty:
+    print("No SV calls found. Creating empty output.", file=sys.stderr)
+    with PdfPages(snakemake.output.pdf) as pdf:
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.text(0.5, 0.5, "No SV calls to display", ha='center', va='center', fontsize=16)
+        ax.axis('off')
+        pdf.savefig(fig)
+        plt.close()
+    sys.exit(0)
+
+# Ensure proper types for df columns
+df["chrom"] = df["chrom"].astype(str)
+df["start"] = df["start"].astype(int)
+df["end"] = df["end"].astype(int)
+
 df["ID"] = df["chrom"] + "_" + df["start"].astype(str) + "_" + df["end"].astype(str)
 
 
-if snakemake.config["reference"] != "mm10":
+# Detect number of columns in binbed file dynamically
+with open(snakemake.input.binbed) as f:
+    first_line = f.readline().strip()
+    n_cols = len(first_line.split("\t"))
+
+if n_cols == 4:
     names = ["chrom", "start", "end", "bin_id"]
 else:
     names = ["chrom", "start", "end"]
 
 # Read 200kb bins file
 binbed = pd.read_csv(
-    # "../bin_200kb_all.bed",
     snakemake.input.binbed,
     sep="\t",
     names=names,
 )
 
+# Ensure proper types for binbed columns
+binbed["chrom"] = binbed["chrom"].astype(str)
+binbed["start"] = binbed["start"].astype(int)
+binbed["end"] = binbed["end"].astype(int)
 
 binbed["ID"] = binbed["chrom"] + "_" + binbed["start"].astype(str) + "_" + binbed["end"].astype(str)
 
-cats = (
-    ["chr{}".format(e) for e in range(1, 23)] + ["chrX", "chrY"]
-    if snakemake.config["reference"] != "mm10"
-    else ["chr{}".format(e) for e in range(1, 20)] + ["chrX", "chrY"]
-)
+# Use chromosomes from config
+cats = snakemake.config["chromosomes"]
 
 # Turn chrom into categorical
 binbed["chrom"] = pd.Categorical(
@@ -190,6 +213,10 @@ pdf = PdfPages(snakemake.output.pdf)
 # Create subplots
 f, axs = plt.subplots(ncols=len(chroms), figsize=(40, 20), gridspec_kw={"width_ratios": widths})
 
+# Ensure axs is always iterable (handle single chromosome case)
+if len(chroms) == 1:
+    axs = [axs]
+
 print("LLR plot")
 # Iterate over chroms
 for j, (chrom, ax) in enumerate(zip(chroms, axs)):
@@ -265,6 +292,10 @@ chroms = cats
 widths = binbed.loc[binbed["chrom"].isin(chroms)].groupby("chrom")["end"].max().dropna().tolist()
 
 f, axs = plt.subplots(ncols=len(chroms), figsize=(30, 15), dpi=50, gridspec_kw={"width_ratios": widths})
+
+# Ensure axs is always iterable (handle single chromosome case)
+if len(chroms) == 1:
+    axs = [axs]
 
 print("Categorical plot")
 for j, (chrom, ax) in enumerate(zip(chroms, axs)):

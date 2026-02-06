@@ -27,6 +27,7 @@ rule segmentation:
 
 # FIXME: This is a workaround because latest versions of "mosaic segment" don't compute the "bps" column properly. Remove once fixed in the C++ code.
 rule fix_segmentation:
+    localrule: True
     input:
         "{folder}/{sample}/segmentation/{sample}.txt.fixme",
     output:

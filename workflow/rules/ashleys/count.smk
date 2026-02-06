@@ -20,33 +20,7 @@ rule ashleys_generate_exclude_file_for_mosaic_count:
     conda:
         "../../envs/mc_base.yaml"
     params:
-        chroms=(
-            config["chromosomes"]
-            if config["reference"] not in ["mm10", "mm39"]
-            else [
-                "chr1",
-                "chr2",
-                "chr3",
-                "chr4",
-                "chr5",
-                "chr6",
-                "chr7",
-                "chr8",
-                "chr9",
-                "chr10",
-                "chr11",
-                "chr12",
-                "chr13",
-                "chr14",
-                "chr15",
-                "chr16",
-                "chr17",
-                "chr18",
-                "chr19",
-                "chrX",
-                "chrY",
-            ]
-        ),
+        chroms=config["chromosomes"],  # Use config directly for all references
     script:
         "../../scripts/ashleys/utils/generate_exclude_file.py"
 
@@ -72,12 +46,12 @@ checkpoint mosaic_count:
     log:
         "{folder}/log/counts/{sample}/mosaic_count.log",
     conda:
-        "../../envs/mc_base.yaml"
+        "../../envs/mc_bioinfo_tools.yaml"
     params:
         window=config["window"],
     resources:
         mem_mb=get_mem_mb_heavy,
-        time="24:00:00",
+        runtime=600,
     shell:
         """
         mosaicatcher count \
@@ -104,6 +78,7 @@ rule ashleys_populate_counts:
         "../../envs/mc_base.yaml"
     resources:
         mem_mb=get_mem_mb,
+        runtime=600,
     script:
         "../../scripts/ashleys/utils/populated_counts_for_qc_plot.py"
 

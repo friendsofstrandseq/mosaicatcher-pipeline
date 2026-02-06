@@ -6,29 +6,64 @@ library(dplyr)
 ## collect ASHLEYS prediction and count files
 # ashleys_data <- read.table(file = "/scratch/tweber/DATA/TMP/labels384.tsv", sep = "\t", header = TRUE)
 ashleys_data <- read.table(file = snakemake@input[["labels"]], sep = "\t", header = TRUE)
-plate_type <- nrow((ashleys_data))
+num_cells <- nrow(ashleys_data)
 ashleys_data <- dplyr::arrange(ashleys_data, cell)
 colnames(ashleys_data)[1] <- "ashleys_id"
 
-Well_position <- character()
+# Extract well numbers from cell IDs
+# Cell ID format: SampleNameiT[Barcode][WellNumber].sort.mdup.bam
+# Example: LanexLorenzoNPCDMSO18holdSortUVLEDiTRU3C01.sort.mdup.bam -> 01
+# Need to extract digits that come after a letter code and before .sort.mdup.bam
 
-if (plate_type == 96) {
-    for (i in 1:12)
-    {
-        for (j in 1:8)
-        {
-            tmp <- paste0(LETTERS[j], i)
-            Well_position <- c(Well_position, tmp)
-        }
+extract_well_number <- function(cell_id) {
+    # Remove the file extension
+    cell_clean <- sub("\\.sort\\.mdup\\.bam$", "", cell_id)
+
+    # Extract last 2 digits from the cleaned cell ID
+    # Using regex to find the last 2 digits at the end
+    match <- regmatches(cell_clean, gregexpr("\\d{2}$", cell_clean))
+    if (length(match[[1]]) > 0) {
+        return(as.numeric(match[[1]][1]))
+    } else {
+        return(NA)
     }
-} else if (plate_type == 384) {
-    for (i in 1:24)
-    {
-        for (j in 1:16)
-        {
-            tmp <- paste0(LETTERS[j], i)
-            Well_position <- c(Well_position, tmp)
-        }
+}
+
+# Determine plate type based on number of cells
+if (num_cells > 0) {
+    well_numbers <- sapply(ashleys_data$cell, extract_well_number)
+    max_well <- max(well_numbers, na.rm = TRUE)
+
+    # Estimate plate type from max well number
+    if (max_well <= 96) {
+        plate_type <- 96
+    } else {
+        plate_type <- 384
+    }
+} else {
+    plate_type <- 96  # default
+}
+
+# Convert well number to well position (A1, A2, ..., H12 for 96-well, etc.)
+Well_position <- character(length = num_cells)
+
+for (idx in 1:num_cells) {
+    well_num <- extract_well_number(ashleys_data$cell[idx])
+
+    if (is.na(well_num)) {
+        Well_position[idx] <- "Unknown"
+    } else if (plate_type == 96) {
+        # 96-well: 8 rows (A-H), 12 columns (1-12)
+        row_idx <- ((well_num - 1) %% 8) + 1
+        col_idx <- ((well_num - 1) %/% 8) + 1
+        Well_position[idx] <- paste0(LETTERS[row_idx], col_idx)
+    } else if (plate_type == 384) {
+        # 384-well: 16 rows (A-P), 24 columns (1-24)
+        row_idx <- ((well_num - 1) %% 16) + 1
+        col_idx <- ((well_num - 1) %/% 16) + 1
+        Well_position[idx] <- paste0(LETTERS[row_idx], col_idx)
+    } else {
+        Well_position[idx] <- "Unknown"
     }
 }
 

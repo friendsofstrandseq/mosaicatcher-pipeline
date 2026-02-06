@@ -1,0 +1,9 @@
+https://conda.anaconda.org/bioconda/linux-64 bwa 0.7.17 he4a0461_11 23832bbbdfb4a2c05e2df120068b1c78
+https://conda.anaconda.org/conda-forge/linux-64 _libgcc_mutex 0.1 conda_forge d7c89558ba9fa0495403155b64376d81
+https://conda.anaconda.org/conda-forge/linux-64 libgcc-ng 14.1.0 h77fa898_0 ca0fad6a41ddaef54a153b78eccb5037
+https://conda.anaconda.org/conda-forge/linux-64 libgomp 14.1.0 h77fa898_0 ae061a5ed5f05818acdf9adab72c146d
+https://conda.anaconda.org/conda-forge/linux-64 libxcrypt 4.4.36 hd590300_1 5aa797f8787fe7a17d1b0821485b5adc
+https://conda.anaconda.org/conda-forge/linux-64 libzlib 1.2.13 h4ab18f5_6 27329162c0dc732bcf67a4e0cd488125
+https://conda.anaconda.org/conda-forge/linux-64 _openmp_mutex 4.5 2_gnu 73aaf86a425cc6e73fcf236a5a46396d
+https://conda.anaconda.org/conda-forge/linux-64 perl 5.32.1 7_hd590300_perl5 f2cfec9406850991f4e3d960cc9e3321
+https://conda.anaconda.org/conda-forge/linux-64 zlib 1.2.13 h4ab18f5_6 559d338a4234c2ad6e676f460a093e67

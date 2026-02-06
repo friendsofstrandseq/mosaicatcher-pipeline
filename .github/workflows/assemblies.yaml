@@ -30,7 +30,7 @@ jobs:
 
       - name: Git Submodule Update
         run: |
-          git submodule update --remote --recursive --force --init
+          git submodule update --recursive --init
 
       - name: Setup Pixi
         uses: prefix-dev/setup-pixi@v0.9.3
@@ -39,23 +39,61 @@ jobs:
           cache: true
           locked: false
 
-      - name: Cache Conda environments
-        uses: actions/cache@v4
+      - name: Restore Conda environments cache
+        id: cache-conda-restore
+        uses: actions/cache/restore@v4
         with:
           path: .snakemake/conda
           key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
           restore-keys: |
             conda-envs-
 
+      - name: Restore hg38 reference genome and BWA indexes
+        id: cache-hg38-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            workflow/data/ref_genomes/hg38.fa
+            workflow/data/ref_genomes/hg38.fa.amb
+            workflow/data/ref_genomes/hg38.fa.ann
+            workflow/data/ref_genomes/hg38.fa.bwt
+            workflow/data/ref_genomes/hg38.fa.pac
+            workflow/data/ref_genomes/hg38.fa.sa
+            workflow/data/ref_genomes/hg38.fa.fai
+          key: hg38-reference-${{ hashFiles('workflow/data/ref_genomes/hg38.fa') }}
+          restore-keys: |
+            hg38-reference-
+
       - name: Run workflow (hg38 v9)
         run: |
           pixi run snakemake \
             --cores 1 \
             --sdm conda \
-            --config reference=hg38 use_light_data=True chromosomes=[chr17] ashleys_pipeline=True \
+            --config reference=hg38 use_light_data=True chromosomes=[chr17] ashleys_pipeline=False \
             --conda-cleanup-pkgs cache \
             -p \
             --snakefile workflow/Snakefile
+
+      - name: Save Conda environments cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .snakemake/conda
+          key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
+
+      - name: Save hg38 reference genome and BWA indexes
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            workflow/data/ref_genomes/hg38.fa
+            workflow/data/ref_genomes/hg38.fa.amb
+            workflow/data/ref_genomes/hg38.fa.ann
+            workflow/data/ref_genomes/hg38.fa.bwt
+            workflow/data/ref_genomes/hg38.fa.pac
+            workflow/data/ref_genomes/hg38.fa.sa
+            workflow/data/ref_genomes/hg38.fa.fai
+          key: hg38-reference-${{ hashFiles('workflow/data/ref_genomes/hg38.fa') }}
 
   Testing-with-hg19:
     runs-on: ubuntu-latest
@@ -67,7 +105,7 @@ jobs:
 
       - name: Git Submodule Update
         run: |
-          git submodule update --remote --recursive --force --init
+          git submodule update --recursive --init
 
       - name: Setup Pixi
         uses: prefix-dev/setup-pixi@v0.9.3
@@ -76,23 +114,61 @@ jobs:
           cache: true
           locked: false
 
-      - name: Cache Conda environments
-        uses: actions/cache@v4
+      - name: Restore Conda environments cache
+        id: cache-conda-restore
+        uses: actions/cache/restore@v4
         with:
           path: .snakemake/conda
           key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
           restore-keys: |
             conda-envs-
 
+      - name: Restore hg19 reference genome and BWA indexes
+        id: cache-hg19-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            workflow/data/ref_genomes/hg19.fa
+            workflow/data/ref_genomes/hg19.fa.amb
+            workflow/data/ref_genomes/hg19.fa.ann
+            workflow/data/ref_genomes/hg19.fa.bwt
+            workflow/data/ref_genomes/hg19.fa.pac
+            workflow/data/ref_genomes/hg19.fa.sa
+            workflow/data/ref_genomes/hg19.fa.fai
+          key: hg19-reference-${{ hashFiles('workflow/data/ref_genomes/hg19.fa') }}
+          restore-keys: |
+            hg19-reference-
+
       - name: Run workflow (hg19 v9)
         run: |
           pixi run snakemake \
             --cores 1 \
             --sdm conda \
-            --config reference=hg19 use_light_data=True chromosomes=[chr17] ashleys_pipeline=True \
+            --config reference=hg19 use_light_data=True chromosomes=[chr17] ashleys_pipeline=False \
             --conda-cleanup-pkgs cache \
             -p \
             --snakefile workflow/Snakefile
+
+      - name: Save Conda environments cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .snakemake/conda
+          key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
+
+      - name: Save hg19 reference genome and BWA indexes
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            workflow/data/ref_genomes/hg19.fa
+            workflow/data/ref_genomes/hg19.fa.amb
+            workflow/data/ref_genomes/hg19.fa.ann
+            workflow/data/ref_genomes/hg19.fa.bwt
+            workflow/data/ref_genomes/hg19.fa.pac
+            workflow/data/ref_genomes/hg19.fa.sa
+            workflow/data/ref_genomes/hg19.fa.fai
+          key: hg19-reference-${{ hashFiles('workflow/data/ref_genomes/hg19.fa') }}
 
   Testing-with-T2T:
     runs-on: ubuntu-latest
@@ -104,7 +180,7 @@ jobs:
 
       - name: Git Submodule Update
         run: |
-          git submodule update --remote --recursive --force --init
+          git submodule update --recursive --init
 
       - name: Setup Pixi
         uses: prefix-dev/setup-pixi@v0.9.3
@@ -113,23 +189,63 @@ jobs:
           cache: true
           locked: false
 
-      - name: Cache Conda environments
-        uses: actions/cache@v4
+      - name: Restore Conda environments cache
+        id: cache-conda-restore
+        uses: actions/cache/restore@v4
         with:
           path: .snakemake/conda
           key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
           restore-keys: |
             conda-envs-
 
+      - name: Restore T2T reference genome and BWA indexes
+        id: cache-t2t-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            workflow/data/ref_genomes/T2T.fa
+            workflow/data/ref_genomes/T2T.fa.amb
+            workflow/data/ref_genomes/T2T.fa.ann
+            workflow/data/ref_genomes/T2T.fa.bwt
+            workflow/data/ref_genomes/T2T.fa.pac
+            workflow/data/ref_genomes/T2T.fa.sa
+            workflow/data/ref_genomes/T2T.fa.fai
+          key: T2T-reference-${{ hashFiles('workflow/data/ref_genomes/T2T.fa') }}
+          restore-keys: |
+            T2T-reference-
+
       - name: Run workflow (T2T v9)
         run: |
           pixi run snakemake \
             --cores 1 \
             --sdm conda \
-            --config reference=T2T use_light_data=True chromosomes=[chr17] ashleys_pipeline=True \
+            --config reference=T2T use_light_data=True chromosomes=[chr17] ashleys_pipeline=False \
             --conda-cleanup-pkgs cache \
+            --retries 3 \
+            --latency-wait 60 \
             -p \
             --snakefile workflow/Snakefile
+
+      - name: Save Conda environments cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .snakemake/conda
+          key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
+
+      - name: Save T2T reference genome and BWA indexes
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            workflow/data/ref_genomes/T2T.fa
+            workflow/data/ref_genomes/T2T.fa.amb
+            workflow/data/ref_genomes/T2T.fa.ann
+            workflow/data/ref_genomes/T2T.fa.bwt
+            workflow/data/ref_genomes/T2T.fa.pac
+            workflow/data/ref_genomes/T2T.fa.sa
+            workflow/data/ref_genomes/T2T.fa.fai
+          key: T2T-reference-${{ hashFiles('workflow/data/ref_genomes/T2T.fa') }}
 
   Testing-with-mm10:
     runs-on: ubuntu-latest
@@ -141,7 +257,7 @@ jobs:
 
       - name: Git Submodule Update
         run: |
-          git submodule update --remote --recursive --force --init
+          git submodule update --recursive --init
 
       - name: Setup Pixi
         uses: prefix-dev/setup-pixi@v0.9.3
@@ -150,23 +266,61 @@ jobs:
           cache: true
           locked: false
 
-      - name: Cache Conda environments
-        uses: actions/cache@v4
+      - name: Restore Conda environments cache
+        id: cache-conda-restore
+        uses: actions/cache/restore@v4
         with:
           path: .snakemake/conda
           key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
           restore-keys: |
             conda-envs-
 
+      - name: Restore mm10 reference genome and BWA indexes
+        id: cache-mm10-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            workflow/data/ref_genomes/mm10.fa
+            workflow/data/ref_genomes/mm10.fa.amb
+            workflow/data/ref_genomes/mm10.fa.ann
+            workflow/data/ref_genomes/mm10.fa.bwt
+            workflow/data/ref_genomes/mm10.fa.pac
+            workflow/data/ref_genomes/mm10.fa.sa
+            workflow/data/ref_genomes/mm10.fa.fai
+          key: mm10-reference-${{ hashFiles('workflow/data/ref_genomes/mm10.fa') }}
+          restore-keys: |
+            mm10-reference-
+
       - name: Run workflow (mm10 v9)
         run: |
           pixi run snakemake \
             --cores 1 \
             --sdm conda \
-            --config reference=mm10 use_light_data=True chromosomes=[chr15] ashleys_pipeline=True \
+            --config reference=mm10 use_light_data=True chromosomes=[chr19] ashleys_pipeline=True data_location=.tests/data_chr19_mm ploidy=False \
             --conda-cleanup-pkgs cache \
             -p \
             --snakefile workflow/Snakefile
+
+      - name: Save Conda environments cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .snakemake/conda
+          key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
+
+      - name: Save mm10 reference genome and BWA indexes
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            workflow/data/ref_genomes/mm10.fa
+            workflow/data/ref_genomes/mm10.fa.amb
+            workflow/data/ref_genomes/mm10.fa.ann
+            workflow/data/ref_genomes/mm10.fa.bwt
+            workflow/data/ref_genomes/mm10.fa.pac
+            workflow/data/ref_genomes/mm10.fa.sa
+            workflow/data/ref_genomes/mm10.fa.fai
+          key: mm10-reference-${{ hashFiles('workflow/data/ref_genomes/mm10.fa') }}
 
   Testing-with-mm39:
     runs-on: ubuntu-latest
@@ -178,7 +332,7 @@ jobs:
 
       - name: Git Submodule Update
         run: |
-          git submodule update --remote --recursive --force --init
+          git submodule update --recursive --init
 
       - name: Setup Pixi
         uses: prefix-dev/setup-pixi@v0.9.3
@@ -187,20 +341,58 @@ jobs:
           cache: true
           locked: false
 
-      - name: Cache Conda environments
-        uses: actions/cache@v4
+      - name: Restore Conda environments cache
+        id: cache-conda-restore
+        uses: actions/cache/restore@v4
         with:
           path: .snakemake/conda
           key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
           restore-keys: |
             conda-envs-
 
+      - name: Restore mm39 reference genome and BWA indexes
+        id: cache-mm39-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            workflow/data/ref_genomes/mm39.fa
+            workflow/data/ref_genomes/mm39.fa.amb
+            workflow/data/ref_genomes/mm39.fa.ann
+            workflow/data/ref_genomes/mm39.fa.bwt
+            workflow/data/ref_genomes/mm39.fa.pac
+            workflow/data/ref_genomes/mm39.fa.sa
+            workflow/data/ref_genomes/mm39.fa.fai
+          key: mm39-reference-${{ hashFiles('workflow/data/ref_genomes/mm39.fa') }}
+          restore-keys: |
+            mm39-reference-
+
       - name: Run workflow (mm39 v9)
         run: |
           pixi run snakemake \
             --cores 1 \
             --sdm conda \
-            --config reference=mm39 use_light_data=True chromosomes=[chr15] ashleys_pipeline=True \
+            --config reference=mm39 use_light_data=True chromosomes=[chr19] ashleys_pipeline=True data_location=.tests/data_chr19_mm ploidy=False \
             --conda-cleanup-pkgs cache \
             -p \
             --snakefile workflow/Snakefile
+
+      - name: Save Conda environments cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .snakemake/conda
+          key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
+
+      - name: Save mm39 reference genome and BWA indexes
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            workflow/data/ref_genomes/mm39.fa
+            workflow/data/ref_genomes/mm39.fa.amb
+            workflow/data/ref_genomes/mm39.fa.ann
+            workflow/data/ref_genomes/mm39.fa.bwt
+            workflow/data/ref_genomes/mm39.fa.pac
+            workflow/data/ref_genomes/mm39.fa.sa
+            workflow/data/ref_genomes/mm39.fa.fai
+          key: mm39-reference-${{ hashFiles('workflow/data/ref_genomes/mm39.fa') }}

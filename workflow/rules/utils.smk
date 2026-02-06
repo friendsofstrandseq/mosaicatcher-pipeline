@@ -7,6 +7,8 @@ rule check_sm_tag:
         "{folder}/log/{sample}/checks/{cell}.sm_check.log",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
+    envmodules:
+        "SAMtools/1.21-GCC-13.3.0",
     shell:
         r"""
         sample_name="{wildcards.sample}"
@@ -30,6 +32,8 @@ rule index_input_bam:
         "{folder}/log/index_input_bam/{sample}/{cell}.log",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
+    envmodules:
+        "SAMtools/1.21-GCC-13.3.0",
     resources:
         mem_mb=get_mem_mb,
     shell:
@@ -45,6 +49,8 @@ rule index_haplotag_bam:
         "{folder}/log/index_haplotag_bam/{sample}/{cell}.log",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
+    envmodules:
+        "SAMtools/1.21-GCC-13.3.0",
     resources:
         mem_mb=get_mem_mb,
     shell:
@@ -60,6 +66,8 @@ rule compress_indiv_freebayes_vcf:
         "{folder}/log/compress_indiv_freebayes_vcf/{sample}/{chrom}.log",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
+    envmodules:
+        "HTSlib/1.21-GCC-13.3.0",
     resources:
         mem_mb=get_mem_mb,
     shell:
@@ -75,6 +83,8 @@ rule index_indiv_freebayes_vcf:
         "{folder}/log/index_indiv_freebayes_vcf/{sample}/{chrom}.log",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
+    envmodules:
+        "HTSlib/1.21-GCC-13.3.0",
     resources:
         mem_mb=get_mem_mb,
     shell:
@@ -90,6 +100,8 @@ rule compress_indiv_strandphaser_vcf:
         "{folder}/log/compress_indiv_strandphaser_vcf/{sample}/{chrom}.log",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
+    envmodules:
+        "HTSlib/1.21-GCC-13.3.0",
     resources:
         mem_mb=get_mem_mb,
     shell:
@@ -105,6 +117,8 @@ rule index_indiv_strandphaser_vcf:
         "{folder}/log/index_indiv_strandphaser_vcf/{sample}/{chrom}.log",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
+    envmodules:
+        "HTSlib/1.21-GCC-13.3.0",
     resources:
         mem_mb=get_mem_mb,
     shell:
@@ -120,6 +134,8 @@ rule index_merged_strandphaser_vcf:
         "{folder}/log/index_merged_strandphaser_vcf/phased-snvs/{sample}.log",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
+    envmodules:
+        "HTSlib/1.21-GCC-13.3.0",
     resources:
         mem_mb=get_mem_mb,
     shell:
@@ -150,6 +166,8 @@ rule samtools_faindex:
         "{file}.log",
     conda:
         "../envs/mc_bioinfo_tools.yaml"
+    envmodules:
+        "SAMtools/1.21-GCC-13.3.0",
     resources:
         mem_mb=get_mem_mb_heavy,
     shell:
@@ -157,6 +175,7 @@ rule samtools_faindex:
 
 
 rule save_config:
+    localrule: True
     input:
         "config/config.yaml",
     output:
@@ -172,6 +191,7 @@ rule save_config:
 
 
 rule save_conda_versions_mc_base:
+    localrule: True
     output:
         "{folder}/{sample}/config/conda_export/mc_base.yaml",
     log:
@@ -183,6 +203,7 @@ rule save_conda_versions_mc_base:
 
 
 rule save_conda_versions_mc_bioinfo_tools:
+    localrule: True
     output:
         "{folder}/{sample}/config/conda_export/mc_bioinfo_tools.yaml",
     log:
@@ -194,6 +215,7 @@ rule save_conda_versions_mc_bioinfo_tools:
 
 
 rule save_conda_versions_rtools:
+    localrule: True
     output:
         "{folder}/{sample}/config/conda_export/rtools.yaml",
     log:

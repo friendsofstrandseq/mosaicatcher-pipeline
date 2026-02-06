@@ -3,8 +3,10 @@ import yaml
 
 labels = snakemake.input.labels
 info_raw = snakemake.input.info_raw
-ploidy_summary = snakemake.input.ploidy_summary
 single_paired_end_detect = snakemake.input.single_paired_end_detect
+
+# Check if ploidy_summary is available (optional when ploidy estimation is disabled)
+ploidy_summary = snakemake.input.get("ploidy_summary", None)
 
 single_paired_end_detect_content = open(single_paired_end_detect, "r").readlines()[0]
 
@@ -27,23 +29,33 @@ else:
 final_df = final_df.rename({"hand_labels": "Ashleys/hand labels"}, axis=1).sort_values(by="cell", ascending=True)
 
 
-df_ploidy = pd.read_csv(ploidy_summary, sep="\t")[["#chrom", "50%"]]
-df_ploidy = df_ploidy.loc[df_ploidy["#chrom"] != "genome"]
-chroms = ["chr" + str(c) for c in list(range(1, 23))] + ["chrX", "chrY"]
-df_ploidy["#chrom"] = pd.Categorical(df_ploidy["#chrom"], categories=chroms, ordered=True)
-df_ploidy = df_ploidy.sort_values(by=["#chrom"]).rename({"#chrom": "chrom", "50%": "ploidy_estimation"}, axis=1)
-df_ploidy.loc[df_ploidy["ploidy_estimation"] == 1, "StrandPhaseR_processed"] = 0
-df_ploidy["StrandPhaseR_processed"] = df_ploidy["StrandPhaseR_processed"].fillna(1)
+# Process ploidy summary only if available
+if ploidy_summary is not None:
+    df_ploidy = pd.read_csv(ploidy_summary, sep="\t")[["#chrom", "50%"]]
+    df_ploidy = df_ploidy.loc[df_ploidy["#chrom"] != "genome"]
+    chroms = ["chr" + str(c) for c in list(range(1, 23))] + ["chrX", "chrY"]
+    df_ploidy["#chrom"] = pd.Categorical(df_ploidy["#chrom"], categories=chroms, ordered=True)
+    df_ploidy = df_ploidy.sort_values(by=["#chrom"]).rename({"#chrom": "chrom", "50%": "ploidy_estimation"}, axis=1)
+    df_ploidy.loc[df_ploidy["ploidy_estimation"] == 1, "StrandPhaseR_processed"] = 0
+    df_ploidy["StrandPhaseR_processed"] = df_ploidy["StrandPhaseR_processed"].fillna(1)
+else:
+    df_ploidy = None
 
 with open(snakemake.output.summary, "w") as o:
     o.write("\n==============Library quality summary==============\n")
     o.write("\n")
     o.write(final_df.to_markdown(tablefmt="github", index=False))
     o.write("\n")
-    o.write("\n==============Ploidy summary==============\n")
-    o.write("\n")
-    o.write(df_ploidy.to_markdown(tablefmt="github", index=False))
-    o.write("\n")
+    if df_ploidy is not None:
+        o.write("\n==============Ploidy summary==============\n")
+        o.write("\n")
+        o.write(df_ploidy.to_markdown(tablefmt="github", index=False))
+        o.write("\n")
+    else:
+        o.write("\n==============Ploidy summary==============\n")
+        o.write("\n")
+        o.write("Ploidy estimation disabled in configuration.\n")
+        o.write("\n")
     o.write("\n==============YAML configuration used==============\n")
     o.write("\n")
     o.write(yaml.dump(snakemake.config))

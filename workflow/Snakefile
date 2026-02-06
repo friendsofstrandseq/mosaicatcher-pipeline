@@ -32,24 +32,6 @@ if config["ashleys_pipeline"] is True:
     include: "rules/ashleys/gc.smk"
     include: "rules/ashleys/multiqc.smk"
 
-    if config["ashleys_pipeline_only"] is True:
-
-        localrules:
-            ashleys_genecore_symlink,
-            ashleys_symlink_selected_bam,
-
-    else:
-
-        localrules:
-            ashleys_genecore_symlink,
-            ashleys_symlink_selected_bam,
-            symlink_selected_bam,
-
-else:
-
-    localrules:
-        symlink_selected_bam,
-
 
 include: "rules/common.smk"
 include: "rules/aggregate_fct.smk"
