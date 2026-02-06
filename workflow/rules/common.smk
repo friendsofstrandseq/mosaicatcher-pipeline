@@ -1134,7 +1134,7 @@ def get_all_plots(wildcards):
             sub_e
             for e in [
                 expand(
-                    "{folder}/{sample}/plots/sv_calls_dev/{method}_filter{filter}/{chrom}.pdf",
+                    "{folder}/{sample}/plots/sv_calls/{method}_filter{filter}/{chrom}.pdf",
                     folder=config["data_location"],
                     sample=wildcards.sample,
                     method=method,
