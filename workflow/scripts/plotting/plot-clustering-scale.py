@@ -236,14 +236,28 @@ chroms = cats
 # chroms = ["chr10", "chr13", "chr22"]
 
 # Extract widths using binbed max values to specify subplots widths scaled according chrom sizes
+# Filter to only chromosomes present in binbed to ensure widths and chroms match
+available_chroms = binbed["chrom"].dropna().unique().tolist()
+chroms = [c for c in chroms if c in available_chroms]
+
+if len(chroms) == 0:
+    print("Warning: No chromosomes found in binbed. Creating empty output.", file=sys.stderr)
+    with PdfPages(snakemake.output.pdf) as pdf:
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.text(0.5, 0.5, "No chromosome data to display", ha='center', va='center', fontsize=16)
+        ax.axis('off')
+        pdf.savefig(fig)
+        plt.close()
+    sys.exit(0)
+
 widths = (
     binbed.loc[binbed["chrom"].isin(chroms)]
     .groupby("chrom")["end"]
     .max()
     .dropna()
+    .reindex(chroms)
     .tolist()
 )
-
 
 # pdf = PdfPages("multipage_pdf2.pdf")
 pdf = PdfPages(snakemake.output.pdf)
@@ -254,10 +268,6 @@ f, axs = plt.subplots(
 )
 
 # Ensure axs is iterable (when ncols=1, matplotlib returns single Axes object)
-if len(chroms) == 1:
-    axs = [axs]
-
-# Ensure axs is always iterable (handle single chromosome case)
 if len(chroms) == 1:
     axs = [axs]
 
@@ -340,11 +350,15 @@ chroms = cats
 # chroms = ["chr10", "chr13"]
 # chroms = chroms[:2]
 
+# Filter to only chromosomes present in binbed
+chroms = [c for c in chroms if c in available_chroms]
+
 widths = (
     binbed.loc[binbed["chrom"].isin(chroms)]
     .groupby("chrom")["end"]
     .max()
     .dropna()
+    .reindex(chroms)
     .tolist()
 )
 
@@ -353,10 +367,6 @@ f, axs = plt.subplots(
 )
 
 # Ensure axs is iterable (when ncols=1, matplotlib returns single Axes object)
-if len(chroms) == 1:
-    axs = [axs]
-
-# Ensure axs is always iterable (handle single chromosome case)
 if len(chroms) == 1:
     axs = [axs]
 
