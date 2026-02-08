@@ -4,6 +4,7 @@ import collections
 import yaml
 import subprocess
 
+
 # Include resource allocation functions for grouped jobs
 include: "../resources.smk"
 

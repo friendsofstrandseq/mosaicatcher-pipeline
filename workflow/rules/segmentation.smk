@@ -53,7 +53,8 @@ rule segment_one_cell:
         "{folder}/{sample}/segmentation/segmentation-per-cell/{cell}.txt",
     log:
         "{folder}/log/segmentation/{sample}/segmentation-per-cell/{cell}.log",
-    group: "single_cell_analysis"
+    group:
+        "single_cell_analysis"
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     params:

@@ -101,6 +101,7 @@ def get_mem_mb_single_cell_group(wildcards, attempt):
 # STANDALONE RULE FUNCTIONS (Preserved)
 # ========================================
 
+
 def get_mem_mb(wildcards, attempt):
     """Original function - preserved for ungrouped rules."""
     mem_avail = [2, 4, 8, 16, 64]

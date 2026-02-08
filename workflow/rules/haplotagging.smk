@@ -26,7 +26,8 @@ rule haplotag_bams:
         "{folder}/{sample}/haplotag/bam/{cell}.bam.htg",
     log:
         "{folder}/log/haplotag_bams/{sample}/{cell}.log",
-    group: "haplotagging_per_cell"
+    group:
+        "haplotagging_per_cell"
     params:
         ref=config["reference"],
     resources:

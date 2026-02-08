@@ -11,7 +11,8 @@ rule mergeBams:
         temp("{folder}/{sample}/merged_bam/merged.raw.bam"),
     log:
         "{folder}/log/mergeBams/{sample}.log",
-    group: "merge_bams_per_sample"
+    group:
+        "merge_bams_per_sample"
     resources:
         mem_mb=get_mem_mb_merge_group,
         time="01:00:00",
@@ -31,7 +32,8 @@ rule mergeSortBams:
         temp("{folder}/{sample}/merged_bam/merged.bam"),
     log:
         "{folder}/log/mergeBams/{sample}.log",
-    group: "merge_bams_per_sample"
+    group:
+        "merge_bams_per_sample"
     resources:
         mem_mb=get_mem_mb_merge_group,
         time="01:00:00",
@@ -51,7 +53,8 @@ rule index_merged_bam:
         temp("{folder}/{sample}/merged_bam/merged.bam.bai"),
     log:
         "{folder}/log/merged_bam/{sample}/merged.log",
-    group: "merge_bams_per_sample"
+    group:
+        "merge_bams_per_sample"
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     envmodules:

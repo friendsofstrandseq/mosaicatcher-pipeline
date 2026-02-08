@@ -318,7 +318,8 @@ rule extract_single_cell_counts:
         "{folder}/{sample}/counts/counts-per-cell/{cell}.txt.percell.gz",
     log:
         "{folder}/log/counts/{sample}/counts-per-cell/{cell}.log",
-    group: "single_cell_analysis"
+    group:
+        "single_cell_analysis"
     conda:
         "../envs/mc_base.yaml"
     resources:
