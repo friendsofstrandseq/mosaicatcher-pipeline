@@ -11,8 +11,9 @@ rule mergeBams:
         temp("{folder}/{sample}/merged_bam/merged.raw.bam"),
     log:
         "{folder}/log/mergeBams/{sample}.log",
+    group: "merge_bams_per_sample"
     resources:
-        mem_mb=get_mem_mb_heavy,
+        mem_mb=get_mem_mb_merge_group,
         time="01:00:00",
     threads: 10
     conda:
@@ -30,8 +31,9 @@ rule mergeSortBams:
         temp("{folder}/{sample}/merged_bam/merged.bam"),
     log:
         "{folder}/log/mergeBams/{sample}.log",
+    group: "merge_bams_per_sample"
     resources:
-        mem_mb=get_mem_mb_heavy,
+        mem_mb=get_mem_mb_merge_group,
         time="01:00:00",
     threads: 10
     conda:
@@ -49,12 +51,13 @@ rule index_merged_bam:
         temp("{folder}/{sample}/merged_bam/merged.bam.bai"),
     log:
         "{folder}/log/merged_bam/{sample}/merged.log",
+    group: "merge_bams_per_sample"
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     envmodules:
         "SAMtools/1.21-GCC-13.3.0",
     resources:
-        mem_mb=get_mem_mb,
+        mem_mb=get_mem_mb_merge_group,
     shell:
         "samtools index {input} > {log} 2>&1"
 

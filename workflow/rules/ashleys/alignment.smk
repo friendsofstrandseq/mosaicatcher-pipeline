@@ -88,11 +88,12 @@ if config["paired_end"] is True:
         log:
             bwa="{folder}/{sample}/log/{cell}.bwa.log",
             samtools="{folder}/{sample}/log/{cell}.samtools.log",
+        group: "alignment_per_cell"
         threads: 6
         params:
             idx_prefix=lambda wildcards, input: input.ref_index[0].rsplit(".", 1)[0],
         resources:
-            mem_mb=get_mem_mb_heavy,
+            mem_mb=get_mem_mb_alignment_group,
             runtime=60,
         conda:
             "../../envs/mc_bioinfo_tools.yaml"
@@ -126,11 +127,12 @@ else:
         log:
             bwa="{folder}/{sample}/log/{cell}.bwa.log",
             samtools="{folder}/{sample}/log/{cell}.samtools.log",
+        group: "alignment_per_cell"
         threads: 6
         params:
             idx_prefix=lambda wildcards, input: input.ref_index[0].rsplit(".", 1)[0],
         resources:
-            mem_mb=get_mem_mb_heavy,
+            mem_mb=get_mem_mb_alignment_group,
             runtime=60,
         conda:
             "../../envs/mc_bioinfo_tools.yaml"
@@ -151,8 +153,9 @@ rule ashleys_samtools_sort_bam:
         temp("{folder}/{sample}/bam/{cell}.bam.sort"),
     log:
         "{folder}/{sample}/log/samtools_sort/{cell}.log",
+    group: "alignment_per_cell"
     resources:
-        mem_mb=get_mem_mb,
+        mem_mb=get_mem_mb_alignment_group,
         runtime=60,
     conda:
         "../../envs/mc_bioinfo_tools.yaml"
@@ -169,12 +172,13 @@ rule ashleys_mark_duplicates:
         "{folder}/{sample}/bam/{cell}.sort.mdup.bam",
     log:
         "{folder}/{sample}/log/markdup/{cell}.log",
+    group: "alignment_per_cell"
     conda:
         "../../envs/mc_bioinfo_tools.yaml"
     envmodules:
         "sambamba/1.0.1-GCC-12.3.0",
     resources:
-        mem_mb=get_mem_mb_heavy,
+        mem_mb=get_mem_mb_alignment_group,
         runtime=60,
     shell:
         "sambamba markdup {input.bam} {output} 2>&1 > {log}"

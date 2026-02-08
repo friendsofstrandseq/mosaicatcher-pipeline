@@ -26,10 +26,11 @@ rule haplotag_bams:
         "{folder}/{sample}/haplotag/bam/{cell}.bam.htg",
     log:
         "{folder}/log/haplotag_bams/{sample}/{cell}.log",
+    group: "haplotagging_per_cell"
     params:
         ref=config["reference"],
     resources:
-        mem_mb=get_mem_mb,
+        mem_mb=get_mem_mb_haplotag_group,
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     shell:

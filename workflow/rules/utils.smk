@@ -30,12 +30,13 @@ rule index_input_bam:
         "{folder}/{sample}/bam/{cell}.sort.mdup.bam.bai",
     log:
         "{folder}/log/index_input_bam/{sample}/{cell}.log",
+    group: "alignment_per_cell"
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     envmodules:
         "SAMtools/1.21-GCC-13.3.0",
     resources:
-        mem_mb=get_mem_mb,
+        mem_mb=get_mem_mb_alignment_group,
     shell:
         "samtools index {input} > {log} 2>&1"
 
@@ -47,12 +48,13 @@ rule index_haplotag_bam:
         "{folder}/{sample}/haplotag/bam/{cell}.bam.htg.bai",
     log:
         "{folder}/log/index_haplotag_bam/{sample}/{cell}.log",
+    group: "haplotagging_per_cell"
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     envmodules:
         "SAMtools/1.21-GCC-13.3.0",
     resources:
-        mem_mb=get_mem_mb,
+        mem_mb=get_mem_mb_haplotag_group,
     shell:
         "samtools index {input} > {log} 2>&1"
 

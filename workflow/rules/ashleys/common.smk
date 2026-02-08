@@ -4,6 +4,9 @@ import collections
 import yaml
 import subprocess
 
+# Include resource allocation functions for grouped jobs
+include: "../resources.smk"
+
 
 if config["paired_end"] is True:
     pair = ["1", "2"]
@@ -446,21 +449,17 @@ def publishdir_fct(wildcards):
     )
 
     if config["use_light_data"] is False:
-        final_list.extend(
-            expand(
-                "{folder}/{sample}/plots/plate/ashleys_plate_{plate_plot}.pdf",
-                folder=config["data_location"],
-                sample=wildcards.sample,
-                plate_plot=["predictions", "probabilities"],
+        # Only add plate plots if cell count is 96 or 384
+        sample_cell_count = len(cell_per_sample.get(wildcards.sample, []))
+        if sample_cell_count in [96, 384]:
+            final_list.extend(
+                expand(
+                    "{folder}/{sample}/plots/plate/ashleys_plate_{plate_plot}.pdf",
+                    folder=config["data_location"],
+                    sample=wildcards.sample,
+                    plate_plot=["predictions", "probabilities"],
+                )
             )
-        )
-        # final_list.extend(
-        #     expand(
-        #         "{folder}/{sample}/cell_selection/labels_positive_control_corrected.tsv",
-        #         folder=config["data_location"],
-        #         sample=wildcards.sample,
-        #     )
-        # )
         final_list.extend(
             expand(
                 "{folder}/{sample}/config/bypass_cell.txt",

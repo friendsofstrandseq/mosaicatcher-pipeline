@@ -20,18 +20,17 @@ extract_well_number <- function(cell_id) {
     cell_clean <- sub("\\.sort\\.mdup\\.bam$", "", cell_id)
 
     # Extract last 2 digits from the cleaned cell ID
-    # Using regex to find the last 2 digits at the end
-    match <- regmatches(cell_clean, gregexpr("\\d{2}$", cell_clean))
-    if (length(match[[1]]) > 0) {
-        return(as.numeric(match[[1]][1]))
+    matches <- regmatches(cell_clean, regexpr("\\d{2}$", cell_clean))
+    if (length(matches) > 0 && nchar(matches[1]) > 0) {
+        return(as.numeric(matches[1]))
     } else {
-        return(NA)
+        return(NA_real_)
     }
 }
 
 # Determine plate type based on number of cells
 if (num_cells > 0) {
-    well_numbers <- sapply(ashleys_data$cell, extract_well_number)
+    well_numbers <- vapply(ashleys_data$cell, extract_well_number, numeric(1))
     max_well <- max(well_numbers, na.rm = TRUE)
 
     # Estimate plate type from max well number

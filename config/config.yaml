@@ -238,8 +238,8 @@ references_data:
     supports_arbigent: true
     supports_multistep_normalization: true
 
-    # Custom BSgenome tarball (null if using standard BioConductor package)
-    custom_bsgenome_tarball: null
+    # Custom BSgenome tarball (downloaded from Zenodo by download_T2T_tarball rule)
+    custom_bsgenome_tarball: "workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz"
   "mm10":
     # Existing fields
     reference_fasta: "workflow/data/ref_genomes/mm10.fa"

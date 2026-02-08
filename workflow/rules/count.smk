@@ -318,8 +318,11 @@ rule extract_single_cell_counts:
         "{folder}/{sample}/counts/counts-per-cell/{cell}.txt.percell.gz",
     log:
         "{folder}/log/counts/{sample}/counts-per-cell/{cell}.log",
+    group: "single_cell_analysis"
     conda:
         "../envs/mc_base.yaml"
+    resources:
+        mem_mb=get_mem_mb_single_cell_group,
     shell:
         """
         zcat {input.counts} | awk -v name={wildcards.cell} '(NR==1) || $5 == name' | gzip > {output}

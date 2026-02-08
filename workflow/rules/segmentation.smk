@@ -53,12 +53,13 @@ rule segment_one_cell:
         "{folder}/{sample}/segmentation/segmentation-per-cell/{cell}.txt",
     log:
         "{folder}/log/segmentation/{sample}/segmentation-per-cell/{cell}.log",
+    group: "single_cell_analysis"
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     params:
         min_num_segs=lambda wc: math.ceil(200000 / float(config["window"])),  # bins to represent 200 kb
     resources:
-        mem_mb=get_mem_mb,
+        mem_mb=get_mem_mb_single_cell_group,
     shell:
         """
         mosaicatcher segment \

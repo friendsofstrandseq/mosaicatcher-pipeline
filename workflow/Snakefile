@@ -42,6 +42,7 @@ else:
 
 
 include: "rules/common.smk"
+include: "rules/resources.smk"
 include: "rules/aggregate_fct.smk"
 include: "rules/external_data.smk"
 include: "rules/setup.smk"
