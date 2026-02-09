@@ -29,8 +29,9 @@ max-jobs-per-second: 10  # Limit to 10 jobs/sec (10x reduction for scheduler hea
 # ============================================================
 # Enable scratch staging for computational I/O
 default-storage-provider: fs
-# User-specific working directory to prevent conflicts between users
-local-storage-prefix: /scratch_cached/$USER/{sample}_workdir
+# User-specific working directory for large sequential I/O (BAM processing, FASTQ alignment)
+# Uses /scratch (not /scratch_cached) - optimized for streaming writes
+local-storage-prefix: /scratch/$USER/{sample}_workdir
 
 # Shared filesystem usage categories (input-output REMOVED to force scratch staging)
 shared-fs-usage:
@@ -65,8 +66,8 @@ apptainer-args: "-B /g,/scratch,/scratch_cached"     # Bind all required paths
 # ============================================================
 # SLURM Log Management
 # ============================================================
-# User-specific log directory (prevents permission conflicts)
-slurm-logdir: /scratch_cached/$USER/mosaicatcher_logs/slurm
+# User-specific log directory (write-once, no need for VFS cache)
+slurm-logdir: /scratch/$USER/mosaicatcher_logs/slurm
 slurm-keep-successful-logs: false  # Auto-remove logs for successful jobs (reduce clutter)
 slurm-delete-logfiles-older-than: 30  # Delete logs older than 30 days
 

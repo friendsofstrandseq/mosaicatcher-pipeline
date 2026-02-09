@@ -22,7 +22,12 @@ This guide explains how to configure the pipeline for **shared reference genomes
 
 ```bash
 # Create shared directory structure with proper permissions
-mkdir -p /scratch_cached/korbel/{references,shared/snakemake_cache}
+
+# /scratch_cached: For files re-read frequently (VFS cache benefit)
+mkdir -p /scratch_cached/korbel/references
+mkdir -p /scratch_cached/korbel/shared/snakemake_cache
+
+# /scratch: For large sequential I/O and shared caches
 mkdir -p /scratch/korbel/shared/{conda_cache,apptainer_cache}
 
 # Set group ownership
@@ -97,7 +102,7 @@ ln -s /scratch_cached/korbel/references/*.fa workflow/data/ref_genomes/
 
 Add to your `~/.bashrc`:
 ```bash
-export SNAKEMAKE_OUTPUT_CACHE=/scratch/korbel/shared/snakemake_cache
+export SNAKEMAKE_OUTPUT_CACHE=/scratch_cached/korbel/shared/snakemake_cache
 ```
 
 Then reload:
