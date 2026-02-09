@@ -70,7 +70,7 @@ data1_missing <- data.frame(
 data1 <- rbind(data1, data1_missing)
 
 data1$chrom <-
-    factor(data1$chr, levels = chrOrder)
+    factor(data1$chrom, levels = chrOrder)
 
 
 data1 <- data1[order(data1$chrom), ]
