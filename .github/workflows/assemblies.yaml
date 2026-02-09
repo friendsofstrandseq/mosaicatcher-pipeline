@@ -88,6 +88,8 @@ jobs:
           pixi-version: latest
           cache: true
           locked: false
+          # Only save cache from hg38 job to prevent race conditions in parallel matrix
+          cache-write: ${{ matrix.genome == 'hg38' }}
 
       - name: Restore Conda environments cache
         id: cache-conda-restore
