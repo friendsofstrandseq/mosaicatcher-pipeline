@@ -167,9 +167,9 @@ jobs:
           echo "Index build complete:"
           ls -lh workflow/data/ref_genomes/${{ matrix.genome }}.fa*
 
-      # Save cache for non-iGenomes genomes only (BWA indexes only, building takes ~15-20 min)
+      # Save cache only for mm39 (BWA index building takes ~15-20 min)
       - name: Save ${{ matrix.genome }} BWA index cache (after build)
-        if: matrix.igenomes_base == '' && steps.cache-bwa-restore.outputs.cache-hit != 'true'
+        if: matrix.genome == 'mm39' && steps.cache-bwa-restore.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
           path: |
