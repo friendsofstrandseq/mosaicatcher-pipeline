@@ -88,6 +88,8 @@ references_data:
     segdups: "workflow/data/segdups/segDups_hg38_UCSCtrack.bed.gz"
     snv_sites_to_genotype: []
     reference_file_location: https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/analysisSet/hg38.analysisSet.fa.gz
+    # AWS iGenomes (pre-built BWA indexes available)
+    igenomes_base: "https://ngi-igenomes.s3.amazonaws.com/igenomes/Homo_sapiens/UCSC/hg38/Sequence"
 
     # Genome metadata
     species: "Hsapiens"
@@ -142,6 +144,8 @@ references_data:
     snv_sites_to_genotype: []
     # snv_sites_to_genotype: "/g/korbel2/weber/MosaiCatcher_files/snv_sites_to_genotype/ALL.chr1-22plusXY_hg19_sites.20170504.renamedCHR.vcf.gz"
     reference_file_location: https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/analysisSet/hg19.p13.plusMT.no_alt_analysis_set.fa.gz
+    # AWS iGenomes (pre-built BWA indexes available)
+    igenomes_base: "https://ngi-igenomes.s3.amazonaws.com/igenomes/Homo_sapiens/UCSC/hg19/Sequence"
 
     # Genome metadata
     species: "Hsapiens"
@@ -195,6 +199,8 @@ references_data:
     segdups: "workflow/data/segdups/segDups_T2T_UCSCtrack.bed.gz"
     snv_sites_to_genotype: []
     reference_file_location: https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/CHM13/assemblies/analysis_set/chm13v2.0.fa.gz
+    # AWS iGenomes (pre-built BWA indexes available as CHM13)
+    igenomes_base: "https://ngi-igenomes.s3.amazonaws.com/igenomes/Homo_sapiens/UCSC/CHM13/Sequence"
 
     # Genome metadata
     species: "Hsapiens"
@@ -247,6 +253,8 @@ references_data:
     segdups: "workflow/data/segdups/segDups_mm10_UCSCtrack.bed.gz"
     snv_sites_to_genotype: []
     reference_file_location: https://hgdownload.soe.ucsc.edu/goldenPath/mm10/bigZips/mm10.fa.gz
+    # AWS iGenomes (pre-built BWA indexes available)
+    igenomes_base: "https://ngi-igenomes.s3.amazonaws.com/igenomes/Mus_musculus/UCSC/mm10/Sequence"
 
     # Genome metadata
     species: "Mmusculus"
@@ -296,6 +304,8 @@ references_data:
     segdups: ""  # mm39 has no genomicSuperDups track on UCSC, only tandemDups
     snv_sites_to_genotype: []
     reference_file_location: https://hgdownload.soe.ucsc.edu/goldenPath/mm39/bigZips/mm39.fa.gz
+    # AWS iGenomes: NOT available - need to build our own BWA indexes
+    igenomes_base: null
 
     # Genome metadata
     species: "Mmusculus"
@@ -345,6 +355,8 @@ references_data:
     segdups: "workflow/data/segdups/segDups_canFam3_UCSCtrack.bed.gz"
     snv_sites_to_genotype: []
     reference_file_location: https://hgdownload.soe.ucsc.edu/goldenPath/canFam3/bigZips/canFam3.fa.gz
+    # AWS iGenomes (pre-built BWA indexes available)
+    igenomes_base: "https://ngi-igenomes.s3.amazonaws.com/igenomes/Canis_familiaris/UCSC/canFam3/Sequence"
 
     # Genome metadata
     species: "Cfamiliaris"
@@ -413,6 +425,8 @@ references_data:
     segdups: "workflow/data/segdups/segDups_canFam4_UCSCtrack.bed.gz"
     snv_sites_to_genotype: []
     reference_file_location: https://hgdownload.soe.ucsc.edu/goldenPath/canFam4/bigZips/canFam4.fa.gz
+    # AWS iGenomes: NOT available - need to build our own BWA indexes
+    igenomes_base: null
 
     # Genome metadata
     species: "Cfamiliaris"
