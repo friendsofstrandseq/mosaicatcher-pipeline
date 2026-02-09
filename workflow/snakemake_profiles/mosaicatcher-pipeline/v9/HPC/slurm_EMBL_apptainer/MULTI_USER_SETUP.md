@@ -132,27 +132,28 @@ source ~/.bashrc
 
 ---
 
-## Storage Layout
+## Storage Layout (Optimized for Access Patterns)
 
 ```
-/scratch_cached/korbel/
-├── references/              # Shared reference FASTAs (Level 1)
-│   ├── hg38.fa             # Downloaded once, used by all
+/scratch_cached/korbel/              # Re-read frequently (VFS cache benefit)
+├── references/                      # Reference FASTAs
+│   ├── hg38.fa                     # Downloaded once, re-read during every alignment
 │   ├── hg19.fa
 │   ├── mm39.fa
 │   └── mm10.fa
+└── shared/
+    └── snakemake_cache/            # BWA indexes (re-read frequently)
+        ├── <hash>/hg38.fa.bwt
+        ├── <hash>/hg38.fa.sa
+        └── ... other cached outputs
 
-/scratch/korbel/shared/
-├── snakemake_cache/        # Cached rule outputs (Level 2)
-│   ├── <hash>/hg38.fa.bwt  # BWA index cached by Snakemake
-│   ├── <hash>/hg38.fa.sa
-│   └── ... other cached outputs
-├── conda_cache/            # Shared conda environments
-└── apptainer_cache/        # Shared containers
+/scratch/korbel/shared/              # Large caches (not re-read often)
+├── conda_cache/                    # Conda environments
+└── apptainer_cache/                # Container images
 
-/scratch_cached/$USER/      # User-specific temporary files
-├── {sample}_workdir/       # Job working directories
-└── mosaicatcher_logs/      # SLURM logs
+/scratch/$USER/                      # User-specific (large sequential I/O)
+├── {sample}_workdir/               # BAM processing, FASTQ alignment (streaming writes)
+└── mosaicatcher_logs/              # SLURM logs
 ```
 
 ---
