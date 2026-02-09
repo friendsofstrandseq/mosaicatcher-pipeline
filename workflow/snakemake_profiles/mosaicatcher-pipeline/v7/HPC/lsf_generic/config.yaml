@@ -1,0 +1,32 @@
+# Cluster command
+cluster:
+  mkdir -p logs/{rule} errors/{rule} &&
+  bsub -J smk-{rule}-{wildcards}
+  -o logs/{rule}/%J.out
+  -e errors/{rule}/%J.error
+  -n {threads}
+  -R "span[hosts=1]"
+  -W $(echo {resources.time} | sed 's/:00$//')
+  -R "rusage[mem={resources.mem_mb}]"
+
+# Default ressources for all rules
+default-resources:
+  - mem_mb=1000
+  - time="00:30:00"
+  # - partition=#TOCHANGE
+
+max-jobs-per-second: 100
+max-status-checks-per-second: 100
+local-cores: 1
+latency-wait: 60
+jobs: 200
+
+# 5 attempts to restart to correspond to the progressive memory increase solving OOM
+restart-times: 5
+keep-going: True
+# rerun-incomplete: True
+# scheduler: greedy
+
+use-conda: true
+conda-frontend: "conda"
+use-singularity: true
