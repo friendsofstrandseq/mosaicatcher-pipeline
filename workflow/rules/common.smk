@@ -137,6 +137,32 @@ def get_species():
     return get_genome_metadata("species")
 
 
+def get_reference_fasta(reference=None):
+    """
+    Get reference FASTA path, respecting reference_base_dir configuration.
+
+    If reference_base_dir is set (e.g., in HPC profile), constructs path using that directory.
+    Otherwise, falls back to the configured reference_fasta path.
+
+    Args:
+        reference: Reference genome name (e.g., 'hg38'). If None, uses config["reference"]
+    Returns:
+        Path to reference FASTA file
+    """
+    if reference is None:
+        reference = config["reference"]
+
+    # Get reference_base_dir if configured (e.g., for multi-user HPC setups)
+    ref_base_dir = config.get("reference_base_dir")
+
+    if ref_base_dir:
+        # Use reference_base_dir to construct path
+        return f"{ref_base_dir}/{reference}.fa"
+    else:
+        # Fall back to configured reference_fasta path
+        return config["references_data"][reference]["reference_fasta"]
+
+
 def get_species_id():
     """Get NCBI Taxonomy ID for current genome (e.g., 9606 for human, 10090 for mouse)"""
     return get_genome_metadata("species_id")
@@ -826,11 +852,12 @@ def get_call_SNVs_bcftools_inputs(wildcards):
     Get inputs for call_SNVs_bcftools_chrom rule.
     Makes ploidy input conditional based on ploidy config flag.
     """
+    ref_fasta = get_reference_fasta()
     inputs = {
         "bam": f"{wildcards.folder}/{wildcards.sample}/merged_bam/merged.bam",
         "bai": f"{wildcards.folder}/{wildcards.sample}/merged_bam/merged.bam.bai",
-        "fasta": config["references_data"][config["reference"]]["reference_fasta"],
-        "fasta_index": f"{config['references_data'][config['reference']]['reference_fasta']}.fai",
+        "fasta": ref_fasta,
+        "fasta_index": f"{ref_fasta}.fai",
     }
 
     if config.get("ploidy", True) is True:

@@ -19,9 +19,10 @@ samples_to_process: []
 # --------------------------------------------------------
 
 # Absolute path to the data location (modify as needed)
+# Production: Override with /g/korbel2/data/{project}
 data_location: ".tests/data_CHR17"
 
-# Directory to publish important data (e.g., stats, plots, counts). Leave empty if not required.
+# DEPRECATED: publishdir replaced by Snakemake native storage handling
 publishdir: ""
 
 # --------------------------------------------------------
@@ -79,7 +80,14 @@ genecore_regex_element: "PE20"
 # Reference genome used by BWA to map FASTQ files
 reference: "hg38"
 
+# Base directory for reference genomes
+# Default: "workflow/data/ref_genomes" (local to each user's checkout)
+# Multi-user HPC: "/scratch_cached/korbel/references" (shared on fast storage)
+reference_base_dir: "workflow/data/ref_genomes"
+
 # Reference assemblies data
+# NOTE: reference_fasta paths will use reference_base_dir if set in profile or command line
+# Default paths use workflow/data/ref_genomes, override uses /scratch_cached/korbel/references
 references_data:
   "hg38":
     # Existing fields

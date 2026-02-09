@@ -70,10 +70,8 @@ rule regenotype_SNVs:
         bam="{folder}/{sample}/merged_bam/merged.bam",
         bai="{folder}/{sample}/merged_bam/merged.bam.bai",
         sites=config["references_data"][config["reference"]]["snv_sites_to_genotype"],
-        fasta=config["references_data"][config["reference"]]["reference_fasta"],
-        fasta_index="{fasta}.fai".format(
-            fasta=config["references_data"][config["reference"]]["reference_fasta"]
-        ),
+        fasta=get_reference_fasta(),
+        fasta_index=f"{get_reference_fasta()}.fai",
     output:
         vcf="{folder}/{sample}/snv_genotyping/{chrom,chr[0-9A-Z]+}.vcf",
     log:

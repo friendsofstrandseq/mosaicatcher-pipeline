@@ -33,10 +33,10 @@ if config["genecore"] is True and config["genecore_date_folder"]:
 
 rule ashleys_bwa_index:
     input:
-        fasta=ancient(config["references_data"][config["reference"]]["reference_fasta"]),
+        fasta=ancient(get_reference_fasta()),
     output:
         idx=multiext(
-            config["references_data"][config["reference"]]["reference_fasta"],
+            get_reference_fasta(),
             ".amb",
             ".ann",
             ".bwt",
@@ -44,15 +44,13 @@ rule ashleys_bwa_index:
             ".sa",
         ),
     log:
-        "{}.log".format(
-            config["references_data"][config["reference"]]["reference_fasta"]
-        ),
+        f"{get_reference_fasta()}.log",
     conda:
         "../../envs/mc_bioinfo_tools.yaml"
     cache: True
     params:
         algorithm="bwtsw",
-        prefix=config["references_data"][config["reference"]]["reference_fasta"],
+        prefix=get_reference_fasta(),
     threads: 16
     resources:
         mem_mb=get_mem_mb_heavy,
@@ -72,11 +70,9 @@ if config["paired_end"] is True:
         input:
             mate1="{folder}/{sample}/fastq/{cell}.1.fastq.gz",
             mate2="{folder}/{sample}/fastq/{cell}.2.fastq.gz",
-            ref="{ref}".format(
-                ref=config["references_data"][config["reference"]]["reference_fasta"]
-            ),
+            ref=get_reference_fasta(),
             ref_index=multiext(
-                config["references_data"][config["reference"]]["reference_fasta"],
+                get_reference_fasta(),
                 ".amb",
                 ".ann",
                 ".bwt",
@@ -112,11 +108,9 @@ else:
     rule ashleys_bwa_strandseq_to_reference_alignment:
         input:
             mate1="{folder}/{sample}/fastq/{cell}.1.fastq.gz",
-            ref="{ref}".format(
-                ref=config["references_data"][config["reference"]]["reference_fasta"]
-            ),
+            ref=get_reference_fasta(),
             ref_index=multiext(
-                config["references_data"][config["reference"]]["reference_fasta"],
+                get_reference_fasta(),
                 ".amb",
                 ".ann",
                 ".bwt",

@@ -18,10 +18,8 @@ rule haplotag_bams:
         #     "{input_folder}/{{sample}}/bam/{{cell}}.sort.mdup.bam",
         #     input_folder=config["data_location"],
         # ),
-        fasta=config["references_data"][config["reference"]]["reference_fasta"],
-        fasta_index="{fasta}.fai".format(
-            fasta=config["references_data"][config["reference"]]["reference_fasta"]
-        ),
+        fasta=get_reference_fasta(),
+        fasta_index=f"{get_reference_fasta()}.fai",
     output:
         "{folder}/{sample}/haplotag/bam/{cell}.bam.htg",
     log:
