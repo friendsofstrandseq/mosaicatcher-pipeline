@@ -60,15 +60,16 @@ jobs:
             data_location: ".tests/data_chr19_mm"
             extra_args: ""
 
-          # mm39 - disabled until we build our own reference (not available in iGenomes)
-          # - genome: mm39
-          #   igenomes_base: ""
-          #   chromosome: "chr19"
-          #   ashleys_pipeline: "True"
-          #   hgsvc_based_normalized_counts: "False"
-          #   ploidy: "False"
-          #   data_location: ".tests/data_chr19_mm"
-          #   extra_args: ""
+          # mm39 - not available in iGenomes, build BWA indexes ourselves
+          - genome: mm39
+            igenomes_base: ""
+            reference_url: "https://hgdownload.soe.ucsc.edu/goldenPath/mm39/bigZips/mm39.fa.gz"
+            chromosome: "chr19"
+            ashleys_pipeline: "True"
+            hgsvc_based_normalized_counts: "False"
+            ploidy: "False"
+            data_location: ".tests/data_chr19_mm"
+            extra_args: ""
 
     name: Test ${{ matrix.genome }}
     steps:
@@ -97,7 +98,9 @@ jobs:
           restore-keys: |
             conda-envs-
 
+      # Cache for iGenomes genomes (includes .fa)
       - name: Restore ${{ matrix.genome }} reference genome and BWA indexes
+        if: matrix.igenomes_base != ''
         id: cache-reference-restore
         uses: actions/cache/restore@v4
         with:
@@ -113,8 +116,26 @@ jobs:
           restore-keys: |
             ${{ matrix.genome }}-reference-
 
+      # Cache for non-iGenomes genomes (BWA indexes only, .fa downloaded each time)
+      - name: Restore ${{ matrix.genome }} BWA indexes only
+        if: matrix.igenomes_base == ''
+        id: cache-bwa-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            workflow/data/ref_genomes/${{ matrix.genome }}.fa.amb
+            workflow/data/ref_genomes/${{ matrix.genome }}.fa.ann
+            workflow/data/ref_genomes/${{ matrix.genome }}.fa.bwt
+            workflow/data/ref_genomes/${{ matrix.genome }}.fa.pac
+            workflow/data/ref_genomes/${{ matrix.genome }}.fa.sa
+            workflow/data/ref_genomes/${{ matrix.genome }}.fa.fai
+          key: ${{ matrix.genome }}-bwa-index-v1
+          restore-keys: |
+            ${{ matrix.genome }}-bwa-index-
+
+      # Download from iGenomes (for genomes with pre-built indexes)
       - name: Download ${{ matrix.genome }} from AWS iGenomes (if not cached)
-        if: steps.cache-reference-restore.outputs.cache-hit != 'true'
+        if: matrix.igenomes_base != '' && steps.cache-reference-restore.outputs.cache-hit != 'true'
         run: |
           mkdir -p workflow/data/ref_genomes
           IGENOMES_BASE="${{ matrix.igenomes_base }}"
@@ -133,8 +154,36 @@ jobs:
           echo "Reference preparation complete:"
           ls -lh workflow/data/ref_genomes/${{ matrix.genome }}.fa*
 
+      # Download and build indexes for non-iGenomes genomes (e.g., mm39)
+      - name: Download ${{ matrix.genome }} reference (always, not cached)
+        if: matrix.igenomes_base == ''
+        run: |
+          mkdir -p workflow/data/ref_genomes
+          echo "Downloading ${{ matrix.genome }} reference genome..."
+          wget -q -O workflow/data/ref_genomes/${{ matrix.genome }}.fa.gz "${{ matrix.reference_url }}"
+          echo "Decompressing..."
+          gunzip -f workflow/data/ref_genomes/${{ matrix.genome }}.fa.gz
+          echo "Reference download complete:"
+          ls -lh workflow/data/ref_genomes/${{ matrix.genome }}.fa
+
+      - name: Build BWA indexes for ${{ matrix.genome }} (if not cached)
+        if: matrix.igenomes_base == '' && steps.cache-bwa-restore.outputs.cache-hit != 'true'
+        run: |
+          echo "Installing bwa and samtools..."
+          sudo apt-get update && sudo apt-get install -y bwa samtools
+
+          echo "Building BWA index (this may take a while)..."
+          bwa index workflow/data/ref_genomes/${{ matrix.genome }}.fa
+
+          echo "Building samtools faidx..."
+          samtools faidx workflow/data/ref_genomes/${{ matrix.genome }}.fa
+
+          echo "Index build complete:"
+          ls -lh workflow/data/ref_genomes/${{ matrix.genome }}.fa*
+
+      # Save cache for iGenomes genomes (includes .fa)
       - name: Save ${{ matrix.genome }} reference cache (after download)
-        if: steps.cache-reference-restore.outputs.cache-hit != 'true'
+        if: matrix.igenomes_base != '' && steps.cache-reference-restore.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
           path: |
@@ -146,6 +195,20 @@ jobs:
             workflow/data/ref_genomes/${{ matrix.genome }}.fa.sa
             workflow/data/ref_genomes/${{ matrix.genome }}.fa.fai
           key: ${{ matrix.genome }}-reference-v2
+
+      # Save cache for non-iGenomes genomes (BWA indexes only)
+      - name: Save ${{ matrix.genome }} BWA index cache (after build)
+        if: matrix.igenomes_base == '' && steps.cache-bwa-restore.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            workflow/data/ref_genomes/${{ matrix.genome }}.fa.amb
+            workflow/data/ref_genomes/${{ matrix.genome }}.fa.ann
+            workflow/data/ref_genomes/${{ matrix.genome }}.fa.bwt
+            workflow/data/ref_genomes/${{ matrix.genome }}.fa.pac
+            workflow/data/ref_genomes/${{ matrix.genome }}.fa.sa
+            workflow/data/ref_genomes/${{ matrix.genome }}.fa.fai
+          key: ${{ matrix.genome }}-bwa-index-v1
 
       - name: Run workflow (${{ matrix.genome }})
         run: |
