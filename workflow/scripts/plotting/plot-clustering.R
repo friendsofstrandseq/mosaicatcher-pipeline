@@ -26,6 +26,24 @@ data1 <- read.table(data_file,
     header = T,
     comment.char = ""
 )
+
+# Handle empty SV calls (no SVs detected)
+if (nrow(data1) == 0) {
+    # Create empty plot with message
+    plot.new()
+    text(0.5, 0.5, paste0("No SVs detected for sample: ", snakemake@wildcards[["sample"]],
+                          "\nMethod: ", snakemake@wildcards[["method"]],
+                          "\nFilter: ", snakemake@wildcards[["filter"]]),
+         cex = 1.5)
+    dev.off()
+
+    # Write empty clustering order dataframe
+    cluster_order_df <- data.frame(index = integer(), row_order = integer(), cell = character())
+    write.table(cluster_order_df, file = snakemake@output[["cluster_order_df"]], sep = "\t", row.names = FALSE, quote = FALSE)
+
+    # Exit successfully
+    quit(save = "no", status = 0)
+}
 # head(data1)
 
 # Create Dataframe for chromosomes missing SVs
