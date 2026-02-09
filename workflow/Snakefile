@@ -22,6 +22,10 @@ docker_container = "docker://ghcr.io/friendsofstrandseq/mosaicatcher-pipeline:{a
 containerized: docker_container
 
 
+# Load common utilities first (needed by other rules)
+include: "rules/common.smk"
+
+
 if config["ashleys_pipeline"] is True:
 
     include: "rules/ashleys/common.smk"
@@ -41,7 +45,6 @@ else:
         symlink_selected_bam,
 
 
-include: "rules/common.smk"
 include: "rules/resources.smk"
 include: "rules/aggregate_fct.smk"
 include: "rules/external_data.smk"

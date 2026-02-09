@@ -100,23 +100,7 @@ jobs:
           restore-keys: |
             conda-envs-
 
-      # Cache for iGenomes genomes (includes .fa)
-      - name: Restore ${{ matrix.genome }} reference genome and BWA indexes
-        if: matrix.igenomes_base != ''
-        id: cache-reference-restore
-        uses: actions/cache/restore@v4
-        with:
-          path: |
-            workflow/data/ref_genomes/${{ matrix.genome }}.fa
-            workflow/data/ref_genomes/${{ matrix.genome }}.fa.amb
-            workflow/data/ref_genomes/${{ matrix.genome }}.fa.ann
-            workflow/data/ref_genomes/${{ matrix.genome }}.fa.bwt
-            workflow/data/ref_genomes/${{ matrix.genome }}.fa.pac
-            workflow/data/ref_genomes/${{ matrix.genome }}.fa.sa
-            workflow/data/ref_genomes/${{ matrix.genome }}.fa.fai
-          key: ${{ matrix.genome }}-reference-v2
-          restore-keys: |
-            ${{ matrix.genome }}-reference-
+      # iGenomes references download quickly from AWS (no caching needed)
 
       # Cache for non-iGenomes genomes (BWA indexes only, .fa downloaded each time)
       - name: Restore ${{ matrix.genome }} BWA indexes only
@@ -136,8 +120,8 @@ jobs:
             ${{ matrix.genome }}-bwa-index-
 
       # Download from iGenomes (for genomes with pre-built indexes)
-      - name: Download ${{ matrix.genome }} from AWS iGenomes (if not cached)
-        if: matrix.igenomes_base != '' && steps.cache-reference-restore.outputs.cache-hit != 'true'
+      - name: Download ${{ matrix.genome }} from AWS iGenomes
+        if: matrix.igenomes_base != ''
         run: |
           mkdir -p workflow/data/ref_genomes
           IGENOMES_BASE="${{ matrix.igenomes_base }}"
@@ -183,22 +167,7 @@ jobs:
           echo "Index build complete:"
           ls -lh workflow/data/ref_genomes/${{ matrix.genome }}.fa*
 
-      # Save cache for iGenomes genomes (includes .fa)
-      - name: Save ${{ matrix.genome }} reference cache (after download)
-        if: matrix.igenomes_base != '' && steps.cache-reference-restore.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            workflow/data/ref_genomes/${{ matrix.genome }}.fa
-            workflow/data/ref_genomes/${{ matrix.genome }}.fa.amb
-            workflow/data/ref_genomes/${{ matrix.genome }}.fa.ann
-            workflow/data/ref_genomes/${{ matrix.genome }}.fa.bwt
-            workflow/data/ref_genomes/${{ matrix.genome }}.fa.pac
-            workflow/data/ref_genomes/${{ matrix.genome }}.fa.sa
-            workflow/data/ref_genomes/${{ matrix.genome }}.fa.fai
-          key: ${{ matrix.genome }}-reference-v2
-
-      # Save cache for non-iGenomes genomes (BWA indexes only)
+      # Save cache for non-iGenomes genomes only (BWA indexes only, building takes ~15-20 min)
       - name: Save ${{ matrix.genome }} BWA index cache (after build)
         if: matrix.igenomes_base == '' && steps.cache-bwa-restore.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
@@ -225,7 +194,8 @@ jobs:
             --snakefile workflow/Snakefile
 
       - name: Save Conda environments cache
-        if: always()
+        # Only save from hg38 job to prevent race condition (all jobs produce identical conda envs)
+        if: always() && matrix.genome == 'hg38'
         uses: actions/cache/save@v4
         with:
           path: .snakemake/conda
