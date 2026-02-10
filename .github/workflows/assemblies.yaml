@@ -33,7 +33,7 @@ jobs:
           git submodule update --recursive --init
 
       - name: Setup Pixi
-        uses: prefix-dev/setup-pixi@v0.9.3
+        uses: prefix-dev/setup-pixi@v0.9.4
         with:
           pixi-version: latest
           cache: true
@@ -108,7 +108,7 @@ jobs:
           git submodule update --recursive --init
 
       - name: Setup Pixi
-        uses: prefix-dev/setup-pixi@v0.9.3
+        uses: prefix-dev/setup-pixi@v0.9.4
         with:
           pixi-version: latest
           cache: true
@@ -183,7 +183,7 @@ jobs:
           git submodule update --recursive --init
 
       - name: Setup Pixi
-        uses: prefix-dev/setup-pixi@v0.9.3
+        uses: prefix-dev/setup-pixi@v0.9.4
         with:
           pixi-version: latest
           cache: true
@@ -260,7 +260,7 @@ jobs:
           git submodule update --recursive --init
 
       - name: Setup Pixi
-        uses: prefix-dev/setup-pixi@v0.9.3
+        uses: prefix-dev/setup-pixi@v0.9.4
         with:
           pixi-version: latest
           cache: true
@@ -335,7 +335,7 @@ jobs:
           git submodule update --recursive --init
 
       - name: Setup Pixi
-        uses: prefix-dev/setup-pixi@v0.9.3
+        uses: prefix-dev/setup-pixi@v0.9.4
         with:
           pixi-version: latest
           cache: true
