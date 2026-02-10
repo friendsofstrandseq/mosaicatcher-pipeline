@@ -298,14 +298,18 @@ for j, (chrom, ax) in enumerate(zip(chroms, axs)):
     data_heatmap = data_heatmap.loc[clustering_index_df.cell.values.tolist()]
 
     # Plot
-    sns.heatmap(
-        data=data_heatmap,
-        ax=ax,
-        vmin=0,
-        vmax=concat_df.llr_to_ref.max(),
-        cmap="Reds",
-        cbar=cbar,
-    )
+    # Skip plotting if data is empty
+    if data_heatmap.empty or data_heatmap.shape[1] == 0:
+        ax.text(0.5, 0.5, 'No data', ha='center', va='center', transform=ax.transAxes)
+    else:
+        sns.heatmap(
+            data=data_heatmap,
+            ax=ax,
+            vmin=0,
+            vmax=concat_df.llr_to_ref.max(),
+            cmap="Reds",
+            cbar=cbar,
+        )
     ax.xaxis.set_ticks_position("none")
     ax.set_xlabel("{}".format(chrom), fontsize=12, rotation=90)
     ax.set_xticklabels([])
@@ -380,9 +384,14 @@ for j, (chrom, ax) in enumerate(zip(chroms, axs)):
         .T.fillna(0)
     )
     data_heatmap = data_heatmap.loc[clustering_index_df.cell.values.tolist()]
-    sns.heatmap(
-        data=data_heatmap, ax=ax, vmin=0, cbar=False, cmap=list(colors.values())
-    )
+
+    # Skip plotting if data is empty
+    if data_heatmap.empty or data_heatmap.shape[1] == 0:
+        ax.text(0.5, 0.5, 'No data', ha='center', va='center', transform=ax.transAxes)
+    else:
+        sns.heatmap(
+            data=data_heatmap, ax=ax, vmin=0, cbar=False, cmap=list(colors.values())
+        )
     ax.xaxis.set_ticks_position("none")
 
     if j != 0:

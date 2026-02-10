@@ -85,6 +85,12 @@ reference: "hg38"
 # Multi-user HPC: "/scratch_cached/korbel/references" (shared on fast storage)
 reference_base_dir: "workflow/data/ref_genomes"
 
+# Download pre-built BWA indexes from iGenomes (if available) instead of building locally
+# True: Try to download pre-built indexes from AWS iGenomes (faster, requires internet)
+# False: Always build indexes locally from FASTA (slower, works offline)
+# If download fails, will automatically fall back to local build
+download_prebuilt_indexes: True
+
 # Reference assemblies data
 # NOTE: reference_fasta paths will use reference_base_dir if set in profile or command line
 # Default paths use workflow/data/ref_genomes, override uses /scratch_cached/korbel/references

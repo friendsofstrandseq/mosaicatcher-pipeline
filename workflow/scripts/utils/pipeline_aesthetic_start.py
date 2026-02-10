@@ -100,6 +100,11 @@ def pipeline_aesthetic_start(config):
         print_chroms = metadata["chromosome_pattern"]
     else:
         print_chroms = ",".join(config["chromosomes"])
+
+    # Check if iGenomes available for this reference
+    igenomes_available = bool(metadata.get("igenomes_base", ""))
+    igenomes_status = "Available" if igenomes_available else "Not available"
+
     print("\033[1m{}\033[0m".format("Reference genome & Chromosomes options:"))
     l = [
         f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format(
@@ -111,6 +116,15 @@ def pipeline_aesthetic_start(config):
         ),
         f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format(
             "Reference genome selected", ": " + str(config["reference"])
+        ),
+        f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format(
+            "Reference base directory", ": " + str(config.get("reference_base_dir", "workflow/data/ref_genomes"))
+        ),
+        f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format(
+            "Download pre-built indexes", ": " + str(config.get("download_prebuilt_indexes", True))
+        ),
+        f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format(
+            "iGenomes pre-built indexes", ": " + igenomes_status
         ),
         # f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format("Reference FASTA file", ": " + str(config["references_data"][config["reference"]]["reference_file_location"])),
     ]

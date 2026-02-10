@@ -27,6 +27,14 @@ data1 <- read.table(data_file,
     comment.char = ""
 )
 
+# Convert "inf" strings to numeric Inf in llr columns
+if ("llr_to_ref" %in% colnames(data1)) {
+    data1$llr_to_ref <- as.numeric(data1$llr_to_ref)
+}
+if ("llr_to_2nd" %in% colnames(data1)) {
+    data1$llr_to_2nd <- as.numeric(data1$llr_to_2nd)
+}
+
 # Handle empty SV calls (no SVs detected)
 if (nrow(data1) == 0) {
     # Create empty plot with message
@@ -124,7 +132,16 @@ dd <- unique(select(data1, c("chrom", "color")))
 # Create subset for clustering
 
 lite_data_clustering <- select(data1, c("pos", "cell", "llr_to_ref"))
-lite_data_clustering[c("llr_to_ref")][sapply(lite_data_clustering[c("llr_to_ref")], is.infinite)] <- max(lite_data_clustering$llr_to_ref[is.finite(lite_data_clustering$llr_to_ref)])
+
+# Replace infinite values with max of finite values, or 100 if all are infinite
+finite_values <- lite_data_clustering$llr_to_ref[is.finite(lite_data_clustering$llr_to_ref)]
+if (length(finite_values) > 0) {
+    replacement_value <- max(finite_values)
+} else {
+    # All values are infinite, use a default value
+    replacement_value <- 100
+}
+lite_data_clustering[c("llr_to_ref")][sapply(lite_data_clustering[c("llr_to_ref")], is.infinite)] <- replacement_value
 lite_data_clustering[is.na(lite_data_clustering)] <- 0
 # lite_data_clustering$llr_to_ref <- range01(lite_data_clustering$llr_to_ref)
 
@@ -145,6 +162,23 @@ t_lite_data_pivot_clustering[is.na(t_lite_data_pivot_clustering)] <- 0
 t_lite_data_pivot_clustering_num <- matrix(as.double(t_lite_data_pivot_clustering), ncol = ncol(t_lite_data_pivot_clustering))
 rownames(t_lite_data_pivot_clustering_num) <- rownames(t_lite_data_pivot_clustering)
 colnames(t_lite_data_pivot_clustering_num) <- colnames(t_lite_data_pivot_clustering)
+
+# Check if matrix has plottable data (at least 2 distinct values)
+if (length(unique(as.vector(t_lite_data_pivot_clustering_num))) < 2) {
+    # Create empty plot with message
+    plot.new()
+    text(0.5, 0.5, paste0("No plottable data for sample: ", snakemake@wildcards[["sample"]],
+                          "\n(all LLR values are identical)"),
+         cex = 1.5)
+    dev.off()
+
+    # Write empty clustering order dataframe
+    cluster_order_df <- data.frame(index = integer(), row_order = integer(), cell = character())
+    write.table(cluster_order_df, file = snakemake@output[["cluster_order_df"]], sep = "\t", row.names = FALSE, quote = FALSE)
+
+    # Exit successfully
+    quit(save = "no", status = 0)
+}
 
 # Plot options
 options(repr.plot.width = 20, repr.plot.height = 12)
