@@ -60,6 +60,8 @@ conda-frontend: "conda" # Specify the frontend for Conda (alternative could be m
 
 # SHARED caches - assemblies/references shared between all group users
 # IMPORTANT: Must be group-writable (see setup commands in README.md)
+# conda-prefix: Where conda ENVIRONMENTS are installed
+# Package cache location controlled by CONDA_PKGS_DIRS env var (should be /scratch/korbel/shared/conda_pkgs)
 conda-prefix: /scratch/korbel/shared/conda_cache
 # apptainer-prefix: /scratch/korbel/shared/apptainer_cache
 # apptainer-args: "-B /g,/scratch,/scratch_cached"     # Bind all required paths

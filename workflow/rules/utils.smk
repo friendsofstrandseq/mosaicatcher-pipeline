@@ -127,6 +127,25 @@ rule index_merged_strandphaser_vcf:
         "tabix -p vcf {input.vcf} > {log} 2>&1"
 
 
+rule index_input_bam:
+    input:
+        "{folder}/{sample}/bam/{cell}.sort.mdup.bam",
+    output:
+        "{folder}/{sample}/bam/{cell}.sort.mdup.bam.bai",
+    log:
+        "{folder}/log/index_input_bam/{sample}/{cell}.log",
+    group:
+        "deduplication_indexing_per_cell"
+    conda:
+        "../envs/mc_bioinfo_tools.yaml"
+    envmodules:
+        "SAMtools/1.21-GCC-13.3.0",
+    resources:
+        mem_mb=get_mem_mb_alignment_group,
+    shell:
+        "samtools index {input} > {log} 2>&1"
+
+
 rule gunzip_fasta:
     input:
         ancient("{file}.fa.gz"),

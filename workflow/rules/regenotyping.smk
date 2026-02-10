@@ -69,13 +69,19 @@ rule regenotype_SNVs:
     input:
         bam="{folder}/{sample}/merged_bam/merged.bam",
         bai="{folder}/{sample}/merged_bam/merged.bam.bai",
-        sites=config["references_data"][config["reference"]]["snv_sites_to_genotype"],
+        sites=(
+            config["references_data"][config["reference"]]["snv_sites_to_genotype"]
+            if config["references_data"][config["reference"]]["snv_sites_to_genotype"]
+            else []
+        ),
         fasta=get_reference_fasta(),
         fasta_index=f"{get_reference_fasta()}.fai",
     output:
         vcf="{folder}/{sample}/snv_genotyping/{chrom,chr[0-9A-Z]+}.vcf",
     log:
         "{folder}/log/snv_genotyping/{sample}/{chrom}.log",
+    params:
+        sites_arg=lambda wildcards, input: f"-@ {input.sites}" if input.sites else "",
     resources:
         mem_mb=get_mem_mb_heavy,
         time="10:00:00",
@@ -89,7 +95,7 @@ rule regenotype_SNVs:
         (freebayes \
             -f {input.fasta} \
             -r {wildcards.chrom} \
-            -@ {input.sites} \
+            {params.sites_arg} \
             --only-use-input-alleles {input.bam} \
             --genotype-qualities \
         | bcftools view \
