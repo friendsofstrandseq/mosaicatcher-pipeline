@@ -145,7 +145,7 @@ jobs:
             type=raw,value=base-latest
 
       - name: Build and push base image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: workflow/containers/Dockerfile.base
@@ -223,7 +223,7 @@ jobs:
           fi
 
       - name: Build and push ${{ matrix.assembly }} image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: workflow/containers/Dockerfile.${{ matrix.assembly }}
