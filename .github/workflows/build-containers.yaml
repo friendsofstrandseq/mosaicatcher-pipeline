@@ -436,7 +436,7 @@ jobs:
           cat container-manifest.md
 
       - name: Upload manifest to release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: container-manifest.md
           tag_name: ${{ github.event.release.tag_name }}
