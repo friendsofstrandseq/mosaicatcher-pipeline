@@ -45,7 +45,9 @@ chmod -R 2775 /scratch/korbel/shared
 - `7` = group rwx (all korbel members can read/write)
 - `5` = others rx (read-only access)
 
-**That's it!** Reference genomes are downloaded automatically by the pipeline on first use.
+**That's it!**
+- Reference genomes are downloaded automatically by the pipeline on first use
+- User-specific directories (`/scratch/$USER/`) are created automatically by Snakemake
 
 ---
 
@@ -155,6 +157,10 @@ source ~/.bashrc
 ├── {sample}_workdir/               # BAM processing, FASTQ alignment (streaming writes)
 └── mosaicatcher_logs/              # SLURM logs
 ```
+
+**Notes:**
+- 📁 **Shared directories** (`/scratch_cached/korbel/`, `/scratch/korbel/shared/`) - Created manually once (see Step 1)
+- 🤖 **User directories** (`/scratch/$USER/`) - **Created automatically by Snakemake** (no action needed)
 
 ---
 

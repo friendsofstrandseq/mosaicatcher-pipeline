@@ -23,25 +23,6 @@ rule check_sm_tag:
         """
 
 
-rule index_input_bam:
-    input:
-        "{folder}/{sample}/bam/{cell}.sort.mdup.bam",
-    output:
-        "{folder}/{sample}/bam/{cell}.sort.mdup.bam.bai",
-    log:
-        "{folder}/log/index_input_bam/{sample}/{cell}.log",
-    group:
-        "alignment_per_cell"
-    conda:
-        "../envs/mc_bioinfo_tools.yaml"
-    envmodules:
-        "SAMtools/1.21-GCC-13.3.0",
-    resources:
-        mem_mb=get_mem_mb_alignment_group,
-    shell:
-        "samtools index {input} > {log} 2>&1"
-
-
 rule index_haplotag_bam:
     input:
         "{folder}/{sample}/haplotag/bam/{cell}.bam.htg",
@@ -161,20 +142,22 @@ rule gunzip_fasta:
         "gunzip -cd {input} > {output}"
 
 
-rule samtools_faindex:
-    input:
-        ancient("{file}.fa"),
-    output:
-        "{file}.fa.fai",
-    log:
-        "{file}.log",
-    conda:
-        "../envs/mc_bioinfo_tools.yaml"
-    cache: True
-    resources:
-        mem_mb=get_mem_mb_heavy,
-    shell:
-        "samtools faidx {input}"
+if not config["download_prebuilt_indexes"]:
+
+    rule samtools_faindex:
+        input:
+            ancient("{file}.fa"),
+        output:
+            "{file}.fa.fai",
+        log:
+            "{file}.log",
+        conda:
+            "../envs/mc_bioinfo_tools.yaml"
+        cache: True
+        resources:
+            mem_mb=get_mem_mb_heavy,
+        shell:
+            "samtools faidx {input}"
 
 
 rule save_config:
@@ -238,8 +221,6 @@ rule save_conda_versions_rtools:
 #         "../envs/scNOVA/scNOVA_DL.yaml"
 #     shell:
 #         "conda env export > {output}"
-
-
 # rule save_conda_versions_scNOVA_R:
 #     output:
 #         "{folder}/{sample}/config/conda_export/scNOVA_R.yaml",
@@ -249,20 +230,16 @@ rule save_conda_versions_rtools:
 #         "../envs/scNOVA/scNOVA_R.yaml"
 #     shell:
 #         "conda env export > {output}"
-
-
 # PUBLISHDIR
-
-if config["publishdir"] != "":
-
-    rule publishdir_outputs_mc:
-        input:
-            list_publishdir=publishdir_fct_mc,
-        output:
-            touch("{folder}/{sample}/config/publishdir_outputs_mc.ok"),
-        log:
-            "{folder}/log/publishdir_outputs/{sample}.log",
-        conda:
-            "../envs/mc_base.yaml"
-        script:
-            "../scripts/utils/publishdir.py"
+# if config["publishdir"] != "":
+#     rule publishdir_outputs_mc:
+#         input:
+#             list_publishdir=publishdir_fct_mc,
+#         output:
+#             touch("{folder}/{sample}/config/publishdir_outputs_mc.ok"),
+#         log:
+#             "{folder}/log/publishdir_outputs/{sample}.log",
+#         conda:
+#             "../envs/mc_base.yaml"
+#         script:
+#             "../scripts/utils/publishdir.py"

@@ -162,7 +162,9 @@ if config.get("download_prebuilt_indexes", True):
         conda:
             "../envs/mc_base.yaml"
         params:
-            igenomes_base=lambda w: config["references_data"][config["reference"]]["igenomes_base"],
+            igenomes_base=lambda w: config["references_data"][config["reference"]][
+                "igenomes_base"
+            ],
             genome=config["reference"],
         shell:
             """
@@ -182,58 +184,13 @@ if config.get("download_prebuilt_indexes", True):
         conda:
             "../envs/mc_base.yaml"
         params:
-            igenomes_base=lambda w: config["references_data"][config["reference"]]["igenomes_base"],
+            igenomes_base=lambda w: config["references_data"][config["reference"]][
+                "igenomes_base"
+            ],
         shell:
             """
             wget -q -O {output} \
                 {params.igenomes_base}/WholeGenomeFasta/genome.fa.fai > {log} 2>&1
-            """
-
-else:
-
-    rule ashleys_bwa_index:
-        """Build BWA indexes locally from FASTA."""
-        input:
-            fasta=ancient(get_reference_fasta()),
-        output:
-            idx=multiext(
-                get_reference_fasta(),
-                ".amb",
-                ".ann",
-                ".bwt",
-                ".pac",
-                ".sa",
-            ),
-        log:
-            f"{get_reference_fasta()}.log",
-        conda:
-            "../envs/mc_bioinfo_tools.yaml"
-        cache: True
-        params:
-            algorithm="bwtsw",
-        threads: 16
-        resources:
-            mem_mb=get_mem_mb_heavy,
-            time="10:00:00",
-        shell:
-            """
-            bwa index -a {params.algorithm} {input.fasta} > {log} 2>&1
-            """
-
-    rule samtools_faindex:
-        """Build samtools faidx locally from FASTA."""
-        input:
-            fasta=ancient(get_reference_fasta()),
-        output:
-            f"{get_reference_fasta()}.fai",
-        log:
-            f"{get_reference_fasta()}.fai.log",
-        conda:
-            "../envs/mc_base.yaml"
-        cache: True
-        shell:
-            """
-            samtools faidx {input.fasta} > {log} 2>&1
             """
 
 

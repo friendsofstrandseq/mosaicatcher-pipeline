@@ -157,10 +157,12 @@ def get_reference_fasta(reference=None):
 
     if ref_base_dir:
         # Use reference_base_dir to construct path
-        return f"{ref_base_dir}/{reference}.fa"
+        final = f"{ref_base_dir}/{reference}.fa"
     else:
         # Fall back to configured reference_fasta path
-        return config["references_data"][reference]["reference_fasta"]
+        final = config["references_data"][reference]["reference_fasta"]
+
+    return final
 
 
 def get_species_id():

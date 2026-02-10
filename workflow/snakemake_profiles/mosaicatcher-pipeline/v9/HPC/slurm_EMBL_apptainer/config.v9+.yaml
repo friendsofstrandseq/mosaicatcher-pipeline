@@ -11,65 +11,64 @@ config:
 
 # Default resources: These are the baseline resources allocated to each rule if not overridden by set-resources.
 default-resources:
-  - mem_mb=1000         # Memory in megabytes allocated to each task
-  - runtime=60          # Runtime in minutes for each task
-  - constraint=''       # SLURM constraints (e.g., specific nodes), empty by default
+  - mem_mb=1000 # Memory in megabytes allocated to each task
+  - runtime=60 # Runtime in minutes for each task
+  - constraint='' # SLURM constraints (e.g., specific nodes), empty by default
 
 # Resource overrides for specific rules
 set-resources:
   ashleys_mark_duplicates:
-    constraint: "milan"  # SLURM constraint specifically for the ashleys_mark_duplicates rule
+    constraint: "milan" # SLURM constraint specifically for the ashleys_mark_duplicates rule
 
 # Throttling to prevent overloading the scheduler
-max-status-checks-per-second: 10  # Maximum number of job status checks per second
-max-jobs-per-second: 10  # Limit to 10 jobs/sec (10x reduction for scheduler health)
+max-status-checks-per-second: 10 # Maximum number of job status checks per second
+max-jobs-per-second: 10 # Limit to 10 jobs/sec (10x reduction for scheduler health)
 
 # ============================================================
 # Storage Optimization
 # ============================================================
-# Enable scratch staging for computational I/O
-default-storage-provider: fs
-# User-specific working directory for large sequential I/O (BAM processing, FASTQ alignment)
-# Uses /scratch (not /scratch_cached) - optimized for streaming writes
-local-storage-prefix: /scratch/$USER/{sample}_workdir
+# DISABLED: fs provider breaks workflows when data_location is already on /scratch
+# The fs provider is designed for: /g/ (slow) → /scratch/ (fast) → /g/ (results)
+# If your data is already on /scratch, use default-storage-provider: none
+default-storage-provider: none
 
-# Shared filesystem usage categories (input-output REMOVED to force scratch staging)
-shared-fs-usage:
-  - persistence                     # Copy final outputs to /g/
-  - software-deployment             # Conda/Apptainer on shared FS
-  - sources                         # Workflow code on shared FS
-  - source-cache                    # Cache workflow sources locally
+# COMMENTED OUT: Only use these if data_location is on shared FS (/g/)
+# local-storage-prefix: /scratch/$USER/mosaicatcher
+# remote-job-local-storage-prefix: /scratch/$USER/$JOBID
+# shared-fs-usage:
+#   - persistence
+#   - software-deployment
+#   - sources
+#   - source-cache
 
 # Core and job handling
-local-cores: 1          # Number of cores to use for local rules
-latency-wait: 60        # Time in seconds to wait for filesystems to catch up (important for NFS)
-jobs: 150               # Maximum number of concurrent jobs (increased for better throughput)
+local-cores: 1 # Number of cores to use for local rules
+latency-wait: 60 # Time in seconds to wait for filesystems to catch up (important for NFS)
+jobs: 150 # Maximum number of concurrent jobs (increased for better throughput)
 
 # Fault tolerance
-keep-going: True        # Continue with independent jobs even if some jobs fail
-rerun-incomplete: True  # Rerun jobs that were started but didn't complete
-
-
+keep-going: True # Continue with independent jobs even if some jobs fail
+rerun-incomplete: True # Rerun jobs that were started but didn't complete
 
 # Software deployment settings
 software-deployment-method:
-  - conda               # Use Conda for handling software dependencies
-  - apptainer           # Use Apptainer for handling software dependencies
+  - conda # Use Conda for handling software dependencies
+  - apptainer # Use Apptainer for handling software dependencies
 conda-frontend: "conda" # Specify the frontend for Conda (alternative could be mamba)
 
 # SHARED caches - assemblies/references shared between all group users
 # IMPORTANT: Must be group-writable (see setup commands in README.md)
 conda-prefix: /scratch/korbel/shared/conda_cache
 apptainer-prefix: /scratch/korbel/shared/apptainer_cache
-apptainer-args: "-B /g,/scratch,/scratch_cached"     # Bind all required paths
+apptainer-args: "-B /g,/scratch,/scratch_cached" # Bind all required paths
 
 # ============================================================
 # SLURM Log Management
 # ============================================================
 # User-specific log directory (write-once, no need for VFS cache)
 slurm-logdir: /scratch/$USER/mosaicatcher_logs/slurm
-slurm-keep-successful-logs: false  # Auto-remove logs for successful jobs (reduce clutter)
-slurm-delete-logfiles-older-than: 30  # Delete logs older than 30 days
+slurm-keep-successful-logs: false # Auto-remove logs for successful jobs (reduce clutter)
+slurm-delete-logfiles-older-than: 30 # Delete logs older than 30 days
 
 # ============================================================
 # Resource Efficiency Monitoring
@@ -77,11 +76,11 @@ slurm-delete-logfiles-older-than: 30  # Delete logs older than 30 days
 # Generate reports showing actual vs requested resource usage
 slurm-efficiency-report: true
 slurm-efficiency-report-path: "logs/slurm_efficiency_report.txt"
-slurm-efficiency-threshold: 0.8  # Flag jobs using <80% of requested resources
+slurm-efficiency-threshold: 0.8 # Flag jobs using <80% of requested resources
 
 # ============================================================
 # Customization of Reports
 # ============================================================
 # Define the path to a custom stylesheet for reports generated by the workflow
-report-stylesheet: "workflow/report/custom-stylesheet.css"  # Custom stylesheet for enhancing report aesthetics
+report-stylesheet: "workflow/report/custom-stylesheet.css" # Custom stylesheet for enhancing report aesthetics
 

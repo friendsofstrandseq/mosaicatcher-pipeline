@@ -145,6 +145,7 @@ if config["publishdir"] != "":
 
 
 rule ashleys_save_config:
+    localrule: True
     input:
         "config/config.yaml",
     output:

@@ -89,7 +89,7 @@ reference_base_dir: "workflow/data/ref_genomes"
 # True: Try to download pre-built indexes from AWS iGenomes (faster, requires internet)
 # False: Always build indexes locally from FASTA (slower, works offline)
 # If download fails, will automatically fall back to local build
-download_prebuilt_indexes: True
+download_prebuilt_indexes: False
 
 # Reference assemblies data
 # NOTE: reference_fasta paths will use reference_base_dir if set in profile or command line
@@ -107,7 +107,7 @@ references_data:
 
     # Genome metadata
     species: "Hsapiens"
-    species_id: 9606  # NCBI Taxonomy ID (Homo sapiens)
+    species_id: 9606 # NCBI Taxonomy ID (Homo sapiens)
     common_name: "human"
     chromosome_count: 24
     chromosome_pattern: "chr1..22,chrX,chrY"
@@ -163,7 +163,7 @@ references_data:
 
     # Genome metadata
     species: "Hsapiens"
-    species_id: 9606  # NCBI Taxonomy ID (Homo sapiens)
+    species_id: 9606 # NCBI Taxonomy ID (Homo sapiens)
     common_name: "human"
     chromosome_count: 24
     chromosome_pattern: "chr1..22,chrX,chrY"
@@ -218,7 +218,7 @@ references_data:
 
     # Genome metadata
     species: "Hsapiens"
-    species_id: 9606  # NCBI Taxonomy ID (Homo sapiens)
+    species_id: 9606 # NCBI Taxonomy ID (Homo sapiens)
     common_name: "human"
     chromosome_count: 24
     chromosome_pattern: "chr1..22,chrX,chrY"
@@ -272,7 +272,7 @@ references_data:
 
     # Genome metadata
     species: "Mmusculus"
-    species_id: 10090  # NCBI Taxonomy ID (Mus musculus)
+    species_id: 10090 # NCBI Taxonomy ID (Mus musculus)
     common_name: "mouse"
     chromosome_count: 21
     chromosome_pattern: "chr1..19,chrX,chrY"
@@ -315,7 +315,7 @@ references_data:
     # Existing fields
     reference_fasta: "workflow/data/ref_genomes/mm39.fa"
     R_reference: "BSgenome.Mmusculus.UCSC.mm39"
-    segdups: ""  # mm39 has no genomicSuperDups track on UCSC, only tandemDups
+    segdups: "" # mm39 has no genomicSuperDups track on UCSC, only tandemDups
     snv_sites_to_genotype: []
     reference_file_location: https://hgdownload.soe.ucsc.edu/goldenPath/mm39/bigZips/mm39.fa.gz
     # AWS iGenomes: NOT available - need to build our own BWA indexes
@@ -323,7 +323,7 @@ references_data:
 
     # Genome metadata
     species: "Mmusculus"
-    species_id: 10090  # NCBI Taxonomy ID (Mus musculus)
+    species_id: 10090 # NCBI Taxonomy ID (Mus musculus)
     common_name: "mouse"
     chromosome_count: 21
     chromosome_pattern: "chr1..19,chrX,chrY"
@@ -374,7 +374,7 @@ references_data:
 
     # Genome metadata
     species: "Cfamiliaris"
-    species_id: 9615  # NCBI Taxonomy ID (Canis lupus familiaris)
+    species_id: 9615 # NCBI Taxonomy ID (Canis lupus familiaris)
     common_name: "dog"
     chromosome_count: 40
     chromosome_pattern: "chr1..38,chrX,chrY"
@@ -444,7 +444,7 @@ references_data:
 
     # Genome metadata
     species: "Cfamiliaris"
-    species_id: 9615  # NCBI Taxonomy ID (Canis lupus familiaris)
+    species_id: 9615 # NCBI Taxonomy ID (Canis lupus familiaris)
     common_name: "dog"
     chromosome_count: 40
     chromosome_pattern: "chr1..38,chrX,chrY"
