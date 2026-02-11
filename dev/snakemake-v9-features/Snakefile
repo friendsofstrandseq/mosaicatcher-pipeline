@@ -1,0 +1,145 @@
+"""
+Minimal Snakemake workflow to test fs storage provider with HPC best practices.
+
+Tests:
+- fs provider automatic staging (shared FS -> scratch -> shared FS)
+- Rule grouping for efficiency
+- Scalability with wildcards (1-100 samples)
+- local-storage-prefix vs remote-job-local-storage-prefix
+"""
+
+configfile: "config.yaml"
+
+# Get sample names from config
+SAMPLES = config.get("samples", [f"sample{i:03d}" for i in range(1, 4)])
+
+# Final target rule
+rule all:
+    input:
+        "results/final_report.txt"
+
+# ============================================================
+# RULE 1: Generate input data (simulates raw data on shared FS)
+# ============================================================
+rule generate_input:
+    output:
+        "data/{sample}.fastq"
+    log:
+        "logs/generate/{sample}.log"
+    shell:
+        """
+        echo "Generating input for {wildcards.sample}" > {log}
+        # Simulate FASTQ data (10 MB file)
+        head -c 10M < /dev/urandom | base64 > {output}
+        echo "Generated {output} (size: $(du -h {output} | cut -f1))" >> {log}
+        """
+
+# ============================================================
+# RULE 2 & 3: Processing steps (GROUPED for efficiency)
+# ============================================================
+# Group these rules together - they'll run in same job/scratch space
+rule process_step1:
+    input:
+        "data/{sample}.fastq"
+    output:
+        "results/{sample}/processed.bam"
+    log:
+        "logs/process1/{sample}.log"
+    group: "processing"  # Grouped with step2
+    resources:
+        mem_mb=2000,
+        runtime=10
+    shell:
+        """
+        echo "[Step1] Processing {wildcards.sample}" > {log}
+        echo "Input path: {input}" >> {log}
+        echo "Output path: {output}" >> {log}
+        echo "Working directory: $(pwd)" >> {log}
+
+        # Simulate BAM processing (compress input)
+        gzip -c {input} > {output}
+
+        echo "Processed: $(du -h {output} | cut -f1)" >> {log}
+        """
+
+rule process_step2:
+    input:
+        "results/{sample}/processed.bam"
+    output:
+        "results/{sample}/sorted.bam"
+    log:
+        "logs/process2/{sample}.log"
+    group: "processing"  # Grouped with step1
+    resources:
+        mem_mb=2000,
+        runtime=10
+    shell:
+        """
+        echo "[Step2] Sorting {wildcards.sample}" > {log}
+        echo "Input path: {input}" >> {log}
+        echo "Output path: {output}" >> {log}
+
+        # Simulate sorting (copy + add header)
+        echo "@SORTED" > {output}
+        cat {input} >> {output}
+
+        echo "Sorted: $(du -h {output} | cut -f1)" >> {log}
+        """
+
+# ============================================================
+# RULE 4: Analysis (separate job, not grouped)
+# ============================================================
+rule analyze:
+    input:
+        "results/{sample}/sorted.bam"
+    output:
+        "results/{sample}/stats.txt"
+    log:
+        "logs/analyze/{sample}.log"
+    resources:
+        mem_mb=1000,
+        runtime=5
+    shell:
+        """
+        echo "[Analyze] Analyzing {wildcards.sample}" > {log}
+        echo "Input: {input}" >> {log}
+
+        # Generate stats
+        wc -c {input} > {output}
+        echo "Sample: {wildcards.sample}" >> {output}
+        echo "Timestamp: $(date)" >> {output}
+
+        echo "Stats written to {output}" >> {log}
+        """
+
+# ============================================================
+# RULE 5: Aggregate all samples (final output)
+# ============================================================
+rule aggregate:
+    input:
+        expand("results/{sample}/stats.txt", sample=SAMPLES)
+    output:
+        "results/final_report.txt"
+    log:
+        "logs/aggregate.log"
+    params:
+        sample_count=len(SAMPLES)
+    resources:
+        mem_mb=500,
+        runtime=5
+    shell:
+        """
+        echo "[Aggregate] Combining results from {params.sample_count} samples" > {log}
+
+        echo "=== Final Report ===" > {output}
+        echo "Date: $(date)" >> {output}
+        echo "Samples processed: {params.sample_count}" >> {output}
+        echo "" >> {output}
+
+        for stats in {input}; do
+            echo "---" >> {output}
+            cat $stats >> {output}
+        done
+
+        echo "Report complete: {output}" >> {log}
+        """
