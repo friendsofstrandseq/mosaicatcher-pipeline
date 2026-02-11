@@ -32,7 +32,7 @@ jobs:
           git submodule update --remote --recursive --force --init
 
       - name: Setup Pixi
-        uses: prefix-dev/setup-pixi@v0.9.3
+        uses: prefix-dev/setup-pixi@v0.9.4
         with:
           pixi-version: latest
           cache: true
@@ -145,7 +145,7 @@ jobs:
             type=raw,value=base-latest
 
       - name: Build and push base image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: workflow/containers/Dockerfile.base
@@ -223,7 +223,7 @@ jobs:
           fi
 
       - name: Build and push ${{ matrix.assembly }} image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: workflow/containers/Dockerfile.${{ matrix.assembly }}
@@ -264,7 +264,7 @@ jobs:
           git submodule update --remote --recursive --force --init
 
       - name: Setup Pixi
-        uses: prefix-dev/setup-pixi@v0.9.3
+        uses: prefix-dev/setup-pixi@v0.9.4
         with:
           pixi-version: latest
           cache: true
@@ -436,7 +436,7 @@ jobs:
           cat container-manifest.md
 
       - name: Upload manifest to release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: container-manifest.md
           tag_name: ${{ github.event.release.tag_name }}
