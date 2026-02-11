@@ -1,0 +1,51 @@
+# Cluster command
+cluster: mkdir -p logs/{rule} errors/{rule} &&
+  sbatch
+  --partition={resources.partition}
+  --qos={resources.qos}
+  --cpus-per-task={threads}
+  --mem={resources.mem_mb}
+  --job-name=smk-{rule}-{wildcards}
+  --output=logs/{rule}/%j.out
+  --error=errors/{rule}/%j.error
+  --time={resources.time}
+
+# Default ressources for all rules
+default-resources:
+  - partition=short ## MODIFIED
+  - qos=normal
+  - mem_mb=1000
+  - time="00:30:00"
+
+## MODIFIED
+set-resources:
+  - install_T2T_BSgenome_tarball:partition=medium
+  - samtools_faindex:partition=medium
+  - create_haplotag_table:partition=medium
+  - mosaiClassifier_calc_probs:partition=medium
+  - create_haplotag_likelihoods:partition=medium
+  - mosaiClassifier_make_call:partition=medium
+  - mosaiClassifier_make_call_biallelic:partition=medium
+  - call_complex_regions:partition=medium
+  - mergeSortBams:partition=medium
+  - regenotype_SNVs:partition=medium
+  - call_SNVs_bcftools_chrom:partition=medium
+  - run_strandphaser_per_chrom:partition=medium
+##
+
+max-jobs-per-second: 100
+max-status-checks-per-second: 100
+local-cores: 1
+latency-wait: 60
+jobs: 200
+
+# 4 attempts to restart to correspond to the progressive memory increase solving OOM
+restart-times: 4
+keep-going: True
+# rerun-incomplete: True
+# scheduler: greedy
+
+use-conda: true
+conda-frontend: "conda"
+use-singularity: true
+singularity-args: "-B /fast:/fast"

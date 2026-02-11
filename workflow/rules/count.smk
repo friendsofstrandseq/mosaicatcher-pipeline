@@ -1,87 +1,89 @@
-if config["ashleys_pipeline"] is False:
 
-    rule generate_exclude_file_for_mosaic_count:
-        input:
-            bam=lambda wc: expand(
-                "{folder}/{sample}/bam/{cell}.sort.mdup.bam",
-                folder=config["data_location"],
-                sample=wc.sample,
-                cell=cell_per_sample[str(wc.sample)],
-            ),
-        output:
-            excl="{folder}/{sample}/config/chroms_to_exclude.txt",
-        log:
-            "{folder}/log/config/{sample}/exclude_file.log",
-        conda:
-            "../envs/mc_base.yaml"
-        params:
-            chroms=config["chromosomes"],  # Use config directly for all references
-        script:
-            "../scripts/utils/generate_exclude_file.py"
+rule generate_exclude_file_for_mosaic_count:
+    input:
+        bam=lambda wc: expand(
+            "{folder}/{sample}/bam/{cell}.sort.mdup.bam",
+            folder=config["data_location"],
+            sample=wc.sample,
+            cell=cell_per_sample[str(wc.sample)],
+        ),
+    output:
+        excl="{folder}/{sample}/config/chroms_to_exclude.txt",
+    log:
+        "{folder}/log/config/{sample}/exclude_file.log",
+    conda:
+        "../envs/mc_base.yaml"
+    params:
+        chroms=config["chromosomes"],
+    script:
+        "../scripts/utils/generate_exclude_file.py"
 
-    checkpoint mosaic_count:
-        input:
-            bam=lambda wc: expand(
-                "{folder}/{sample}/bam/{cell}.sort.mdup.bam",
-                folder=config["data_location"],
-                sample=wc.sample,
-                cell=bam_per_sample_local[str(wc.sample)],
-            ),
-            bai=lambda wc: expand(
-                "{folder}/{sample}/bam/{cell}.sort.mdup.bam.bai",
-                folder=config["data_location"],
-                sample=wc.sample,
-                cell=bam_per_sample_local[str(wc.sample)],
-            ),
-            excl="{folder}/{sample}/config/chroms_to_exclude.txt",
-            checks=lambda wc: expand(
-                "{folder}/{sample}/checks/{cell}.sm_check.ok",
-                folder=config["data_location"],
-                sample=wc.sample,
-                cell=bam_per_sample_local[str(wc.sample)],
-            ),
-        output:
-            counts="{folder}/{sample}/counts/{sample}.txt.raw.gz",
-            info="{folder}/{sample}/counts/{sample}.info_raw",
-        log:
-            "{folder}/log/counts/{sample}/mosaic_count.log",
-        conda:
-            "../envs/mc_bioinfo_tools.yaml"
-        params:
-            window=config["window"],
-        resources:
-            mem_mb=get_mem_mb_heavy,
-            runtime=1440,
-        shell:
-            """
-            mosaicatcher count \
-                --verbose \
-                --do-not-blacklist-hmm \
-                -o {output.counts} \
-                -i {output.info} \
-                -x {input.excl} \
-                -w {params.window} \
-                {input.bam} \
-            > {log} 2>&1
-            """
 
-    rule populate_counts:
-        input:
-            bin_bed=ancient("workflow/data/bin_200kb_all.bed"),
-            counts="{folder}/{sample}/counts/{sample}.txt.raw.gz",
-        output:
-            populated_counts="{folder}/{sample}/counts/{sample}.txt.populated.gz",
-        log:
-            "{folder}/log/plot_mosaic_counts/{sample}.log",
-        conda:
-            "../envs/mc_base.yaml"
-        resources:
-            mem_mb=get_mem_mb,
-            runtime=600,
-        script:
-            "../scripts/utils/populated_counts_for_qc_plot.py"
+checkpoint mosaic_count:
+    input:
+        bam=lambda wc: expand(
+            "{folder}/{sample}/bam/{cell}.sort.mdup.bam",
+            folder=config["data_location"],
+            sample=wc.sample,
+            cell=bam_per_sample_local[str(wc.sample)],
+        ),
+        bai=lambda wc: expand(
+            "{folder}/{sample}/bam/{cell}.sort.mdup.bam.bai",
+            folder=config["data_location"],
+            sample=wc.sample,
+            cell=bam_per_sample_local[str(wc.sample)],
+        ),
+        excl="{folder}/{sample}/config/chroms_to_exclude.txt",
+        checks=lambda wc: expand(
+            "{folder}/{sample}/checks/{cell}.sm_check.ok",
+            folder=config["data_location"],
+            sample=wc.sample,
+            cell=bam_per_sample_local[str(wc.sample)],
+        ),
+    output:
+        counts="{folder}/{sample}/counts/{sample}.txt.raw.gz",
+        info="{folder}/{sample}/counts/{sample}.info_raw",
+    log:
+        "{folder}/log/counts/{sample}/mosaic_count.log",
+    conda:
+        "../envs/mc_bioinfo_tools.yaml"
+    params:
+        window=config["window"],
+    resources:
+        mem_mb=get_mem_mb_heavy,
+        time="24:00:00",
+    shell:
+        """
+        mosaicatcher count \
+            --verbose \
+            --do-not-blacklist-hmm \
+            -o {output.counts} \
+            -i {output.info} \
+            -x {input.excl} \
+            -w {params.window} \
+            {input.bam} \
+        > {log} 2>&1
+        """
 
-    if config["input_bam_legacy"] is True:
+
+rule populate_counts:
+    input:
+        bin_bed=ancient("workflow/data/bin_200kb_all.bed"),
+        counts="{folder}/{sample}/counts/{sample}.txt.raw.gz",
+    output:
+        populated_counts="{folder}/{sample}/counts/{sample}.txt.populated.gz",
+    log:
+        "{folder}/log/plot_mosaic_counts/{sample}.log",
+    conda:
+        "../envs/mc_base.yaml"
+    resources:
+        mem_mb=get_mem_mb,
+    script:
+        "../scripts/utils/populated_counts_for_qc_plot.py"
+
+
+if not config["ashleys_pipeline"]:
+    if config["input_bam_legacy"]:
 
         rule selected_cells:
             input:
@@ -98,7 +100,6 @@ if config["ashleys_pipeline"] is False:
     else:
 
         rule touch_labels:
-            localrule: True
             # input:
             #     info_raw="{folder}/{sample}/counts/{sample}.info_raw",
             output:
@@ -119,7 +120,6 @@ if config["ashleys_pipeline"] is False:
 
 
 rule copy_labels:
-    localrule: True
     input:
         select_labels,
     output:
@@ -196,7 +196,7 @@ checkpoint filter_bad_cells_from_mosaic_count:
 if (
     config["hgsvc_based_normalized_counts"] is True
     and (config["window"] in [50000, 100000, 200000])
-    and (config["reference"] == "hg38")
+    and supports_module("hgsvc_normalization")
 ):
 
     rule merge_blacklist_bins_for_norm:
@@ -318,8 +318,12 @@ rule extract_single_cell_counts:
         "{folder}/{sample}/counts/counts-per-cell/{cell}.txt.percell.gz",
     log:
         "{folder}/log/counts/{sample}/counts-per-cell/{cell}.log",
+    group:
+        "single_cell_analysis"
     conda:
         "../envs/mc_base.yaml"
+    resources:
+        mem_mb=get_mem_mb_single_cell_group,
     shell:
         """
         zcat {input.counts} | awk -v name={wildcards.cell} '(NR==1) || $5 == name' | gzip > {output}

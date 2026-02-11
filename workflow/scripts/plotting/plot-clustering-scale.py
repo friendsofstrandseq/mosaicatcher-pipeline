@@ -104,9 +104,15 @@ binbed["chrom"] = binbed["chrom"].astype(str)
 binbed["start"] = binbed["start"].astype(int)
 binbed["end"] = binbed["end"].astype(int)
 
-binbed["ID"] = binbed["chrom"] + "_" + binbed["start"].astype(str) + "_" + binbed["end"].astype(str)
+binbed["ID"] = (
+    binbed["chrom"]
+    + "_"
+    + binbed["start"].astype(str)
+    + "_"
+    + binbed["end"].astype(str)
+)
 
-# Use chromosomes from config
+# Get chromosome list from config
 cats = snakemake.config["chromosomes"]
 
 # Turn chrom into categorical
@@ -130,7 +136,11 @@ def process_row(r):
     Args:
         r (pandas row)
     """
-    tmp_r = binbed.loc[(binbed["chrom"] == r["chrom"]) & (binbed["start"] >= r["start"]) & (binbed["end"] <= r["end"])]
+    tmp_r = binbed.loc[
+        (binbed["chrom"] == r["chrom"])
+        & (binbed["start"] >= r["start"])
+        & (binbed["end"] <= r["end"])
+    ]
     tmp_r["cell"] = r["cell"]
     tmp_r["sv_call_name"] = r["sv_call_name"]
     tmp_r["af"] = r["af"]
@@ -148,8 +158,24 @@ def process_sv(tmp_df):
 df.groupby("cell").apply(lambda r: process_sv(r))
 
 # Concat results
+if len(l) == 0:
+    print("Warning: No SV calls found to process. Creating empty output.", file=sys.stderr)
+    with PdfPages(snakemake.output.pdf) as pdf:
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.text(0.5, 0.5, "No SV calls to display", ha='center', va='center', fontsize=16)
+        ax.axis('off')
+        pdf.savefig(fig)
+        plt.close()
+    sys.exit(0)
+
 processed_df = pd.concat(l)
-processed_df["ID"] = processed_df["chrom"].astype(str) + "_" + processed_df["start"].astype(str) + "_" + processed_df["end"].astype(str)
+processed_df["ID"] = (
+    processed_df["chrom"].astype(str)
+    + "_"
+    + processed_df["start"].astype(str)
+    + "_"
+    + processed_df["end"].astype(str)
+)
 
 # Extract only empty bins (outer join) from binbed
 binbed_not_used = binbed.loc[~binbed["ID"].isin(processed_df.ID.unique().tolist())]
@@ -157,7 +183,9 @@ binbed_not_used = binbed.loc[~binbed["ID"].isin(processed_df.ID.unique().tolist(
 concat_df = pd.concat([processed_df, binbed_not_used])
 
 # Replace llr inf values by max values
-concat_df.loc[concat_df["llr_to_ref"] == np.inf, "llr_to_ref"] = concat_df.loc[concat_df["llr_to_ref"] != np.inf]["llr_to_ref"].max()
+concat_df.loc[concat_df["llr_to_ref"] == np.inf, "llr_to_ref"] = concat_df.loc[
+    concat_df["llr_to_ref"] != np.inf
+]["llr_to_ref"].max()
 
 # Pivot into matrix
 pivot_concat_df = concat_df.pivot(index="ID", values="llr_to_ref", columns="cell")
@@ -190,30 +218,56 @@ tmp = pivot_concat_df.reset_index().ID.str.split("_", expand=True)
 tmp.columns = ["chrom", "start", "end"]
 tmp["start"] = tmp["start"].astype(int)
 tmp["end"] = tmp["end"].astype(int)
-pivot_concat_df = pd.concat([pivot_concat_df.reset_index(), tmp], axis=1).drop(pivot_concat_df.columns[0], axis=1)
+pivot_concat_df = pd.concat([pivot_concat_df.reset_index(), tmp], axis=1).drop(
+    pivot_concat_df.columns[0], axis=1
+)
 
 pivot_concat_df["chrom"] = pd.Categorical(
     pivot_concat_df["chrom"],
     categories=cats,
     ordered=True,
 )
-pivot_concat_df = pivot_concat_df.sort_values(by=["chrom", "start", "end"]).reset_index(drop=True)
+pivot_concat_df = pivot_concat_df.sort_values(by=["chrom", "start", "end"]).reset_index(
+    drop=True
+)
 
 chroms = cats
 # chroms = chroms[:2]
 # chroms = ["chr10", "chr13", "chr22"]
 
 # Extract widths using binbed max values to specify subplots widths scaled according chrom sizes
-widths = binbed.loc[binbed["chrom"].isin(chroms)].groupby("chrom")["end"].max().dropna().tolist()
+# Filter to only chromosomes present in binbed to ensure widths and chroms match
+available_chroms = binbed["chrom"].dropna().unique().tolist()
+chroms = [c for c in chroms if c in available_chroms]
 
+if len(chroms) == 0:
+    print("Warning: No chromosomes found in binbed. Creating empty output.", file=sys.stderr)
+    with PdfPages(snakemake.output.pdf) as pdf:
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.text(0.5, 0.5, "No chromosome data to display", ha='center', va='center', fontsize=16)
+        ax.axis('off')
+        pdf.savefig(fig)
+        plt.close()
+    sys.exit(0)
+
+widths = (
+    binbed.loc[binbed["chrom"].isin(chroms)]
+    .groupby("chrom")["end"]
+    .max()
+    .dropna()
+    .reindex(chroms)
+    .tolist()
+)
 
 # pdf = PdfPages("multipage_pdf2.pdf")
 pdf = PdfPages(snakemake.output.pdf)
 
 # Create subplots
-f, axs = plt.subplots(ncols=len(chroms), figsize=(40, 20), gridspec_kw={"width_ratios": widths})
+f, axs = plt.subplots(
+    ncols=len(chroms), figsize=(40, 20), gridspec_kw={"width_ratios": widths}
+)
 
-# Ensure axs is always iterable (handle single chromosome case)
+# Ensure axs is iterable (when ncols=1, matplotlib returns single Axes object)
 if len(chroms) == 1:
     axs = [axs]
 
@@ -234,21 +288,28 @@ for j, (chrom, ax) in enumerate(zip(chroms, axs)):
 
     # Subset chrom data, set_index, transpose & replace NaN by 0
     data_heatmap = (
-        pivot_concat_df.loc[pivot_concat_df["chrom"] == chrom].drop(["chrom", "start", "end"], axis=1).set_index("ID").T.fillna(0)
+        pivot_concat_df.loc[pivot_concat_df["chrom"] == chrom]
+        .drop(["chrom", "start", "end"], axis=1)
+        .set_index("ID")
+        .T.fillna(0)
     )
 
     # Reorder rows based on clustering index
     data_heatmap = data_heatmap.loc[clustering_index_df.cell.values.tolist()]
 
     # Plot
-    sns.heatmap(
-        data=data_heatmap,
-        ax=ax,
-        vmin=0,
-        vmax=concat_df.llr_to_ref.max(),
-        cmap="Reds",
-        cbar=cbar,
-    )
+    # Skip plotting if data is empty
+    if data_heatmap.empty or data_heatmap.shape[1] == 0:
+        ax.text(0.5, 0.5, 'No data', ha='center', va='center', transform=ax.transAxes)
+    else:
+        sns.heatmap(
+            data=data_heatmap,
+            ax=ax,
+            vmin=0,
+            vmax=concat_df.llr_to_ref.max(),
+            cmap="Reds",
+            cbar=cbar,
+        )
     ax.xaxis.set_ticks_position("none")
     ax.set_xlabel("{}".format(chrom), fontsize=12, rotation=90)
     ax.set_xticklabels([])
@@ -274,14 +335,18 @@ tmp = pivot_concat_df.reset_index().ID.str.split("_", expand=True)
 tmp.columns = ["chrom", "start", "end"]
 tmp["start"] = tmp["start"].astype(int)
 tmp["end"] = tmp["end"].astype(int)
-pivot_concat_df = pd.concat([pivot_concat_df.reset_index(), tmp], axis=1).drop(pivot_concat_df.columns[0], axis=1)
+pivot_concat_df = pd.concat([pivot_concat_df.reset_index(), tmp], axis=1).drop(
+    pivot_concat_df.columns[0], axis=1
+)
 
 pivot_concat_df["chrom"] = pd.Categorical(
     pivot_concat_df["chrom"],
     categories=cats,
     ordered=True,
 )
-pivot_concat_df = pivot_concat_df.sort_values(by=["chrom", "start", "end"]).reset_index(drop=True)
+pivot_concat_df = pivot_concat_df.sort_values(by=["chrom", "start", "end"]).reset_index(
+    drop=True
+)
 
 
 # chroms = ["chr{}".format(e) for e in range(1, 23)] + ["chrX", "chrY"]
@@ -289,11 +354,23 @@ chroms = cats
 # chroms = ["chr10", "chr13"]
 # chroms = chroms[:2]
 
-widths = binbed.loc[binbed["chrom"].isin(chroms)].groupby("chrom")["end"].max().dropna().tolist()
+# Filter to only chromosomes present in binbed
+chroms = [c for c in chroms if c in available_chroms]
 
-f, axs = plt.subplots(ncols=len(chroms), figsize=(30, 15), dpi=50, gridspec_kw={"width_ratios": widths})
+widths = (
+    binbed.loc[binbed["chrom"].isin(chroms)]
+    .groupby("chrom")["end"]
+    .max()
+    .dropna()
+    .reindex(chroms)
+    .tolist()
+)
 
-# Ensure axs is always iterable (handle single chromosome case)
+f, axs = plt.subplots(
+    ncols=len(chroms), figsize=(30, 15), dpi=50, gridspec_kw={"width_ratios": widths}
+)
+
+# Ensure axs is iterable (when ncols=1, matplotlib returns single Axes object)
 if len(chroms) == 1:
     axs = [axs]
 
@@ -301,10 +378,20 @@ print("Categorical plot")
 for j, (chrom, ax) in enumerate(zip(chroms, axs)):
     print(chrom)
     data_heatmap = (
-        pivot_concat_df.loc[pivot_concat_df["chrom"] == chrom].drop(["chrom", "start", "end"], axis=1).set_index("ID").T.fillna(0)
+        pivot_concat_df.loc[pivot_concat_df["chrom"] == chrom]
+        .drop(["chrom", "start", "end"], axis=1)
+        .set_index("ID")
+        .T.fillna(0)
     )
     data_heatmap = data_heatmap.loc[clustering_index_df.cell.values.tolist()]
-    sns.heatmap(data=data_heatmap, ax=ax, vmin=0, cbar=False, cmap=list(colors.values()))
+
+    # Skip plotting if data is empty
+    if data_heatmap.empty or data_heatmap.shape[1] == 0:
+        ax.text(0.5, 0.5, 'No data', ha='center', va='center', transform=ax.transAxes)
+    else:
+        sns.heatmap(
+            data=data_heatmap, ax=ax, vmin=0, cbar=False, cmap=list(colors.values())
+        )
     ax.xaxis.set_ticks_position("none")
 
     if j != 0:
@@ -314,7 +401,9 @@ for j, (chrom, ax) in enumerate(zip(chroms, axs)):
     ax.set_xlabel("{}".format(chrom), fontsize=12, rotation=90)
     ax.set_xticklabels([])
 
-custom_lines = [Line2D([0], [0], color=v, lw=12) for j, (k, v) in enumerate(colors.items())]
+custom_lines = [
+    Line2D([0], [0], color=v, lw=12) for j, (k, v) in enumerate(colors.items())
+]
 
 axs[-1].legend(
     custom_lines,

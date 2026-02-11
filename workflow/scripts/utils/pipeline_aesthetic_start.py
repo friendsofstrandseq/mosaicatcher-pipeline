@@ -93,19 +93,18 @@ def pipeline_aesthetic_start(config):
 
     print(fg.ENDC)
     # Genome & chrom
-    chroms = (
-        ["chr{e}".format(e=str(e)) for e in range(1, 23)] + ["chrX", "chrY"]
-        if config["reference"] != "mm10"
-        else ["chr{e}".format(e=str(e)) for e in range(1, 20)] + ["chrX", "chrY"]
-    )
-    if config["chromosomes"] == chroms:
-        print_chroms = (
-            "chr1..22,chrX,chrY"
-            if config["reference"] != "mm10"
-            else "chr1..19,chrX,chrY"
-        )
+    metadata = config["references_data"][config["reference"]]
+    default_chroms = metadata["chromosomes"]
+
+    if config["chromosomes"] == default_chroms:
+        print_chroms = metadata["chromosome_pattern"]
     else:
         print_chroms = ",".join(config["chromosomes"])
+
+    # Check if iGenomes available for this reference
+    igenomes_available = bool(metadata.get("igenomes_base", ""))
+    igenomes_status = "Available" if igenomes_available else "Not available"
+
     print("\033[1m{}\033[0m".format("Reference genome & Chromosomes options:"))
     l = [
         f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format(
@@ -117,6 +116,15 @@ def pipeline_aesthetic_start(config):
         ),
         f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format(
             "Reference genome selected", ": " + str(config["reference"])
+        ),
+        f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format(
+            "Reference base directory", ": " + str(config.get("reference_base_dir", "workflow/data/ref_genomes"))
+        ),
+        f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format(
+            "Download pre-built indexes", ": " + str(config.get("download_prebuilt_indexes", True))
+        ),
+        f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format(
+            "iGenomes pre-built indexes", ": " + igenomes_status
         ),
         # f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format("Reference FASTA file", ": " + str(config["references_data"][config["reference"]]["reference_file_location"])),
     ]

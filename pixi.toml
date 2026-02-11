@@ -32,6 +32,7 @@ snakefmt = "*"
 [feature.lint.dependencies]
 snakemake = ">=9.0"
 snakemake-storage-plugin-http = "*"
+snakemake-storage-plugin-fs = "*"
 pandas = "*"
 pyyaml = "*"
 

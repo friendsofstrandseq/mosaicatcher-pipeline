@@ -1,13 +1,11 @@
-# import os
-# from snakemake.remote.HTTP import RemoteProvider as HTTPRemoteProvider
-#
-# HTTP = HTTPRemoteProvider()
-
-
 # Register HTTP storage provider for downloading reference genomes
 storage http:
     provider="http",
     max_requests_per_second=10,
+
+
+# Get reference base directory from config (supports multi-user HPC setups)
+REF_BASE_DIR = config.get("reference_base_dir", "workflow/data/ref_genomes")
 
 
 rule dl_example_data:
@@ -35,17 +33,17 @@ rule download_hg19_reference:
             keep_local=True,
         ),
     output:
-        "workflow/data/ref_genomes/hg19.fa",
+        f"{REF_BASE_DIR}/hg19.fa",
     log:
-        "workflow/data/ref_genomes/log/hg19.ok",
+        f"{REF_BASE_DIR}/log/hg19.ok",
     conda:
         "../envs/mc_base.yaml"
     shell:
-        """
-        directory="workflow/data/ref_genomes/"
-        mkdir -p "$directory"
-        mv {input} workflow/data/ref_genomes/hg19.fa.gz
-        gunzip workflow/data/ref_genomes/hg19.fa.gz
+        f"""
+        directory="{REF_BASE_DIR}/"
+        mkdir -p "$directory" "$directory/log"
+        mv {{input}} {REF_BASE_DIR}/hg19.fa.gz
+        gunzip {REF_BASE_DIR}/hg19.fa.gz
         """
 
 
@@ -58,17 +56,17 @@ rule download_hg38_reference:
             keep_local=True,
         ),
     output:
-        "workflow/data/ref_genomes/hg38.fa",
+        f"{REF_BASE_DIR}/hg38.fa",
     log:
-        "workflow/data/ref_genomes/log/hg38.ok",
+        f"{REF_BASE_DIR}/log/hg38.ok",
     conda:
         "../envs/mc_base.yaml"
     shell:
-        """
-        directory="workflow/data/ref_genomes/"
-        mkdir -p "$directory"
-        mv {input} workflow/data/ref_genomes/hg38.fa.gz
-        gunzip workflow/data/ref_genomes/hg38.fa.gz
+        f"""
+        directory="{REF_BASE_DIR}/"
+        mkdir -p "$directory" "$directory/log"
+        mv {{input}} {REF_BASE_DIR}/hg38.fa.gz
+        gunzip {REF_BASE_DIR}/hg38.fa.gz
         """
 
 
@@ -81,17 +79,17 @@ rule download_T2T_reference:
             keep_local=True,
         ),
     output:
-        "workflow/data/ref_genomes/T2T.fa",
+        f"{REF_BASE_DIR}/T2T.fa",
     log:
-        "workflow/data/ref_genomes/log/T2T.ok",
+        f"{REF_BASE_DIR}/log/T2T.ok",
     conda:
         "../envs/mc_base.yaml"
     shell:
-        """
-        directory="workflow/data/ref_genomes/"
-        mkdir -p "$directory"
-        mv {input} workflow/data/ref_genomes/T2T.fa.gz
-        gunzip workflow/data/ref_genomes/T2T.fa.gz
+        f"""
+        directory="{REF_BASE_DIR}/"
+        mkdir -p "$directory" "$directory/log"
+        mv {{input}} {REF_BASE_DIR}/T2T.fa.gz
+        gunzip {REF_BASE_DIR}/T2T.fa.gz
         """
 
 
@@ -104,17 +102,17 @@ rule download_mm10_reference:
             keep_local=True,
         ),
     output:
-        "workflow/data/ref_genomes/mm10.fa",
+        f"{REF_BASE_DIR}/mm10.fa",
     log:
-        "workflow/data/ref_genomes/log/mm10.ok",
+        f"{REF_BASE_DIR}/log/mm10.ok",
     conda:
         "../envs/mc_base.yaml"
     shell:
-        """
-        directory="workflow/data/ref_genomes/"
-        mkdir -p "$directory"
-        mv {input} workflow/data/ref_genomes/mm10.fa.gz
-        gunzip workflow/data/ref_genomes/mm10.fa.gz
+        f"""
+        directory="{REF_BASE_DIR}/"
+        mkdir -p "$directory" "$directory/log"
+        mv {{input}} {REF_BASE_DIR}/mm10.fa.gz
+        gunzip {REF_BASE_DIR}/mm10.fa.gz
         """
 
 
@@ -126,17 +124,179 @@ rule download_mm39_reference:
             keep_local=True,
         ),
     output:
-        "workflow/data/ref_genomes/mm39.fa",
+        f"{REF_BASE_DIR}/mm39.fa",
     log:
-        "workflow/data/ref_genomes/log/mm39.ok",
+        f"{REF_BASE_DIR}/log/mm39.ok",
+    conda:
+        "../envs/mc_base.yaml"
+    shell:
+        f"""
+        directory="{REF_BASE_DIR}/"
+        mkdir -p "$directory" "$directory/log"
+        mv {{input}} {REF_BASE_DIR}/mm39.fa.gz
+        gunzip {REF_BASE_DIR}/mm39.fa.gz
+        """
+
+
+# ============================================================
+# Download pre-built BWA indexes from iGenomes (fast)
+# ============================================================
+
+
+if config.get("download_prebuilt_indexes", True):
+
+    rule ashleys_download_bwa_indexes:
+        """Download pre-built BWA indexes from iGenomes (fast)."""
+        localrule: True
+        output:
+            idx=multiext(
+                get_reference_fasta(),
+                ".amb",
+                ".ann",
+                ".bwt",
+                ".pac",
+                ".sa",
+            ),
+        log:
+            f"{get_reference_fasta()}.log",
+        conda:
+            "../envs/mc_base.yaml"
+        params:
+            igenomes_base=lambda w: config["references_data"][config["reference"]][
+                "igenomes_base"
+            ],
+            genome=config["reference"],
+        shell:
+            """
+            for ext in amb ann bwt pac sa; do
+                wget -q -O {REF_BASE_DIR}/{params.genome}.fa.${{ext}} \
+                    {params.igenomes_base}/BWAIndex/genome.fa.${{ext}}
+            done > {log} 2>&1
+            """
+
+    rule ashleys_download_faidx:
+        """Download samtools faidx from iGenomes."""
+        localrule: True
+        output:
+            f"{get_reference_fasta()}.fai",
+        log:
+            f"{get_reference_fasta()}.fai.log",
+        conda:
+            "../envs/mc_base.yaml"
+        params:
+            igenomes_base=lambda w: config["references_data"][config["reference"]][
+                "igenomes_base"
+            ],
+        shell:
+            """
+            wget -q -O {output} \
+                {params.igenomes_base}/WholeGenomeFasta/genome.fa.fai > {log} 2>&1
+            """
+
+
+rule download_canFam3_reference:
+    localrule: True
+    input:
+        storage.http(
+            "https://hgdownload.soe.ucsc.edu/goldenPath/canFam3/bigZips/canFam3.fa.gz",
+            keep_local=True,
+        ),
+    output:
+        f"{REF_BASE_DIR}/canFam3.fa",
+    log:
+        f"{REF_BASE_DIR}/log/canFam3.ok",
+    conda:
+        "../envs/mc_base.yaml"
+    shell:
+        f"""
+        directory="{REF_BASE_DIR}/"
+        mkdir -p "$directory" "$directory/log"
+        mv {{input}} {REF_BASE_DIR}/canFam3.fa.gz
+        gunzip {REF_BASE_DIR}/canFam3.fa.gz
+        """
+
+
+rule download_canFam4_reference:
+    localrule: True
+    input:
+        storage.http(
+            "https://hgdownload.soe.ucsc.edu/goldenPath/canFam4/bigZips/canFam4.fa.gz",
+            keep_local=True,
+        ),
+    output:
+        f"{REF_BASE_DIR}/canFam4.fa",
+    log:
+        f"{REF_BASE_DIR}/log/canFam4.ok",
+    conda:
+        "../envs/mc_base.yaml"
+    shell:
+        f"""
+        directory="{REF_BASE_DIR}/"
+        mkdir -p "$directory" "$directory/log"
+        mv {{input}} {REF_BASE_DIR}/canFam4.fa.gz
+        gunzip {REF_BASE_DIR}/canFam4.fa.gz
+        """
+
+
+rule generate_canFam3_bin_bed:
+    input:
+        fasta="workflow/data/ref_genomes/canFam3.fa",
+    output:
+        bed="workflow/data/canFam3.bin_200kb_all.bed",
+    log:
+        "workflow/data/log/canFam3_bin_bed.log",
     conda:
         "../envs/mc_base.yaml"
     shell:
         """
-        directory="workflow/data/ref_genomes/"
-        mkdir -p "$directory"
-        mv {input} workflow/data/ref_genomes/mm39.fa.gz
-        gunzip workflow/data/ref_genomes/mm39.fa.gz
+        bash workflow/scripts/utils/generate_bin_bed.sh {input.fasta} {output.bed} 200000 > {log} 2>&1
+        """
+
+
+rule generate_canFam4_bin_bed:
+    input:
+        fasta="workflow/data/ref_genomes/canFam4.fa",
+    output:
+        bed="workflow/data/canFam4.bin_200kb_all.bed",
+    log:
+        "workflow/data/log/canFam4_bin_bed.log",
+    conda:
+        "../envs/mc_base.yaml"
+    shell:
+        """
+        bash workflow/scripts/utils/generate_bin_bed.sh {input.fasta} {output.bed} 200000 > {log} 2>&1
+        """
+
+
+rule generate_canFam3_gc_matrix:
+    input:
+        fasta="workflow/data/ref_genomes/canFam3.fa",
+        bin_bed="workflow/data/canFam3.bin_200kb_all.bed",
+    output:
+        gc_matrix="workflow/data/GC/canFam3.GC_matrix.txt.gz",
+    log:
+        "workflow/data/log/canFam3_gc_matrix.log",
+    conda:
+        "../envs/mc_base.yaml"
+    shell:
+        """
+        python workflow/scripts/utils/generate_gc_matrix.py {input.bin_bed} {input.fasta} {output.gc_matrix} > {log} 2>&1
+        """
+
+
+rule generate_canFam4_gc_matrix:
+    input:
+        fasta="workflow/data/ref_genomes/canFam4.fa",
+        bin_bed="workflow/data/canFam4.bin_200kb_all.bed",
+    output:
+        gc_matrix="workflow/data/GC/canFam4.GC_matrix.txt.gz",
+    log:
+        "workflow/data/log/canFam4_gc_matrix.log",
+    conda:
+        "../envs/mc_base.yaml"
+    shell:
+        """
+        python workflow/scripts/utils/generate_gc_matrix.py {input.bin_bed} {input.fasta} {output.gc_matrix} > {log} 2>&1
         """
 
 

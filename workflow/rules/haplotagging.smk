@@ -18,18 +18,18 @@ rule haplotag_bams:
         #     "{input_folder}/{{sample}}/bam/{{cell}}.sort.mdup.bam",
         #     input_folder=config["data_location"],
         # ),
-        fasta=config["references_data"][config["reference"]]["reference_fasta"],
-        fasta_index="{fasta}.fai".format(
-            fasta=config["references_data"][config["reference"]]["reference_fasta"]
-        ),
+        fasta=get_reference_fasta(),
+        fasta_index=f"{get_reference_fasta()}.fai",
     output:
         "{folder}/{sample}/haplotag/bam/{cell}.bam.htg",
     log:
         "{folder}/log/haplotag_bams/{sample}/{cell}.log",
+    group:
+        "haplotagging_per_cell"
     params:
         ref=config["reference"],
     resources:
-        mem_mb=get_mem_mb,
+        mem_mb=get_mem_mb_haplotag_group,
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     shell:

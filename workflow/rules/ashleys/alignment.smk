@@ -31,67 +31,73 @@ if config["genecore"] is True and config["genecore_date_folder"]:
     ruleorder: ashleys_genecore_symlink > ashleys_bwa_strandseq_to_reference_alignment
 
 
-rule ashleys_bwa_index:
-    input:
-        ancient(config["references_data"][config["reference"]]["reference_fasta"]),
-    output:
-        idx=multiext(
-            config["references_data"][config["reference"]]["reference_fasta"],
-            ".amb",
-            ".ann",
-            ".bwt",
-            ".pac",
-            ".sa",
-        ),
-    log:
-        "{}.log".format(
-            config["references_data"][config["reference"]]["reference_fasta"]
-        ),
-    params:
-        algorithm="bwtsw",
-        prefix=config["references_data"][config["reference"]]["reference_fasta"],
-    threads: 16
-    resources:
-        mem_mb=get_mem_mb_heavy,
-        runtime=600,
-    conda:
-        "../../envs/mc_bioinfo_tools.yaml"
-    envmodules:
-        "BWA/0.7.19-GCCcore-14.2.0",
-    shell:
-        "bwa index -a {params.algorithm} -p {params.prefix} {input} 2> {log}"
+print(f"Download pre-built indexes: {config['download_prebuilt_indexes']}")
 
+if not config["download_prebuilt_indexes"]:
 
-ruleorder: ashleys_bwa_strandseq_to_reference_alignment > ashleys_samtools_sort_bam > ashleys_mark_duplicates
-
-
-if config["paired_end"] is True:
-
-    rule ashleys_bwa_strandseq_to_reference_alignment:
+    rule ashleys_bwa_index:
         input:
-            mate1="{folder}/{sample}/fastq/{cell}.1.fastq.gz",
-            mate2="{folder}/{sample}/fastq/{cell}.2.fastq.gz",
-            ref="{ref}".format(
-                ref=config["references_data"][config["reference"]]["reference_fasta"]
-            ),
-            ref_index=multiext(
-                config["references_data"][config["reference"]]["reference_fasta"],
+            fasta=ancient(get_reference_fasta()),
+        output:
+            idx=multiext(
+                get_reference_fasta(),
                 ".amb",
                 ".ann",
                 ".bwt",
                 ".pac",
                 ".sa",
             ),
+        log:
+            f"{get_reference_fasta()}.log",
+        conda:
+            "../../envs/mc_bioinfo_tools.yaml"
+        cache: True
+        params:
+            algorithm="bwtsw",
+            prefix=get_reference_fasta(),
+        threads: 16
+        resources:
+            mem_mb=get_mem_mb_heavy,
+            time="10:00:00",
+        shell:
+            """
+            bwa index -a {params.algorithm} {input.fasta} > {log} 2>&1
+            """
+
+
+ruleorder: ashleys_bwa_strandseq_to_reference_alignment > ashleys_samtools_sort_bam > ashleys_mark_duplicates
+
+
+if config["paired_end"] is True:
+    print(f"get ref fasta : {get_reference_fasta()}")
+
+    rule ashleys_bwa_strandseq_to_reference_alignment:
+        input:
+            mate1="{folder}/{sample}/fastq/{cell}.1.fastq.gz",
+            mate2="{folder}/{sample}/fastq/{cell}.2.fastq.gz",
+            ref=ancient(get_reference_fasta()),
+            ref_index=ancient(
+                multiext(
+                    get_reference_fasta(),
+                    ".amb",
+                    ".ann",
+                    ".bwt",
+                    ".pac",
+                    ".sa",
+                )
+            ),
         output:
             bam=temp("{folder}/{sample}/bam/{cell}.bam.raw"),
         log:
             bwa="{folder}/{sample}/log/{cell}.bwa.log",
             samtools="{folder}/{sample}/log/{cell}.samtools.log",
+        group:
+            "alignment_per_cell"
         threads: 6
         params:
             idx_prefix=lambda wildcards, input: input.ref_index[0].rsplit(".", 1)[0],
         resources:
-            mem_mb=get_mem_mb_heavy,
+            mem_mb=get_mem_mb_alignment_group,
             runtime=60,
         conda:
             "../../envs/mc_bioinfo_tools.yaml"
@@ -109,27 +115,29 @@ else:
     rule ashleys_bwa_strandseq_to_reference_alignment:
         input:
             mate1="{folder}/{sample}/fastq/{cell}.1.fastq.gz",
-            ref="{ref}".format(
-                ref=config["references_data"][config["reference"]]["reference_fasta"]
-            ),
-            ref_index=multiext(
-                config["references_data"][config["reference"]]["reference_fasta"],
-                ".amb",
-                ".ann",
-                ".bwt",
-                ".pac",
-                ".sa",
+            ref=ancient(get_reference_fasta()),
+            ref_index=ancient(
+                multiext(
+                    get_reference_fasta(),
+                    ".amb",
+                    ".ann",
+                    ".bwt",
+                    ".pac",
+                    ".sa",
+                )
             ),
         output:
             bam=temp("{folder}/{sample}/bam/{cell}.bam.raw"),
         log:
             bwa="{folder}/{sample}/log/{cell}.bwa.log",
             samtools="{folder}/{sample}/log/{cell}.samtools.log",
+        group:
+            "alignment_per_cell"
         threads: 6
         params:
             idx_prefix=lambda wildcards, input: input.ref_index[0].rsplit(".", 1)[0],
         resources:
-            mem_mb=get_mem_mb_heavy,
+            mem_mb=get_mem_mb_alignment_group,
             runtime=60,
         conda:
             "../../envs/mc_bioinfo_tools.yaml"
@@ -150,8 +158,10 @@ rule ashleys_samtools_sort_bam:
         temp("{folder}/{sample}/bam/{cell}.bam.sort"),
     log:
         "{folder}/{sample}/log/samtools_sort/{cell}.log",
+    group:
+        "alignment_per_cell"
     resources:
-        mem_mb=get_mem_mb,
+        mem_mb=get_mem_mb_alignment_group,
         runtime=60,
     conda:
         "../../envs/mc_bioinfo_tools.yaml"
@@ -168,12 +178,14 @@ rule ashleys_mark_duplicates:
         "{folder}/{sample}/bam/{cell}.sort.mdup.bam",
     log:
         "{folder}/{sample}/log/markdup/{cell}.log",
+    group:
+        "deduplication_indexing_per_cell"
     conda:
         "../../envs/mc_bioinfo_tools.yaml"
     envmodules:
         "sambamba/1.0.1-GCC-12.3.0",
     resources:
-        mem_mb=get_mem_mb_heavy,
+        mem_mb=get_mem_mb_alignment_group,
         runtime=60,
     shell:
         "sambamba markdup {input.bam} {output} 2>&1 > {log}"

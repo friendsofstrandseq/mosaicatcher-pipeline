@@ -1,9 +1,6 @@
 name: MosaiCatcher assemblies checks
 
 on:
-  # push:
-  #   branches:
-  # - "**"
   pull_request:
     branches:
       - main
@@ -20,8 +17,61 @@ on:
           - debug
 
 jobs:
-  Testing-with-hg38:
+  test-assembly:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Genomes with pre-built BWA indexes from AWS iGenomes
+          - genome: hg38
+            igenomes_base: "https://ngi-igenomes.s3.amazonaws.com/igenomes/Homo_sapiens/UCSC/hg38/Sequence"
+            chromosome: "chr17"
+            ashleys_pipeline: "False"
+            hgsvc_based_normalized_counts: "True"
+            ploidy: "True"
+            data_location: ".tests/data_CHR17"
+            extra_args: ""
+
+          - genome: hg19
+            igenomes_base: "https://ngi-igenomes.s3.amazonaws.com/igenomes/Homo_sapiens/UCSC/hg19/Sequence"
+            chromosome: "chr17"
+            ashleys_pipeline: "True"
+            hgsvc_based_normalized_counts: "False"
+            ploidy: "True"
+            data_location: ".tests/data_CHR17"
+            extra_args: ""
+
+          - genome: T2T
+            igenomes_base: "https://ngi-igenomes.s3.amazonaws.com/igenomes/Homo_sapiens/UCSC/CHM13/Sequence"
+            chromosome: "chr17"
+            ashleys_pipeline: "True"
+            hgsvc_based_normalized_counts: "False"
+            ploidy: "True"
+            data_location: ".tests/data_CHR17"
+            extra_args: "--retries 3 --latency-wait 60"
+
+          - genome: mm10
+            igenomes_base: "https://ngi-igenomes.s3.amazonaws.com/igenomes/Mus_musculus/UCSC/mm10/Sequence"
+            chromosome: "chr19"
+            ashleys_pipeline: "True"
+            hgsvc_based_normalized_counts: "False"
+            ploidy: "False"
+            data_location: ".tests/data_chr19_mm"
+            extra_args: ""
+
+          # mm39 - not available in iGenomes, build BWA indexes ourselves
+          - genome: mm39
+            igenomes_base: ""
+            reference_url: "https://hgdownload.soe.ucsc.edu/goldenPath/mm39/bigZips/mm39.fa.gz"
+            chromosome: "chr19"
+            ashleys_pipeline: "True"
+            hgsvc_based_normalized_counts: "False"
+            ploidy: "False"
+            data_location: ".tests/data_chr19_mm"
+            extra_args: ""
+
+    name: Test ${{ matrix.genome }}
     steps:
       - name: Checkout repository with submodules
         uses: actions/checkout@v4
@@ -38,6 +88,8 @@ jobs:
           pixi-version: latest
           cache: true
           locked: false
+          # Only save cache from hg38 job to prevent race conditions in parallel matrix
+          cache-write: ${{ matrix.genome == 'hg38' }}
 
       - name: Restore Conda environments cache
         id: cache-conda-restore
@@ -48,351 +100,103 @@ jobs:
           restore-keys: |
             conda-envs-
 
-      - name: Restore hg38 reference genome and BWA indexes
-        id: cache-hg38-restore
+      # iGenomes references download quickly from AWS (no caching needed)
+
+      # Cache for non-iGenomes genomes (BWA indexes only, .fa downloaded each time)
+      - name: Restore ${{ matrix.genome }} BWA indexes only
+        if: matrix.igenomes_base == ''
+        id: cache-bwa-restore
         uses: actions/cache/restore@v4
         with:
           path: |
-            workflow/data/ref_genomes/hg38.fa
-            workflow/data/ref_genomes/hg38.fa.amb
-            workflow/data/ref_genomes/hg38.fa.ann
-            workflow/data/ref_genomes/hg38.fa.bwt
-            workflow/data/ref_genomes/hg38.fa.pac
-            workflow/data/ref_genomes/hg38.fa.sa
-            workflow/data/ref_genomes/hg38.fa.fai
-          key: hg38-reference-${{ hashFiles('workflow/data/ref_genomes/hg38.fa') }}
+            workflow/data/ref_genomes/${{ matrix.genome }}.fa.amb
+            workflow/data/ref_genomes/${{ matrix.genome }}.fa.ann
+            workflow/data/ref_genomes/${{ matrix.genome }}.fa.bwt
+            workflow/data/ref_genomes/${{ matrix.genome }}.fa.pac
+            workflow/data/ref_genomes/${{ matrix.genome }}.fa.sa
+            workflow/data/ref_genomes/${{ matrix.genome }}.fa.fai
+          key: ${{ matrix.genome }}-bwa-index-v1
           restore-keys: |
-            hg38-reference-
+            ${{ matrix.genome }}-bwa-index-
 
-      - name: Run workflow (hg38 v9)
+      # Download from iGenomes (for genomes with pre-built indexes)
+      - name: Download ${{ matrix.genome }} from AWS iGenomes
+        if: matrix.igenomes_base != ''
+        run: |
+          mkdir -p workflow/data/ref_genomes
+          IGENOMES_BASE="${{ matrix.igenomes_base }}"
+
+          echo "Downloading ${{ matrix.genome }} reference genome from iGenomes..."
+          wget -q -O workflow/data/ref_genomes/${{ matrix.genome }}.fa "${IGENOMES_BASE}/WholeGenomeFasta/genome.fa"
+
+          echo "Downloading BWA indexes..."
+          for ext in amb ann bwt pac sa; do
+            wget -q -O workflow/data/ref_genomes/${{ matrix.genome }}.fa.${ext} "${IGENOMES_BASE}/BWAIndex/genome.fa.${ext}"
+          done
+
+          echo "Downloading faidx..."
+          wget -q -O workflow/data/ref_genomes/${{ matrix.genome }}.fa.fai "${IGENOMES_BASE}/WholeGenomeFasta/genome.fa.fai"
+
+          echo "Reference preparation complete:"
+          ls -lh workflow/data/ref_genomes/${{ matrix.genome }}.fa*
+
+      # Download and build indexes for non-iGenomes genomes (e.g., mm39)
+      - name: Download ${{ matrix.genome }} reference (always, not cached)
+        if: matrix.igenomes_base == ''
+        run: |
+          mkdir -p workflow/data/ref_genomes
+          echo "Downloading ${{ matrix.genome }} reference genome..."
+          wget -q -O workflow/data/ref_genomes/${{ matrix.genome }}.fa.gz "${{ matrix.reference_url }}"
+          echo "Decompressing..."
+          gunzip -f workflow/data/ref_genomes/${{ matrix.genome }}.fa.gz
+          echo "Reference download complete:"
+          ls -lh workflow/data/ref_genomes/${{ matrix.genome }}.fa
+
+      - name: Build BWA indexes for ${{ matrix.genome }} (if not cached)
+        if: matrix.igenomes_base == '' && steps.cache-bwa-restore.outputs.cache-hit != 'true'
+        run: |
+          echo "Installing bwa and samtools..."
+          sudo apt-get update && sudo apt-get install -y bwa samtools
+
+          echo "Building BWA index (this may take a while)..."
+          bwa index workflow/data/ref_genomes/${{ matrix.genome }}.fa
+
+          echo "Building samtools faidx..."
+          samtools faidx workflow/data/ref_genomes/${{ matrix.genome }}.fa
+
+          echo "Index build complete:"
+          ls -lh workflow/data/ref_genomes/${{ matrix.genome }}.fa*
+
+      # Save cache only for mm39 (BWA index building takes ~15-20 min)
+      - name: Save ${{ matrix.genome }} BWA index cache (after build)
+        if: matrix.genome == 'mm39' && steps.cache-bwa-restore.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            workflow/data/ref_genomes/${{ matrix.genome }}.fa.amb
+            workflow/data/ref_genomes/${{ matrix.genome }}.fa.ann
+            workflow/data/ref_genomes/${{ matrix.genome }}.fa.bwt
+            workflow/data/ref_genomes/${{ matrix.genome }}.fa.pac
+            workflow/data/ref_genomes/${{ matrix.genome }}.fa.sa
+            workflow/data/ref_genomes/${{ matrix.genome }}.fa.fai
+          key: ${{ matrix.genome }}-bwa-index-v1
+
+      - name: Run workflow (${{ matrix.genome }})
         run: |
           pixi run snakemake \
             --cores 1 \
             --sdm conda \
-            --config reference=hg38 use_light_data=True chromosomes=[chr17] ashleys_pipeline=False \
+            --local-storage-prefix $GITHUB_WORKSPACE \
+            --config reference=${{ matrix.genome }} data_location=${{ matrix.data_location }} use_light_data=True chromosomes=[${{ matrix.chromosome }}] ashleys_pipeline=${{ matrix.ashleys_pipeline }} hgsvc_based_normalized_counts=${{ matrix.hgsvc_based_normalized_counts }} ploidy=${{ matrix.ploidy }} \
             --conda-cleanup-pkgs cache \
+            ${{ matrix.extra_args }} \
             -p \
             --snakefile workflow/Snakefile
 
       - name: Save Conda environments cache
-        if: always()
+        # Only save from hg38 job to prevent race condition (all jobs produce identical conda envs)
+        if: always() && matrix.genome == 'hg38'
         uses: actions/cache/save@v4
         with:
           path: .snakemake/conda
           key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
-
-      - name: Save hg38 reference genome and BWA indexes
-        if: always()
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            workflow/data/ref_genomes/hg38.fa
-            workflow/data/ref_genomes/hg38.fa.amb
-            workflow/data/ref_genomes/hg38.fa.ann
-            workflow/data/ref_genomes/hg38.fa.bwt
-            workflow/data/ref_genomes/hg38.fa.pac
-            workflow/data/ref_genomes/hg38.fa.sa
-            workflow/data/ref_genomes/hg38.fa.fai
-          key: hg38-reference-${{ hashFiles('workflow/data/ref_genomes/hg38.fa') }}
-
-  Testing-with-hg19:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository with submodules
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Git Submodule Update
-        run: |
-          git submodule update --recursive --init
-
-      - name: Setup Pixi
-        uses: prefix-dev/setup-pixi@v0.9.4
-        with:
-          pixi-version: latest
-          cache: true
-          locked: false
-
-      - name: Restore Conda environments cache
-        id: cache-conda-restore
-        uses: actions/cache/restore@v4
-        with:
-          path: .snakemake/conda
-          key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
-          restore-keys: |
-            conda-envs-
-
-      - name: Restore hg19 reference genome and BWA indexes
-        id: cache-hg19-restore
-        uses: actions/cache/restore@v4
-        with:
-          path: |
-            workflow/data/ref_genomes/hg19.fa
-            workflow/data/ref_genomes/hg19.fa.amb
-            workflow/data/ref_genomes/hg19.fa.ann
-            workflow/data/ref_genomes/hg19.fa.bwt
-            workflow/data/ref_genomes/hg19.fa.pac
-            workflow/data/ref_genomes/hg19.fa.sa
-            workflow/data/ref_genomes/hg19.fa.fai
-          key: hg19-reference-${{ hashFiles('workflow/data/ref_genomes/hg19.fa') }}
-          restore-keys: |
-            hg19-reference-
-
-      - name: Run workflow (hg19 v9)
-        run: |
-          pixi run snakemake \
-            --cores 1 \
-            --sdm conda \
-            --config reference=hg19 use_light_data=True chromosomes=[chr17] ashleys_pipeline=False \
-            --conda-cleanup-pkgs cache \
-            -p \
-            --snakefile workflow/Snakefile
-
-      - name: Save Conda environments cache
-        if: always()
-        uses: actions/cache/save@v4
-        with:
-          path: .snakemake/conda
-          key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
-
-      - name: Save hg19 reference genome and BWA indexes
-        if: always()
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            workflow/data/ref_genomes/hg19.fa
-            workflow/data/ref_genomes/hg19.fa.amb
-            workflow/data/ref_genomes/hg19.fa.ann
-            workflow/data/ref_genomes/hg19.fa.bwt
-            workflow/data/ref_genomes/hg19.fa.pac
-            workflow/data/ref_genomes/hg19.fa.sa
-            workflow/data/ref_genomes/hg19.fa.fai
-          key: hg19-reference-${{ hashFiles('workflow/data/ref_genomes/hg19.fa') }}
-
-  Testing-with-T2T:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository with submodules
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Git Submodule Update
-        run: |
-          git submodule update --recursive --init
-
-      - name: Setup Pixi
-        uses: prefix-dev/setup-pixi@v0.9.4
-        with:
-          pixi-version: latest
-          cache: true
-          locked: false
-
-      - name: Restore Conda environments cache
-        id: cache-conda-restore
-        uses: actions/cache/restore@v4
-        with:
-          path: .snakemake/conda
-          key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
-          restore-keys: |
-            conda-envs-
-
-      - name: Restore T2T reference genome and BWA indexes
-        id: cache-t2t-restore
-        uses: actions/cache/restore@v4
-        with:
-          path: |
-            workflow/data/ref_genomes/T2T.fa
-            workflow/data/ref_genomes/T2T.fa.amb
-            workflow/data/ref_genomes/T2T.fa.ann
-            workflow/data/ref_genomes/T2T.fa.bwt
-            workflow/data/ref_genomes/T2T.fa.pac
-            workflow/data/ref_genomes/T2T.fa.sa
-            workflow/data/ref_genomes/T2T.fa.fai
-          key: T2T-reference-${{ hashFiles('workflow/data/ref_genomes/T2T.fa') }}
-          restore-keys: |
-            T2T-reference-
-
-      - name: Run workflow (T2T v9)
-        run: |
-          pixi run snakemake \
-            --cores 1 \
-            --sdm conda \
-            --config reference=T2T use_light_data=True chromosomes=[chr17] ashleys_pipeline=False \
-            --conda-cleanup-pkgs cache \
-            --retries 3 \
-            --latency-wait 60 \
-            -p \
-            --snakefile workflow/Snakefile
-
-      - name: Save Conda environments cache
-        if: always()
-        uses: actions/cache/save@v4
-        with:
-          path: .snakemake/conda
-          key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
-
-      - name: Save T2T reference genome and BWA indexes
-        if: always()
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            workflow/data/ref_genomes/T2T.fa
-            workflow/data/ref_genomes/T2T.fa.amb
-            workflow/data/ref_genomes/T2T.fa.ann
-            workflow/data/ref_genomes/T2T.fa.bwt
-            workflow/data/ref_genomes/T2T.fa.pac
-            workflow/data/ref_genomes/T2T.fa.sa
-            workflow/data/ref_genomes/T2T.fa.fai
-          key: T2T-reference-${{ hashFiles('workflow/data/ref_genomes/T2T.fa') }}
-
-  Testing-with-mm10:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository with submodules
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Git Submodule Update
-        run: |
-          git submodule update --recursive --init
-
-      - name: Setup Pixi
-        uses: prefix-dev/setup-pixi@v0.9.4
-        with:
-          pixi-version: latest
-          cache: true
-          locked: false
-
-      - name: Restore Conda environments cache
-        id: cache-conda-restore
-        uses: actions/cache/restore@v4
-        with:
-          path: .snakemake/conda
-          key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
-          restore-keys: |
-            conda-envs-
-
-      - name: Restore mm10 reference genome and BWA indexes
-        id: cache-mm10-restore
-        uses: actions/cache/restore@v4
-        with:
-          path: |
-            workflow/data/ref_genomes/mm10.fa
-            workflow/data/ref_genomes/mm10.fa.amb
-            workflow/data/ref_genomes/mm10.fa.ann
-            workflow/data/ref_genomes/mm10.fa.bwt
-            workflow/data/ref_genomes/mm10.fa.pac
-            workflow/data/ref_genomes/mm10.fa.sa
-            workflow/data/ref_genomes/mm10.fa.fai
-          key: mm10-reference-${{ hashFiles('workflow/data/ref_genomes/mm10.fa') }}
-          restore-keys: |
-            mm10-reference-
-
-      - name: Run workflow (mm10 v9)
-        run: |
-          pixi run snakemake \
-            --cores 1 \
-            --sdm conda \
-            --config reference=mm10 use_light_data=True chromosomes=[chr19] ashleys_pipeline=True data_location=.tests/data_chr19_mm ploidy=False \
-            --conda-cleanup-pkgs cache \
-            -p \
-            --snakefile workflow/Snakefile
-
-      - name: Save Conda environments cache
-        if: always()
-        uses: actions/cache/save@v4
-        with:
-          path: .snakemake/conda
-          key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
-
-      - name: Save mm10 reference genome and BWA indexes
-        if: always()
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            workflow/data/ref_genomes/mm10.fa
-            workflow/data/ref_genomes/mm10.fa.amb
-            workflow/data/ref_genomes/mm10.fa.ann
-            workflow/data/ref_genomes/mm10.fa.bwt
-            workflow/data/ref_genomes/mm10.fa.pac
-            workflow/data/ref_genomes/mm10.fa.sa
-            workflow/data/ref_genomes/mm10.fa.fai
-          key: mm10-reference-${{ hashFiles('workflow/data/ref_genomes/mm10.fa') }}
-
-  Testing-with-mm39:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository with submodules
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Git Submodule Update
-        run: |
-          git submodule update --recursive --init
-
-      - name: Setup Pixi
-        uses: prefix-dev/setup-pixi@v0.9.4
-        with:
-          pixi-version: latest
-          cache: true
-          locked: false
-
-      - name: Restore Conda environments cache
-        id: cache-conda-restore
-        uses: actions/cache/restore@v4
-        with:
-          path: .snakemake/conda
-          key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
-          restore-keys: |
-            conda-envs-
-
-      - name: Restore mm39 reference genome and BWA indexes
-        id: cache-mm39-restore
-        uses: actions/cache/restore@v4
-        with:
-          path: |
-            workflow/data/ref_genomes/mm39.fa
-            workflow/data/ref_genomes/mm39.fa.amb
-            workflow/data/ref_genomes/mm39.fa.ann
-            workflow/data/ref_genomes/mm39.fa.bwt
-            workflow/data/ref_genomes/mm39.fa.pac
-            workflow/data/ref_genomes/mm39.fa.sa
-            workflow/data/ref_genomes/mm39.fa.fai
-          key: mm39-reference-${{ hashFiles('workflow/data/ref_genomes/mm39.fa') }}
-          restore-keys: |
-            mm39-reference-
-
-      - name: Run workflow (mm39 v9)
-        run: |
-          pixi run snakemake \
-            --cores 1 \
-            --sdm conda \
-            --config reference=mm39 use_light_data=True chromosomes=[chr19] ashleys_pipeline=True data_location=.tests/data_chr19_mm ploidy=False \
-            --conda-cleanup-pkgs cache \
-            -p \
-            --snakefile workflow/Snakefile
-
-      - name: Save Conda environments cache
-        if: always()
-        uses: actions/cache/save@v4
-        with:
-          path: .snakemake/conda
-          key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
-
-      - name: Save mm39 reference genome and BWA indexes
-        if: always()
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            workflow/data/ref_genomes/mm39.fa
-            workflow/data/ref_genomes/mm39.fa.amb
-            workflow/data/ref_genomes/mm39.fa.ann
-            workflow/data/ref_genomes/mm39.fa.bwt
-            workflow/data/ref_genomes/mm39.fa.pac
-            workflow/data/ref_genomes/mm39.fa.sa
-            workflow/data/ref_genomes/mm39.fa.fai
-          key: mm39-reference-${{ hashFiles('workflow/data/ref_genomes/mm39.fa') }}

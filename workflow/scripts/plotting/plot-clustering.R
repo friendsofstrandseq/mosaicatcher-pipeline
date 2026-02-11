@@ -1,136 +1,308 @@
-# traceback()
-plot.clustering <- function(inputfile, bin.bed.filename, position.outputfile, chromosome.outputfile) {
-    genome_bins <- read.table(bin.bed.filename, sep = "\t", header = F, comment.char = "")
-    list_directory <- dir("./", full.names = TRUE)
+log <- file(snakemake@log[[1]], open = "wt")
+sink(file = log, type = "message")
+sink(file = log, type = "output")
 
-    pdf(position.outputfile, width = 11, height = 10)
+# IMPORTS
 
-    data1 <- read.table(inputfile, sep = "\t", header = T, comment.char = "")
-
-    data1$color <- 0
-    ash12rainbow <- c("#77AADD", "#4477AA", "#114477", "#CC99BB", "#AA4488", "#771155", "#DDDD77", "#AAAA44", "#777711", "#DDAA77", "#AA7744", "#774411")
-    sv_call_name <- c("del_h1", "del_h2", "del_hom", "dup_h1", "dup_h2", "dup_hom", "inv_h1", "inv_h2", "inv_hom", "idup_h1", "idup_h2", "complex")
-
-    for (j in 1:length(sv_call_name)) {
-        tmp <- which(data1[, 9] == sv_call_name[j])
-        data1[tmp, 15] <- j
-    }
-
-    data1_pos <- data1[, 1:3]
-    data1_pos_uniq <- unique(data1_pos)
-    data1_pos_uniq_sort <- data1_pos_uniq[data1_pos_uniq$chrom == "chr1", ]
-    chrom <- c("chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9", "chr10", "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17", "chr18", "chr19", "chr20", "chr21", "chr22", "chrX")
-
-    for (i in 2:length(chrom)) {
-        data1_pos_uniq_sort <- rbind(data1_pos_uniq_sort, data1_pos_uniq[data1_pos_uniq$chrom == chrom[i], ])
-    }
-
-    data1_pos_uniq_sort$posind <- c(1:nrow(data1_pos_uniq_sort))
+library(ComplexHeatmap)
+library(RColorBrewer)
+library(dplyr)
+library(tidyr)
 
 
-    data1_cell <- data1[, 5]
-    data1_cell_uniq <- unique(data1_cell)
-    data1_cell_uniq_sort <- as.matrix(sort(data1_cell_uniq))
 
-    result <- matrix(0, nrow(data1_cell_uniq_sort), nrow(data1_pos_uniq))
-    result_sv <- matrix(0, nrow(data1_cell_uniq_sort), nrow(data1_pos_uniq))
+# pdf("TEST_R_dev.pdf", width = 20, height = 10)
+pdf(snakemake@output[["pdf"]], width = 20, height = 10)
 
-    print(result)
-    print(result_sv)
-    print(data1)
+# Chromosome order - get from config
+chrOrder <- snakemake@config[["chromosomes"]]
+# Load SV data
 
-    for (i in 1:nrow(data1)) {
-        pos_ind <- which(data1_pos_uniq_sort[, 1] == data1[i, 1] & data1_pos_uniq_sort[, 2] == data1[i, 2] & data1_pos_uniq_sort[, 3] == data1[i, 3])
-        cell_ind <- which(data1_cell_uniq_sort[, 1] == data1[i, 5])
+# data_file = "../stringent_filterTRUE.tsv"
+data_file <- snakemake@input[["sv_calls"]]
+# data1 <- read.table("../lenient_filterFALSE.tsv",
+data1 <- read.table(data_file,
+    sep = "\t",
+    header = T,
+    comment.char = ""
+)
 
-        result[cell_ind, pos_ind] <- data1[i, 13]
-        result_sv[cell_ind, pos_ind] <- data1[i, 15]
-    }
-
-    rownames(result) <- data1_cell_uniq_sort
-    colnames(result) <- data1_pos_uniq_sort$posind
-    result[result == Inf] <- max(c(1, result[result != Inf]))
-    rownames(result_sv) <- data1_cell_uniq_sort
-    colnames(result_sv) <- data1_pos_uniq_sort$posind
-
-    ## Add chromosome color code to heatmap
-    data1_pos_uniq_sort$color <- "magenta"
-    data1_pos_uniq_sort[data1_pos_uniq_sort$chrom == "chr2", 5] <- "purple"
-    data1_pos_uniq_sort[data1_pos_uniq_sort$chr == "chr4", 5] <- "purple"
-    data1_pos_uniq_sort[data1_pos_uniq_sort$chr == "chr6", 5] <- "purple"
-    data1_pos_uniq_sort[data1_pos_uniq_sort$chr == "chr8", 5] <- "purple"
-    data1_pos_uniq_sort[data1_pos_uniq_sort$chr == "chr10", 5] <- "purple"
-    data1_pos_uniq_sort[data1_pos_uniq_sort$chr == "chr12", 5] <- "purple"
-    data1_pos_uniq_sort[data1_pos_uniq_sort$chr == "chr14", 5] <- "purple"
-    data1_pos_uniq_sort[data1_pos_uniq_sort$chr == "chr16", 5] <- "purple"
-    data1_pos_uniq_sort[data1_pos_uniq_sort$chr == "chr18", 5] <- "purple"
-    data1_pos_uniq_sort[data1_pos_uniq_sort$chr == "chr20", 5] <- "purple"
-    data1_pos_uniq_sort[data1_pos_uniq_sort$chr == "chr22", 5] <- "purple"
-    data1_pos_uniq_sort[data1_pos_uniq_sort$chr == "chrY", 5] <- "purple"
-
-
-    library(pheatmap)
-    library(gplots)
-    library(ComplexHeatmap)
-
-    breaksList <- seq(4, 30, by = 0.1)
-    breaksList <- append(breaksList, max(result))
-    breaksList <- append(breaksList, -1, 0)
-    breaksList <- unique(sort(breaksList))
-    mycol <- colorpanel(n = length(breaksList) - 1, low = "lightgoldenrodyellow", mid = "darkorange", high = "firebrick2")
-
-
-    Var1 <- c("magenta", "purple")
-    names(Var1) <- c("magenta", "purple")
-    anno_colors <- list(Var1 = Var1)
-    col_annotation <- as.data.frame(data1_pos_uniq_sort$color)
-    rownames(col_annotation) <- colnames(result)
-    colnames(col_annotation) <- "Var1"
-
-
-    res <- pheatmap(result, border_color = NA, show_rownames = T, show_colnames = F, cluster_cols = F, cluster_rows = T, clustering_method = "ward.D", scale = "none", col = mycol, main = inputfile, annotation_col = col_annotation, annotation_colors = anno_colors, breaks = breaksList, annotation_legend = FALSE)
-    # res <- pheatmap(result, border_color = NA, show_rownames = T, show_colnames = F, cluster_cols = F, cluster_rows = T, clustering_method = "ward.D", scale = "none", col = mycol, cex = 0.7, main = inputfile, annotation_col = col_annotation, annotation_colors = anno_colors, breaks = breaksList, annotation_legend = FALSE)
-
-    chr_name <- matrix("chr", ncol(result), 1)
-    for (i in 1:ncol(result)) {
-        chr_name[i, 1] <- paste0(data1_pos_uniq_sort[i, 1], "_", data1_pos_uniq_sort[i, 2], "_", data1_pos_uniq_sort[i, 3])
-    }
-
-    colnames(result_sv) <- chr_name
-    colors <- structure(c("white", "#77AADD", "#4477AA", "#114477", "#CC99BB", "#AA4488", "#771155", "#DDDD77", "#AAAA44", "#777711", "#DDAA77", "#AA7744", "#774411"), names = c(0:12))
-
-    sv_list <- c("none", "del_h1", "del_h2", "del_hom", "dup_h1", "dup_h2", "dup_hom", "inv_h1", "inv_h2", "inv_hom", "idup_h1", "idup_h2", "complex")
-    sv_tmp <- matrix(0, 13, 1)
-    for (i in 1:13) {
-        sv_tmp[i, 1] <- sum(result_sv == (i - 1))
-    }
-    sv_list_sub <- sv_list[sv_tmp > 0]
-
-    print(result_sv)
-    mat <- as.data.frame    (result_sv[res$tree_row$order, ])
-
-    ha_column <- HeatmapAnnotation(
-        df = data.frame(type1 = data1_pos_uniq_sort$color),
-        col = list(type1 = c("magenta" = "magenta", "purple" = "purple"))
-    )
-
-    ht1 <- Heatmap(mat, name = "TEST", col = colors, 
-    heatmap_legend_param = list(labels = sv_list_sub), cluster_rows = FALSE, 
-    cluster_columns = FALSE, column_title = inputfile, row_names_gp = gpar(fontsize = 5), 
-    column_names_gp = gpar(fontsize = 1), column_title_gp = gpar(fontsize = 7, fontface = "bold"), 
-    top_annotation = ha_column)
-    # draw(res, show_annotation_legend = FALSE)
-    draw(ht1, show_annotation_legend = FALSE)
-
-
+# Convert "inf" strings to numeric Inf in llr columns
+if ("llr_to_ref" %in% colnames(data1)) {
+    data1$llr_to_ref <- as.numeric(data1$llr_to_ref)
+}
+if ("llr_to_2nd" %in% colnames(data1)) {
+    data1$llr_to_2nd <- as.numeric(data1$llr_to_2nd)
 }
 
+# Handle empty SV calls (no SVs detected)
+if (nrow(data1) == 0) {
+    # Create empty plot with message
+    plot.new()
+    text(0.5, 0.5, paste0("No SVs detected for sample: ", snakemake@wildcards[["sample"]],
+                          "\nMethod: ", snakemake@wildcards[["method"]],
+                          "\nFilter: ", snakemake@wildcards[["filter"]]),
+         cex = 1.5)
+    dev.off()
+
+    # Write empty clustering order dataframe
+    cluster_order_df <- data.frame(index = integer(), row_order = integer(), cell = character())
+    write.table(cluster_order_df, file = snakemake@output[["cluster_order_df"]], sep = "\t", row.names = FALSE, quote = FALSE)
+
+    # Exit successfully
+    quit(save = "no", status = 0)
+}
+# head(data1)
+
+# Create Dataframe for chromosomes missing SVs
+
+chrom <- as.vector(setdiff(chrOrder, data1$chrom))
+start <- rep(0, length(setdiff(chrOrder, data1$chrom)))
+end <- rep(0, length(setdiff(chrOrder, data1$chrom)))
+sample <- rep(data1$sample[1][1], length(setdiff(chrOrder, data1$chrom)))
+cell <- rep(data1$cell[1][1], length(setdiff(chrOrder, data1$chrom)))
+class <- rep("NA", length(setdiff(chrOrder, data1$chrom)))
+scalar <- rep(0, length(setdiff(chrOrder, data1$chrom)))
+num_bins <- rep(0, length(setdiff(chrOrder, data1$chrom)))
+sv_call_name <- rep("none", length(setdiff(chrOrder, data1$chrom)))
+sv_call_haplotype <- rep(0, length(setdiff(chrOrder, data1$chrom)))
+sv_call_name_2nd <- rep("NA", length(setdiff(chrOrder, data1$chrom)))
+sv_call_haplotype_2nd <- rep(0, length(setdiff(chrOrder, data1$chrom)))
+llr_to_ref <- rep(0, length(setdiff(chrOrder, data1$chrom)))
+llr_to_2nd <- rep(0, length(setdiff(chrOrder, data1$chrom)))
+af <- rep(0, length(setdiff(chrOrder, data1$chrom)))
+
+data1_missing <- data.frame(
+    chrom,
+    start,
+    end,
+    sample,
+    cell,
+    class,
+    scalar,
+    num_bins,
+    sv_call_name,
+    sv_call_haplotype,
+    sv_call_name_2nd,
+    sv_call_haplotype_2nd,
+    llr_to_ref,
+    llr_to_2nd,
+    af
+)
 
 
-# plot.clustering(
-#     inputfile = ".tests/data_CHR17_NEW/RPE-BM510/mosaiclassifier/sv_calls/stringent_filterTRUE.tsv",
-#     bin.bed.filename = "workflow/data/bin_200kb_all.bed",
-#     position.outputfile = "TEST_POSITION.pdf",
-#     # chromosome.outputfile = "TEST_chr.pdf"
-# )
-# dev.off()
+# Bind existing dataframe and new one
+
+data1 <- rbind(data1, data1_missing)
+
+data1$chrom <-
+    factor(data1$chrom, levels = chrOrder)
+
+
+data1 <- data1[order(data1$chrom), ]
+data1$pos <- paste0(data1$chrom, "_", data1$start, "_", data1$end)
+
+# Select subset of the dataframe
+lite_data <- select(data1, c("pos", "cell", "sv_call_name"))
+
+# Get colors / chrom
+set.seed(2)
+n <- length(unique(data1$chrom))
+qual_col_pals <- brewer.pal.info[brewer.pal.info$category == "qual", ]
+col_vector <- unlist(mapply(brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
+# pie(rep(1, n), col = sample(col_vector, n))
+
+chrom <- unique(data1$chrom)
+colors_chroms <- sample(col_vector, length(chrom))
+# Instanciate data$color column
+data1$color <- "NA"
+# Iterate over chrom to attribute color
+for (i in 1:length(chrom)) {
+    chrom_index_list <- which(data1$chrom == chrom[i])
+    data1[chrom_index_list, "color"] <- colors_chroms[i]
+}
+dd <- unique(select(data1, c("chrom", "color")))
+
+# range01 <- function(x) {
+#     100 * ((x - min(x)) / (max(x) - min(x)))
+# }
+
+## LLR & CLUSTERING
+
+# Create subset for clustering
+
+lite_data_clustering <- select(data1, c("pos", "cell", "llr_to_ref"))
+
+# Replace infinite values with max of finite values, or 100 if all are infinite
+finite_values <- lite_data_clustering$llr_to_ref[is.finite(lite_data_clustering$llr_to_ref)]
+if (length(finite_values) > 0) {
+    replacement_value <- max(finite_values)
+} else {
+    # All values are infinite, use a default value
+    replacement_value <- 100
+}
+lite_data_clustering[c("llr_to_ref")][sapply(lite_data_clustering[c("llr_to_ref")], is.infinite)] <- replacement_value
+lite_data_clustering[is.na(lite_data_clustering)] <- 0
+# lite_data_clustering$llr_to_ref <- range01(lite_data_clustering$llr_to_ref)
+
+# Pivot dataframe into matrix
+lite_data_pivot_clustering <- lite_data_clustering %>%
+    pivot_wider(
+        names_from = "cell",
+        values_from = "llr_to_ref"
+    )
+# Transpose
+t_lite_data_pivot_clustering <- t(lite_data_pivot_clustering)
+
+colnames(t_lite_data_pivot_clustering) <- t_lite_data_pivot_clustering[1, ]
+t_lite_data_pivot_clustering <- t_lite_data_pivot_clustering[-1, ]
+t_lite_data_pivot_clustering[is.na(t_lite_data_pivot_clustering)] <- 0
+
+# Turn into numeric matrix
+t_lite_data_pivot_clustering_num <- matrix(as.double(t_lite_data_pivot_clustering), ncol = ncol(t_lite_data_pivot_clustering))
+rownames(t_lite_data_pivot_clustering_num) <- rownames(t_lite_data_pivot_clustering)
+colnames(t_lite_data_pivot_clustering_num) <- colnames(t_lite_data_pivot_clustering)
+
+# Check if matrix has plottable data (at least 2 distinct values)
+if (length(unique(as.vector(t_lite_data_pivot_clustering_num))) < 2) {
+    # Create empty plot with message
+    plot.new()
+    text(0.5, 0.5, paste0("No plottable data for sample: ", snakemake@wildcards[["sample"]],
+                          "\n(all LLR values are identical)"),
+         cex = 1.5)
+    dev.off()
+
+    # Write empty clustering order dataframe
+    cluster_order_df <- data.frame(index = integer(), row_order = integer(), cell = character())
+    write.table(cluster_order_df, file = snakemake@output[["cluster_order_df"]], sep = "\t", row.names = FALSE, quote = FALSE)
+
+    # Exit successfully
+    quit(save = "no", status = 0)
+}
+
+# Plot options
+options(repr.plot.width = 20, repr.plot.height = 12)
+
+anno_colors <- list(Chroms = unique(data1$chrom))
+
+col_annotation <- sapply(strsplit(lite_data_pivot_clustering$pos, "_"), `[`, 1)
+
+col_test <- factor(sapply(strsplit(colnames(t_lite_data_pivot_clustering_num), "_"), `[`, 1), levels = unique(sapply(strsplit(colnames(t_lite_data_pivot_clustering_num), "_"), `[`, 1)))
+
+cl_h <- Heatmap(as.matrix(t_lite_data_pivot_clustering_num),
+    name = "LLR", col = RColorBrewer::brewer.pal(name = "Reds", n = 9),
+    # column_title = "a discrete numeric matrix",
+    rect_gp = gpar(col = "white", lwd = 1.5),
+    top_annotation = ComplexHeatmap::HeatmapAnnotation(
+        foo = anno_block(gp = gpar(fill = 2:24))
+    ),
+    column_split = col_test,
+    width = unit(32, "cm"), height = unit(20, "cm"),
+    row_names_gp = gpar(fontsize = 5),
+    column_names_gp = gpar(fontsize = 4),
+    column_title_gp = gpar(fontsize = 10),
+    cluster_columns = FALSE,
+    column_gap = unit(2, "mm"),
+    cluster_column_slices = FALSE,
+    column_title_rot = 90,
+)
+ht_opt$TITLE_PADDING <- unit(c(8.5, 8.5), "points")
+draw(cl_h,
+    # row_title = "Three heatmaps, row title", row_title_gp = gpar(col = "red"),
+    column_title = paste0("Chromosome size unscaled LLR heatmap (Sample : ", snakemake@wildcards[["sample"]], ", Methods used: ", snakemake@wildcards[["method"]], ", Filter used: ", snakemake@wildcards[["filter"]], ")"), column_title_gp = gpar(fontsize = 16)
+)
+
+## CATEGORICAL
+
+# Turn data into a matrix
+lite_data_pivot <- lite_data %>%
+    pivot_wider(
+        names_from = "cell",
+        values_from = "sv_call_name"
+    )
+
+# Transpose
+t_lite_data_pivot <- t(lite_data_pivot)
+colnames(t_lite_data_pivot) <- t_lite_data_pivot[1, ]
+t_lite_data_pivot <- t_lite_data_pivot[-1, ]
+
+# SV list
+sv_list <-
+    c(
+        "none",
+        "del_h1",
+        "del_h2",
+        "del_hom",
+        "dup_h1",
+        "dup_h2",
+        "dup_hom",
+        "inv_h1",
+        "inv_h2",
+        "inv_hom",
+        "idup_h1",
+        "idup_h2",
+        "complex"
+    )
+
+# SV type colors
+colors <-
+    structure(
+        c(
+            "grey",
+            "#77AADD",
+            "#4477AA",
+            "#114477",
+            "#CC99BB",
+            "#AA4488",
+            "#771155",
+            "#DDDD77",
+            "#AAAA44",
+            "#777711",
+            "#DDAA77",
+            "#AA7744",
+            "#774411"
+        ),
+        names = sv_list
+    )
+
+# Fill NA with none
+t_lite_data_pivot[is.na(t_lite_data_pivot)] <- "none"
+
+anno_colors <- list(Chroms = unique(data1$chrom))
+col_annotation <- as.data.frame(sapply(strsplit(lite_data_pivot$pos, "_"), `[`, 1))
+colnames(col_annotation) <- "Chroms"
+col_test <- factor(sapply(strsplit(colnames(t_lite_data_pivot), "_"), `[`, 1), levels = unique(sapply(strsplit(colnames(t_lite_data_pivot), "_"), `[`, 1)))
+
+
+cat_h <- Heatmap(as.matrix(t_lite_data_pivot),
+    name = "SV type", col = colors,
+    # column_title = "a discrete numeric matrix",
+    rect_gp = gpar(col = "white", lwd = 1.5),
+    top_annotation = ComplexHeatmap::HeatmapAnnotation(
+        foo = anno_block(gp = gpar(fill = 2:24))
+    ),
+    column_split = col_test,
+    width = unit(32, "cm"), height = unit(20, "cm"),
+    row_names_gp = gpar(fontsize = 5),
+    column_names_gp = gpar(fontsize = 4),
+    column_title_gp = gpar(fontsize = 10),
+    column_gap = unit(2, "mm"),
+    # column_order = order(as.numeric(sapply(strsplit(gsub("chr", "", colnames(t_lite_data_pivot)), "_"), `[`, 1))),
+    row_order = row_order(cl_h),
+    column_title_rot = 90,
+    # use_raster = TRUE, raster_by_magick = TRUE, raster_quality=10
+)
+ht_opt$TITLE_PADDING <- unit(c(8.5, 8.5), "points")
+draw(cat_h,
+    # row_title = "Three heatmaps, row title", row_title_gp = gpar(col = "red"),
+    column_title = paste0("Chromosome size unscaled categorical heatmap (Sample : ", snakemake@wildcards[["sample"]], ", Methods used: ", snakemake@wildcards[["method"]], ", Filter used: ", snakemake@wildcards[["filter"]], ")"), column_title_gp = gpar(fontsize = 16)
+)
+
+
+# Export clustered row order to output in order to use it in python script
+row_order <- row_order(cl_h)
+cell <- rownames(t_lite_data_pivot)[row_order]
+index <- seq(1, length(cell))
+cluster_order_df <- data.frame(index, row_order, cell)
+# write.table(cluster_order_df, file = "test.tsv", sep = "\t", row.names = FALSE, quote = FALSE)
+write.table(cluster_order_df, file = snakemake@output[["cluster_order_df"]], sep = "\t", row.names = FALSE, quote = FALSE)

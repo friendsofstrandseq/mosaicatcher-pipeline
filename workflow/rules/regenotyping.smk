@@ -11,8 +11,10 @@ rule mergeBams:
         temp("{folder}/{sample}/merged_bam/merged.raw.bam"),
     log:
         "{folder}/log/mergeBams/{sample}.log",
+    group:
+        "merge_bams_per_sample"
     resources:
-        mem_mb=get_mem_mb_heavy,
+        mem_mb=get_mem_mb_merge_group,
         time="01:00:00",
     threads: 10
     conda:
@@ -30,8 +32,10 @@ rule mergeSortBams:
         temp("{folder}/{sample}/merged_bam/merged.bam"),
     log:
         "{folder}/log/mergeBams/{sample}.log",
+    group:
+        "merge_bams_per_sample"
     resources:
-        mem_mb=get_mem_mb_heavy,
+        mem_mb=get_mem_mb_merge_group,
         time="01:00:00",
     threads: 10
     conda:
@@ -49,12 +53,14 @@ rule index_merged_bam:
         temp("{folder}/{sample}/merged_bam/merged.bam.bai"),
     log:
         "{folder}/log/merged_bam/{sample}/merged.log",
+    group:
+        "merge_bams_per_sample"
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     envmodules:
         "SAMtools/1.21-GCC-13.3.0",
     resources:
-        mem_mb=get_mem_mb,
+        mem_mb=get_mem_mb_merge_group,
     shell:
         "samtools index {input} > {log} 2>&1"
 
@@ -63,15 +69,19 @@ rule regenotype_SNVs:
     input:
         bam="{folder}/{sample}/merged_bam/merged.bam",
         bai="{folder}/{sample}/merged_bam/merged.bam.bai",
-        sites=config["references_data"][config["reference"]]["snv_sites_to_genotype"],
-        fasta=config["references_data"][config["reference"]]["reference_fasta"],
-        fasta_index="{fasta}.fai".format(
-            fasta=config["references_data"][config["reference"]]["reference_fasta"]
+        sites=(
+            config["references_data"][config["reference"]]["snv_sites_to_genotype"]
+            if config["references_data"][config["reference"]]["snv_sites_to_genotype"]
+            else []
         ),
+        fasta=get_reference_fasta(),
+        fasta_index=f"{get_reference_fasta()}.fai",
     output:
         vcf="{folder}/{sample}/snv_genotyping/{chrom,chr[0-9A-Z]+}.vcf",
     log:
         "{folder}/log/snv_genotyping/{sample}/{chrom}.log",
+    params:
+        sites_arg=lambda wildcards, input: f"-@ {input.sites}" if input.sites else "",
     resources:
         mem_mb=get_mem_mb_heavy,
         time="10:00:00",
@@ -85,7 +95,7 @@ rule regenotype_SNVs:
         (freebayes \
             -f {input.fasta} \
             -r {wildcards.chrom} \
-            -@ {input.sites} \
+            {params.sites_arg} \
             --only-use-input-alleles {input.bam} \
             --genotype-qualities \
         | bcftools view \

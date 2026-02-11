@@ -20,11 +20,8 @@ rule install_BSgenome_package:
         ),
     params:
         selected_package=lambda wc, input: (
-            "BSgenome.{}.UCSC.{}".format(
-                get_species_from_reference(config["reference"]),
-                config["reference"],
-            )
-            if get_species_from_reference(config["reference"]) is not None
+            get_genome_metadata("R_reference")
+            if get_genome_metadata().get("custom_bsgenome_tarball") is None
             else input.package
         ),
     conda:
