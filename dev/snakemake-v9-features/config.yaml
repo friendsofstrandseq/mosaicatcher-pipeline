@@ -1,0 +1,14 @@
+# Test workflow configuration
+
+# Sample list - scale from 1 to 100 by modifying this range
+# Start small: 3 samples
+samples:
+  - sample001
+  - sample002
+  - sample003
+
+# To test scalability, uncomment this to generate 100 samples:
+# samples: !python/eval "[f'sample{i:03d}' for i in range(1, 101)]"
+
+# Alternatively, use command line:
+# snakemake --config samples="[sample001,sample002,...,sample100]"
