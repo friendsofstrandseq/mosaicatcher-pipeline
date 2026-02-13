@@ -14,6 +14,8 @@ if config["genecore"] is True and config["genecore_date_folder"]:
 
     rule ashleys_genecore_symlink:
         localrule: True
+        group:
+            "symlink_operations"
         input:
             lambda wc: df_config_files.loc[
                 (df_config_files["Sample"] == wc.sample)
@@ -30,8 +32,6 @@ if config["genecore"] is True and config["genecore_date_folder"]:
 
     ruleorder: ashleys_genecore_symlink > ashleys_bwa_strandseq_to_reference_alignment
 
-
-print(f"Download pre-built indexes: {config['download_prebuilt_indexes']}")
 
 if not config["download_prebuilt_indexes"]:
 
@@ -69,7 +69,6 @@ ruleorder: ashleys_bwa_strandseq_to_reference_alignment > ashleys_samtools_sort_
 
 
 if config["paired_end"] is True:
-    print(f"get ref fasta : {get_reference_fasta()}")
 
     rule ashleys_bwa_strandseq_to_reference_alignment:
         input:
@@ -179,7 +178,7 @@ rule ashleys_mark_duplicates:
     log:
         "{folder}/{sample}/log/markdup/{cell}.log",
     group:
-        "deduplication_indexing_per_cell"
+        "alignment_per_cell"
     conda:
         "../../envs/mc_bioinfo_tools.yaml"
     envmodules:
@@ -192,9 +191,11 @@ rule ashleys_mark_duplicates:
 
 
 rule ashleys_symlink_bam_ashleys:
+    group:
+        "symlink_operations"
     input:
-        bam="{folder}/{sample}/bam/{cell}.sort.mdup.bam",
-        bai="{folder}/{sample}/bam/{cell}.sort.mdup.bam.bai",
+        bam=storage.fs("{folder}/{sample}/bam/{cell}.sort.mdup.bam"),
+        bai=storage.fs("{folder}/{sample}/bam/{cell}.sort.mdup.bam.bai"),
     output:
         bam="{folder}/{sample}/bam_ashleys/{cell}.sort.mdup.bam",
         bai="{folder}/{sample}/bam_ashleys/{cell}.sort.mdup.bam.bai",
