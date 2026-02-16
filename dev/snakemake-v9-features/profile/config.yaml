@@ -1,0 +1,62 @@
+# Test profile for fs storage provider with SLURM
+
+# ============================================================
+# Executor Configuration
+# ============================================================
+executor: slurm
+
+# ============================================================
+# Throttling
+# ============================================================
+max-jobs-per-second: 10
+jobs: 50 # Allow up to 50 concurrent jobs (for 100 samples)
+max-status-checks-per-second: 10
+
+# ============================================================
+# Storage Optimization (fs provider)
+# ============================================================
+default-storage-provider: fs
+
+# Local storage: For non-submitted jobs (local rules)
+local-storage-prefix: /scratch/$USER/snakemake_test/local
+
+# Remote job storage: For SLURM jobs (most processing)
+# Uses $JOBID for per-job isolation and auto-cleanup
+# remote-job-local-storage-prefix: ''
+
+# Shared filesystem categories
+shared-fs-usage:
+  - persistence # Final outputs persist on shared FS
+  - software-deployment
+  - sources
+  - source-cache
+
+# ============================================================
+# Resource Defaults
+# ============================================================
+default-resources:
+  - mem_mb=1000
+  - runtime=10
+  - constraint=''
+
+# ============================================================
+# SLURM Log Management
+# ============================================================
+slurm-logdir: /scratch/$USER/snakemake_test/logs
+slurm-keep-successful-logs: false
+slurm-delete-logfiles-older-than: 7
+
+# ============================================================
+# Efficiency Monitoring
+# ============================================================
+slurm-efficiency-report: true
+slurm-efficiency-report-path: "logs/slurm_efficiency.txt"
+slurm-efficiency-threshold: 0.8
+
+# ============================================================
+# Fault Tolerance
+# ============================================================
+keep-going: true
+rerun-incomplete: true
+latency-wait: 30
+local-cores: 1
