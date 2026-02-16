@@ -133,6 +133,8 @@ rule copy_labels:
 
 
 rule symlink_selected_bam:
+    group:
+        "symlink_operations"
     input:
         bam="{folder}/{sample}/bam/{cell}.sort.mdup.bam",
         bai="{folder}/{sample}/bam/{cell}.sort.mdup.bam.bai",
@@ -239,6 +241,8 @@ if config["blacklist_regions"] is True:
 
     rule correct_norm_for_blacklisting:
         localrule: True
+        group:
+            "text_processing_operations"
         input:
             "{folder}/{sample}/normalizations/{reference}/HGSVC.{window}.merged.tsv",
         output:

@@ -5,6 +5,8 @@ rule check_sm_tag:
         "{folder}/{sample}/checks/{cell}.sm_check.ok",
     log:
         "{folder}/log/{sample}/checks/{cell}.sm_check.log",
+    group:
+        "qc_statistics_operations"
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     envmodules:
@@ -43,6 +45,8 @@ rule index_haplotag_bam:
 
 
 rule compress_indiv_freebayes_vcf:
+    group:
+        "compression_indexing_operations"
     input:
         vcf="{folder}/{sample}/snv_genotyping/{chrom}.vcf",
     output:
@@ -60,6 +64,8 @@ rule compress_indiv_freebayes_vcf:
 
 
 rule index_indiv_freebayes_vcf:
+    group:
+        "compression_indexing_operations"
     input:
         vcf="{folder}/{sample}/snv_genotyping/{chrom}.vcf.gz",
     output:
@@ -77,6 +83,8 @@ rule index_indiv_freebayes_vcf:
 
 
 rule compress_indiv_strandphaser_vcf:
+    group:
+        "compression_indexing_operations"
     input:
         vcf="{folder}/{sample}/strandphaser/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf",
     output:
@@ -94,6 +102,8 @@ rule compress_indiv_strandphaser_vcf:
 
 
 rule index_indiv_strandphaser_vcf:
+    group:
+        "compression_indexing_operations"
     input:
         vcf="{folder}/{sample}/strandphaser/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz",
     output:
@@ -111,6 +121,8 @@ rule index_indiv_strandphaser_vcf:
 
 
 rule index_merged_strandphaser_vcf:
+    group:
+        "compression_indexing_operations"
     input:
         vcf="{folder}/{sample}/strandphaser/phased-snvs/{sample}.vcf.gz",
     output:
@@ -135,7 +147,7 @@ rule index_input_bam:
     log:
         "{folder}/log/index_input_bam/{sample}/{cell}.log",
     group:
-        "deduplication_indexing_per_cell"
+        "alignment_per_cell"
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     envmodules:

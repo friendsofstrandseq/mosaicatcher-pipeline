@@ -44,6 +44,8 @@ rule ashleys_fastqc_aggregate:
 
 
 rule ashleys_samtools_idxstats:
+    group:
+        "qc_statistics_operations"
     input:
         "{folder}/{sample}/bam/{cell}.sort.mdup.bam",
     output:
@@ -76,6 +78,8 @@ rule ashleys_samtools_idxstats_aggr:
 
 
 rule ashleys_samtools_flagstats:
+    group:
+        "qc_statistics_operations"
     input:
         "{folder}/{sample}/bam/{cell}.sort.mdup.bam",
     output:
@@ -108,6 +112,8 @@ rule ashleys_samtools_flagstats_aggr:
 
 
 rule ashleys_samtools_stats:
+    group:
+        "qc_statistics_operations"
     input:
         "{folder}/{sample}/bam/{cell}.sort.mdup.bam",
     output:

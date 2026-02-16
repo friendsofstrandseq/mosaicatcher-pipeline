@@ -219,6 +219,18 @@ def get_ashleys_outputs():
             )
         )
 
+    tmp_l_divide_count_plots = [
+        expand(
+            "{folder}/{sample}/plots/counts/CountComplete.{plottype}.pdf",
+            folder=config["data_location"],
+            sample=sample,
+            # plottype=["raw"],
+            plottype=plottype_counts,
+        )
+        for sample in samples
+    ]
+    final_list.extend([sub_e for e in tmp_l_divide_count_plots for sub_e in e])
+
     return final_list
 
 

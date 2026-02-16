@@ -99,6 +99,7 @@ exclude = [
     "snv_calls",
     "stats",
     "strandphaser",
+    "fs",
 ]
 
 
