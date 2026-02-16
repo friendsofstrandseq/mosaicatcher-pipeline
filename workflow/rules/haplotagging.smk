@@ -38,7 +38,8 @@ rule haplotag_bams:
 
 rule create_haplotag_segment_bed:
     localrule: True
-    group: "text_processing_operations"
+    group:
+        "text_processing_operations"
     input:
         segments="{folder}/{sample}/segmentation/Selection_jointseg.txt",
     output:

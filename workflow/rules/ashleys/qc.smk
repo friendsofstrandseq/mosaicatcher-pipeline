@@ -219,7 +219,6 @@ def get_ashleys_outputs():
             )
         )
 
-
     tmp_l_divide_count_plots = [
         expand(
             "{folder}/{sample}/plots/counts/CountComplete.{plottype}.pdf",
