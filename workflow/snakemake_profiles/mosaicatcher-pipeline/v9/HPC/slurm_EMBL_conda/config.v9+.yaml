@@ -42,7 +42,7 @@ default-storage-provider: none
 #   - source-cache
 
 # Core and job handling
-local-cores: 1 # Number of cores to use for local rules
+local-cores: 32 # Number of cores to use for local rules
 latency-wait: 60 # Time in seconds to wait for filesystems to catch up (important for NFS)
 jobs: 150 # Maximum number of concurrent jobs (increased for better throughput)
 
@@ -59,8 +59,7 @@ conda-frontend: "conda" # Specify the frontend for Conda (alternative could be m
 # SHARED caches - assemblies/references shared between all group users
 # IMPORTANT: Must be group-writable (see setup commands in README.md)
 # conda-prefix: Where conda ENVIRONMENTS are installed
-# Package cache location controlled by CONDA_PKGS_DIRS env var (should be /scratch/korbel/shared/conda_pkgs)
-conda-prefix: /g/korbel2/weber/conda_cache
+# conda-prefix: /g/korbel2/weber/conda_cache
 # apptainer-prefix: /scratch/korbel/shared/apptainer_cache
 # apptainer-args: "-B /g,/scratch,/scratch_cached"     # Bind all required paths
 
@@ -92,8 +91,8 @@ report-stylesheet: "workflow/report/custom-stylesheet.css" # Custom stylesheet f
 # Batch lightweight operations into SLURM job arrays to reduce scheduler overhead
 # Direct mapping: rule_group_name=batch_size
 group-components:
-  - symlink_operations=100 # Symlinks: fastest operations, batch 100
-  - compression_indexing_operations=50 # Compression/indexing: batch 50
-  - qc_statistics_operations=75 # QC stats: batch 75
-  - text_processing_operations=50 # Text processing: batch 50
+  - symlink_operations=10 # Symlinks: 10 CPUs, ~1min runtime
+  - compression_indexing_operations=15 # Compression/indexing: 15 CPUs
+  - qc_statistics_operations=20 # QC stats: 20 CPUs
+  - text_processing_operations=15 # Text processing: 15 CPUs
 

@@ -194,8 +194,8 @@ rule ashleys_symlink_bam_ashleys:
     group:
         "symlink_operations"
     input:
-        bam=storage.fs("{folder}/{sample}/bam/{cell}.sort.mdup.bam"),
-        bai=storage.fs("{folder}/{sample}/bam/{cell}.sort.mdup.bam.bai"),
+        bam="{folder}/{sample}/bam/{cell}.sort.mdup.bam",
+        bai="{folder}/{sample}/bam/{cell}.sort.mdup.bam.bai",
     output:
         bam="{folder}/{sample}/bam_ashleys/{cell}.sort.mdup.bam",
         bai="{folder}/{sample}/bam_ashleys/{cell}.sort.mdup.bam.bai",
