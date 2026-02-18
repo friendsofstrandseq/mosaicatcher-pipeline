@@ -38,64 +38,26 @@ jobs:
           cache: true
           locked: false
 
-      - name: Calculate conda env hash
-        id: conda-hash
-        run: |
-          HASH=$(cat workflow/envs/*.yaml workflow/envs/*/*.yaml 2>/dev/null | sha256sum | cut -d' ' -f1)
-          echo "hash=$HASH" >> $GITHUB_OUTPUT
-          echo "Conda environments hash: $HASH"
-
-      - name: Cache Dockerfile.base
-        id: cache-dockerfile
-        uses: actions/cache@v4
-        with:
-          path: workflow/containers/Dockerfile.base
-          key: dockerfile-base-${{ steps.conda-hash.outputs.hash }}
-
       - name: Generate Dockerfile.base
-        if: steps.cache-dockerfile.outputs.cache-hit != 'true'
         run: |
           pixi run snakemake \
-            --cores 1 \
+            --cores 4 \
             --configfile .tests/config/simple_config_mosaicatcher.yaml \
-            --config \
-              multistep_normalisation=True \
-              MultiQC=True \
-              genome_browsing_files_generation=True \
-              ashleys_pipeline=True \
-              breakpointR=True \
-              scNOVA=False \
             --containerize 2>&1 | sed -n '/^FROM condaforge/,$p' > workflow/containers/Dockerfile.base
-
-      - name: Add conda env hash labels to Dockerfile.base
-        if: steps.cache-dockerfile.outputs.cache-hit != 'true'
-        run: |
-          # Calculate individual conda env hashes
-          MC_BASE_HASH=$(md5sum workflow/envs/mc_base.yaml | cut -d' ' -f1)
-          MC_BIOINFO_HASH=$(md5sum workflow/envs/mc_bioinfo_tools.yaml | cut -d' ' -f1)
-          RTOOLS_HASH=$(md5sum workflow/envs/rtools.yaml | cut -d' ' -f1)
-
-          echo "Conda environment hashes:"
-          echo "  mc_base.yaml: $MC_BASE_HASH"
-          echo "  mc_bioinfo_tools.yaml: $MC_BIOINFO_HASH"
-          echo "  rtools.yaml: $RTOOLS_HASH"
-
-          # Insert labels after the existing description label
-          sed -i "/org.opencontainers.image.description=/a LABEL conda.env.mc_base.hash=\"$MC_BASE_HASH\"" workflow/containers/Dockerfile.base
-          sed -i "/conda.env.mc_base.hash=/a LABEL conda.env.mc_bioinfo_tools.hash=\"$MC_BIOINFO_HASH\"" workflow/containers/Dockerfile.base
-          sed -i "/conda.env.mc_bioinfo_tools.hash=/a LABEL conda.env.rtools.hash=\"$RTOOLS_HASH\"" workflow/containers/Dockerfile.base
-
-      - name: Verify Dockerfile.base
-        run: |
-          echo "Dockerfile.base size: $(wc -l < workflow/containers/Dockerfile.base) lines"
-          head -20 workflow/containers/Dockerfile.base
 
       - name: Upload Dockerfile.base artifact
         uses: actions/upload-artifact@v4
         with:
           name: dockerfile-base
           path: workflow/containers/Dockerfile.base
-          retention-days: 1
+          retention-days: 7
+
+      - name: Verify Dockerfile.base
+        run: |
+          echo "Dockerfile.base size: $(wc -l < workflow/containers/Dockerfile.base) lines"
+          echo ""
+          echo "Conda environments found:"
+          grep 'source: workflow/envs/' workflow/containers/Dockerfile.base || true
 
   build-base-image:
     name: Build Base Image
