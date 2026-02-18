@@ -3,7 +3,7 @@
 # --------------------------------------------------------
 
 # MosaiCatcher version
-version: version: 2.4.0
+version: 2.4.0
 
 # Email for notifications about the pipeline's status
 email: ""
