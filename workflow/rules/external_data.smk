@@ -145,6 +145,13 @@ rule download_mm39_reference:
 
 if config.get("download_prebuilt_indexes", True):
 
+    _igenomes_base = config["references_data"][config["reference"]].get("igenomes_base")
+    assert _igenomes_base is not None, (
+        f"Cannot use download_prebuilt_indexes=True with reference genome '{config['reference']}': "
+        f"no iGenomes pre-built indexes are available for this genome. "
+        f"Set download_prebuilt_indexes=False to build indexes locally."
+    )
+
     rule ashleys_download_bwa_indexes:
         """Download pre-built BWA indexes from iGenomes (fast)."""
         localrule: True

@@ -12,6 +12,10 @@ class fg:
     UNDERLINE = "\033[4m"
 
 
+with open("VERSION", "r") as f:
+    __version__ = f.read().strip()
+
+
 def pipeline_aesthetic_start(config):
     sep = """------------------------------------------------------"""
 
@@ -30,7 +34,7 @@ def pipeline_aesthetic_start(config):
     |_|  |_\___/__/\__,_|_|\___\__,_|\__\__|_||_\___|_|
     """
     wf_info = "smk-wf-catalog/mosaicatcher-pipeline v{version}".format(
-        version=str(config["version"])
+        version=str(__version__)
     )
     print(sep + fg.GREEN + smk)
     print(fg.ENDC)
@@ -118,10 +122,12 @@ def pipeline_aesthetic_start(config):
             "Reference genome selected", ": " + str(config["reference"])
         ),
         f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format(
-            "Reference base directory", ": " + str(config.get("reference_base_dir", "workflow/data/ref_genomes"))
+            "Reference base directory",
+            ": " + str(config.get("reference_base_dir", "workflow/data/ref_genomes")),
         ),
         f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format(
-            "Download pre-built indexes", ": " + str(config.get("download_prebuilt_indexes", True))
+            "Download pre-built indexes",
+            ": " + str(config.get("download_prebuilt_indexes", True)),
         ),
         f"{fg.BLUE}  {{:<50}}{fg.GREEN}{{:<50}}".format(
             "iGenomes pre-built indexes", ": " + igenomes_status
@@ -157,7 +163,7 @@ def argparse_help(config):
     |_|  |_\___/__/\__,_|_|\___\__,_|\__\__|_||_\___|_|
     """
     wf_info = "smk-wf-catalog/mosaicatcher-pipeline v{version}".format(
-        version=str(config["version"])
+        version=str(__version__)
     )
     print(sep + fg.GREEN + smk)
     print(fg.ENDC)
