@@ -71,14 +71,14 @@ rule run_strandphaser_per_chrom:
                 {input.configfile} \
                 {input.wcregions} \
                 {input.snppositions} \
-                $(pwd)/utils/R-packages/
+                $(pwd)/utils/R-packages/ > {log} 2>&1
         """
 
 
 rule merge_strandphaser_vcfs:
     input:
-        vcfs=ancient(aggregate_vcf_gz),
-        tbis=ancient(aggregate_vcf_gz_tbi),
+        vcfs=aggregate_vcf_gz,
+        tbis=aggregate_vcf_gz_tbi,
     output:
         vcfgz="{folder}/{sample}/strandphaser/phased-snvs/{sample}.vcf.gz",
     log:
@@ -89,6 +89,7 @@ rule merge_strandphaser_vcfs:
         "BCFtools/1.21-GCC-13.3.0",
     resources:
         mem_mb=get_mem_mb,
+        runtime=30,
     shell:
         """
         (bcftools concat -a {input.vcfs} | bcftools view -o {output.vcfgz} -O z --genotype het --types snps - ) > {log} 2>&1
@@ -104,6 +105,7 @@ rule combine_strandphaser_output:
         "{folder}/log/combine_strandphaser_output/{sample}.log",
     resources:
         mem_mb=get_mem_mb,
+        runtime=30,
     conda:
         "../envs/mc_base.yaml"
     script:
