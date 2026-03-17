@@ -58,7 +58,7 @@ if not config["download_prebuilt_indexes"]:
         threads: 16
         resources:
             mem_mb=get_mem_mb_heavy,
-            time="10:00:00",
+            runtime=600,
         shell:
             """
             bwa index -a {params.algorithm} {input.fasta} > {log} 2>&1
@@ -107,7 +107,8 @@ if config["paired_end"] is True:
             "bwa mem -t {threads}"
             ' -R "@RG\\tID:{wildcards.cell}\\tPL:Illumina\\tSM:{wildcards.sample}"'
             " -v 2 {input.ref} {input.mate1} {input.mate2} 2> {log.bwa} | "
-            " samtools view -b /dev/stdin > {output.bam} 2> {log.samtools}"
+            " samtools view -b /dev/stdin > {output.bam} 2> {log.samtools} && "
+            " samtools quickcheck {output.bam}"
 
 else:
 
@@ -147,7 +148,8 @@ else:
             "bwa mem -t {threads}"
             ' -R "@RG\\tID:{wildcards.cell}\\tPL:Illumina\\tSM:{wildcards.sample}"'
             " -v 2 {input.ref} {input.mate1} 2> {log.bwa} | "
-            " samtools view -b /dev/stdin > {output.bam} 2> {log.samtools}"
+            " samtools view -b /dev/stdin > {output.bam} 2> {log.samtools} && "
+            " samtools quickcheck {output.bam}"
 
 
 rule ashleys_samtools_sort_bam:
