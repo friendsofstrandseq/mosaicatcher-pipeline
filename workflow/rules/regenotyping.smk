@@ -15,7 +15,7 @@ rule mergeBams:
         "merge_bams_per_sample"
     resources:
         mem_mb=get_mem_mb_merge_group,
-        time="01:00:00",
+        runtime=300,
     threads: 10
     conda:
         "../envs/mc_bioinfo_tools.yaml"
@@ -36,7 +36,7 @@ rule mergeSortBams:
         "merge_bams_per_sample"
     resources:
         mem_mb=get_mem_mb_merge_group,
-        time="01:00:00",
+        runtime=300,
     threads: 10
     conda:
         "../envs/mc_bioinfo_tools.yaml"
@@ -84,7 +84,7 @@ rule regenotype_SNVs:
         sites_arg=lambda wildcards, input: f"-@ {input.sites}" if input.sites else "",
     resources:
         mem_mb=get_mem_mb_heavy,
-        time="10:00:00",
+        runtime=180,
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     envmodules:
@@ -124,7 +124,7 @@ rule call_SNVs_bcftools_chrom:
         "BCFtools/1.21-GCC-13.3.0",
     resources:
         mem_mb=get_mem_mb_heavy,
-        time="10:00:00",
+        runtime=180,
     shell:
         """
         bcftools mpileup -r {wildcards.chrom} -f {input.fasta} {input.bam} \

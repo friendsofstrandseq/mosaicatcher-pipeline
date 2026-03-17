@@ -97,7 +97,7 @@ if config["arbigent"] is True:
             output="{folder}/{sample}/arbigent_mosaiclassifier/sv_probabilities/probabilities.Rdata",
         resources:
             mem_mb=get_mem_mb,
-            time="10:00:00",
+            runtime=180,
         log:
             "{folder}/log/arbigent/mosaiClassifier_calc_probs_arbigent/{sample}.log",
         conda:

@@ -97,6 +97,23 @@ def get_mem_mb_single_cell_group(wildcards, attempt):
     return min(result, 256000)
 
 
+def get_mem_mb_lightweight_group(wildcards, attempt):
+    """
+    Memory for lightweight group (e.g., QC metrics).
+
+    Group contains:
+    - collect_qc_metrics (light, <1GB)
+    - generate_qc_report (light, <1GB)
+
+    Both steps are lightweight, so use a low base.
+    """
+    base_mb = 100
+    multipliers = [1.0, 1.5, 2.0, 3.0, 5.0]
+    result = int(base_mb * multipliers[min(attempt - 1, 4)])
+
+    return min(result, 64000)
+
+
 # ========================================
 # STANDALONE RULE FUNCTIONS (Preserved)
 # ========================================

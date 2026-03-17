@@ -58,7 +58,7 @@ rule generate_CN_for_CNN:
         "../envs/scNOVA/scNOVA_R.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
-        time="48:00:00",
+        runtime=180,
     shell:
         """
         Rscript {params.generate_CN_for_CNN} {input.subclone} {input.sv_calls_all} {input.Deeptool_result_final} {input.CNN_features_annot} {output.sv_calls_all_print} > {log}
@@ -83,7 +83,7 @@ rule generate_CN_for_chromVAR:
         "../envs/scNOVA/scNOVA_R.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
-        time="48:00:00",
+        runtime=180,
     shell:
         """
         Rscript {params.generate_CN_for_chromVAR} {input.TSS_matrix} {input.TES_matrix} {input.Genebody_matrix} {input.DHS_matrix_resize} {input.subclone} {input.sv_calls_all} {output.sv_calls_all_print}  > {log}
@@ -190,7 +190,7 @@ rule count_reads_split:
         tab="{folder}/{sample}/scNOVA_result/count_reads_split/{cell}.tab",
     resources:
         mem_mb=get_mem_mb_heavy,
-        time="10:00:00",
+        runtime=180,
     threads: 1
     conda:
         "../envs/mc_bioinfo_tools.yaml"
@@ -216,7 +216,7 @@ rule count_reads_split_aggr:
         "../envs/mc_base.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
-        time="10:00:00",
+        runtime=180,
     script:
         "../scripts/scNOVA_scripts/dev_aggr.py"
 
@@ -314,7 +314,7 @@ rule count_reads_for_DNN:
         tab="{folder}/{sample}/scNOVA_result/count_reads_for_DNN/Deeptool_Genes_for_CNN_{clone}.tab",
     resources:
         mem_mb=get_mem_mb_heavy,
-        time="10:00:00",
+        runtime=180,
     threads: 1
     conda:
         "../envs/mc_bioinfo_tools.yaml"
@@ -340,7 +340,7 @@ rule count_reads_for_DNN_aggr:
         "../envs/mc_base.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
-        time="10:00:00",
+        runtime=180,
     script:
         "../scripts/scNOVA_scripts/dev_aggr.py"
 
@@ -355,7 +355,7 @@ rule count_reads_for_DNN_sc:
         tab="{folder}/{sample}/scNOVA_result/count_reads_for_DNN_sc/Deeptool_Genes_for_CNN_{cell}.tab",
     resources:
         mem_mb=get_mem_mb_heavy,
-        time="10:00:00",
+        runtime=180,
     threads: 1
     conda:
         "../envs/mc_bioinfo_tools.yaml"
@@ -381,7 +381,7 @@ rule count_reads_for_DNN_sc_aggr:
         "../envs/mc_base.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
-        time="10:00:00",
+        runtime=180,
     script:
         "../scripts/scNOVA_scripts/dev_aggr.py"
 
@@ -398,7 +398,7 @@ rule count_reads_chr_length:
         "../envs/mc_bioinfo_tools.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
-        time="10:00:00",
+        runtime=180,
     threads: 1
     conda:
         "../envs/mc_bioinfo_tools.yaml"
@@ -424,7 +424,7 @@ rule count_reads_chr_length_aggr:
         "../envs/mc_base.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
-        time="10:00:00",
+        runtime=180,
     script:
         "../scripts/scNOVA_scripts/dev_aggr.py"
 
@@ -439,7 +439,7 @@ rule count_reads_chr_length_sc:
         tab="{folder}/{sample}/scNOVA_result/count_reads_chr_length_sc/Deeptool_chr_length_{cell}.tab",
     resources:
         mem_mb=get_mem_mb_heavy,
-        time="10:00:00",
+        runtime=180,
     threads: 1
     conda:
         "../envs/mc_bioinfo_tools.yaml"
@@ -465,7 +465,7 @@ rule count_reads_chr_length_sc_aggr:
         "../envs/mc_base.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
-        time="10:00:00",
+        runtime=180,
     script:
         "../scripts/scNOVA_scripts/dev_aggr.py"
 
@@ -499,7 +499,7 @@ rule count_reads_for_DNN_sort_lab:
         "../envs/scNOVA/scNOVA_R.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
-        time="48:00:00",
+        runtime=180,
     shell:
         """
         Rscript {params.count_sort_label} {input.count_reads_sort} {input.Ref_bed} {output.count_reads_sort_label}
@@ -543,7 +543,7 @@ rule count_reads_for_DNN_normalization:
         "../envs/scNOVA/scNOVA_R.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
-        time="48:00:00",
+        runtime=180,
     shell:
         """
         Rscript {params.count_norm} {input.count_reads_chr_length} {input.count_reads_sort_label} {input.CNN_features_annot} {input.table_CpG} {input.table_GC} {input.table_size} {input.TSS_matrix} {input.FPKM} {input.CN_result_data1} {output.plot} {output.table_mononuc_norm_data1}
@@ -579,7 +579,7 @@ rule count_reads_for_DNN_sc_sort_lab:
         "../envs/scNOVA/scNOVA_R.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
-        time="48:00:00",
+        runtime=180,
     shell:
         """
         Rscript {params.count_sort_label} {input.count_reads_sort} {input.Ref_bed} {output.count_reads_sort_label}
@@ -623,7 +623,7 @@ rule generate_feature_sc_var:
         "../envs/scNOVA/scNOVA_R.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
-        time="48:00:00",
+        runtime=180,
     shell:
         """
         Rscript {params.feature_sc_var} {input.subclone_list} {input.count_reads_sc_sort} {input.Ref_bed_annot} {input.TSS_matrix} {input.CNN_features_annot} {input.FPKM} {input.CN_result_data1} {output.plot} {output.table_mononuc_var_data1} > {log} 2>&1
@@ -654,7 +654,7 @@ rule combine_features:
         "../envs/scNOVA/scNOVA_R.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
-        time="48:00:00",
+        runtime=180,
     shell:
         """
         Rscript {params.combine_features} {input.TSS_matrix} {input.table_GC_imput} {input.table_CpG_imput} {input.table_RT} {input.table_mononuc_norm_data1} {input.CN_result_data1} {input.table_mononuc_var_data1} {input.FPKM} {output.features} {output.exp} {output.TSS_annot}
@@ -765,7 +765,7 @@ rule infer_differential_gene_expression:
         "../envs/scNOVA/scNOVA_R.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
-        time="10:00:00",
+        runtime=180,
     shell:
         """
         Rscript {params.infer_diff_gene_expression} {input.Genebody_NO} {input.clonality} {input.TSS_matrix} {input.GB_matrix} {input.CNN_result1} {input.CNN_result2} {input.input_matrix} {output.pdf} {output.final_result}
@@ -797,7 +797,7 @@ rule infer_differential_gene_expression_alt:
         "../envs/scNOVA/scNOVA_R.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
-        time="10:00:00",
+        runtime=180,
     shell:
         """
         Rscript {params.infer_diff_gene_expression_alt} {input.Genebody_NO} {input.clonality} {input.TSS_matrix} {input.GB_matrix} {input.CNN_result1} {input.CNN_result2} {input.input_matrix} {output.result_table} {output.result_plot} {input.final_result}
@@ -816,7 +816,7 @@ rule count_reads_CREs:
         "../envs/mc_bioinfo_tools.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
-        time="10:00:00",
+        runtime=180,
     threads: 1
     conda:
         "../envs/mc_bioinfo_tools.yaml"
@@ -840,7 +840,7 @@ rule count_reads_CREs_aggr:
         tab="{folder}/{sample}/scNOVA_result/{sample}_CREs_2kb.tab",
     resources:
         mem_mb=get_mem_mb_heavy,
-        time="10:00:00",
+        runtime=180,
     conda:
         "../envs/mc_base.yaml"
     script:
@@ -1011,7 +1011,7 @@ rule count_reads_CREs_haplo:
         tab="{folder}/{sample}/scNOVA_result_haplo/Deeptool_DHS_2kb_H1H2.tab",
     resources:
         mem_mb=get_mem_mb_heavy,
-        time="10:00:00",
+        runtime=180,
     threads: 1
     conda:
         "../envs/mc_bioinfo_tools.yaml"
@@ -1048,7 +1048,7 @@ rule count_reads_genebody_haplo:
         "../envs/mc_bioinfo_tools.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
-        time="10:00:00",
+        runtime=180,
     threads: 1
     conda:
         "../envs/mc_bioinfo_tools.yaml"

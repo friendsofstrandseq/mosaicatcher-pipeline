@@ -14,6 +14,7 @@ if config["arbigent"] is False:
             "../envs/rtools.yaml"
         resources:
             mem_mb=get_mem_mb_heavy,
+            runtime=180,
         script:
             "../scripts/mosaiclassifier_scripts/mosaiClassifier.snakemake.R"
 
