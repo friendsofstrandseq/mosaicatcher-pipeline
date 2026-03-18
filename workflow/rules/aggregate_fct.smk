@@ -1,24 +1,53 @@
+def _get_ploidy_chrom_list(wildcards):
+    """
+    Resolve the per-sample chromosome list from the summarise_ploidy checkpoint.
+
+    In the main Snakemake process the checkpoint mechanism is used so that
+    Snakemake can build the correct DAG dependency.  In SLURM jobstep
+    sub-processes (--executor slurm-jobstep) the checkpoint is never in the
+    allowed-rules list, so checkpoints.summarise_ploidy.get() always raises
+    IncompleteCheckpointException even when ploidy_summary.txt already exists
+    on disk.  We therefore fall back to reading the file directly when it is
+    already present, which is safe because the jobstep waits for the file via
+    --wait-for-files before starting.
+    """
+    if config["ploidy"] is not True:
+        return config["chromosomes"]
+
+    summary_path = os.path.join(
+        config["data_location"],
+        wildcards.sample,
+        "ploidy",
+        "ploidy_summary.txt",
+    )
+    if os.path.exists(summary_path):
+        # File already on disk: read directly to avoid jobstep checkpoint deadlock.
+        # Still call checkpoints.get() first so the main-process DAG registers
+        # the dependency; catch the exception that jobsteps always raise.
+        try:
+            summary_path = checkpoints.summarise_ploidy.get(
+                sample=wildcards.sample, folder=config["data_location"]
+            ).output.summary
+        except Exception:
+            pass  # use the path we already have
+    else:
+        # File not yet on disk: let the checkpoint mechanism raise
+        # IncompleteCheckpointException so Snakemake schedules summarise_ploidy.
+        summary_path = checkpoints.summarise_ploidy.get(
+            sample=wildcards.sample, folder=config["data_location"]
+        ).output.summary
+
+    df = pd.read_csv(summary_path, sep="\t")
+    df = df.loc[df["50%"] >= 2]
+    return [e for e in df["#chrom"].values.tolist() if e != "genome"]
+
+
 def aggregate_phased_haps(wildcards):
     """
-    Function based on checkpoint summarise_ploidy to process only chromosomes where
-    the median ploidy status is equal or above 2 for all segments.
-    When ploidy estimation is disabled, processes all configured chromosomes.
-    Return phased_haps.txt as input for combine_strandphaser_output
+    Return phased_haps.txt paths for chromosomes with median ploidy >= 2.
+    Used as input for combine_strandphaser_output.
     """
-    if config["ploidy"] is True:
-        # Use ploidy checkpoint to filter chromosomes
-        df = pd.read_csv(
-            checkpoints.summarise_ploidy.get(
-                sample=wildcards.sample, folder=config["data_location"]
-            ).output.summary,
-            sep="\t",
-        )
-        df = df.loc[df["50%"] >= 2]
-        chrom_list = [e for e in df["#chrom"].values.tolist() if e != "genome"]
-    else:
-        # No ploidy filtering - use all configured chromosomes
-        chrom_list = config["chromosomes"]
-
+    chrom_list = _get_ploidy_chrom_list(wildcards)
     return expand(
         "{{folder}}/{{sample}}/strandphaser/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt",
         chrom=chrom_list,
@@ -27,25 +56,10 @@ def aggregate_phased_haps(wildcards):
 
 def aggregate_vcf_gz(wildcards):
     """
-    Function based on checkpoint summarise_ploidy to process only chromosomes where
-    the median ploidy status is equal or above 2 for all segments.
-    When ploidy estimation is disabled, processes all configured chromosomes.
-    Return {chrom}_phased.vcf.gz as input for merge_strandphaser_vcfs
+    Return per-chromosome phased VCF.gz paths for chromosomes with median ploidy >= 2.
+    Used as input for merge_strandphaser_vcfs.
     """
-    if config["ploidy"] is True:
-        # Use ploidy checkpoint to filter chromosomes
-        df = pd.read_csv(
-            checkpoints.summarise_ploidy.get(
-                sample=wildcards.sample, folder=config["data_location"]
-            ).output.summary,
-            sep="\t",
-        )
-        df = df.loc[df["50%"] >= 2]
-        chrom_list = [e for e in df["#chrom"].values.tolist() if e != "genome"]
-    else:
-        # No ploidy filtering - use all configured chromosomes
-        chrom_list = config["chromosomes"]
-
+    chrom_list = _get_ploidy_chrom_list(wildcards)
     return expand(
         "{{folder}}/{{sample}}/strandphaser/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz",
         chrom=chrom_list,
@@ -54,25 +68,10 @@ def aggregate_vcf_gz(wildcards):
 
 def aggregate_vcf_gz_tbi(wildcards):
     """
-    Function based on checkpoint summarise_ploidy to process only chromosomes where
-    the median ploidy status is equal or above 2 for all segments.
-    When ploidy estimation is disabled, processes all configured chromosomes.
-    Return {chrom}_phased.vcf.gz.tbi as input for merge_strandphaser_vcfs
+    Return per-chromosome phased VCF.gz.tbi paths for chromosomes with median ploidy >= 2.
+    Used as input for merge_strandphaser_vcfs.
     """
-    if config["ploidy"] is True:
-        # Use ploidy checkpoint to filter chromosomes
-        df = pd.read_csv(
-            checkpoints.summarise_ploidy.get(
-                sample=wildcards.sample, folder=config["data_location"]
-            ).output.summary,
-            sep="\t",
-        )
-        df = df.loc[df["50%"] >= 2]
-        chrom_list = [e for e in df["#chrom"].values.tolist() if e != "genome"]
-    else:
-        # No ploidy filtering - use all configured chromosomes
-        chrom_list = config["chromosomes"]
-
+    chrom_list = _get_ploidy_chrom_list(wildcards)
     return expand(
         "{{folder}}/{{sample}}/strandphaser/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz.tbi",
         chrom=chrom_list,

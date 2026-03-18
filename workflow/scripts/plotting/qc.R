@@ -141,9 +141,9 @@ invisible(assert_that(
     "class" %in% colnames(d)
 ))
 
-# Re-name and -order chromosomes - this is human-specific
+# Re-name and -order chromosomes
 d <- d[, chrom := sub("^chr", "", chrom)][]
-d <- d[grepl("^([1-9]|[12][0-9]|X|Y)$", chrom), ]
+d <- d[chrom %in% chrom_levels, ]
 # d <- d[, chrom := factor(chrom, levels = as.character(c(1:22, "X", "Y")), ordered = T)]
 d <- d[, chrom := factor(chrom, levels = chrom_levels, ordered = T)]
 # d[, c(6, 7)] <- sapply(d[, c(6, 7)], as.double)

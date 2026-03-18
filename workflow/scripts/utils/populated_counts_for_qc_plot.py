@@ -10,10 +10,11 @@ binbed = pd.read_csv(
 )
 binbed["ID"] = binbed["chrom"].astype(str) + "_" + binbed["start"].astype(str) + "_" + binbed["end"].astype(str)
 
-# Turn chrom into categorical
+# Turn chrom into categorical using the chromosomes present in the bin bed file
+chrom_order = binbed["chrom"].unique().tolist()
 binbed["chrom"] = pd.Categorical(
     binbed["chrom"],
-    categories=["chr{}".format(e) for e in range(1, 23)] + ["chrX", "chrY"],
+    categories=chrom_order,
     ordered=True,
 )
 

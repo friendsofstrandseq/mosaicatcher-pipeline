@@ -501,31 +501,9 @@ references_data:
     custom_bsgenome_tarball: "workflow/data/ref_genomes/BSgenome.Cfamiliaris.NCBI.canFam4_1.0.0.tar.gz"
 
 # List of chromosomes to process
-chromosomes:
-  - chr1
-  - chr2
-  - chr3
-  - chr4
-  - chr5
-  - chr6
-  - chr7
-  - chr8
-  - chr9
-  - chr10
-  - chr11
-  - chr12
-  - chr13
-  - chr14
-  - chr15
-  - chr16
-  - chr17
-  - chr18
-  - chr19
-  - chr20
-  - chr21
-  - chr22
-  - chrX
-  - chrY
+# Leave empty to auto-detect from the selected reference genome (recommended)
+# Override with a custom list to restrict processing to specific chromosomes
+chromosomes: []
 
 # Specify any chromosomes to exclude from processing
 chromosomes_to_exclude: []

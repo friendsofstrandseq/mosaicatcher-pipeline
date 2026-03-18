@@ -1,140 +1,114 @@
-# Register HTTP storage provider for downloading reference genomes
-storage http:
-    provider="http",
-    max_requests_per_second=10,
-
-
 # Get reference base directory from config (supports multi-user HPC setups)
 REF_BASE_DIR = config.get("reference_base_dir", "workflow/data/ref_genomes")
 
 
 rule dl_example_data:
     localrule: True
-    input:
-        # HTTP.remote(
-        storage.http(
-            "https://sandbox.zenodo.org/record/1074721/files/TEST_EXAMPLE_DATA.zip",
-            keep_local=True,
-        ),
     output:
         touch("config/dl_example_data.ok"),
     log:
         touch("log/config/dl_example_data.ok"),
-    run:
-        shell("unzip {input} -d .")
+    params:
+        url="https://sandbox.zenodo.org/record/1074721/files/TEST_EXAMPLE_DATA.zip",
+    shell:
+        """
+        wget -q -O TEST_EXAMPLE_DATA.zip {params.url}
+        unzip TEST_EXAMPLE_DATA.zip -d .
+        """
 
 
 rule download_hg19_reference:
     localrule: True
-    input:
-        # HTTP.remote(
-        storage.http(
-            "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/analysisSet/hg19.p13.plusMT.no_alt_analysis_set.fa.gz",
-            keep_local=True,
-        ),
     output:
         f"{REF_BASE_DIR}/hg19.fa",
     log:
         f"{REF_BASE_DIR}/log/hg19.ok",
+    params:
+        url="https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/analysisSet/hg19.p13.plusMT.no_alt_analysis_set.fa.gz",
     conda:
         "../envs/mc_base.yaml"
     shell:
-        f"""
-        directory="{REF_BASE_DIR}/"
-        mkdir -p "$directory" "$directory/log"
-        mv {{input}} {REF_BASE_DIR}/hg19.fa.gz
-        gunzip {REF_BASE_DIR}/hg19.fa.gz
+        """
+        mkdir -p $(dirname {output}) $(dirname {log})
+        wget -q -O {output}.gz {params.url}
+        gunzip {output}.gz
+        touch {log}
         """
 
 
 rule download_hg38_reference:
     localrule: True
-    input:
-        # HTTP.remote(
-        storage.http(
-            "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/analysisSet/hg38.analysisSet.fa.gz",
-            keep_local=True,
-        ),
     output:
         f"{REF_BASE_DIR}/hg38.fa",
     log:
         f"{REF_BASE_DIR}/log/hg38.ok",
+    params:
+        url="https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/analysisSet/hg38.analysisSet.fa.gz",
     conda:
         "../envs/mc_base.yaml"
     shell:
-        f"""
-        directory="{REF_BASE_DIR}/"
-        mkdir -p "$directory" "$directory/log"
-        mv {{input}} {REF_BASE_DIR}/hg38.fa.gz
-        gunzip {REF_BASE_DIR}/hg38.fa.gz
+        """
+        mkdir -p $(dirname {output}) $(dirname {log})
+        wget -q -O {output}.gz {params.url}
+        gunzip {output}.gz
+        touch {log}
         """
 
 
 rule download_T2T_reference:
     localrule: True
-    input:
-        # HTTP.remote(
-        storage.http(
-            "https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/CHM13/assemblies/analysis_set/chm13v2.0.fa.gz",
-            keep_local=True,
-        ),
     output:
         f"{REF_BASE_DIR}/T2T.fa",
     log:
         f"{REF_BASE_DIR}/log/T2T.ok",
+    params:
+        url="https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/CHM13/assemblies/analysis_set/chm13v2.0.fa.gz",
     conda:
         "../envs/mc_base.yaml"
     shell:
-        f"""
-        directory="{REF_BASE_DIR}/"
-        mkdir -p "$directory" "$directory/log"
-        mv {{input}} {REF_BASE_DIR}/T2T.fa.gz
-        gunzip {REF_BASE_DIR}/T2T.fa.gz
+        """
+        mkdir -p $(dirname {output}) $(dirname {log})
+        wget -q -O {output}.gz {params.url}
+        gunzip {output}.gz
+        touch {log}
         """
 
 
 rule download_mm10_reference:
     localrule: True
-    input:
-        # HTTP.remote(
-        storage.http(
-            "https://hgdownload.soe.ucsc.edu/goldenPath/mm10/bigZips/mm10.fa.gz",
-            keep_local=True,
-        ),
     output:
         f"{REF_BASE_DIR}/mm10.fa",
     log:
         f"{REF_BASE_DIR}/log/mm10.ok",
+    params:
+        url="https://hgdownload.soe.ucsc.edu/goldenPath/mm10/bigZips/mm10.fa.gz",
     conda:
         "../envs/mc_base.yaml"
     shell:
-        f"""
-        directory="{REF_BASE_DIR}/"
-        mkdir -p "$directory" "$directory/log"
-        mv {{input}} {REF_BASE_DIR}/mm10.fa.gz
-        gunzip {REF_BASE_DIR}/mm10.fa.gz
+        """
+        mkdir -p $(dirname {output}) $(dirname {log})
+        wget -q -O {output}.gz {params.url}
+        gunzip {output}.gz
+        touch {log}
         """
 
 
 rule download_mm39_reference:
     localrule: True
-    input:
-        storage.http(
-            "https://hgdownload.soe.ucsc.edu/goldenPath/mm39/bigZips/mm39.fa.gz",
-            keep_local=True,
-        ),
     output:
         f"{REF_BASE_DIR}/mm39.fa",
     log:
         f"{REF_BASE_DIR}/log/mm39.ok",
+    params:
+        url="https://hgdownload.soe.ucsc.edu/goldenPath/mm39/bigZips/mm39.fa.gz",
     conda:
         "../envs/mc_base.yaml"
     shell:
-        f"""
-        directory="{REF_BASE_DIR}/"
-        mkdir -p "$directory" "$directory/log"
-        mv {{input}} {REF_BASE_DIR}/mm39.fa.gz
-        gunzip {REF_BASE_DIR}/mm39.fa.gz
+        """
+        mkdir -p $(dirname {output}) $(dirname {log})
+        wget -q -O {output}.gz {params.url}
+        gunzip {output}.gz
+        touch {log}
         """
 
 
@@ -153,36 +127,32 @@ if config.get("download_prebuilt_indexes", True):
     )
 
     rule ashleys_download_bwa_indexes:
-        """Download pre-built BWA indexes from iGenomes (fast)."""
+        """Download pre-built BWA indexes directly from iGenomes to output location."""
         localrule: True
         output:
-            idx=multiext(
-                get_reference_fasta(),
-                ".amb",
-                ".ann",
-                ".bwt",
-                ".pac",
-                ".sa",
-            ),
+            amb=f"{get_reference_fasta()}.amb",
+            ann=f"{get_reference_fasta()}.ann",
+            bwt=f"{get_reference_fasta()}.bwt",
+            pac=f"{get_reference_fasta()}.pac",
+            sa=f"{get_reference_fasta()}.sa",
         log:
             f"{get_reference_fasta()}.log",
         conda:
             "../envs/mc_base.yaml"
         params:
-            igenomes_base=lambda w: config["references_data"][config["reference"]][
-                "igenomes_base"
-            ],
-            genome=config["reference"],
+            igenomes_base=_igenomes_base,
         shell:
             """
-            for ext in amb ann bwt pac sa; do
-                wget -q -O {REF_BASE_DIR}/{params.genome}.fa.${{ext}} \
-                    {params.igenomes_base}/BWAIndex/genome.fa.${{ext}}
-            done > {log} 2>&1
+            mkdir -p $(dirname {output.amb})
+            wget -q -O {output.amb} {params.igenomes_base}/BWAIndex/genome.fa.amb
+            wget -q -O {output.ann} {params.igenomes_base}/BWAIndex/genome.fa.ann
+            wget -q -O {output.bwt} {params.igenomes_base}/BWAIndex/genome.fa.bwt
+            wget -q -O {output.pac} {params.igenomes_base}/BWAIndex/genome.fa.pac
+            wget -q -O {output.sa}  {params.igenomes_base}/BWAIndex/genome.fa.sa
             """
 
     rule ashleys_download_faidx:
-        """Download samtools faidx from iGenomes."""
+        """Download samtools faidx directly from iGenomes to output location."""
         localrule: True
         output:
             f"{get_reference_fasta()}.fai",
@@ -191,63 +161,55 @@ if config.get("download_prebuilt_indexes", True):
         conda:
             "../envs/mc_base.yaml"
         params:
-            igenomes_base=lambda w: config["references_data"][config["reference"]][
-                "igenomes_base"
-            ],
+            igenomes_base=_igenomes_base,
         shell:
             """
-            wget -q -O {output} \
-                {params.igenomes_base}/WholeGenomeFasta/genome.fa.fai > {log} 2>&1
+            mkdir -p $(dirname {output})
+            wget -q -O {output} {params.igenomes_base}/WholeGenomeFasta/genome.fa.fai
             """
 
 
 rule download_canFam3_reference:
     localrule: True
-    input:
-        storage.http(
-            "https://hgdownload.soe.ucsc.edu/goldenPath/canFam3/bigZips/canFam3.fa.gz",
-            keep_local=True,
-        ),
     output:
         f"{REF_BASE_DIR}/canFam3.fa",
     log:
         f"{REF_BASE_DIR}/log/canFam3.ok",
+    params:
+        url="https://hgdownload.soe.ucsc.edu/goldenPath/canFam3/bigZips/canFam3.fa.gz",
     conda:
         "../envs/mc_base.yaml"
     shell:
-        f"""
-        directory="{REF_BASE_DIR}/"
-        mkdir -p "$directory" "$directory/log"
-        mv {{input}} {REF_BASE_DIR}/canFam3.fa.gz
-        gunzip {REF_BASE_DIR}/canFam3.fa.gz
+        """
+        mkdir -p $(dirname {output}) $(dirname {log})
+        wget -q -O {output}.gz {params.url}
+        gunzip {output}.gz
+        touch {log}
         """
 
 
 rule download_canFam4_reference:
     localrule: True
-    input:
-        storage.http(
-            "https://hgdownload.soe.ucsc.edu/goldenPath/canFam4/bigZips/canFam4.fa.gz",
-            keep_local=True,
-        ),
     output:
         f"{REF_BASE_DIR}/canFam4.fa",
     log:
         f"{REF_BASE_DIR}/log/canFam4.ok",
+    params:
+        url="https://hgdownload.soe.ucsc.edu/goldenPath/canFam4/bigZips/canFam4.fa.gz",
     conda:
         "../envs/mc_base.yaml"
     shell:
-        f"""
-        directory="{REF_BASE_DIR}/"
-        mkdir -p "$directory" "$directory/log"
-        mv {{input}} {REF_BASE_DIR}/canFam4.fa.gz
-        gunzip {REF_BASE_DIR}/canFam4.fa.gz
+        """
+        mkdir -p $(dirname {output}) $(dirname {log})
+        wget -q -O {output}.gz {params.url}
+        gunzip {output}.gz
+        touch {log}
         """
 
 
 rule generate_canFam3_bin_bed:
     input:
-        fasta="workflow/data/ref_genomes/canFam3.fa",
+        fasta=f"{REF_BASE_DIR}/canFam3.fa",
     output:
         bed="workflow/data/canFam3.bin_200kb_all.bed",
     log:
@@ -262,7 +224,7 @@ rule generate_canFam3_bin_bed:
 
 rule generate_canFam4_bin_bed:
     input:
-        fasta="workflow/data/ref_genomes/canFam4.fa",
+        fasta=f"{REF_BASE_DIR}/canFam4.fa",
     output:
         bed="workflow/data/canFam4.bin_200kb_all.bed",
     log:
@@ -277,7 +239,7 @@ rule generate_canFam4_bin_bed:
 
 rule generate_canFam3_gc_matrix:
     input:
-        fasta="workflow/data/ref_genomes/canFam3.fa",
+        fasta=f"{REF_BASE_DIR}/canFam3.fa",
         bin_bed="workflow/data/canFam3.bin_200kb_all.bed",
     output:
         gc_matrix="workflow/data/GC/canFam3.GC_matrix.txt.gz",
@@ -293,7 +255,7 @@ rule generate_canFam3_gc_matrix:
 
 rule generate_canFam4_gc_matrix:
     input:
-        fasta="workflow/data/ref_genomes/canFam4.fa",
+        fasta=f"{REF_BASE_DIR}/canFam4.fa",
         bin_bed="workflow/data/canFam4.bin_200kb_all.bed",
     output:
         gc_matrix="workflow/data/GC/canFam4.GC_matrix.txt.gz",
@@ -309,55 +271,38 @@ rule generate_canFam4_gc_matrix:
 
 rule download_T2T_tarball:
     localrule: True
-    input:
-        # HTTP.remote(
-        storage.http(
-            "https://zenodo.org/record/7697400/files/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz",
-            keep_local=True,
-        ),
     output:
-        "workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz",
+        f"{REF_BASE_DIR}/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz",
     log:
-        "workflow/data/ref_genomes/log/T2T_tarball.ok",
+        f"{REF_BASE_DIR}/log/T2T_tarball.ok",
+    params:
+        url="https://zenodo.org/record/7697400/files/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz",
     conda:
         "../envs/mc_base.yaml"
     shell:
         """
-        directory="workflow/data/ref_genomes/"
-        mkdir -p "$directory"
-        mv {input} workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz
+        mkdir -p $(dirname {output}) $(dirname {log})
+        wget -q -O {output} {params.url}
+        touch {log}
         """
 
 
 rule download_arbigent_mappability_track:
     localrule: True
-    input:
-        # HTTP.remote(
-        storage.http(
-            "https://zenodo.org/record/7697400/files/mapping_counts_allchrs_hg38.txt",
-            keep_local=True,
-        ),
     output:
         config["arbigent_data"]["arbigent_mapability_track"],
     log:
         touch("log/config/dl_arbigent_mappability_track.ok"),
+    params:
+        url="https://zenodo.org/record/7697400/files/mapping_counts_allchrs_hg38.txt",
     shell:
         """
-        directory="workflow/data/arbigent/"
-        mkdir -p "$directory"
-        mv {input} {output}
+        mkdir -p $(dirname {output})
+        wget -q -O {output} {params.url}
         """
 
 
 # rule download_scnova_data:
-#     input:
-#         ancient(
-#             # HTTP.remote(
-#             storage.http(
-#                 "https://zenodo.org/record/7697400/files/scNOVA_data_models.zip",
-#                 keep_local=True,
-#             )
-#         ),
 #     output:
 #         "workflow/data/scNOVA/utils/bin_chr_length.bed",
 #         "workflow/data/scNOVA/utils/bin_Genebody_all.bed",
@@ -383,12 +328,8 @@ rule download_arbigent_mappability_track:
 #         touch("log/config/dl_arbigent_mappability_track.ok"),
 #     conda:
 #         "../envs/scNOVA/scNOVA_DL.yaml"
-#     # container:
-#     #     None
 #     shell:
 #         """
-#         directory="workflow/data/ref_genomes/"
-#         mkdir -p "$directory"
-#         mv {input} workflow/data/scNOVA_data_models.zip
-#         unzip workflow/data/scNOVA_data_models.zip -d workflow/data/
+#         wget -q -O scNOVA_data_models.zip https://zenodo.org/record/7697400/files/scNOVA_data_models.zip
+#         unzip scNOVA_data_models.zip -d workflow/data/
 #         """

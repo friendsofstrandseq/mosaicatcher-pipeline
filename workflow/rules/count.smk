@@ -51,7 +51,7 @@ checkpoint mosaic_count:
         window=config["window"],
     resources:
         mem_mb=get_mem_mb_heavy,
-        time="24:00:00",
+        runtime=180,
     shell:
         """
         mosaicatcher count \
@@ -68,7 +68,7 @@ checkpoint mosaic_count:
 
 rule populate_counts:
     input:
-        bin_bed=ancient("workflow/data/bin_200kb_all.bed"),
+        bin_bed=ancient(get_bin_bed_file()),
         counts="{folder}/{sample}/counts/{sample}.txt.raw.gz",
     output:
         populated_counts="{folder}/{sample}/counts/{sample}.txt.populated.gz",

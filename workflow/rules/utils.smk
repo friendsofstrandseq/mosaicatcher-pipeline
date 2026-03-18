@@ -11,6 +11,8 @@ rule check_sm_tag:
         "../envs/mc_bioinfo_tools.yaml"
     envmodules:
         "SAMtools/1.21-GCC-13.3.0",
+    resources:
+        mem_mb=get_mem_mb_lightweight_group,
     shell:
         r"""
         sample_name="{wildcards.sample}"
@@ -159,6 +161,7 @@ rule index_input_bam:
 
 
 rule gunzip_fasta:
+    localrule: True
     input:
         ancient("{file}.fa.gz"),
     output:
@@ -187,6 +190,7 @@ if not config["download_prebuilt_indexes"]:
         cache: True
         resources:
             mem_mb=get_mem_mb_heavy,
+            runtime=30,
         shell:
             "samtools faidx {input}"
 

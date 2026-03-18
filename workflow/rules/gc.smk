@@ -88,7 +88,7 @@ if config["multistep_normalisation"] is True and config["window"] == 200000:
 
     rule populate_counts_GC:
         input:
-            bin_bed="workflow/data/bin_200kb_all.bed",
+            bin_bed=get_bin_bed_file(),
             counts="{folder}/{sample}/counts/multistep_normalisation/{sample}.txt.scaled.GC.VST.reformat.gz",
         output:
             populated_counts="{folder}/{sample}/counts/multistep_normalisation/{sample}.txt.scaled.GC.VST.populated.gz",
