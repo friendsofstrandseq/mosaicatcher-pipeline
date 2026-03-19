@@ -1049,6 +1049,14 @@ def get_all_plots(wildcards):
         sep="\t",
     )
 
+    # Skip sample entirely if no cells passed QC
+    if df.empty:
+        print(
+            f"WARNING: No cells passed QC for sample {wildcards.sample} — skipping all downstream analysis.",
+            file=sys.stderr,
+        )
+        return []
+
     dict_cells_nb_per_sample = {k: len(v) for k, v in cell_per_sample.items()}
     samples = list(dict_cells_nb_per_sample.keys())
 

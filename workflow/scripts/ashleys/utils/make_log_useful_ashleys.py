@@ -2,6 +2,9 @@ import sys, os
 
 
 def make_log_useful(log_path, status, config, config_definitions):
+    # Snakemake v9 passes log as a list
+    if isinstance(log_path, list):
+        log_path = log_path[0]
     logs_processed_dir = "/".join(log_path.split("/")[:-1]) + "/processed_logs_for_mail/"
     os.makedirs(logs_processed_dir, exist_ok=True)
     log_path_new = "/".join(log_path.split("/")[:-1]) + "/processed_logs_for_mail/" + log_path.split("/")[-1]

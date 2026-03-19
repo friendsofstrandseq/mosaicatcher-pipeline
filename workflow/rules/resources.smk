@@ -119,6 +119,17 @@ def get_mem_mb_lightweight_group(wildcards, attempt):
 # ========================================
 
 
+def get_mem_mb_check_sm_tag(wildcards, input, attempt):
+    """Memory for check_sm_tag (standalone, reads BAM header).
+
+    Base 1000 MB + 10% of BAM size for large files, scaled by attempt.
+    """
+    base_mb = max(1000, int(input.size_mb * 0.1))
+    multipliers = [1.0, 1.5, 2.0, 3.0, 5.0]
+    result = int(base_mb * multipliers[min(attempt - 1, 4)])
+    return min(result, 64000)
+
+
 def get_mem_mb(wildcards, attempt):
     """Original function - preserved for ungrouped rules."""
     mem_avail = [2, 4, 8, 16, 64]
