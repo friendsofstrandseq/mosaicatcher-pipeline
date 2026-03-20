@@ -61,6 +61,10 @@ whatshap_only: False
 # Enable or disable ploidy estimation
 ploidy: True
 
+# Minimum heterozygous SNPs per chromosome required for StrandPhaseR phasing.
+# Chromosomes with fewer variants in their SNV VCF are skipped.
+min_snps_for_phasing: 5
+
 # --------------------------------------------------------
 # GENECORE Configuration
 # --------------------------------------------------------

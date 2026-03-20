@@ -22,7 +22,10 @@ rule mergeBams:
     envmodules:
         "SAMtools/1.21-GCC-13.3.0",
     shell:
-        "samtools merge -@ {threads} {output} {input.bam} 2>&1 > {log}"
+        """
+        samtools merge -@ {threads} {output} {input.bam} 2>&1 > {log}
+        samtools quickcheck {output}
+        """
 
 
 rule mergeSortBams:
@@ -43,7 +46,10 @@ rule mergeSortBams:
     envmodules:
         "SAMtools/1.21-GCC-13.3.0",
     shell:
-        "samtools sort -@ {threads} -o {output} {input} 2>&1 > {log}"
+        """
+        samtools sort -@ {threads} -o {output} {input} 2>&1 > {log}
+        samtools quickcheck {output}
+        """
 
 
 rule index_merged_bam:

@@ -42,12 +42,64 @@ def _get_ploidy_chrom_list(wildcards):
     return [e for e in df["#chrom"].values.tolist() if e != "genome"]
 
 
-def aggregate_phased_haps(wildcards):
+_strandphaser_skip_warned = set()
+
+
+def _vcf_has_enough_variants(vcf_path, min_variants):
+    """Check if a VCF file exists and contains enough variant records for phasing."""
+    if not os.path.isfile(vcf_path):
+        return True  # file not yet created, keep chrom so Snakemake schedules it
+    count = 0
+    with open(vcf_path) as fh:
+        for line in fh:
+            if not line.startswith("#"):
+                count += 1
+                if count >= min_variants:
+                    return True
+    return False
+
+
+def _get_strandphaser_chrom_list(wildcards):
     """
-    Return phased_haps.txt paths for chromosomes with median ploidy >= 2.
-    Used as input for combine_strandphaser_output.
+    Chromosome list for StrandPhaseR: ploidy >= 2 AND SNV VCF has enough variants.
+
+    Extends _get_ploidy_chrom_list by excluding chromosomes where the SNV VCF
+    already exists on disk but contains fewer variants than min_snps_for_phasing.
+    Prevents StrandPhaseR from crashing on empty/near-empty VCFs.
     """
     chrom_list = _get_ploidy_chrom_list(wildcards)
+    min_snps = config.get("min_snps_for_phasing", 5)
+    folder = config["data_location"]
+    sample = wildcards.sample
+
+    filtered = []
+    for chrom in chrom_list:
+        vcf_candidates = [
+            os.path.join(folder, sample, "snv_calls", f"{chrom}.vcf"),
+            os.path.join(folder, sample, "snv_genotyping", f"{chrom}.vcf"),
+            os.path.join(folder, sample, "external_snv_calls", f"{chrom}.vcf"),
+        ]
+        vcf_path = next((p for p in vcf_candidates if os.path.isfile(p)), None)
+
+        if vcf_path is None or _vcf_has_enough_variants(vcf_path, min_snps):
+            filtered.append(chrom)
+        else:
+            key = (sample, chrom)
+            if key not in _strandphaser_skip_warned:
+                _strandphaser_skip_warned.add(key)
+                logger.warning(
+                    f"⚠️  [WARNING] Skipping {chrom} for StrandPhaseR in sample {sample} "
+                    f"— SNV VCF has < {min_snps} variant records."
+                )
+    return filtered
+
+
+def aggregate_phased_haps(wildcards):
+    """
+    Return phased_haps.txt paths for chromosomes eligible for StrandPhaseR.
+    Used as input for combine_strandphaser_output.
+    """
+    chrom_list = _get_strandphaser_chrom_list(wildcards)
     return expand(
         "{{folder}}/{{sample}}/strandphaser/StrandPhaseR_analysis.{chrom}/Phased/phased_haps.txt",
         chrom=chrom_list,
@@ -56,10 +108,10 @@ def aggregate_phased_haps(wildcards):
 
 def aggregate_vcf_gz(wildcards):
     """
-    Return per-chromosome phased VCF.gz paths for chromosomes with median ploidy >= 2.
+    Return per-chromosome phased VCF.gz paths for chromosomes eligible for StrandPhaseR.
     Used as input for merge_strandphaser_vcfs.
     """
-    chrom_list = _get_ploidy_chrom_list(wildcards)
+    chrom_list = _get_strandphaser_chrom_list(wildcards)
     return expand(
         "{{folder}}/{{sample}}/strandphaser/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz",
         chrom=chrom_list,
@@ -68,10 +120,10 @@ def aggregate_vcf_gz(wildcards):
 
 def aggregate_vcf_gz_tbi(wildcards):
     """
-    Return per-chromosome phased VCF.gz.tbi paths for chromosomes with median ploidy >= 2.
+    Return per-chromosome phased VCF.gz.tbi paths for chromosomes eligible for StrandPhaseR.
     Used as input for merge_strandphaser_vcfs.
     """
-    chrom_list = _get_ploidy_chrom_list(wildcards)
+    chrom_list = _get_strandphaser_chrom_list(wildcards)
     return expand(
         "{{folder}}/{{sample}}/strandphaser/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz.tbi",
         chrom=chrom_list,
@@ -178,12 +230,9 @@ def aggregate_cells_haplotag_tables(wildcards):
 
     # Explicit warning when no cells pass QC
     if len(cell_list) == 0:
-        import sys
-
-        print(
-            f"WARNING: No cells passed QC filter for sample {wildcards.sample}. "
-            f"Haplotag analysis will produce empty output.",
-            file=sys.stderr,
+        logger.warning(
+            f"⚠️  [WARNING] No cells passed QC filter for sample {wildcards.sample} "
+            f"— haplotag analysis will produce empty output."
         )
 
     # print(cell_list)

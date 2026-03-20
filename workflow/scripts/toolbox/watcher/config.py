@@ -170,20 +170,27 @@ class PipelineConfig:
                     deployment_method=deployment_methods,
                     conda_prefix=Path(_expand_user_vars(prof.get("conda-prefix", ""))),
                     conda_frontend=prof.get("conda-frontend", "conda"),
-                    apptainer_prefix=Path(_expand_user_vars(prof.get("apptainer-prefix", ""))),
+                    apptainer_prefix=Path(
+                        _expand_user_vars(prof.get("apptainer-prefix", ""))
+                    ),
                     apptainer_args=prof.get("apptainer-args", ""),
                 ),
                 storage_settings=StorageSettings(
-                    default_storage_provider=None
-                    if str(prof.get("default-storage-provider", "")).lower() in ("none", "")
-                    else prof["default-storage-provider"],
+                    default_storage_provider=(
+                        None
+                        if str(prof.get("default-storage-provider", "")).lower()
+                        in ("none", "")
+                        else prof["default-storage-provider"]
+                    ),
                 ),
                 snakefile=self.pipeline_dir / "workflow" / "Snakefile",
                 workdir=self.pipeline_dir,
             )
 
             dag_api = workflow_api.dag(
-                dag_settings=DAGSettings(force_incomplete=prof.get("rerun-incomplete", True))
+                dag_settings=DAGSettings(
+                    force_incomplete=prof.get("rerun-incomplete", True)
+                )
             )
 
             dag_api.execute_workflow(
@@ -197,16 +204,26 @@ class PipelineConfig:
                     max_jobs_per_second=prof.get("max-jobs-per-second", 10),
                 ),
                 remote_execution_settings=RemoteExecutionSettings(
-                    max_status_checks_per_second=prof.get("max-status-checks-per-second", 10),
+                    max_status_checks_per_second=prof.get(
+                        "max-status-checks-per-second", 10
+                    ),
                 ),
                 executor_settings=SlurmExecutorSettings(
                     logdir=Path(_expand_user_vars(prof.get("slurm-logdir", ""))),
                     keep_successful_logs=prof.get("slurm-keep-successful-logs", False),
-                    delete_logfiles_older_than=prof.get("slurm-delete-logfiles-older-than", 30),
+                    delete_logfiles_older_than=prof.get(
+                        "slurm-delete-logfiles-older-than", 30
+                    ),
                     efficiency_report=prof.get("slurm-efficiency-report", False),
-                    efficiency_report_path=Path(_expand_user_vars(
-                        prof.get("slurm-efficiency-report-path", "")
-                    )) if prof.get("slurm-efficiency-report-path") else None,
+                    efficiency_report_path=(
+                        Path(
+                            _expand_user_vars(
+                                prof.get("slurm-efficiency-report-path", "")
+                            )
+                        )
+                        if prof.get("slurm-efficiency-report-path")
+                        else None
+                    ),
                     efficiency_threshold=prof.get("slurm-efficiency-threshold", 0.8),
                 ),
             )
