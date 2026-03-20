@@ -12,7 +12,7 @@ config:
 # Default resources: These are the baseline resources allocated to each rule if not overridden by set-resources.
 default-resources:
   - mem_mb=500 # Memory in megabytes allocated to each task
-  - runtime=600 # Runtime in minutes for each task
+  - runtime=600 # Runtime in seconds for each task (= 10 min default)
   - constraint='' # SLURM constraints (e.g., specific nodes), empty by default
 
 # Resource overrides for specific rules

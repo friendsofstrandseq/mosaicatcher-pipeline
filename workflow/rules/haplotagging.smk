@@ -72,7 +72,7 @@ rule create_haplotag_table:
     conda:
         "../envs/rtools.yaml"
     resources:
-        mem_mb=get_mem_mb_heavy,
+        mem_mb=get_mem_mb_create_haplotag_table,
     script:
         "../scripts/haplotagging_scripts/haplotagTable.snakemake.R"
 

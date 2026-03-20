@@ -123,8 +123,8 @@ rule call_SNVs_bcftools_chrom:
     envmodules:
         "BCFtools/1.21-GCC-13.3.0",
     resources:
-        mem_mb=get_mem_mb_heavy,
-        runtime=180,
+        mem_mb=get_mem_mb_call_snvs,
+        runtime=30,
     shell:
         """
         bcftools mpileup -r {wildcards.chrom} -f {input.fasta} {input.bam} \

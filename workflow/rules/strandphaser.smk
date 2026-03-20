@@ -56,8 +56,8 @@ rule run_strandphaser_per_chrom:
     conda:
         "../envs/rtools.yaml"
     resources:
-        mem_mb=get_mem_mb_heavy,
-        runtime=600,
+        mem_mb=get_mem_mb_strandphaser,
+        runtime=120,
     params:
         input_bam=lambda wc: "{}/{}/selected".format(config["data_location"], wc.sample),
         output=lambda wc: "{}/{}/strandphaser/StrandPhaseR_analysis.{}".format(
