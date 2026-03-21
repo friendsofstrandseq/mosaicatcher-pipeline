@@ -742,7 +742,9 @@ if config["scNOVA"] is True:
                 tmp_merge_df.shape[0]
                 < df_config_files.loc[df_config_files["Sample"] == sample].shape[0]
             ):
-                logger.warning("⚠️  [WARNING] Shape mismatch when merging labels TSV & config TSV — falling back to config cells only.")
+                logger.warning(
+                    "⚠️  [WARNING] Shape mismatch when merging labels TSV & config TSV — falling back to config cells only."
+                )
                 tmp_merge_df = df_config_files.loc[
                     df_config_files["Sample"] == sample, ["Cell"]
                 ]

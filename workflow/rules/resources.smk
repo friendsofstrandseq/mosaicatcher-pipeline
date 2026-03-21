@@ -80,7 +80,6 @@ def get_mem_mb_haplotag_group(wildcards, attempt):
     return min(result, 256000)
 
 
-
 def get_mem_mb_create_haplotag_table(wildcards, attempt):
     """
     Memory for create_haplotag_table (standalone R script).
@@ -93,6 +92,7 @@ def get_mem_mb_create_haplotag_table(wildcards, attempt):
     multipliers = [1.0, 1.5, 2.5, 4.0, 5.0]
     result = int(base_mb * multipliers[min(attempt - 1, 4)])
     return min(result, 60000)
+
 
 def get_mem_mb_single_cell_group(wildcards, attempt):
     """
