@@ -80,6 +80,20 @@ def get_mem_mb_haplotag_group(wildcards, attempt):
     return min(result, 256000)
 
 
+def get_mem_mb_create_haplotag_table(wildcards, attempt):
+    """
+    Memory for create_haplotag_table (standalone R script).
+
+    Empirical data (456 jobs): p95=9,719 MB, max=17,401 MB.
+    The 8GB default causes active OOM failures.
+    Start at 12GB, scale aggressively for retries.
+    """
+    base_mb = 12000
+    multipliers = [1.0, 1.5, 2.5, 4.0, 5.0]
+    result = int(base_mb * multipliers[min(attempt - 1, 4)])
+    return min(result, 60000)
+
+
 def get_mem_mb_single_cell_group(wildcards, attempt):
     """
     Memory for single-cell analysis group (Extract + Segment).
@@ -119,6 +133,17 @@ def get_mem_mb_lightweight_group(wildcards, attempt):
 # ========================================
 
 
+def get_mem_mb_check_sm_tag(wildcards, input, attempt):
+    """Memory for check_sm_tag (standalone, reads BAM header).
+
+    Base 1000 MB + 10% of BAM size for large files, scaled by attempt.
+    """
+    base_mb = max(1000, int(input.size_mb * 0.1))
+    multipliers = [1.0, 1.5, 2.0, 3.0, 5.0]
+    result = int(base_mb * multipliers[min(attempt - 1, 4)])
+    return min(result, 64000)
+
+
 def get_mem_mb(wildcards, attempt):
     """Original function - preserved for ungrouped rules."""
     mem_avail = [2, 4, 8, 16, 64]
@@ -129,3 +154,42 @@ def get_mem_mb_heavy(wildcards, attempt):
     """Original function - preserved for ungrouped rules."""
     mem_avail = [8, 16, 64, 128, 256]
     return mem_avail[min(attempt - 1, 4)] * 1000
+
+
+def get_mem_mb_call_snvs(wildcards, attempt):
+    """
+    Memory for call_SNVs_bcftools_chrom.
+
+    Empirical data (299 jobs): p95=482 MB, max=1,200 MB.
+    Previous 8GB base was 16x over-provisioned.
+    """
+    base_mb = 1000
+    multipliers = [1.0, 2.0, 4.0, 8.0, 16.0]
+    result = int(base_mb * multipliers[min(attempt - 1, 4)])
+    return min(result, 32000)
+
+
+def get_mem_mb_mosaiclassifier(wildcards, attempt):
+    """
+    Memory for mosaiClassifier_calc_probs.
+
+    Empirical data (18 jobs): p95=1,553 MB, max=2,800 MB.
+    Previous 8GB base was 5x over-provisioned.
+    """
+    base_mb = 2500
+    multipliers = [1.0, 2.0, 4.0, 8.0, 16.0]
+    result = int(base_mb * multipliers[min(attempt - 1, 4)])
+    return min(result, 64000)
+
+
+def get_mem_mb_strandphaser(wildcards, attempt):
+    """
+    Memory for run_strandphaser_per_chrom.
+
+    Empirical data (297 jobs): p95=2,798 MB, max=5,500 MB.
+    Previous 8GB base was 2.8x over-provisioned.
+    """
+    base_mb = 4000
+    multipliers = [1.0, 2.0, 4.0, 8.0, 16.0]
+    result = int(base_mb * multipliers[min(attempt - 1, 4)])
+    return min(result, 64000)

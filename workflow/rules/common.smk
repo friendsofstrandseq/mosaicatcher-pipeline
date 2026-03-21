@@ -358,11 +358,8 @@ if config["hgsvc_based_normalized_counts"] is True:
 
 # Ploidy configuration validation
 if config.get("ploidy", True) is False:
-    import sys
-
-    print(
-        "WARNING: Ploidy estimation is disabled. Using default diploid assumption for bcftools regenotyping.",
-        file=sys.stderr,
+    logger.warning(
+        "⚠️  [WARNING] Ploidy estimation is disabled — using default diploid assumption for bcftools regenotyping."
     )
 
 
@@ -745,7 +742,9 @@ if config["scNOVA"] is True:
                 tmp_merge_df.shape[0]
                 < df_config_files.loc[df_config_files["Sample"] == sample].shape[0]
             ):
-                print("WARNING: shape error when merging labels TSV & config TSV")
+                logger.warning(
+                    "⚠️  [WARNING] Shape mismatch when merging labels TSV & config TSV — falling back to config cells only."
+                )
                 tmp_merge_df = df_config_files.loc[
                     df_config_files["Sample"] == sample, ["Cell"]
                 ]
@@ -1048,6 +1047,13 @@ def get_all_plots(wildcards):
         skiprows=13,
         sep="\t",
     )
+
+    # Skip sample entirely if less than 5 cells passed QC, to avoid downstream errors and meaningless outputs
+    if df.shape[0] < 5:
+        logger.warning(
+            f"⚠️  [WARNING] Sample {wildcards.sample} has only {df.shape[0]} cell(s) passing QC (< 5) — skipping all downstream analysis."
+        )
+        return []
 
     dict_cells_nb_per_sample = {k: len(v) for k, v in cell_per_sample.items()}
     samples = list(dict_cells_nb_per_sample.keys())

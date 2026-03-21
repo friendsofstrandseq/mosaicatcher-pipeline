@@ -12,7 +12,7 @@ config:
 # Default resources: These are the baseline resources allocated to each rule if not overridden by set-resources.
 default-resources:
   - mem_mb=500 # Memory in megabytes allocated to each task
-  - runtime=600 # Runtime in minutes for each task
+  - runtime=600 # Runtime in seconds for each task (= 10 min default)
   - constraint='' # SLURM constraints (e.g., specific nodes), empty by default
 
 # Resource overrides for specific rules
@@ -23,7 +23,6 @@ default-resources:
 # Splitting the group is not possible: bam.sort is temp() and gets deleted by
 # the downstream job before the upstream group's postprocessing can check it.
 set-resources:
-
   ashleys_bwa_strandseq_to_reference_alignment:
     constraint: "milan"
   ashleys_samtools_sort_bam:
@@ -95,7 +94,7 @@ slurm-delete-logfiles-older-than: 30 # Delete logs older than 30 days
 # ============================================================
 # Generate reports showing actual vs requested resource usage
 slurm-efficiency-report: true
-slurm-efficiency-report-path: "/scratch/$USER/mosaicatcher_logs/slurm_efficiency_report.txt"
+slurm-efficiency-report-path: "/scratch/$USER/mosaicatcher_logs/slurm_efficiency_reports"
 slurm-efficiency-threshold: 0.8 # Flag jobs using <80% of requested resources
 
 # ============================================================

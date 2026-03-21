@@ -40,8 +40,7 @@ def process_sample_folder(
         else:
             print("No matching index found.")
         if not index:
-            logging.error(f"Could not extract index from {original_sample_name}")
-            sys.exit(1)
+            raise ValueError(f"Could not extract index from {original_sample_name}")
         sample_name = original_sample_name.split(index)[0]
 
     else:
@@ -77,10 +76,9 @@ def process_sample_folder(
                 # Create symlink in the destination directory
                 if os.path.islink(dst_file_path):
                     if not force:
-                        logging.error(
-                            f"File {dst_file_path} already exists. Use --force to overwrite."
+                        raise FileExistsError(
+                            f"File {dst_file_path} already exists. Use force=True to overwrite."
                         )
-                        sys.exit(1)
                     else:
                         logging.info(f"Removing existing symlink: {dst_file_path}")
                         os.remove(dst_file_path)
@@ -104,8 +102,7 @@ def main(
     """
     # Verify source directory exists
     if not os.path.exists(source_base):
-        logging.error(f"Source directory {source_base} does not exist.")
-        sys.exit(1)
+        raise FileNotFoundError(f"Source directory {source_base} does not exist.")
 
     if not dry_run:
         # Create destination base directory if it doesn't exist
@@ -238,13 +235,17 @@ if __name__ == "__main__":
     logging.info(f"Direct folder: {args.direct_folder}")
 
     # Call main with the provided arguments
-    main(
-        args.source,
-        args.destination,
-        args.dry_run,
-        args.only_samples,
-        args.exclude_samples,
-        args.force,
-        args.bypass_prefix,
-        args.direct_folder,
-    )
+    try:
+        main(
+            args.source,
+            args.destination,
+            args.dry_run,
+            args.only_samples,
+            args.exclude_samples,
+            args.force,
+            args.bypass_prefix,
+            args.direct_folder,
+        )
+    except (ValueError, FileExistsError, FileNotFoundError) as e:
+        logging.error(str(e))
+        sys.exit(1)

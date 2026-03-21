@@ -7,7 +7,7 @@ if config["ploidy"] is True:
             "{folder}/{sample}/ploidy/ploidy_detailled.txt",
         log:
             "{folder}/log/estimate_ploidy/{sample}.log",
-        threads: 48
+        threads: 24
         resources:
             mem_mb=get_mem_mb,
         params:

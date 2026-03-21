@@ -7,7 +7,7 @@ rule ashleys_generate_features:
         "{folder}/log/ashleys/{sample}/features.log",
     conda:
         "../../envs/mc_base.yaml"
-    threads: 64
+    threads: 12
     params:
         windows="5000000 2000000 1000000 800000 600000 400000 200000",
         extension=".sort.mdup.bam",
@@ -16,7 +16,7 @@ rule ashleys_generate_features:
         ),
     resources:
         mem_mb=get_mem_mb_heavy,
-        runtime=3600,
+        runtime=60,
     shell:
         "ashleys -j {threads} features -f {params.folder} -w {params.windows} -o {output} --recursive_collect -e {params.extension}"
 
