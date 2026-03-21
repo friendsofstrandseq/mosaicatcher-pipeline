@@ -57,7 +57,7 @@ default-storage-provider: none
 # relative Path(".snakemake/storage"), which Apptainer rejects ("destination must be an
 # absolute path"). Setting an explicit absolute path here fixes the bind mount.
 # Remove once upstream fix is released (https://github.com/snakemake/snakemake/issues/3958)
-# local-storage-prefix: /scratch/$USER/mosaicatcher_storage
+local-storage-prefix: /tmp/snakemake/local-storage
 # remote-job-local-storage-prefix: /scratch/$USER/$JOBID
 
 # Core and job handling
