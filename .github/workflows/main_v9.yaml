@@ -37,7 +37,7 @@ jobs:
         run: |
           tree -h workflow/data
 
-      - uses: mamba-org/setup-micromamba@v2
+      - uses: mamba-org/setup-micromamba@v3
         with:
           environment-name: snakemake_env
           create-args: snakemake snakemake-storage-plugin-http
