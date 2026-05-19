@@ -236,6 +236,24 @@ Make this a single table slide and leave it on screen for a beat — people will
 
 **v8/v9:** three-layer dataclass API: `SnakemakeApi → WorkflowApi → DAGApi`, mirroring load → resolve → execute. Verbose for simple cases (see issue [#2792](https://github.com/snakemake/snakemake/issues/2792)) but type-safe and IDE-discoverable. Worth one slide if anyone in the room embeds Snakemake in a larger tool.
 
+### 4.6b Snakemake 2026 — Munich hackathon + v9.17→v9.21 (1.5 min)
+
+The Snakemake community ran a hackathon at **MDSI / TU Munich, 9–13 March 2026** (40+ participants, fully booked). The BioHackrXiv post-event report ([10.37044/osf.io/h6zqj_v1](https://index.biohackrxiv.org/2026/04/27/h6zqj.html)) calls out three roadmap themes: **core performance on heterogeneous HPC, plugin extensions for domain-specific needs, and lowering the entry barrier for novices.** A burst of releases v9.17 → v9.21 landed tightly around and after the hackathon week.
+
+Concrete additions (verified from the releases.atom feed):
+
+| Version | Date | What it adds |
+|---|---|---|
+| 9.17.0 | 2026-03-13 | **Pluggable metadata persistence** (files or DB); **lambda rule `priority`**; topologically ordered job table; `on...` directive on modules |
+| 9.18.0 | 2026-03-25 | **Storage plugins expose checksums** → cross-workflow caching correctness |
+| 9.19.0 | 2026-03-28 | `profile.yaml` is the **new default filename**; you can pass a YAML file directly instead of a profile directory |
+| 9.20.0 | 2026-05-02 | **Named multi-output caching**; `subpath(..., with_suffix=...)`; ⚠ **`runtime` CLI/profile values now interpreted as minutes (was seconds)** — migration footgun; plugins without settings auto-deploy |
+| 9.21.0 | 2026-05-14 | Filename-prefix helper; tuned SQLite PRAGMAs; **auto-detected network filesystem type** |
+
+The plugin architecture now spans **five orthogonal categories**: executor, storage, logger, **report**, and **scheduler**. Notable plugins this cycle: `snakemake-executor-plugin-cannon` (Harvard auto-partition selection), `snakemake-report-plugin-rocrate` (Workflow-Run RO-Crate provenance, Leo et al. 2024), `snakemake-report-plugin-nanopub`, community MILP scheduler plugin proposed via issue [#3646](https://github.com/snakemake/snakemake/issues/3646).
+
+> **Honesty caveat for the talk:** The slides.com deck `snakemake-intro-updates-2026` is unlisted/403; the items above are reconstructed from the official Snakemake releases feed and the BioHackrXiv hackathon report, not transcribed from Köster's slides. Be explicit about that if asked.
+
 ### 4.7 So what's actually new in v9 specifically? (30 s)
 
 Per the official migration page:
@@ -257,6 +275,7 @@ A "watch out" slide — these all surfaced in MosaiCatcher CI:
 5. Profiles must be updated; old `config.yaml` references dead flags.
 6. CI must install the executor plugin explicitly — `pip install snakemake-executor-plugin-slurm` is no longer implicit.
 7. NCBI / EGA remote providers became **wrappers**, not storage plugins (different API entirely).
+8. **9.20 (May 2026)**: `runtime` values in profiles/CLI now interpreted as **minutes**, not seconds. Audit before upgrading — `runtime: 60` silently changes from 1 min to 1 h.
 
 ---
 

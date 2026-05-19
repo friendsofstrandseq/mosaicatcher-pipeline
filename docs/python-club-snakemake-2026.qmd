@@ -381,15 +381,86 @@ Motivation: v7/v8 synchronous log handlers could crash workflows on monitoring-b
 First plugin: `snakemake-logger-plugin-snkmt` (SQLite/observability backend).
 :::
 
-## 2026 updates from Köster { .smaller }
+## Munich Hackathon, March 2026
 
-::: {.callout-note title="Live content"}
-Pulled from Köster's *snakemake-intro-updates-2026* deck — fill in once research returns.
+::: {.columns}
+
+::: {.column width="55%"}
+**MDSI / TU Munich · 9–13 March · 40+ participants**
+
+Three roadmap themes from the BioHackrXiv report:
+
+::: {.incremental}
+- Core **performance on heterogeneous HPC**
+- Extending the **plugin architecture** for domain-specific extensions
+- **Lowering the entry barrier** for novices, without losing reproducibility
+:::
+:::
+
+::: {.column width="45%"}
+A burst of releases v9.17 → v9.21 landed tightly around and after the hackathon week — most are direct hackathon outputs.
+
+::: {style="font-size: 0.7em; color: #607d8b; margin-top: 1em;"}
+Refs: <br>
+BioHackrXiv [10.37044/osf.io/h6zqj_v1](https://index.biohackrxiv.org/2026/04/27/h6zqj.html) <br>
+Issue [#3807](https://github.com/snakemake/snakemake/issues/3807)
+:::
+:::
+
+::::
+
+::: {.notes}
+The slides.com deck itself returned 403 — what's on the next two slides is reconstructed from the official Snakemake releases.atom feed and the BioHackrXiv post-hackathon report, not transcribed from his slides. Be honest about that if asked.
+:::
+
+## What landed in Snakemake 9.17 → 9.21 (Mar–May 2026) { .smaller }
+
+| Version | Date | Headline change |
+|---------|------|-----------------|
+| **9.17.0** | 2026-03-13 | **Pluggable metadata persistence** (files *or* database) · **lambda rule `priority`** · topologically ordered job table |
+| **9.18.0** | 2026-03-25 | **Storage plugins expose checksums** → cross-workflow cache correctness |
+| **9.19.0** | 2026-03-28 | `profile.yaml` is the **new default filename** · pass a YAML file directly (not a directory) |
+| **9.20.0** | 2026-05-02 | **Named multi-output caching** · `subpath(..., with_suffix=...)` · ⚠ **runtime CLI/profile values now interpreted as minutes (was seconds)** · plugins without settings auto-deploy |
+| **9.21.0** | 2026-05-14 | Filename-prefix helper · tuned SQLite PRAGMAs · **auto-detected network filesystem type** |
+
+::: {.callout-warning title="Footgun"}
+**Runtime unit change in 9.20** — anyone with `runtime: 60` in a profile meant *60 seconds* in 9.19 and earlier; from 9.20 it means *60 minutes*. Audit your profiles when upgrading.
 :::
 
 ::: {.notes}
-PLACEHOLDER — the background research agent is fetching this. Add bullets here before the talk.
-Likely candidates based on roadmap signals: software-deployment plugins, reporting plugins, new storage plugins, Pixi integration, dataset / catalog features, semantic helpers.
+This is the most concrete actionable bullet on the slide — call it out verbally even if you skip the rest of the table.
+:::
+
+## The 2026 plugin ecosystem — five categories
+
+```{mermaid}
+%%| fig-align: center
+flowchart LR
+    SMK[Snakemake 9.x core]
+    SMK --- EX[Executor]
+    SMK --- ST[Storage]
+    SMK --- LG[Logger]
+    SMK --- RP[Report]
+    SMK --- SC[Scheduler]
+    EX --- EX1[slurm · lsf · k8s · googlebatch · azure-batch · flux · htcondor · cannon* · cluster-generic]
+    ST --- ST1[fs · s3 · gcs · http · zenodo · ftp · …]
+    LG --- LG1[snkmt SQLite/TUI · …]
+    RP --- RP1[rocrate* · nanopub* · default HTML]
+    SC --- SC1[greedy · ilp · MILP*]
+    style SMK fill:#e8eaf6,stroke:#3949ab,stroke-width:3px
+    style EX fill:#fff3e0,stroke:#ef6c00
+    style ST fill:#fff3e0,stroke:#ef6c00
+    style LG fill:#fff3e0,stroke:#ef6c00
+    style RP fill:#fff3e0,stroke:#ef6c00
+    style SC fill:#fff3e0,stroke:#ef6c00
+```
+
+::: {style="font-size: 0.7em; color: #607d8b;"}
+\* = new or formalized through the 2025–2026 cycle. **rocrate** = Workflow-Run RO-Crate (FAIR provenance, Leo et al. 2024). **nanopub** = Nanopublications. **cannon** = Harvard auto-partition selection. **MILP** = community scheduler plugin (#3646).
+:::
+
+::: {.notes}
+The deck's biggest single point: in 2026 the plugin architecture has reached five orthogonal categories. RO-Crate report plugin closes the FAIR-provenance loop nicely with the earlier FAIR slide.
 :::
 
 ## v7 → v8 migration footguns
@@ -402,6 +473,7 @@ Likely candidates based on roadmap signals: software-deployment plugins, reporti
 - Profiles must be updated (dead flags)
 - CI must `pip install snakemake-executor-plugin-slurm` explicitly
 - NCBI / EGA remote providers → became **wrappers**, not storage plugins
+- ⚠ **9.20 (May 2026): `runtime` profile values now in minutes, not seconds** — audit profiles
 :::
 
 ::: {.notes}
