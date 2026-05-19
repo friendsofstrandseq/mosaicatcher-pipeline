@@ -1,0 +1,730 @@
+---
+title: "Snakemake in 2026"
+subtitle: "What's new since v7, an honest Nextflow comparison, and EMBL HPC field notes"
+author: "Python Club seminar"
+date: today
+format:
+  revealjs:
+    theme: [default, custom.scss]
+    slide-number: c/t
+    progress: true
+    history: false
+    transition: fade
+    incremental: false
+    code-line-numbers: false
+    highlight-style: github
+    width: 1280
+    height: 800
+    pdf-export: true
+    chalkboard: true
+    menu: true
+    footer: "Python Club · Snakemake · {{< meta date >}}"
+    title-slide-attributes:
+      data-background-color: "#1f2a44"
+revealjs-plugins:
+  - mermaid
+filters:
+  - mermaid
+execute:
+  echo: true
+  eval: false
+---
+
+# Why this talk { background-color="#1f2a44" }
+
+::: {.notes}
+30 seconds. Hook with the pain point. Don't define anything yet — make them remember the last time a pipeline blew up.
+:::
+
+## The pain point
+
+> *"Raise your hand if your last pipeline was a chain of `bash` + `nohup` + a README with the commands in the right order."*
+>
+> *"Keep it up if you've ever lost a week because someone re-ran step 3 with new inputs and forgot to re-run step 4."*
+
+. . .
+
+That's the problem a workflow manager solves.
+
+## Agenda — 40 minutes
+
+| Time | Section |
+|------|---------|
+| 5 min | Workflow managers, FAIR, why bother |
+| 3 min | Snakemake core concepts (refresher) |
+| 10 min | **v7 → v8 → v9**: what actually changed |
+| 9 min | **Snakemake vs Nextflow**: low-level, objective |
+| 5 min | Live demo on EMBL SLURM |
+| 3 min | EMBL HPC checklist |
+| 5 min | Q&A |
+
+::: {.notes}
+This talk is not "which is better". I'll be explicit about what's a fact and what's a tradeoff.
+:::
+
+# What's a workflow manager? { background-color="#1f2a44" }
+
+## Three properties
+
+::: {.incremental}
+- **Declarative** — describe *what* should exist (the outputs), not *how* to get there step by step.
+- **DAG-based** — the tool figures out the dependency graph and what's stale.
+- **Portable** — same workflow definition runs on laptop / SLURM / Kubernetes / AWS Batch. Executor is configuration, not code.
+:::
+
+::: {.notes}
+Anchor these three properties — every later slide is a consequence of one of them.
+:::
+
+## FAIR principles → workflow managers
+
+| FAIR | Workflow-manager equivalent |
+|------|-----------------------------|
+| **F**indable | Workflow Catalog · standard repo layout · Zenodo/CFF citation |
+| **A**ccessible | Git-hosted · containers/conda bundled · reproducible by anyone |
+| **I**nteroperable | Same workflow laptop → SLURM → cloud · standard reports |
+| **R**eusable | Pinned envs · content-addressed outputs · machine-readable provenance |
+
+::: {.notes}
+FAIR was originally about *data*. The WorkflowHub / nf-core / Snakemake communities adopted it for *workflows*.
+:::
+
+## Köster's framing — the triad
+
+> *"We postulate that it is equally important to ensure adaptability and transparency. The former describes the ability to modify the analysis to answer extended or slightly different research questions. The latter describes the ability to understand the analysis in order to judge whether it is not only technically, but methodologically valid."*
+
+::: {style="text-align: right; font-style: italic;"}
+— Mölder et al., F1000Research 10:33 (rolling paper, v3 Sep 2025)
+:::
+
+::: {.fragment}
+**Reproducibility + Adaptability + Transparency**
+:::
+
+::: {.notes}
+Köster doesn't pitch pure FAIR — he uses this triad. Cite the rolling paper v3 from Sep 2025 — most current source.
+:::
+
+## A few numbers
+
+::: {.columns}
+
+::: {.column width="50%"}
+### Snakemake
+- Founding paper: Köster & Rahmann, *Bioinformatics* **2012**
+- >1,000,000 downloads
+- >2,000 citations
+- ~11 new citations / week
+- Rolling F1000 paper, v3 Sep 2025
+:::
+
+::: {.column width="50%"}
+### Nextflow / nf-core
+- Founding paper: Di Tommaso et al., *Nat. Biotechnol.* **2017**
+- nf-core (*Genome Biology* Jul 2025):
+  - **124** curated pipelines
+  - **1400+** modules
+  - **2600** contributors
+  - **10,800** Slack members
+:::
+
+::::
+
+::: {.notes}
+Both are mature, both are in production at EMBL. This sets up the "no which is better" framing.
+:::
+
+# Snakemake core, in 3 minutes { background-color="#1f2a44" }
+
+## The object model — one rule, four ideas
+
+```{.python code-line-numbers="|1|2-3|4-6|7"}
+rule align:
+    input:  "fastq/{sample}.fq.gz"      # wildcards
+    output: "bam/{sample}.bam"
+    threads: 8
+    resources: mem_mb=16_000, runtime=120
+    conda:  "envs/bwa.yaml"             # per-rule software
+    shell:  "bwa mem -t {threads} ref {input} | samtools sort -o {output}"
+```
+
+::: {.notes}
+A Snakefile is just Python with extra top-level constructs. Highlight: rule, wildcards, resources, per-rule env.
+:::
+
+## Pull-based DAG (Make-style)
+
+```{mermaid}
+%%| fig-align: center
+flowchart LR
+    A[fastq/A.fq.gz] --> B[align A]
+    B --> C[bam/A.bam]
+    C --> D[call_variants A]
+    D --> E[vcf/A.vcf]
+    style A fill:#e3f2fd,stroke:#1565c0
+    style C fill:#fff9c4,stroke:#f9a825
+    style E fill:#c8e6c9,stroke:#2e7d32
+```
+
+You ask for **`vcf/A.vcf`**. Snakemake recurses back: *"what do I need? which rule produces it?"* until it hits files that exist.
+
+::: {.fragment}
+**`--dry-run` shows the whole plan before anything executes.**
+:::
+
+::: {.notes}
+This is the single most important concept. It shows up again as the deepest semantic difference vs Nextflow.
+:::
+
+## Reproducibility primitives
+
+- `conda:` / `container:` per rule
+- `--report report.html` — single-file shareable provenance
+- `.snakemake/` tracks code, params, inputs, env hashes → smart rerun
+
+# v7 → v8 → v9: what changed { background-color="#7b1fa2" }
+
+## The headline
+
+::: {.r-fit-text}
+v8 (Jan 2024) was the disruption.
+:::
+
+::: {.r-fit-text}
+v9 (Feb 2025) is mostly invisible.
+:::
+
+. . .
+
+The whole engine was decomposed into a **plugin framework**.
+
+## v7: monolith
+
+```{mermaid}
+%%| fig-align: center
+flowchart TB
+    SMK[Snakemake v7 core]
+    SMK --- SLURM
+    SMK --- DRMAA
+    SMK --- K8S[Kubernetes]
+    SMK --- GLS[Google LifeSciences]
+    SMK --- S3
+    SMK --- GS[Google Storage]
+    SMK --- HTTP
+    SMK --- FTP
+    SMK --- CONDA[conda]
+    SMK --- SING[singularity]
+    SMK --- EM[env-modules]
+    style SMK fill:#fce4ec,stroke:#c2185b,stroke-width:3px
+```
+
+All executors, storage backends, software-deployment in **one package**.
+
+## v8: plugin framework
+
+```{mermaid}
+%%| fig-align: center
+flowchart TB
+    SMK[Snakemake v8/v9 core] --- IF1[interface-executor-plugins]
+    SMK --- IF2[interface-storage-plugins]
+    SMK --- IF3[interface-logger-plugins]
+    IF1 --- E1[plugin-slurm]
+    IF1 --- E2[plugin-kubernetes]
+    IF1 --- E3[plugin-googlebatch]
+    IF1 --- E4[plugin-azure-batch]
+    IF1 --- E5[plugin-flux]
+    IF2 --- S1[plugin-s3]
+    IF2 --- S2[plugin-fs]
+    IF2 --- S3p[plugin-gcs]
+    IF2 --- S4[plugin-zenodo]
+    IF3 --- L1[plugin-snkmt]
+    style SMK fill:#e8eaf6,stroke:#3949ab,stroke-width:3px
+    style IF1 fill:#fff3e0,stroke:#ef6c00
+    style IF2 fill:#fff3e0,stroke:#ef6c00
+    style IF3 fill:#fff3e0,stroke:#ef6c00
+```
+
+::: {.notes}
+Each plugin is `pip install`-able. Settings declared as `@dataclass`, become CLI flags automatically.
+:::
+
+## Executor plugins — how it looks
+
+```{.bash code-line-numbers="|1|2"}
+pip install snakemake-executor-plugin-slurm
+snakemake --executor slurm --jobs 100 ...
+```
+
+::: {.fragment}
+**Available officially (late 2025):** `slurm`, `lsf`, `htcondor`, `kubernetes`, `googlebatch`, `azure-batch`, `flux`, `cluster-generic`
+
+Catalog: <https://snakemake.github.io/snakemake-plugin-catalog/>
+:::
+
+::: {.notes}
+SLURM plugin submits Snakemake itself as the job script — necessary so `run:` blocks and wrappers work remotely. Installing the executor plugin also installs a companion `jobstep` plugin used on the worker.
+:::
+
+## Storage plugins — the `storage` directive
+
+::: {.columns}
+
+::: {.column width="50%"}
+**v7 — imports inside Snakefile**
+```{.python}
+from snakemake.remote.S3 \
+    import RemoteProvider
+S3 = RemoteProvider()
+
+rule x:
+    input: S3.remote(
+        "bucket/in.txt")
+```
+:::
+
+::: {.column width="50%"}
+**v8/v9 — directive**
+```{.python}
+storage:
+    provider="s3",
+    max_requests_per_second=10
+
+rule x:
+    input: storage(
+        "s3://bucket/in.txt")
+```
+:::
+
+::::
+
+. . .
+
+Or workflow-wide: `--default-storage-provider s3 --default-storage-prefix s3://bucket/`
+
+::: {.notes}
+HPC-critical plugin: `snakemake-storage-plugin-fs` — stages data between shared FS and local scratch. See HPC section.
+:::
+
+## Software deployment unified
+
+::: {.columns}
+
+::: {.column width="50%"}
+**v7**
+```{.bash}
+--use-conda
+--use-singularity
+--use-envmodules
+--conda-frontend mamba
+```
+:::
+
+::: {.column width="50%"}
+**v8/v9 — one flag**
+```{.bash}
+--sdm conda
+--sdm apptainer
+--sdm conda apptainer
+--sdm env-modules
+```
+:::
+
+::::
+
+::: {.fragment}
+- `--conda-frontend mamba` **gone** — `libmamba` is the default solver.
+- Roadmap: software-deployment will itself become a plugin (Pixi backend on the way).
+:::
+
+## CLI rename cheat sheet { .scrollable }
+
+| v7 | v8 / v9 |
+|----|---------|
+| `--cluster "sbatch ..."` | `--executor cluster-generic --cluster-generic-submit-cmd "sbatch ..."` |
+| `--drmaa` | removed (pick an executor plugin) |
+| `--kubernetes` | `--executor kubernetes` |
+| `--google-lifesciences` | `--executor googlebatch` |
+| `--tibanna` | `--executor tibanna` |
+| `--use-conda` | `--sdm conda` |
+| `--use-singularity` | `--sdm apptainer` |
+| `--singularity-args` | `--apptainer-args` |
+| `--conda-frontend mamba` | **removed** |
+| `--restart-times N` | `--retries N` |
+
+. . .
+
+**Profiles are now versioned.** `config.v8+.yaml` overrides `config.yaml` on v8+.
+
+::: {.notes}
+This is the slide people will photograph. Leave it on screen for a beat. Old v7 profiles do not work as-is on v8.
+:::
+
+## Reports got nicer
+
+- `category` / `subcategory` / `labels` as **functions of wildcards** → per-sample dynamic labelling
+- Automatic toggle switches when items differ on one labelled dimension
+- First-class **Datavzrd** embedding via `report(directory(...))`
+- `--report-stylesheet custom.css` for branding
+- `--report-after-run` auto-generates on success (9.x)
+
+## What's actually new in v9?
+
+> *"Between Snakemake 8 and Snakemake 9, there is only a single breaking change in how custom loggers are provided, such that hardly any user should be affected."*
+>
+> — official migration guide
+
+::: {.fragment}
+The change: **logger plugins** (`snakemake-logger-plugin-<name>`)
+
+Motivation: v7/v8 synchronous log handlers could crash workflows on monitoring-backend hiccups.
+
+First plugin: `snakemake-logger-plugin-snkmt` (SQLite/observability backend).
+:::
+
+## 2026 updates from Köster { .smaller }
+
+::: {.callout-note title="Live content"}
+Pulled from Köster's *snakemake-intro-updates-2026* deck — fill in once research returns.
+:::
+
+::: {.notes}
+PLACEHOLDER — the background research agent is fetching this. Add bullets here before the talk.
+Likely candidates based on roadmap signals: software-deployment plugins, reporting plugins, new storage plugins, Pixi integration, dataset / catalog features, semantic helpers.
+:::
+
+## v7 → v8 migration footguns
+
+::: {.incremental}
+- `dynamic()` outputs → use **checkpoints**
+- `version:` directive removed → use `conda:` / `container:`
+- `subworkflow:` removed → use `module:` + `use rule * from foo as foo_*`
+- `from snakemake.remote.*` → `storage` directive
+- Profiles must be updated (dead flags)
+- CI must `pip install snakemake-executor-plugin-slurm` explicitly
+- NCBI / EGA remote providers → became **wrappers**, not storage plugins
+:::
+
+::: {.notes}
+All of these surfaced in MosaiCatcher CI. The CI install step is the most common silent failure.
+:::
+
+# Snakemake vs Nextflow { background-color="#2e7d32" }
+
+## Framing slide
+
+::: {.r-fit-text}
+No "which is better".
+:::
+
+::: {.r-fit-text .fragment}
+Compare on technical primitives,
+:::
+
+::: {.r-fit-text .fragment}
+pick on **fit**, not on **taste**.
+:::
+
+::: {.notes}
+Set the tone explicitly. Both are mature, both run in production at EMBL.
+:::
+
+## The deepest difference: dataflow model
+
+::: {.columns}
+
+::: {.column width="50%"}
+### Snakemake — pull
+- **Target-driven** (Make-style)
+- You request an output file
+- Tool recurses back: *"what do I need?"*
+- Bottoms out at existing inputs
+- Mental model: **"what file do I want?"**
+:::
+
+::: {.column width="50%"}
+### Nextflow — push
+- **Channel-driven** (Kahn / CSP / dataflow)
+- `process`es connected by `channel`s
+- Values flow asynchronously
+- A `process` fires when each input channel has a record
+- Mental model: **"what stream into what process?"**
+:::
+
+::::
+
+::: {.notes}
+This explains every other downstream difference. Spend a beat here.
+:::
+
+## DAG construction
+
+::: {.columns}
+
+::: {.column width="50%"}
+### Snakemake
+- **Static, up-front**
+- `--dry-run` shows the full plan
+- `--dag` / `--rulegraph` → Graphviz
+- Conditional flow via Python (input functions)
+- **Checkpoints** when output contents drive downstream inputs
+:::
+
+::: {.column width="50%"}
+### Nextflow
+- **Dynamic, at runtime**
+- Channels evaluated lazily as records arrive
+- Scatter/gather from operators (`splitFastq`, `groupTuple`)
+- `-preview`, `-with-dag` are approximations
+- True graph only exists once channels emit
+:::
+
+::::
+
+## Language & tooling
+
+| | Snakemake | Nextflow |
+|---|---|---|
+| Host language | Python-embedded DSL | Groovy DSL2 on the JVM |
+| Runtime | CPython | **Java 17+** (since 25.04, May 2025) |
+| Debugging | `pdb` + `--debug` + `--printshellcmds` | log-driven via `work/.command.{sh,log}` |
+| IDE | Python ecosystem + `snakefmt` | Seqera VS Code Nextflow Language Server |
+
+::: {.fragment}
+::: {.callout-warning title="Myth-buster"}
+*"Nextflow needs Java"* — **true**. Specifically Java 17+ since Nextflow 25.04 (May 2025). Java 11 is no longer supported.
+:::
+:::
+
+## Resume / cache — the myth-buster slide
+
+::: {.columns}
+
+::: {.column width="50%"}
+### Snakemake
+- File **timestamps + tracked metadata** (`.snakemake/`)
+- Rerun triggers: `mtime`, `params`, `input`, `software-env`, `code`
+- Configurable: `--rerun-triggers ...`
+- *Make pitfall:* touching an input invalidates downstream
+:::
+
+::: {.column width="50%"}
+### Nextflow
+- Hash in `.nextflow/cache/<session>/` (LevelDB)
+- Hashes script body, input values, **file attributes (path/size/mtime)** — *not contents* by default
+- `cache 'deep'` → true content hash
+- `cache 'lenient'` → relaxed for shared FS
+- Debug: `-dump-hashes`
+:::
+
+::::
+
+. . .
+
+::: {.callout-warning title="Myth-buster"}
+*"Nextflow -resume is content-hashed, immune to mtime issues"* — **partially false**. Default is file *attributes* (incl. mtime); content hashing is opt-in via `cache 'deep'`. Shared-FS mtime jitter is a documented cause of spurious cache misses.
+:::
+
+## Executor support matrix { .scrollable }
+
+| Backend | Snakemake | Nextflow |
+|---------|-----------|----------|
+| SLURM | ✅ `-slurm` | ✅ `slurm` |
+| LSF | ✅ `-lsf` | ✅ `lsf` |
+| SGE / PBS / OAR / Moab / NQSII | community | ✅ all built-in |
+| HTCondor | ✅ `-htcondor` | ✅ `condor` |
+| Kubernetes | ✅ `-kubernetes` | ✅ `k8s` |
+| Google Batch | ✅ `-googlebatch` | ✅ `google-batch` |
+| Azure Batch | ✅ `-azure-batch` | ✅ `azurebatch` |
+| **AWS Batch** | ❌ no official plugin | ✅ `awsbatch` (first-class) |
+| Flux | ✅ `-flux` | ✅ `flux` |
+| TES | community | ✅ `tes` |
+
+::: {.fragment}
+::: {.callout-warning title="Myth-buster"}
+*"Snakemake can't do cloud"* — **false**. Kubernetes / Google Batch / Azure Batch are official. *"Snakemake can't do AWS Batch"* — closer to true; no official plugin (use K8s-on-EKS, TES, or community `pcluster-slurm`).
+:::
+:::
+
+## Software deployment & containers
+
+| | Snakemake | Nextflow / nf-core |
+|---|---|---|
+| Per-rule conda | `conda: "envs/x.yaml"` | `conda` directive |
+| Per-rule container | `container: "docker://..."` | `container` directive |
+| Compose conda + container | `--sdm conda apptainer` | engine + conda |
+| Curated registry | snakemake-wrappers | BioContainers · mulled · **Seqera Containers** |
+| Build on demand | — | **Wave** (OSS) |
+| POSIX over S3/GCS | — | **Fusion** (commercial) |
+
+::: {.fragment}
+::: {.callout-warning title="Myth-buster"}
+*"Wave and Fusion are both Seqera commercial"* — **partially false**. **Wave is open-source** (Apache-2.0). Fusion is part of the commercial Seqera Platform.
+:::
+:::
+
+## Reports & observability
+
+::: {.columns}
+
+::: {.column width="50%"}
+### Snakemake
+- `--report report.html` — single-file
+- Provenance · rule graph · `report()` outputs
+- Per-job `benchmark:` TSV
+- No first-party control plane
+:::
+
+::: {.column width="50%"}
+### Nextflow
+- `-with-report` · `-with-trace` · `-with-timeline` · `-with-dag` · `-with-weblog`
+- **Seqera Platform** (formerly Tower)
+- Tower OSS (MPL-2.0) · Platform commercial
+- Persistent multi-user views
+:::
+
+::::
+
+## Ecosystem & community
+
+::: {.columns}
+
+::: {.column width="50%"}
+### nf-core (Jul 2025)
+- **124** curated pipelines
+- **1,400+** modules
+- **70+** subworkflows
+- Strict template & lint regime
+- `nf-test` is the standard
+:::
+
+::: {.column width="50%"}
+### Snakemake
+- **Workflow Catalog** (static index)
+- `snakemake-workflows` org: ~28 reference pipelines
+- **snakemake-wrappers**: hundreds, versioned per tool
+- More federated, less curated
+:::
+
+::::
+
+::: {.fragment}
+**Honest summary:** nf-core sets a higher bar for pipeline standardization. Snakemake is broader at the wrapper level, less curated at the pipeline level.
+:::
+
+## When does each shine?
+
+::: {.columns}
+
+::: {.column width="50%"}
+### Snakemake fits when…
+- Team is **Python-native**
+- Pipeline is **target / file-driven**
+- Debugging needs interactive Python
+- You want the **DAG up front**
+- One Snakefile readable end-to-end
+:::
+
+::: {.column width="50%"}
+### Nextflow fits when…
+- Team has **Java/Groovy/Scala** people
+- Pipeline is **stream / event-driven**
+- **AWS Batch / Fusion** matter
+- You want **nf-core** off-the-shelf
+:::
+
+::::
+
+# EMBL HPC: 5 things to check { background-color="#e65100" }
+
+## The 5-point checklist
+
+::: {.incremental}
+1. **Throttle scheduler submissions** — `max-jobs-per-second: 10`
+2. **Stage compute through scratch** — `default-storage-provider: fs` + `local-storage-prefix: /scratch/$USER/<wf>`
+3. **Remove `input-output`** from `shared-fs-usage` — otherwise step 2 is bypassed
+4. **Enable Snakemake output cache** — `SNAKEMAKE_OUTPUT_CACHE=/scratch_cached/<group>/snakemake_cache`
+5. **Share conda + apptainer caches** — group-writable parallel FS, **setgid bit** (`chmod 2775`)
+:::
+
+::: {.notes}
+Full draft in `docs/hpc-pipeline-optimization_ongoing.md` (1241 lines). These 5 are highest impact.
+:::
+
+## The whole story in 5 lines
+
+```{.yaml filename="profile/config.yaml"}
+executor: slurm
+default-storage-provider: fs
+local-storage-prefix: /scratch/$USER/snakemake_test/local
+slurm-efficiency-report: true
+max-jobs-per-second: 10
+```
+
+. . .
+
+That's it. Everything else is per-rule resources.
+
+## Storage tier cheat sheet
+
+| Data type | Tier | Why |
+|-----------|------|-----|
+| Reference genomes | Cached parallel FS | Read 100× during alignment |
+| BAM / CRAM intermediates | Parallel FS | High-throughput sequential writes |
+| Computed indexes (BWA, STAR) | Cached parallel FS | Repeated reads, expensive to rebuild |
+| conda / container caches | Parallel FS | Shared across users |
+| Temp / sorting buffers | **Local scratch** | Ultra-fast, job-local |
+
+## Common pitfalls
+
+::: {.incremental}
+- **Stale `.snakemake/` locks** when two users share a checkout → per-user `--workflow-profile`
+- **Conda env build races** → pre-build with `--conda-create-envs-only`, share `conda-prefix`
+- **`$JOBID` not expanded** in scratch paths → upgrade to Snakemake **9.3.4+**
+- **`--conda-frontend mamba` in profile** → warning on v8, error on v9, just delete it
+- **Old v7 `--cluster "sbatch ..."` in CI** → silently broken on v8, replace with `--executor slurm`
+:::
+
+# Live demo { background-color="#1f2a44" }
+
+## What you'll see (~5 min)
+
+Repo path: **`dev/snakemake-v9-features/`**
+
+::: {.incremental}
+- Minimal 5-rule workflow
+- `group: "processing"` keyword — multiple rules in one SLURM job
+- `fs` storage provider — auto-stage between `/g/...` and `/scratch/$USER/...`
+- `slurm-efficiency-report: true` — flags under-utilized jobs (<80%)
+- Scales 3 → 100 samples by changing one config line
+:::
+
+::: {.notes}
+Have the screen-recording fallback ready. If queue is slow, switch at t=2:30.
+:::
+
+# Q&A { background-color="#1f2a44" }
+
+## Further reading
+
+- Mölder et al. 2021 (rolling, v3 Sep 2025) — <https://doi.org/10.12688/f1000research.29032.3>
+- Snakemake migration guide — <https://snakemake.readthedocs.io/en/stable/getting_started/migration.html>
+- Plugin catalog — <https://snakemake.github.io/snakemake-plugin-catalog/>
+- Köster's slides hub — <https://slides.com/johanneskoester>
+- ISMB/ECCB 2021 keynote — <https://www.youtube.com/watch?v=LchfsoH1ITg>
+- Workflow Catalog — <https://snakemake.github.io/snakemake-workflow-catalog/>
+- nf-core paper (Jul 2025) — <https://link.springer.com/article/10.1186/s13059-025-03673-9>
+- This deck's source — `docs/python-club-snakemake-2026.{md,qmd}`
+
+## Thank you
+
+::: {.r-fit-text}
+Questions?
+:::
+
+::: {style="text-align: center; margin-top: 2em;"}
+Deck + speaker notes:
+
+`docs/python-club-snakemake-2026.{md,qmd}`
+
+HPC long-form: `docs/hpc-pipeline-optimization_ongoing.md`
+:::

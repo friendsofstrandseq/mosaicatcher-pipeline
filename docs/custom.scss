@@ -1,0 +1,81 @@
+/* Custom theme for the Python Club Snakemake deck
+   Used by docs/python-club-snakemake-2026.qmd */
+
+/*-- scss:defaults --*/
+$body-bg: #fdfdfd;
+$body-color: #1a202c;
+$link-color: #2e7d32;
+$presentation-heading-color: #1f2a44;
+$presentation-heading-font-weight: 600;
+$presentation-font-size-root: 30px;
+$code-block-bg: #f5f7fa;
+$code-block-font-size: 0.78em;
+
+/*-- scss:rules --*/
+
+/* Tighten section-divider slides */
+.reveal section[data-background-color] h1 {
+  color: #ffffff;
+  font-weight: 700;
+  border-bottom: none;
+}
+
+/* Slightly smaller tables to fit dense comparison content */
+.reveal table {
+  font-size: 0.78em;
+  border-collapse: collapse;
+  margin: 0.4em auto;
+}
+.reveal table th {
+  background: #eceff1;
+  border-bottom: 2px solid #1f2a44;
+  padding: 0.35em 0.6em;
+}
+.reveal table td {
+  padding: 0.3em 0.6em;
+  vertical-align: top;
+}
+
+/* Callouts a touch more compact */
+.reveal .callout {
+  font-size: 0.85em;
+  margin: 0.6em 0;
+}
+
+/* Code blocks: smaller mono so a full rule fits without overflow */
+.reveal pre code {
+  font-size: 0.82em;
+  line-height: 1.3;
+}
+
+/* Footer */
+.reveal .footer {
+  font-size: 0.55em;
+  color: #607d8b;
+}
+
+/* Fit-text headlines get a touch of weight */
+.reveal .r-fit-text {
+  font-weight: 700;
+  color: #1f2a44;
+  margin: 0.4em 0;
+}
+
+/* Mermaid container centered, max-height to avoid overflow */
+.reveal .mermaid {
+  text-align: center;
+  max-height: 580px;
+}
+
+/* Two-column tweak: narrower gutter, tighter top padding */
+.reveal .columns {
+  gap: 1.2em;
+}
+
+/* Make .smaller a bit more usable for slides with lots of text */
+.reveal .slide.smaller p,
+.reveal .slide.smaller li,
+.reveal .slide.smaller td,
+.reveal .slide.smaller th {
+  font-size: 0.85em;
+}
