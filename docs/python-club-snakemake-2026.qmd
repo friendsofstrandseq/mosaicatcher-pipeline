@@ -55,12 +55,11 @@ Wratten, Wilm, Göke — *Nat. Methods* 2021 · [10.1038/s41592-021-01254-9](htt
 
 ## Agenda { background-color="#34495E" }
 
-::: {.agenda-grid}
-- <i class="mdi mdi-rocket-launch"></i>&nbsp;**Snakemake refresher** — Köster-style — *4 min*
-- <i class="mdi mdi-puzzle"></i>&nbsp;**v7 → v9** — what actually changed — *10 min*
-- <i class="mdi mdi-scale-balance"></i>&nbsp;**vs Nextflow** — low-level, objective — *9 min*
-- <i class="mdi mdi-server-network"></i>&nbsp;**EMBL HPC** — caching, storage, grouping, EESSI — *10 min*
-- <i class="mdi mdi-code-tags"></i>&nbsp;**Code examples** — *7 min*
+::: {.agenda-center}
+- <i class="mdi mdi-rocket-launch"></i>&nbsp;**Snakemake refresher** — Köster-style
+- <i class="mdi mdi-puzzle"></i>&nbsp;**v7 → v9 ·  2022 → 2026** — what actually changed
+- <i class="mdi mdi-scale-balance"></i>&nbsp;**vs Nextflow** — low-level, objective
+- <i class="mdi mdi-server-network"></i>&nbsp;**EMBL HPC** — caching · storage · grouping · arrays · EESSI
 :::
 
 # {.section-divider background-color="#208F6E"}
@@ -118,6 +117,44 @@ Wratten, Wilm, Göke — *Nat. Methods* 2021 · [10.1038/s41592-021-01254-9](htt
 Adapted from J. Köster · <em>Snakemake intro · updates 2026</em> · Mölder et al., F1000Research v3 (2025)
 :::
 
+## Define workflows in terms of rules
+
+::: {.columns}
+::: {.column width="55%"}
+```{.python}
+rule mytask:
+    input:
+        "data/{sample}.txt"
+    output:
+        "result/{sample}.txt"
+    log:
+        "logs/{sample}.log"
+    params:
+        threshold = 0.05
+    resources:
+        mem_mb = 2_000,
+        runtime = 30
+    shell:
+        "some-tool {input} > {output} 2> {log}"
+```
+:::
+
+::: {.column width="45%"}
+<div class="koester-props">
+<div class="koester-row"><i class="mdi mdi-pencil"></i><span><b>rule name</b><br/><em>how to create output from input</em></span></div>
+<div class="koester-spacer">defines</div>
+<div class="koester-row"><i class="mdi mdi-arrow-down-bold"></i><span><code>input</code> · <code>output</code></span></div>
+<div class="koester-row"><i class="mdi mdi-text-box"></i><span><code>log</code> files</span></div>
+<div class="koester-row"><i class="mdi mdi-tune"></i><span><code>params</code></span></div>
+<div class="koester-row"><i class="mdi mdi-cpu-64-bit"></i><span><code>resources</code></span></div>
+</div>
+:::
+:::
+
+::: {style="text-align: right; font-size: 0.55em; margin-top: 0.4em; color: #7f8c8d;"}
+Adapted from J. Köster · <em>Snakemake intro · updates 2026</em>
+:::
+
 ## One rule, four ideas
 
 ::: {.four-ideas}
@@ -166,37 +203,27 @@ rule align:
 ## Wildcards → DAG → dry-run
 
 ::: {.columns}
-::: {.column width="50%"}
-You request **an output file** → Snakemake recurses back through rules until it hits files that already exist. The DAG is built **statically**.
+::: {.column width="42%"}
+You request **an output file** → Snakemake recurses back through rules until it hits files that exist. The DAG is built **statically**.
 
 ```bash
-snakemake results/cohort.vcf --dry-run
-snakemake --rulegraph | dot -Tpng > rules.png
+snakemake results.txt --dry-run
+snakemake --rulegraph | dot -Tsvg > rules.svg
 ```
 
-<div style="background: #e8f5f0; border-left: 4px solid #208F6E; padding: 0.6em 0.9em; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 0.7em; margin-top: 0.6em;">
-<strong>Job stats</strong> &nbsp; <code>align</code> 96 · <code>call_snvs</code> 96 · <code>merge_vcfs</code> 1 &nbsp;·&nbsp; <strong>total</strong> 193
+<div style="background: #e8f5f0; border-left: 4px solid #208F6E; padding: 0.55em 0.9em; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 0.68em; margin-top: 0.6em;">
+<strong>Job stats</strong> · <code>align</code> 96 · <code>call_snvs</code> 96 · <code>merge_vcfs</code> 1 · <strong>total</strong> 193
 </div>
+
+::: {style="margin-top: 0.5em; font-size: 0.7em; color: #7f8c8d;"}
+DAG image: NBIS reproducible-research course · MRSA tutorial rulegraph
+:::
 :::
 
-::: {.column width="50%"}
-```{mermaid}
-%%| fig-width: 5
-flowchart TD
-  A1["fastq/A.fq.gz"]:::input --> R1["<b>align</b><br/>{sample}=A"]:::rule
-  A2["fastq/B.fq.gz"]:::input --> R2["<b>align</b><br/>{sample}=B"]:::rule
-  A3["fastq/C.fq.gz"]:::input --> R3["<b>align</b><br/>{sample}=C"]:::rule
-  R1 --> S1["call_snvs A"]:::rule
-  R2 --> S2["call_snvs B"]:::rule
-  R3 --> S3["call_snvs C"]:::rule
-  S1 --> M["<b>merge_vcfs</b>"]:::rule
-  S2 --> M
-  S3 --> M
-  M --> O["results/cohort.vcf"]:::output
-  classDef input fill:#e3f2fd,stroke:#1565c0,color:#0d47a1
-  classDef rule fill:#e8f5f0,stroke:#208F6E,color:#0f3a30
-  classDef output fill:#fff3e0,stroke:#E67E22,color:#6e3906
-```
+::: {.column width="58%"}
+<img src="https://nbis-reproducible-research.readthedocs.io/en/course_2104/images/rulegraph_mrsa.svg"
+     style="width: 100%; max-height: 580px; background: white; padding: 8px; border-radius: 6px;"
+     alt="Snakemake rulegraph example"/>
 :::
 :::
 
@@ -204,15 +231,16 @@ flowchart TD
 
 ::: {.columns}
 ::: {.column width="50%"}
-<h4 style="color: #208F6E;"><i class="mdi mdi-anvil"></i>&nbsp; Per-rule software</h4>
+<h4 style="color: #208F6E;"><i class="mdi mdi-anvil"></i>&nbsp; Per-rule software · 3 options</h4>
 
 ```python
 rule call_snvs:
-    container: "docker://broadinstitute/gatk:4.5"
-    conda: "envs/gatk.yaml"
+    conda:      "envs/gatk.yaml"
+    container:  "docker://broadinstitute/gatk:4.5"
+    envmodules: "GATK/4.5"
     shell: "gatk HaplotypeCaller ..."
 ```
-Pinned envs solve once, cached forever (see HPC section).
+Pick one or compose (`--sdm conda apptainer`).
 :::
 
 ::: {.column width="50%"}
@@ -239,7 +267,7 @@ snakemake --report report.html --report-after-run
 <i class="mdi mdi-puzzle" style="font-size: 4em; color: #fff;"></i>
 
 <h1 style="color: #fff;">v7 → v9</h1>
-<p style="color: #e8d5f5; font-size: 0.7em;">v8 (Jan 2024) was the re-architecture · v9 is mostly invisible</p>
+<p style="color: #e8d5f5; font-size: 0.7em;">2022 → 2026 · v8 (Jan 2024) was the re-architecture · v9 (Feb 2025) is mostly invisible</p>
 :::
 
 ## Monolith → plugin framework
@@ -291,7 +319,7 @@ snakemake --executor slurm --jobs 100 \
 :::
 ::: {.column width="20%"}
 ::: {.exec-card}
-<i class="mdi mdi-server exec-icon"></i>
+<i class="mdi mdi-server-network exec-icon"></i>
 <div class="exec-label">LSF · HTCondor</div>
 <code>lsf · htcondor</code>
 :::
@@ -326,32 +354,55 @@ snakemake --executor slurm --jobs 100 \
 
 ## Storage — in practice
 
-<h4 style="color: #8E44AD;"><i class="mdi mdi-database"></i>&nbsp; The `storage` directive</h4>
+::: {.columns}
+::: {.column width="55%"}
+<h4 style="color: #8E44AD; margin-top: 0;"><i class="mdi mdi-database"></i>&nbsp; Concrete: a reference + run from S3</h4>
 
-```python
-storage:
+```{.python}
+storage s3_aws:
     provider="s3",
-    max_requests_per_second=10
+    max_requests_per_second=10,
+    endpoint_url="https://s3.eu-central-1.amazonaws.com"
 
-rule fetch:
-    input:  storage("s3://bucket/in.txt")
-    output: "local/in.txt"
+rule align:
+    input:
+        reads = storage.s3_aws("s3://my-bucket/run42/{sample}.fq.gz"),
+        ref   = storage.s3_aws("s3://refs/hg38.fa")
+    output:
+        storage.s3_aws("s3://my-bucket/run42/{sample}.bam")
+    threads: 8
+    conda:     "envs/bwa.yaml"
+    container: "docker://biocontainers/bwa:0.7.17"
+    shell:
+        "bwa mem -t {threads} {input.ref} {input.reads} | "
+        "samtools sort -o {output}"
 ```
-
-::: {style="margin-top: 0.8em;"}
-**Workflow-wide:**
 :::
 
+::: {.column width="45%"}
+<h4 style="color: #8E44AD; margin-top: 0;"><i class="mdi mdi-flash"></i>&nbsp; Workflow-wide</h4>
+
 ```bash
-snakemake --default-storage-provider s3 \
-          --default-storage-prefix s3://my-bucket/run42/
+snakemake \
+  --default-storage-provider s3 \
+  --default-storage-prefix s3://bucket/run42/
 ```
+
+<div style="margin-top: 0.8em; padding: 0.5em 0.8em; background: #f4ecf7; border-left: 4px solid #8E44AD; border-radius: 4px; font-size: 0.85em;">
+<i class="mdi mdi-information"></i>&nbsp; Storage plugins available: <code>fs</code> · <code>s3</code> · <code>gcs</code> · <code>azure</code> · <code>http</code> · <code>ftp</code> · <code>zenodo</code> · …
+</div>
+
+<div style="margin-top: 0.5em; padding: 0.5em 0.8em; background: #e8f5f0; border-left: 4px solid #208F6E; border-radius: 4px; font-size: 0.78em;">
+<i class="mdi mdi-tag"></i>&nbsp; v9.18: storage plugins now expose **checksums** → cross-workflow caching is correctness-safe
+</div>
+:::
+:::
 
 ## Software deployment — one flag
 
 ::: {.columns}
-::: {.column width="50%"}
-<h4 style="color: #8E44AD;">v7 — many flags</h4>
+::: {.column width="48%"}
+<h4 style="color: #8E44AD; margin-top: 0;">v7 — many flags</h4>
 ```bash
 --use-conda
 --use-singularity
@@ -359,19 +410,31 @@ snakemake --default-storage-provider s3 \
 --conda-frontend mamba
 ```
 :::
-::: {.column width="50%"}
-<h4 style="color: #8E44AD;">v8 / v9 — one flag</h4>
+::: {.column width="52%"}
+<h4 style="color: #8E44AD; margin-top: 0;">v8 / v9 — one flag</h4>
 ```bash
---sdm conda
---sdm apptainer
---sdm conda apptainer
---sdm env-modules
+--sdm conda         # conda env per rule
+--sdm apptainer     # Apptainer/Singularity
+--sdm env-modules   # HPC env-modules (EESSI…)
+--sdm conda apptainer    # compose
 ```
 :::
 :::
 
-::: {style="margin-top: 1.2em;"}
-<i class="mdi mdi-information" style="color: #8E44AD;"></i>&nbsp; `--conda-frontend mamba` removed — `libmamba` is the default solver · Pixi backend on the roadmap.
+::: {style="margin-top: 1em;"}
+**Per-rule directives — all three are supported simultaneously:**
+:::
+
+```{.python}
+rule align:
+    conda:      "envs/bwa.yaml"                  # ◀ conda
+    container:  "docker://biocontainers/bwa:0.7.17"  # ◀ container
+    envmodules: "BWA/0.7.17", "SAMtools/1.18"    # ◀ env-modules
+    shell: "bwa mem ..."
+```
+
+::: {style="margin-top: 0.6em; font-size: 0.82em;"}
+<i class="mdi mdi-information" style="color: #8E44AD;"></i>&nbsp; `--conda-frontend mamba` **removed** — `libmamba` is the default solver · Pixi backend on the roadmap.
 :::
 
 ## CLI rename — what to change in your profile
@@ -392,27 +455,66 @@ snakemake --default-storage-provider s3 \
 
 ## What actually matters in v9.x
 
+::: {.v9-grid}
 ::: {.columns}
-::: {.column width="50%"}
-<h4 style="color: #8E44AD;"><i class="mdi mdi-star"></i>&nbsp; New capabilities</h4>
+::: {.column width="33%"}
+::: {.v9-card}
+<i class="mdi mdi-puzzle v9-icon"></i>
+<div class="v9-title">Plugins</div>
+<ul>
+<li>5 categories: exec, storage, **logger**, **report**, **scheduler**</li>
+<li>plugins without settings <em>auto-deploy</em></li>
+</ul>
+:::
+:::
 
-- **Pluggable metadata persistence** — `.snakemake/` to files *or* DB
-- **Cross-workflow caching** with storage-plugin checksums
-- **Named multi-output caching**
-- **Logger plugins** — observability (snkmt SQLite/TUI)
-- **Report plugins** — RO-Crate (FAIR) · Nanopub
+::: {.column width="33%"}
+::: {.v9-card}
+<i class="mdi mdi-cached v9-icon"></i>
+<div class="v9-title">Performance &amp; cache</div>
+<ul>
+<li>storage-plugin **checksums** → cross-workflow caching is correctness-safe</li>
+<li>**named multi-output** caching</li>
+<li>auto-detected network FS type</li>
+</ul>
+:::
+:::
+
+::: {.column width="33%"}
+::: {.v9-card}
+<i class="mdi mdi-shield-check v9-icon"></i>
+<div class="v9-title">Provenance</div>
+<ul>
+<li>**`--report-after-run`** (9.1) auto-generates the HTML</li>
+<li>**RO-Crate** &amp; **nanopub** report plugins *(WIP)*</li>
+</ul>
+:::
+:::
+:::
+
+::: {.columns style="margin-top: 1em;"}
+::: {.column width="50%"}
+::: {.v9-card .v9-card-wide}
+<i class="mdi mdi-tools v9-icon"></i>
+<div class="v9-title">Developer UX</div>
+<ul>
+<li>`profile.yaml` is the new default filename · pass a YAML file directly</li>
+<li>`subpath(with_suffix=...)` helper</li>
+<li>**pluggable metadata persistence** — `.snakemake/` to files *or* DB</li>
+</ul>
+:::
 :::
 
 ::: {.column width="50%"}
-<h4 style="color: #8E44AD;"><i class="mdi mdi-tools"></i>&nbsp; Quality-of-life</h4>
-
-- `profile.yaml` is the new default filename
-- Pass a YAML file directly (not just a directory)
-- `subpath(with_suffix=...)` helper
-- Auto-detected network FS type
-- Plugins with no settings auto-deploy
-
-<p style="margin-top: 0.6em;"><i class="mdi mdi-alert" style="color: #E67E22;"></i>&nbsp; <strong>9.20 footgun:</strong> <code>runtime</code> values are now <strong>minutes</strong>, not seconds.</p>
+::: {.v9-card .v9-card-warn}
+<i class="mdi mdi-alert v9-icon"></i>
+<div class="v9-title">9.20 footgun</div>
+<ul>
+<li>`runtime` values in profiles/CLI are now **minutes**, not seconds</li>
+<li>`runtime: 60` silently went from 1&nbsp;min → 1&nbsp;h</li>
+</ul>
+:::
+:::
 :::
 :::
 
@@ -448,72 +550,113 @@ snakemake --default-storage-provider s3 \
 ::: {.columns}
 ::: {.column width="50%"}
 
-<h3 style="color: #1F3A5F;"><i class="mdi mdi-arrow-left-bold-circle"></i>&nbsp; Snakemake — **pull**</h3>
+<h3 style="color: #1F3A5F; margin-top: 0;"><i class="mdi mdi-arrow-up-bold-circle"></i>&nbsp; Snakemake — **pull**</h3>
 
-Target-driven, Make-style.
+> Reason **from the end**.
 
-> *"What file do I want?"*
+```{.python style="font-size: 0.78em;"}
+rule all:
+    input: "vcf/cohort.vcf"  # ◀ the target
 
-- Request output → recurse back
-- Static DAG, built up-front
-- `--dry-run` shows the full plan
-- Conditional flow via Python / checkpoints
+rule call:
+    input:  "bam/{s}.bam"
+    output: "vcf/{s}.vcf"
+
+rule align:
+    input:  "fq/{s}.fq.gz"   # ◀ leaf
+    output: "bam/{s}.bam"
+```
+*"To produce `cohort.vcf` I need `bam/*.bam`, which needs `fq/*.fq.gz`."* Static DAG.
 :::
 
 ::: {.column width="50%"}
 
-<h3 style="color: #1F3A5F;"><i class="mdi mdi-arrow-right-bold-circle"></i>&nbsp; Nextflow — **push**</h3>
+<h3 style="color: #1F3A5F; margin-top: 0;"><i class="mdi mdi-arrow-down-bold-circle"></i>&nbsp; Nextflow — **push**</h3>
 
-Channel-driven, Kahn / CSP-style.
+> Reason **from the start**.
 
-> *"What stream into what process?"*
+```{.groovy style="font-size: 0.78em;"}
+workflow {
+  Channel.fromFilePairs(
+    'fq/*_{1,2}.fq.gz'      // ◀ the source
+  ) | ALIGN | CALL | view
+}
 
-- Channels emit records
-- Processes fire on input availability
-- Dynamic DAG, materializes at runtime
-- Branching native via operators
+process ALIGN { /* fq → bam */ }
+process CALL  { /* bam → vcf */ }
+```
+*"FASTQ pairs emit into a channel → ALIGN consumes them → CALL consumes ALIGN's output…"* Dynamic DAG.
 :::
 :::
 
 ## Resume / cache — myth-buster
 
-::: {style="text-align: center; font-size: 0.95em; color: #1F3A5F; margin-bottom: 0.6em;"}
-*"My input file changed. Will the job rerun?"*
+::: {style="text-align: center; font-size: 1em; color: #1F3A5F; margin-bottom: 0.8em; font-weight: 500;"}
+<i class="mdi mdi-help-circle" style="color: #E67E22;"></i>&nbsp; *"My input file changed. Will the job rerun?"*
 :::
 
-```{mermaid}
-%%| fig-width: 9
-flowchart LR
-  IN((Input touched<br/>or modified)):::trigger
-  IN --> SMK{Snakemake<br/>--rerun-triggers}
-  IN --> NF{Nextflow<br/>-resume}
-  SMK -->|mtime changed| SMKY[<b>RERUN</b>]:::yes
-  SMK -->|same mtime,<br/>same params,<br/>same code| SMKN[skip]:::no
-  NF -->|path/size/mtime<br/>changed| NFY[<b>RERUN</b>]:::yes
-  NF -->|same attrs<br/>default mode| NFN[skip]:::no
-  NF -.->|cache 'deep'<br/>content hash| NFD[skip iff content same]:::deep
-  classDef trigger fill:#fff3e0,stroke:#E67E22,color:#6e3906,font-weight:600
-  classDef yes fill:#fdecea,stroke:#C0392B,color:#922b21,font-weight:700
-  classDef no fill:#e8f5f0,stroke:#208F6E,color:#0f3a30
-  classDef deep fill:#e8f1f8,stroke:#2980B9,color:#1F3A5F
-```
+::: {.columns}
+::: {.column width="50%"}
+<div class="rerun-card rerun-smk">
+<h4><i class="mdi mdi-snake"></i>&nbsp; Snakemake</h4>
+<div class="rerun-line">
+  <span class="check"><code>--rerun-triggers</code></span>
+  <span class="arrow">→</span>
+</div>
+<ul>
+<li><b>mtime</b> changed → <span class="rerun-yes">RERUN</span></li>
+<li>params changed → <span class="rerun-yes">RERUN</span></li>
+<li>code changed → <span class="rerun-yes">RERUN</span></li>
+<li>env hash changed → <span class="rerun-yes">RERUN</span></li>
+<li>otherwise → <span class="rerun-no">skip</span></li>
+</ul>
+<p><i>Make pitfall:</i> <code>touch input</code> invalidates downstream.</p>
+</div>
+:::
 
-::: {.callout-warning style="margin-top: 0.4em;"}
-*"Nextflow `-resume` is content-hashed"* — **partially false**. Default = file *attributes* (mtime included). Content hashing is opt-in via `cache 'deep'`. Both tools are sensitive to FS metadata.
+::: {.column width="50%"}
+<div class="rerun-card rerun-nf">
+<h4><i class="mdi mdi-source-branch"></i>&nbsp; Nextflow</h4>
+<div class="rerun-line">
+  <span class="check"><code>-resume</code> (LevelDB hash)</span>
+  <span class="arrow">→</span>
+</div>
+<ul>
+<li>script body changed → <span class="rerun-yes">RERUN</span></li>
+<li>input <b>path · size · mtime</b> changed → <span class="rerun-yes">RERUN</span></li>
+<li>container digest changed → <span class="rerun-yes">RERUN</span></li>
+<li><b>file contents</b> change with same mtime → <span class="rerun-no">skip</span> *(by default)*</li>
+</ul>
+<p><code>cache 'deep'</code> → true content hash · <code>cache 'lenient'</code> → relaxed for shared FS</p>
+</div>
+:::
+:::
+
+::: {.callout-warning style="margin-top: 0.3em;"}
+*"Nextflow `-resume` is content-hashed"* — **partially false**. Default hashes file *attributes* (mtime included). Content hashing is opt-in via `cache 'deep'`. Both tools are sensitive to FS metadata.
 :::
 
 ## Software & containers
 
-| <i class="mdi mdi-format-list-checks" style="color: #1F3A5F;"></i>&nbsp; Capability | <i class="mdi mdi-snake" style="color: #208F6E;"></i> Snakemake | <img src="https://avatars.githubusercontent.com/u/6698688?s=24&v=4" style="height: 16px; vertical-align: middle; border-radius: 3px;"/>&nbsp; Nextflow / nf-core |
+| <i class="mdi mdi-format-list-checks" style="color: #1F3A5F;"></i>&nbsp; Capability | <i class="mdi mdi-snake" style="color: #208F6E;"></i> Snakemake | <img src="https://raw.githubusercontent.com/nf-core/logos/master/nf-core-logos/nf-core-logo-square.svg" style="height: 18px; vertical-align: middle;"/>&nbsp; Nextflow / nf-core |
 |---|---|---|
-| <i class="mdi mdi-tag-multiple"></i>&nbsp; Per-rule env | `conda:` + `container:` | `conda` + `container` directive |
+| <i class="mdi mdi-tag-multiple"></i>&nbsp; Per-rule env | `conda:` + `container:` + `envmodules:` | `conda` + `container` directive |
 | <i class="mdi mdi-layers-triple"></i>&nbsp; Compose | `--sdm conda apptainer` | engine + conda |
 | <i class="mdi mdi-warehouse"></i>&nbsp; Curated registry | snakemake-wrappers | BioContainers · mulled · **Seqera Containers** |
-| <i class="mdi mdi-hammer-wrench"></i>&nbsp; Build on demand | — | **Wave** (Apache-2.0 OSS) |
-| <i class="mdi mdi-folder-network"></i>&nbsp; POSIX over S3/GCS | — | **Fusion** (commercial) |
+| <i class="mdi mdi-hammer-wrench"></i>&nbsp; Build on demand | — | **Wave** |
+| <i class="mdi mdi-folder-network"></i>&nbsp; POSIX over object storage | — | **Fusion** |
 
-::: {.callout-warning}
-**Wave is open-source.** Fusion is part of the commercial Seqera Platform.
+::: {.columns style="margin-top: 0.4em;"}
+::: {.column width="50%"}
+<div style="padding: 0.55em 0.8em; background: #e8f1f8; border-left: 4px solid #2980B9; border-radius: 4px; font-size: 0.78em;">
+<b>Wave</b> — Seqera's container-provisioning service. Takes a conda spec attached to a process, **builds an OCI container on demand** with that environment, caches it in a registry. Supports `amd64` + `arm64`. **Apache-2.0, open source.**
+</div>
+:::
+::: {.column width="50%"}
+<div style="padding: 0.55em 0.8em; background: #fef5e7; border-left: 4px solid #E67E22; border-radius: 4px; font-size: 0.78em;">
+<b>Fusion</b> — a virtual **POSIX layer** that lets processes read/write S3, GCS or Azure Blob as if they were a mounted directory. Avoids stage-in/stage-out copies on cloud. **Commercial**, part of Seqera Platform.
+</div>
+:::
 :::
 
 ## Ecosystem & community
@@ -521,7 +664,7 @@ flowchart LR
 ::: {.columns}
 ::: {.column width="50%"}
 
-<img src="https://raw.githubusercontent.com/nf-core/logos/master/nf-core-logos/nf-core-logo.svg" style="height: 46px; background: white; padding: 4px 10px; border-radius: 6px;" alt="nf-core"/>
+<img src="https://raw.githubusercontent.com/nf-core/logos/master/nf-core-logos/nf-core-logo-square.svg" style="height: 54px;" alt="nf-core"/>
 
 ### nf-core
 - **124** pipelines · **~1,500** modules · ~**72** subworkflows
@@ -535,7 +678,7 @@ Langer et al., *Genome Biology* 26:228 (2025) · Feb 2025 figures
 
 ::: {.column width="50%"}
 
-<img src="https://avatars.githubusercontent.com/u/33450111?s=80&v=4" style="height: 46px; background: white; padding: 4px 10px; border-radius: 6px;" alt="Snakemake"/>
+<img src="https://avatars.githubusercontent.com/u/33450111?s=80&v=4" style="height: 54px; border-radius: 10px;" alt="Snakemake"/>
 
 ### Snakemake
 - **Workflow Catalog** (auto-indexed from GitHub)
@@ -562,37 +705,30 @@ Langer et al., *Genome Biology* 26:228 (2025) · Feb 2025 figures
 
 ::: {.pillars-flat}
 ::: {.columns}
-::: {.column width="33%"}
+::: {.column width="20%"}
 <i class="mdi mdi-cached pillar-icon-flat"></i>
 <div class="pillar-label-flat">Workflow caching</div>
 <div class="pillar-code-flat">SNAKEMAKE_OUTPUT_CACHE</div>
 :::
-::: {.column width="33%"}
+::: {.column width="20%"}
 <i class="mdi mdi-docker pillar-icon-flat"></i>
 <div class="pillar-label-flat">Container caching</div>
 <div class="pillar-code-flat">apptainer-prefix</div>
 :::
-::: {.column width="33%"}
+::: {.column width="20%"}
 <i class="mdi mdi-database pillar-icon-flat"></i>
 <div class="pillar-label-flat">Storage staging</div>
 <div class="pillar-code-flat">fs plugin · scratch</div>
 :::
-:::
-
-::: {.columns style="margin-top: 2em;"}
-::: {.column width="16%"}
-:::
-::: {.column width="33%"}
+::: {.column width="20%"}
 <i class="mdi mdi-group pillar-icon-flat"></i>
 <div class="pillar-label-flat">Grouping &amp; arrays</div>
-<div class="pillar-code-flat">group: · slurm-job-array</div>
+<div class="pillar-code-flat">group · slurm-array-jobs</div>
 :::
-::: {.column width="33%"}
+::: {.column width="20%"}
 <i class="mdi mdi-package-variant pillar-icon-flat"></i>
-<div class="pillar-label-flat">EESSI / env-modules</div>
+<div class="pillar-label-flat">EESSI / env-mods</div>
 <div class="pillar-code-flat">--sdm env-modules</div>
-:::
-::: {.column width="16%"}
 :::
 :::
 :::
@@ -652,43 +788,95 @@ shared-fs-usage:                                   # what stays on shared FS
 | Conda · containers | Parallel FS (shared) | Multi-user reuse |
 | Sorting · temp buffers | **Local scratch** | Ultra-fast, per-job |
 
-## 3 · Job grouping + arrays
+## 3 · Job grouping — map · sort · dedup · index → one job
 
 ::: {.columns}
 ::: {.column width="55%"}
-```python
-rule trim:
-    input:  "fastq/{s}.fq.gz"
-    output: "trim/{s}.fq.gz"
-    group:  "preproc"   # ◀ same group
+```{.python}
+rule bwa:
+    input:  "fq/{s}.fq.gz"
+    output: temp("bam/{s}.sort.bam")
+    group:  "alignment_per_cell"
 
-rule align:
-    input:  "trim/{s}.fq.gz"
-    output: "bam/{s}.bam"
-    group:  "preproc"   # ◀ same SLURM job
-```
+rule sort:
+    input:  "bam/{s}.sort.bam"
+    output: temp("bam/{s}.sorted.bam")
+    group:  "alignment_per_cell"
 
-```yaml
-# profile — array submissions
-executor: slurm
-slurm-job-array: true
-jobs: 500
-max-jobs-per-second: 10
+rule dedup:
+    input:  "bam/{s}.sorted.bam"
+    output: temp("bam/{s}.dedup.bam")
+    group:  "alignment_per_cell"
+
+rule index:
+    input:  "bam/{s}.dedup.bam"
+    output: "bam/{s}.bam.bai"
+    group:  "alignment_per_cell"
 ```
 :::
 
 ::: {.column width="45%"}
-<i class="mdi mdi-lightbulb-on" style="color: #E67E22;"></i>&nbsp; **Group:** one sbatch instead of two per sample · shared scratch.
+<div class="slurm-viz">
+<div class="slurm-header"><i class="mdi mdi-server-network"></i>&nbsp; <b>1 SLURM job per sample</b></div>
+<div class="slurm-step">bwa mem</div>
+<div class="slurm-arrow">↓</div>
+<div class="slurm-step">samtools sort</div>
+<div class="slurm-arrow">↓</div>
+<div class="slurm-step">mark_duplicates</div>
+<div class="slurm-arrow">↓</div>
+<div class="slurm-step">samtools index</div>
+</div>
 
-<i class="mdi mdi-lightbulb-on" style="color: #E67E22;"></i>&nbsp; **Array:** batch homogeneous jobs into `sbatch --array=…` · single `squeue` entry.
-
-<i class="mdi mdi-information" style="color: #E67E22;"></i>&nbsp; Combine both → array of grouped jobs.
-
-<i class="mdi mdi-alert" style="color: #E67E22;"></i>&nbsp; Heterogeneous resources → keep arrays separate.
+::: {style="margin-top: 0.7em; font-size: 0.78em;"}
+<i class="mdi mdi-lightbulb-on" style="color: #E67E22;"></i>&nbsp; Shared scratch · zero stage-in between steps · `temp()` cleaned at group end
 :::
 :::
+:::
 
-## 4 · EESSI — env-modules everywhere
+## 4 · Job arrays — parallel inside one submission
+
+::: {.columns}
+::: {.column width="50%"}
+```{.yaml filename="profile/config.yaml"}
+executor: slurm
+slurm-array-jobs: all      # all eligible rules
+slurm-array-limit: 1000    # tasks / array
+
+# also Snakemake-core
+group-components:
+  - alignment_per_cell=10  # 10 samples → 1 array job
+```
+
+What lands on SLURM:
+
+```bash
+$ squeue -u $USER
+JOBID         NAME              ST  TIME
+12345_[1-10]  alignment_per_cell PD  0:00
+# one submission · ten array tasks
+# each task = one sample, multi-cpu inside
+```
+:::
+
+::: {.column width="50%"}
+<div class="slurm-viz">
+<div class="slurm-header"><i class="mdi mdi-server-network"></i>&nbsp; <b>1 sbatch · 10 array tasks</b></div>
+<div class="array-row"><span class="array-tag">task 1</span><span class="array-step">8 cpus · sample A</span></div>
+<div class="array-row"><span class="array-tag">task 2</span><span class="array-step">8 cpus · sample B</span></div>
+<div class="array-row"><span class="array-tag">task 3</span><span class="array-step">8 cpus · sample C</span></div>
+<div class="array-row"><span class="array-tag">…</span><span class="array-step">…</span></div>
+<div class="array-row"><span class="array-tag">task 10</span><span class="array-step">8 cpus · sample J</span></div>
+</div>
+
+::: {style="margin-top: 0.6em; font-size: 0.76em;"}
+<i class="mdi mdi-lightbulb-on" style="color: #E67E22;"></i>&nbsp; Single `squeue` row · single `--account` · per-task logs preserved as `%A_%a`
+
+<i class="mdi mdi-alert" style="color: #E67E22;"></i>&nbsp; Heterogeneous resources → don't mix into one array
+:::
+:::
+:::
+
+## 5 · EESSI — env-modules everywhere
 
 ::: {.columns}
 ::: {.column width="55%"}
@@ -721,116 +909,154 @@ Invoke with `--sdm env-modules`.
 
 ## Bonus · dependency cooldowns
 
-<h4><i class="mdi mdi-shield-lock" style="color: #E67E22;"></i>&nbsp; Why</h4>
+::: {style="font-size: 0.95em; margin-bottom: 0.6em;"}
+<i class="mdi mdi-shield-lock" style="color: #E67E22;"></i>&nbsp; **Why:** malicious PyPI / conda releases are usually yanked within hours to days. Tell your resolver to **ignore versions published in the last *N* days** → compromised releases disappear before your build sees them.
+:::
 
-Malicious PyPI / conda releases are usually yanked within hours to days. Tell your resolver to **ignore versions published in the last *N* days** → compromised releases disappear before your build ever sees them. Bonus: dampens surprise breakage.
-
-::: {.columns style="margin-top: 0.8em;"}
+::: {.columns style="margin-top: 0.4em;"}
 ::: {.column width="50%"}
-::: {.tip-card}
-<h4 style="color: #E67E22; margin-top: 0;"><i class="mdi mdi-language-python"></i>&nbsp; pip 26.1 *(Apr 2026)*</h4>
+<h4 style="color: #E67E22; margin: 0 0 0.4em;"><i class="mdi mdi-language-python"></i>&nbsp; pip 26.1 *(Apr 2026)*</h4>
 
-```bash
-pip install --uploaded-prior-to=P7D requests
+```{.bash}
+pip install \
+  --uploaded-prior-to=P7D \
+  requests
 ```
 
-- 26.0 → absolute date · 26.1 → relative duration
-- Also in `pip.conf`
-- Relies on PEP 700 upload time
+::: {style="font-size: 0.78em; margin-top: 0.4em;"}
+- 26.0 → absolute date · 26.1 → relative
+- Also configurable in `pip.conf`
+- Uses PEP 700 upload-time data
 :::
 :::
 
 ::: {.column width="50%"}
-::: {.tip-card}
-<h4 style="color: #E67E22; margin-top: 0;"><i class="mdi mdi-package-variant"></i>&nbsp; Pixi · `exclude-newer`</h4>
+<h4 style="color: #E67E22; margin: 0 0 0.4em;"><i class="mdi mdi-package-variant"></i>&nbsp; Pixi · `exclude-newer`</h4>
 
-```toml
+```{.toml}
 [workspace]
 exclude-newer = "14d"
-channels = [
-  "conda-forge",
-  { channel = ".../internal",
-    exclude-newer = "0d" }
-]
 
 [exclude-newer]
-openssl = "0d"   # bypass for CVE
+openssl = "0d"
 ```
+
+::: {style="font-size: 0.78em; margin-top: 0.4em;"}
+- Per-channel & per-package overrides
+- Same concept as uv / rattler
 :::
 :::
 :::
 
-::: {style="font-size: 0.7em; margin-top: 0.8em; color: #7f8c8d; text-align: center;"}
-Same concept as uv/rattler · 7 days is the commonly cited default · [Richard Si's writeup](https://ichard26.github.io/blog/2026/04/whats-new-in-pip-26.1/)
+::: {style="font-size: 0.7em; margin-top: 0.6em; color: #7f8c8d; text-align: center;"}
+7 days is the commonly cited default · [Richard Si — *What's new in pip 26.1*](https://ichard26.github.io/blog/2026/04/whats-new-in-pip-26.1/)
 :::
 
 # {.section-divider background-color="#16A085"}
 
 ::: {style="text-align: center;"}
-<i class="mdi mdi-code-tags" style="font-size: 4em; color: #fff;"></i>
+<i class="mdi mdi-file-cog" style="font-size: 4em; color: #fff;"></i>
 
-<h1 style="color: #fff;">Code examples</h1>
-<p style="color: #d1f2eb; font-size: 0.65em;">Copy-paste-ready</p>
+<h1 style="color: #fff;">Real EMBL profile</h1>
+<p style="color: #d1f2eb; font-size: 0.65em;">from <code style="color: #fff;">mosaicatcher-pipeline</code> · <code style="color: #fff;">v9/HPC/slurm_EMBL_apptainer</code></p>
 :::
 
-## A minimal end-to-end Snakefile
+## Real EMBL profile — part 1 {.smaller}
 
-```{.python filename="Snakefile"}
-configfile: "config/config.yaml"
-
-SAMPLES = config["samples"]
-
-rule all:
-    input: expand("results/{sample}.vcf", sample=SAMPLES)
-
-rule align:
-    input:  "data/{sample}.fq.gz"
-    output: "results/{sample}.bam"
-    threads: 8
-    resources: mem_mb=16_000, runtime=120     # ⚠ minutes since 9.20
-    conda:   "envs/bwa.yaml"
-    group:   "per_sample"
-    shell:   "bwa mem -t {threads} ref {input} | samtools sort -o {output}"
-
-rule call_snvs:
-    input:  "results/{sample}.bam"
-    output: "results/{sample}.vcf"
-    container: "docker://broadinstitute/gatk:4.5"
-    group:  "per_sample"
-    shell:  "gatk HaplotypeCaller -I {input} -O {output}"
-```
-
-## A full EMBL HPC profile
-
-```{.yaml filename="profile/config.yaml"}
+```{.yaml filename="config.v9+.yaml — execution & resources"}
 executor: slurm
-jobs: 500
+jobs: 150                       # max concurrent SLURM jobs
+
+# Default resources allocated to every rule unless overridden
+default-resources:
+  - mem_mb=500
+  - runtime=600                 # ⚠ pre-9.20 = seconds; from 9.20 = minutes
+  - constraint=''               # SLURM --constraint
+
+# Per-rule resource overrides — pin the alignment group to milan nodes
+# (sambamba mark_duplicates needs AVX2 only on milan)
+set-resources:
+  ashleys_bwa_strandseq_to_reference_alignment: { constraint: milan }
+  ashleys_samtools_sort_bam:                    { constraint: milan }
+  ashleys_mark_duplicates:                      { constraint: milan }
+  index_input_bam:                              { constraint: milan }
+
+# Scheduler hygiene
 max-jobs-per-second: 10
+max-status-checks-per-second: 10
+latency-wait: 60
+local-cores: 32
+
+# Fault tolerance
+keep-going: true
+rerun-incomplete: true
+retries: 4                      # leverages attempt-based memory scaling
+```
+
+## Real EMBL profile — part 2 {.smaller}
+
+```{.yaml filename="config.v9+.yaml — software & storage"}
+# All three deployment methods are valid — here we use conda + apptainer
 software-deployment-method: [conda, apptainer]
+conda-frontend: conda
 
-# software & cache
-conda-prefix:     /g/<group>/shared/conda
-apptainer-prefix: /g/<group>/shared/apptainer
+# Shared caches (group-writable, setgid bit 2775)
+conda-prefix:     /g/korbel2/shared/conda_envs
+apptainer-prefix: /scratch/korbel/shared/apptainer_cache
+apptainer-args:   "-B /g,/scratch,/scratch_cached,/tmp"
 
-# storage staging
-default-storage-provider: fs
-local-storage-prefix: /scratch/$USER/snakemake/<wf>
-shared-fs-usage:
-  - persistence
-  - software-deployment
-  - sources
+# Storage staging (off if data already on /scratch)
+default-storage-provider: none
+local-storage-prefix: /tmp/snakemake/local-storage
 
-# scheduler hygiene
-slurm-job-array: true
-slurm-efficiency-report: true
-slurm-efficiency-threshold: 0.8
-retries: 2
+# SLURM log hygiene
+slurm-logdir:                       /scratch/$USER/mosaicatcher_logs/slurm
+slurm-keep-successful-logs:         false
+slurm-delete-logfiles-older-than:   30        # days
+
+# Efficiency reporting
+slurm-efficiency-report:       true
+slurm-efficiency-report-path:  /scratch/$USER/mosaicatcher_logs/slurm_efficiency_report.txt
+slurm-efficiency-threshold:    0.8
 ```
 
-```bash
-export SNAKEMAKE_OUTPUT_CACHE=/scratch_cached/<group>/snakemake_cache
-snakemake --profile profile/ --jobs 500
+## What's still on the table {.smaller}
+
+::: {.columns}
+::: {.column width="50%"}
+**Could be enabled when ready:**
+
+```{.yaml}
+# Cross-workflow caching
+# export SNAKEMAKE_OUTPUT_CACHE=...
+
+# Job arrays (v9 plugin)
+slurm-array-jobs: all
+slurm-array-limit: 1000
+
+# QoS / priority
+slurm-qos: normal
+
+# Requeue preempted jobs automatically
+slurm-requeue: true
 ```
+:::
+
+::: {.column width="50%"}
+**Useful SLURM plugin knobs not yet used:**
+
+- `slurm-status-command: sacct|squeue`
+- `slurm-init-seconds-before-status-checks`
+- `slurm-pass-command-as-script`
+- `slurm-exclude-failed-nodes`
+- `slurm-partition-config` (dynamic partition pick)
+- `slurm-jobname-prefix`
+
+::: {style="font-size: 0.7em; margin-top: 0.5em; color: #7f8c8d;"}
+Full reference: [snakemake-plugin-catalog · slurm](https://snakemake.github.io/snakemake-plugin-catalog/plugins/executor/slurm.html)
+:::
+:::
+:::
 
 ## Further reading { background-color="#0f3a30"}
 
