@@ -24,6 +24,8 @@ format:
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    include-after-body:
+      - mermaid-revealjs-fix.html
     title-slide-attributes:
       data-background-color: "#0f3a30"
 execute:
@@ -591,49 +593,31 @@ process CALL  { /* bam → vcf */ }
 
 ## Resume / cache — myth-buster
 
-::: {style="text-align: center; font-size: 1em; color: #1F3A5F; margin-bottom: 0.8em; font-weight: 500;"}
+::: {style="text-align: center; font-size: 1em; color: #1F3A5F; margin-bottom: 0.4em; font-weight: 500;"}
 <i class="mdi mdi-help-circle" style="color: #E67E22;"></i>&nbsp; *"My input file changed. Will the job rerun?"*
 :::
 
-::: {.columns}
-::: {.column width="50%"}
-<div class="rerun-card rerun-smk">
-<h4><i class="mdi mdi-snake"></i>&nbsp; Snakemake</h4>
-<div class="rerun-line">
-  <span class="check"><code>--rerun-triggers</code></span>
-  <span class="arrow">→</span>
-</div>
-<ul>
-<li><b>mtime</b> changed → <span class="rerun-yes">RERUN</span></li>
-<li>params changed → <span class="rerun-yes">RERUN</span></li>
-<li>code changed → <span class="rerun-yes">RERUN</span></li>
-<li>env hash changed → <span class="rerun-yes">RERUN</span></li>
-<li>otherwise → <span class="rerun-no">skip</span></li>
-</ul>
-<p><i>Make pitfall:</i> <code>touch input</code> invalidates downstream.</p>
-</div>
-:::
+```{mermaid}
+%%| eval: true
+%%| fig-align: center
+flowchart LR
+  IN(["Input touched"]):::trigger
+  IN --> SMK{"Snakemake<br/>--rerun-triggers"}:::tool
+  IN --> NF{"Nextflow<br/>-resume"}:::tool
+  SMK -->|mtime / params /<br/>code / env changed| SMKY(["RERUN"]):::yes
+  SMK -->|nothing changed| SMKN(["skip"]):::no
+  NF -->|path · size · mtime<br/>changed| NFY(["RERUN"]):::yes
+  NF -->|same attrs| NFN(["skip"]):::no
+  NF -.->|cache 'deep'| NFD(["skip iff content same"]):::deep
+  classDef trigger fill:#fff3e0,stroke:#E67E22,color:#6e3906,font-weight:600
+  classDef tool fill:#f4ecf7,stroke:#8E44AD,color:#4a235a
+  classDef yes fill:#fdecea,stroke:#C0392B,color:#922b21,font-weight:700
+  classDef no fill:#e8f5f0,stroke:#208F6E,color:#0f3a30
+  classDef deep fill:#e8f1f8,stroke:#2980B9,color:#1F3A5F
+```
 
-::: {.column width="50%"}
-<div class="rerun-card rerun-nf">
-<h4><i class="mdi mdi-source-branch"></i>&nbsp; Nextflow</h4>
-<div class="rerun-line">
-  <span class="check"><code>-resume</code> (LevelDB hash)</span>
-  <span class="arrow">→</span>
-</div>
-<ul>
-<li>script body changed → <span class="rerun-yes">RERUN</span></li>
-<li>input <b>path · size · mtime</b> changed → <span class="rerun-yes">RERUN</span></li>
-<li>container digest changed → <span class="rerun-yes">RERUN</span></li>
-<li><b>file contents</b> change with same mtime → <span class="rerun-no">skip</span> *(by default)*</li>
-</ul>
-<p><code>cache 'deep'</code> → true content hash · <code>cache 'lenient'</code> → relaxed for shared FS</p>
-</div>
-:::
-:::
-
-::: {.callout-warning style="margin-top: 0.3em;"}
-*"Nextflow `-resume` is content-hashed"* — **partially false**. Default hashes file *attributes* (mtime included). Content hashing is opt-in via `cache 'deep'`. Both tools are sensitive to FS metadata.
+::: {.callout-warning style="margin-top: 0.4em;"}
+*"Nextflow `-resume` is content-hashed"* — **partially false**. Default hashes file *attributes* (mtime included). Content hashing is opt-in via `cache 'deep'`.
 :::
 
 ## Software & containers
