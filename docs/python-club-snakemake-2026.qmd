@@ -123,28 +123,28 @@ Adapted from J. Köster · <em>Snakemake intro · updates 2026</em> · Mölder e
 ::: {.four-ideas}
 ::: {.columns}
 ::: {.column width="25%"}
-::: {.idea-card .fragment .fade-in-then-semi-out}
+::: {.idea-card .fragment .fade-in-then-semi-out fragment-index=1}
 <i class="mdi mdi-puzzle-outline idea-icon"></i>
 <div class="big-label">Rule</div>
 <div class="sub-label">a unit of work</div>
 :::
 :::
 ::: {.column width="25%"}
-::: {.idea-card .fragment .fade-in-then-semi-out}
+::: {.idea-card .fragment .fade-in-then-semi-out fragment-index=2}
 <i class="mdi mdi-asterisk idea-icon"></i>
 <div class="big-label">Wildcards</div>
 <div class="sub-label">inferred from targets</div>
 :::
 :::
 ::: {.column width="25%"}
-::: {.idea-card .fragment .fade-in-then-semi-out}
+::: {.idea-card .fragment .fade-in-then-semi-out fragment-index=3}
 <i class="mdi mdi-cpu-64-bit idea-icon"></i>
 <div class="big-label">Resources</div>
 <div class="sub-label">cpu · mem · runtime</div>
 :::
 :::
 ::: {.column width="25%"}
-::: {.idea-card .fragment .fade-in-then-semi-out}
+::: {.idea-card .fragment .fade-in-then-semi-out fragment-index=4}
 <i class="mdi mdi-package-variant idea-icon"></i>
 <div class="big-label">Env per rule</div>
 <div class="sub-label">conda · container</div>
@@ -153,7 +153,7 @@ Adapted from J. Köster · <em>Snakemake intro · updates 2026</em> · Mölder e
 :::
 :::
 
-```{.python style="margin-top: 1.4em;"}
+```{.python code-line-numbers="|1|2-3|4-5|6"}
 rule align:
     input:  "fastq/{sample}.fq.gz"
     output: "bam/{sample}.bam"
@@ -166,30 +166,37 @@ rule align:
 ## Wildcards → DAG → dry-run
 
 ::: {.columns}
-::: {.column width="55%"}
-You request **an output file**. Snakemake recurses back through rules until it hits files that already exist.
-
-The DAG is built **statically** — every job is known up-front.
+::: {.column width="50%"}
+You request **an output file** → Snakemake recurses back through rules until it hits files that already exist. The DAG is built **statically**.
 
 ```bash
-# show the full plan before running
-snakemake bam/sample42.bam --dry-run
-
-# emit Graphviz
+snakemake results/cohort.vcf --dry-run
 snakemake --rulegraph | dot -Tpng > rules.png
 ```
+
+<div style="background: #e8f5f0; border-left: 4px solid #208F6E; padding: 0.6em 0.9em; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 0.7em; margin-top: 0.6em;">
+<strong>Job stats</strong> &nbsp; <code>align</code> 96 · <code>call_snvs</code> 96 · <code>merge_vcfs</code> 1 &nbsp;·&nbsp; <strong>total</strong> 193
+</div>
 :::
 
-::: {.column width="45%"}
-<div style="background: #e8f5f0; border-left: 4px solid #208F6E; padding: 0.8em 1em; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 0.7em;">
-<strong>Job stats</strong><br/>
-<code>align&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code> 96 jobs <br/>
-<code>call_snvs&nbsp;&nbsp;</code> 96 jobs <br/>
-<code>merge_vcfs&nbsp;&nbsp;</code> 1 job <br/>
-<strong>total</strong> 193 jobs
-</div>
-
-<p style="margin-top: 1em; font-size: 0.85em;"><i class="mdi mdi-lightbulb-on" style="color: #208F6E;"></i>&nbsp; Same Snakefile, different `expand()` → 3 samples or 3000.</p>
+::: {.column width="50%"}
+```{mermaid}
+%%| fig-width: 5
+flowchart TD
+  A1["fastq/A.fq.gz"]:::input --> R1["<b>align</b><br/>{sample}=A"]:::rule
+  A2["fastq/B.fq.gz"]:::input --> R2["<b>align</b><br/>{sample}=B"]:::rule
+  A3["fastq/C.fq.gz"]:::input --> R3["<b>align</b><br/>{sample}=C"]:::rule
+  R1 --> S1["call_snvs A"]:::rule
+  R2 --> S2["call_snvs B"]:::rule
+  R3 --> S3["call_snvs C"]:::rule
+  S1 --> M["<b>merge_vcfs</b>"]:::rule
+  S2 --> M
+  S3 --> M
+  M --> O["results/cohort.vcf"]:::output
+  classDef input fill:#e3f2fd,stroke:#1565c0,color:#0d47a1
+  classDef rule fill:#e8f5f0,stroke:#208F6E,color:#0f3a30
+  classDef output fill:#fff3e0,stroke:#E67E22,color:#6e3906
+```
 :::
 :::
 
@@ -369,51 +376,15 @@ snakemake --default-storage-provider s3 \
 
 ## CLI rename — what to change in your profile
 
-::: {.cli-diff}
-
-::: {.diff-row}
-::: {.old} `--use-conda` :::
-<i class="mdi mdi-arrow-right diff-arrow"></i>
-::: {.new} `--sdm conda` :::
-:::
-
-::: {.diff-row}
-::: {.old} `--use-singularity` :::
-<i class="mdi mdi-arrow-right diff-arrow"></i>
-::: {.new} `--sdm apptainer` :::
-:::
-
-::: {.diff-row}
-::: {.old} `--use-envmodules` :::
-<i class="mdi mdi-arrow-right diff-arrow"></i>
-::: {.new} `--sdm env-modules` :::
-:::
-
-::: {.diff-row}
-::: {.old} `--singularity-args` :::
-<i class="mdi mdi-arrow-right diff-arrow"></i>
-::: {.new} `--apptainer-args` :::
-:::
-
-::: {.diff-row}
-::: {.old} `--cluster "sbatch ..."` :::
-<i class="mdi mdi-arrow-right diff-arrow"></i>
-::: {.new} `--executor slurm` :::
-:::
-
-::: {.diff-row}
-::: {.old} `--conda-frontend mamba` :::
-<i class="mdi mdi-arrow-right diff-arrow"></i>
-::: {.new .removed} <i class="mdi mdi-close-circle"></i>&nbsp; removed :::
-:::
-
-::: {.diff-row}
-::: {.old} `--restart-times N` :::
-<i class="mdi mdi-arrow-right diff-arrow"></i>
-::: {.new} `--retries N` :::
-:::
-
-:::
+<div class="cli-diff">
+<div class="diff-row"><span class="old"><code>--use-conda</code></span><i class="mdi mdi-arrow-right diff-arrow"></i><span class="new"><code>--sdm conda</code></span></div>
+<div class="diff-row"><span class="old"><code>--use-singularity</code></span><i class="mdi mdi-arrow-right diff-arrow"></i><span class="new"><code>--sdm apptainer</code></span></div>
+<div class="diff-row"><span class="old"><code>--use-envmodules</code></span><i class="mdi mdi-arrow-right diff-arrow"></i><span class="new"><code>--sdm env-modules</code></span></div>
+<div class="diff-row"><span class="old"><code>--singularity-args</code></span><i class="mdi mdi-arrow-right diff-arrow"></i><span class="new"><code>--apptainer-args</code></span></div>
+<div class="diff-row"><span class="old"><code>--cluster "sbatch ..."</code></span><i class="mdi mdi-arrow-right diff-arrow"></i><span class="new"><code>--executor slurm</code></span></div>
+<div class="diff-row"><span class="old"><code>--conda-frontend mamba</code></span><i class="mdi mdi-arrow-right diff-arrow"></i><span class="new removed"><i class="mdi mdi-close-circle"></i>&nbsp;removed</span></div>
+<div class="diff-row"><span class="old"><code>--restart-times N</code></span><i class="mdi mdi-arrow-right diff-arrow"></i><span class="new"><code>--retries N</code></span></div>
+</div>
 
 ::: {style="margin-top: 0.8em; font-size: 0.78em; text-align: center; color: #7f8c8d;"}
 <i class="mdi mdi-information" style="color: #8E44AD;"></i>&nbsp; Profile schema is versioned too · place `config.v8+.yaml` next to the legacy `config.yaml`
@@ -506,30 +477,29 @@ Channel-driven, Kahn / CSP-style.
 
 ## Resume / cache — myth-buster
 
-::: {.columns}
-::: {.column width="50%"}
-<h4 style="color: #1F3A5F;"><i class="mdi mdi-clock-outline"></i>&nbsp; Snakemake</h4>
-
-File timestamps + tracked metadata in `.snakemake/`.
-
-Triggers: `--rerun-triggers {mtime, params, input, software-env, code}`.
-
-*Make pitfall:* touching an input invalidates downstream.
+::: {style="text-align: center; font-size: 0.95em; color: #1F3A5F; margin-bottom: 0.6em;"}
+*"My input file changed. Will the job rerun?"*
 :::
 
-::: {.column width="50%"}
-<h4 style="color: #1F3A5F;"><i class="mdi mdi-hash"></i>&nbsp; Nextflow</h4>
+```{mermaid}
+%%| fig-width: 9
+flowchart LR
+  IN((Input touched<br/>or modified)):::trigger
+  IN --> SMK{Snakemake<br/>--rerun-triggers}
+  IN --> NF{Nextflow<br/>-resume}
+  SMK -->|mtime changed| SMKY[<b>RERUN</b>]:::yes
+  SMK -->|same mtime,<br/>same params,<br/>same code| SMKN[skip]:::no
+  NF -->|path/size/mtime<br/>changed| NFY[<b>RERUN</b>]:::yes
+  NF -->|same attrs<br/>default mode| NFN[skip]:::no
+  NF -.->|cache 'deep'<br/>content hash| NFD[skip iff content same]:::deep
+  classDef trigger fill:#fff3e0,stroke:#E67E22,color:#6e3906,font-weight:600
+  classDef yes fill:#fdecea,stroke:#C0392B,color:#922b21,font-weight:700
+  classDef no fill:#e8f5f0,stroke:#208F6E,color:#0f3a30
+  classDef deep fill:#e8f1f8,stroke:#2980B9,color:#1F3A5F
+```
 
-Hash in `.nextflow/cache/` (LevelDB).
-
-Hashes script + input *attributes* (path/size/**mtime**) by default — **not contents**.
-
-`cache 'deep'` → true content hash · `cache 'lenient'` for shared FS.
-:::
-:::
-
-::: {.callout-warning}
-*"Nextflow -resume is content-hashed"* — **partially false**. Default = file attributes incl. mtime. Both tools are sensitive to FS metadata. Neither is magic.
+::: {.callout-warning style="margin-top: 0.4em;"}
+*"Nextflow `-resume` is content-hashed"* — **partially false**. Default = file *attributes* (mtime included). Content hashing is opt-in via `cache 'deep'`. Both tools are sensitive to FS metadata.
 :::
 
 ## Software & containers
@@ -590,47 +560,37 @@ Langer et al., *Genome Biology* 26:228 (2025) · Feb 2025 figures
 
 ## Five pillars
 
-::: {.pillars}
+::: {.pillars-flat}
 ::: {.columns}
 ::: {.column width="33%"}
-::: {.pillar-card}
-<i class="mdi mdi-cached pillar-icon"></i>
-<div class="pillar-label">Workflow caching</div>
-<code>SNAKEMAKE_OUTPUT_CACHE</code>
-:::
+<i class="mdi mdi-cached pillar-icon-flat"></i>
+<div class="pillar-label-flat">Workflow caching</div>
+<div class="pillar-code-flat">SNAKEMAKE_OUTPUT_CACHE</div>
 :::
 ::: {.column width="33%"}
-::: {.pillar-card}
-<i class="mdi mdi-docker pillar-icon"></i>
-<div class="pillar-label">Container caching</div>
-<code>apptainer-prefix</code>
-:::
+<i class="mdi mdi-docker pillar-icon-flat"></i>
+<div class="pillar-label-flat">Container caching</div>
+<div class="pillar-code-flat">apptainer-prefix</div>
 :::
 ::: {.column width="33%"}
-::: {.pillar-card}
-<i class="mdi mdi-database pillar-icon"></i>
-<div class="pillar-label">Storage staging</div>
-<code>fs plugin · scratch</code>
-:::
+<i class="mdi mdi-database pillar-icon-flat"></i>
+<div class="pillar-label-flat">Storage staging</div>
+<div class="pillar-code-flat">fs plugin · scratch</div>
 :::
 :::
 
-::: {.columns style="margin-top: 1em;"}
+::: {.columns style="margin-top: 2em;"}
 ::: {.column width="16%"}
 :::
 ::: {.column width="33%"}
-::: {.pillar-card}
-<i class="mdi mdi-group pillar-icon"></i>
-<div class="pillar-label">Grouping &amp; arrays</div>
-<code>group: · slurm-job-array</code>
-:::
+<i class="mdi mdi-group pillar-icon-flat"></i>
+<div class="pillar-label-flat">Grouping &amp; arrays</div>
+<div class="pillar-code-flat">group: · slurm-job-array</div>
 :::
 ::: {.column width="33%"}
-::: {.pillar-card}
-<i class="mdi mdi-package-variant pillar-icon"></i>
-<div class="pillar-label">EESSI / env-modules</div>
-<code>--sdm env-modules</code>
-:::
+<i class="mdi mdi-package-variant pillar-icon-flat"></i>
+<div class="pillar-label-flat">EESSI / env-modules</div>
+<div class="pillar-code-flat">--sdm env-modules</div>
 :::
 ::: {.column width="16%"}
 :::

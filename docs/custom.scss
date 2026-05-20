@@ -388,14 +388,15 @@ $code-block-font-size: 0.78em;
 /* CLI diff layout — clean before/after rows with an arrow */
 .reveal .cli-diff {
   max-width: 880px;
-  margin: 0.3em auto 0;
+  margin: 0.4em auto 0;
+  padding: 0.2em 0;
 }
 .reveal .cli-diff .diff-row {
-  display: grid;
-  grid-template-columns: 1fr 40px 1fr;
+  display: grid !important;
+  grid-template-columns: 1fr 44px 1fr;
   align-items: center;
-  gap: 0.5em;
-  padding: 0.32em 0.6em;
+  gap: 0.6em;
+  padding: 0.38em 0.7em;
   border-radius: 6px;
   margin: 0.18em 0;
 }
@@ -404,37 +405,69 @@ $code-block-font-size: 0.78em;
 }
 .reveal .cli-diff .old {
   text-align: right;
-  padding-right: 0.4em;
+  padding-right: 0.2em;
 }
 .reveal .cli-diff .old code {
-  background: #fdecea;
-  color: #922b21;
+  background: #fdecea !important;
+  color: #922b21 !important;
   text-decoration: line-through;
-  text-decoration-color: rgba(146,43,33,0.5);
+  text-decoration-color: rgba(146,43,33,0.55);
   font-size: 0.95em;
-  padding: 0.15em 0.55em;
+  padding: 0.18em 0.6em;
+  border-radius: 3px;
+  display: inline-block;
 }
 .reveal .cli-diff .new {
   text-align: left;
-  padding-left: 0.4em;
+  padding-left: 0.2em;
 }
 .reveal .cli-diff .new code {
-  background: #e8f5f0;
-  color: #0f3a30;
+  background: #e8f5f0 !important;
+  color: #0f3a30 !important;
   font-size: 0.95em;
-  padding: 0.15em 0.55em;
+  padding: 0.18em 0.6em;
+  border-radius: 3px;
   font-weight: 500;
+  display: inline-block;
 }
 .reveal .cli-diff .new.removed {
   color: #7f8c8d;
-  font-size: 0.9em;
+  font-size: 0.92em;
   font-style: italic;
 }
 .reveal .cli-diff .new.removed .mdi { color: #C0392B; }
 .reveal .cli-diff .diff-arrow {
-  font-size: 1.4em;
+  font-size: 1.5em;
   color: #8E44AD;
   text-align: center;
+}
+
+/* Flat pillars — no boxes, just icon + label + code chip */
+.reveal .pillars-flat {
+  padding: 1.4em 0;
+}
+.reveal .pillars-flat .column {
+  text-align: center;
+  padding: 0 0.4em;
+}
+.reveal .pillars-flat .pillar-icon-flat {
+  display: block;
+  font-size: 3.2em;
+  color: #E67E22;
+  line-height: 1;
+  margin: 0 auto 0.45em;
+}
+.reveal .pillars-flat .pillar-label-flat {
+  font-weight: 700;
+  font-size: 1.1em;
+  color: #6e3906;
+  margin-bottom: 0.4em;
+}
+.reveal .pillars-flat .pillar-code-flat {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.72em;
+  color: #b9620a;
+  letter-spacing: -0.01em;
 }
 
 /* Footer */
