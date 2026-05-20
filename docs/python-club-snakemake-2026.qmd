@@ -73,28 +73,37 @@ Wratten, Wilm, Göke — *Nat. Methods* 2021 · [10.1038/s41592-021-01254-9](htt
 <p style="color: #d6eee7; font-size: 0.55em;"><a href="https://slides.com/johanneskoester/snakemake-intro-updates-2026" style="color: #fff;">slides.com/johanneskoester</a> · slides 3–12</p>
 :::
 
-## What is Snakemake?
+## Why workflow management?
 
-> **A tool to create reproducible and scalable data analyses.**
->
-> Workflows are described via a human-readable, **Python-based language**. They can be seamlessly **scaled** to server, cluster, grid and cloud environments — without modifying the workflow definition.
+> *"Data analyses usually entail the application of **many** command-line tools or scripts to **transform, filter, aggregate** or plot data and results."*
 
-::: {style="text-align: right; font-size: 0.55em; margin-top: 0.5em; color: #7f8c8d;"}
+::: {style="text-align: right; font-size: 0.6em; margin-top: 0.3em; color: #7f8c8d;"}
 — J. Köster · <em>Snakemake intro · updates 2026</em>
 :::
 
-::: {.columns style="margin-top: 1.2em;"}
+::: {style="margin-top: 1em;"}
+> *"**Reproducibility alone is by no means sufficient** to deliver an analysis of lasting impact."*
+:::
+
+::: {style="text-align: right; font-size: 0.6em; margin-top: 0.3em; color: #7f8c8d;"}
+— Mölder et al., F1000Research v3 (2025)
+:::
+
+::: {.columns style="margin-top: 1.4em;"}
 ::: {.column width="33%" style="text-align: center;"}
-<i class="mdi mdi-shield-check" style="font-size: 2.4em; color: #208F6E;"></i>
-<p style="font-weight: 600; color: #0f3a30;">Reproducible</p>
+<i class="mdi mdi-shield-check" style="font-size: 2.6em; color: #208F6E;"></i>
+<p style="font-weight: 700; color: #0f3a30; margin: 0.2em 0 0;">Reproducible</p>
+<p style="font-size: 0.7em; color: #7f8c8d; margin: 0;">same input → same output</p>
 :::
 ::: {.column width="33%" style="text-align: center;"}
-<i class="mdi mdi-cog-refresh" style="font-size: 2.4em; color: #208F6E;"></i>
-<p style="font-weight: 600; color: #0f3a30;">Adaptable</p>
+<i class="mdi mdi-cog-refresh" style="font-size: 2.6em; color: #208F6E;"></i>
+<p style="font-weight: 700; color: #0f3a30; margin: 0.2em 0 0;">Adaptable</p>
+<p style="font-size: 0.7em; color: #7f8c8d; margin: 0;">new data, new questions</p>
 :::
 ::: {.column width="33%" style="text-align: center;"}
-<i class="mdi mdi-eye-outline" style="font-size: 2.4em; color: #208F6E;"></i>
-<p style="font-weight: 600; color: #0f3a30;">Transparent</p>
+<i class="mdi mdi-eye-outline" style="font-size: 2.6em; color: #208F6E;"></i>
+<p style="font-weight: 700; color: #0f3a30; margin: 0.2em 0 0;">Transparent</p>
+<p style="font-size: 0.7em; color: #7f8c8d; margin: 0;">others can judge it</p>
 :::
 :::
 
@@ -173,7 +182,7 @@ snakemake --rulegraph | dot -Tpng > rules.png
 :::
 :::
 
-## Reproducibility primitives
+## Reproducibility & provenance
 
 ::: {.columns}
 ::: {.column width="50%"}
@@ -185,19 +194,25 @@ rule call_snvs:
     conda: "envs/gatk.yaml"
     shell: "gatk HaplotypeCaller ..."
 ```
-Pinned environments solve once, cached forever.
+Pinned envs solve once, cached forever (see HPC section).
 :::
 
 ::: {.column width="50%"}
-<h4 style="color: #208F6E;"><i class="mdi mdi-file-document"></i>&nbsp; Built-in provenance</h4>
+<h4 style="color: #208F6E;"><i class="mdi mdi-file-document"></i>&nbsp; Reports — auto since 9.1</h4>
 
 ```bash
-snakemake --report report.html
+snakemake --report report.html --report-after-run
 ```
-Single self-contained file: rule graph · runtime stats · code · `report()` outputs.
 
-<i class="mdi mdi-information" style="color: #208F6E;"></i>&nbsp; In 2026: pluggable **RO-Crate** reports.
+<p style="font-size: 0.78em; margin-top: 0.4em;">`--report-after-run` (added v9.1.0, Mar 2025) triggers report generation **on successful completion** — no manual second run.</p>
 :::
+:::
+
+::: {style="margin-top: 1em; padding: 0.8em 1em; background: #e8f5f0; border-left: 4px solid #208F6E; border-radius: 6px; font-size: 0.85em;"}
+<i class="mdi mdi-flask-outline" style="color: #208F6E;"></i>&nbsp; **Report plugins ecosystem** *(WIP — not yet on PyPI as of Q2 2026)*
+
+- `snakemake-report-plugin-rocrate` → **Provenance Run Crate** *(Workflow-Run RO-Crate profile, Leo et al. PLOS ONE 2024)*
+- `snakemake-report-plugin-nanopub` → machine-readable nanopublications
 :::
 
 # {.section-divider background-color="#8E44AD"}
@@ -494,27 +509,26 @@ Hashes script + input *attributes* (path/size/**mtime**) by default — **not co
 ::: {.columns}
 ::: {.column width="50%"}
 
-<div style="background: white; display: inline-block; padding: 8px 14px; border-radius: 8px;">
-<img src="https://raw.githubusercontent.com/nf-core/logos/master/nf-core-logos/nf-core-logo-darkbg.png" style="height: 36px;" alt="nf-core"/>
-</div>
+<img src="https://raw.githubusercontent.com/nf-core/logos/master/nf-core-logos/nf-core-logo.svg" style="height: 46px; background: white; padding: 4px 10px; border-radius: 6px;" alt="nf-core"/>
 
-### nf-core *(Jul 2025)*
-- **124** curated pipelines
-- **1,400+** modules · **70+** subworkflows
-- **2,600** contributors · **10,800** Slack
-- Strict template · `nf-test` standard
+### nf-core
+- **124** pipelines · **~1,500** modules · ~**72** subworkflows
+- **>2,600** contributors · **>10,000** Slack
+- Strict template · **`nf-test`** standard
+
+::: {style="font-size: 0.6em; color: #7f8c8d; margin-top: 0.3em;"}
+Langer et al., *Genome Biology* 26:228 (2025) · Feb 2025 figures
+:::
 :::
 
 ::: {.column width="50%"}
 
-<div style="background: white; display: inline-block; padding: 8px 14px; border-radius: 8px;">
-<img src="https://avatars.githubusercontent.com/u/33450111?s=80&v=4" style="height: 36px; border-radius: 6px;" alt="Snakemake"/>
-</div>
+<img src="https://avatars.githubusercontent.com/u/33450111?s=80&v=4" style="height: 46px; background: white; padding: 4px 10px; border-radius: 6px;" alt="Snakemake"/>
 
 ### Snakemake
-- **Workflow Catalog** (auto-indexed)
+- **Workflow Catalog** (auto-indexed from GitHub)
 - **snakemake-workflows** org: ~28 pipelines
-- **snakemake-wrappers**: hundreds, versioned
+- **snakemake-wrappers**: hundreds of versioned per-tool wrappers
 - More federated, less curated
 :::
 :::
@@ -832,9 +846,9 @@ snakemake --profile profile/ --jobs 500
 <h4 style="color: #a3e4d7;"><i class="mdi mdi-source-branch"></i>&nbsp; Context</h4>
 
 - **Wratten et al. 2021** *Nat. Methods* — [10.1038/s41592-021-01254-9](https://www.nature.com/articles/s41592-021-01254-9)
-- **nf-core** *Genome Biology* Jul 2025 — [s13059-025-03673-9](https://link.springer.com/article/10.1186/s13059-025-03673-9)
-- **EESSI** — [eessi.io](https://www.eessi.io)
-- **pip 26.1 cooldowns** — [ichard26.github.io](https://ichard26.github.io/blog/2026/04/whats-new-in-pip-26.1/)
+- **Langer et al. 2025** *Genome Biology* — [10.1186/s13059-025-03673-9](https://link.springer.com/article/10.1186/s13059-025-03673-9)
+- **Leo et al. 2024** *PLOS ONE* — Workflow-Run RO-Crate — [10.1371/journal.pone.0309210](https://doi.org/10.1371/journal.pone.0309210)
+- **EESSI** — [eessi.io](https://www.eessi.io) · **pip 26.1 cooldowns** — [ichard26.github.io](https://ichard26.github.io/blog/2026/04/whats-new-in-pip-26.1/)
 :::
 :::
 

@@ -464,30 +464,46 @@ Adapted from Johannes Köster · <em>Snakemake intro · updates 2026</em>
 </p>
 </div>
 </section>
-<section id="what-is-snakemake" class="slide level2">
-<h2>What is Snakemake?</h2>
+<section id="why-workflow-management" class="slide level2">
+<h2>Why workflow management?</h2>
 <blockquote>
-<p><strong>A tool to create reproducible and scalable data analyses.</strong></p>
-<p>Workflows are described via a human-readable, <strong>Python-based language</strong>. They can be seamlessly <strong>scaled</strong> to server, cluster, grid and cloud environments — without modifying the workflow definition.</p>
+<p><em>“Data analyses usually entail the application of <strong>many</strong> command-line tools or scripts to <strong>transform, filter, aggregate</strong> or plot data and results.”</em></p>
 </blockquote>
-<div style="text-align: right; font-size: 0.55em; margin-top: 0.5em; color: #7f8c8d;">
+<div style="text-align: right; font-size: 0.6em; margin-top: 0.3em; color: #7f8c8d;">
 <p>— J. Köster · <em>Snakemake intro · updates 2026</em></p>
 </div>
-<div class="columns" style="margin-top: 1.2em;">
+<div style="margin-top: 1em;">
+<blockquote>
+<p><em>“<strong>Reproducibility alone is by no means sufficient</strong> to deliver an analysis of lasting impact.”</em></p>
+</blockquote>
+</div>
+<div style="text-align: right; font-size: 0.6em; margin-top: 0.3em; color: #7f8c8d;">
+<p>— Mölder et al., F1000Research v3 (2025)</p>
+</div>
+<div class="columns" style="margin-top: 1.4em;">
 <div class="column" style="text-align: center;">
-<i class="mdi mdi-shield-check" style="font-size: 2.4em; color: #208F6E;"></i>
-<p style="font-weight: 600; color: #0f3a30;">
+<i class="mdi mdi-shield-check" style="font-size: 2.6em; color: #208F6E;"></i>
+<p style="font-weight: 700; color: #0f3a30; margin: 0.2em 0 0;">
 Reproducible
 </p>
-</div><div class="column" style="text-align: center;">
-<i class="mdi mdi-cog-refresh" style="font-size: 2.4em; color: #208F6E;"></i>
-<p style="font-weight: 600; color: #0f3a30;">
-Adaptable
+<p style="font-size: 0.7em; color: #7f8c8d; margin: 0;">
+same input → same output
 </p>
 </div><div class="column" style="text-align: center;">
-<i class="mdi mdi-eye-outline" style="font-size: 2.4em; color: #208F6E;"></i>
-<p style="font-weight: 600; color: #0f3a30;">
+<i class="mdi mdi-cog-refresh" style="font-size: 2.6em; color: #208F6E;"></i>
+<p style="font-weight: 700; color: #0f3a30; margin: 0.2em 0 0;">
+Adaptable
+</p>
+<p style="font-size: 0.7em; color: #7f8c8d; margin: 0;">
+new data, new questions
+</p>
+</div><div class="column" style="text-align: center;">
+<i class="mdi mdi-eye-outline" style="font-size: 2.6em; color: #208F6E;"></i>
+<p style="font-weight: 700; color: #0f3a30; margin: 0.2em 0 0;">
 Transparent
+</p>
+<p style="font-size: 0.7em; color: #7f8c8d; margin: 0;">
+others can judge it
 </p>
 </div></div>
 </section>
@@ -565,8 +581,8 @@ conda · container
 </p>
 </div></div>
 </section>
-<section id="reproducibility-primitives" class="slide level2">
-<h2>Reproducibility primitives</h2>
+<section id="reproducibility-provenance" class="slide level2">
+<h2>Reproducibility &amp; provenance</h2>
 <div class="columns">
 <div class="column" style="width:50%;">
 <h4 style="color: #208F6E;">
@@ -576,15 +592,23 @@ conda · container
 <span id="cb3-2"><a href="" aria-hidden="true" tabindex="-1"></a>    container: <span class="st">"docker://broadinstitute/gatk:4.5"</span></span>
 <span id="cb3-3"><a href="" aria-hidden="true" tabindex="-1"></a>    conda: <span class="st">"envs/gatk.yaml"</span></span>
 <span id="cb3-4"><a href="" aria-hidden="true" tabindex="-1"></a>    shell: <span class="st">"gatk HaplotypeCaller ..."</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Pinned environments solve once, cached forever.</p>
+<p>Pinned envs solve once, cached forever (see HPC section).</p>
 </div><div class="column" style="width:50%;">
 <h4 style="color: #208F6E;">
-<i class="mdi mdi-file-document"></i>&nbsp; Built-in provenance
+<i class="mdi mdi-file-document"></i>&nbsp; Reports — auto since 9.1
 </h4>
-<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">--report</span> report.html</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Single self-contained file: rule graph · runtime stats · code · <code>report()</code> outputs.</p>
-<p><i class="mdi mdi-information" style="color: #208F6E;"></i>&nbsp; In 2026: pluggable <strong>RO-Crate</strong> reports.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">--report</span> report.html <span class="at">--report-after-run</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p style="font-size: 0.78em; margin-top: 0.4em;">
+<code>--report-after-run</code> (added v9.1.0, Mar 2025) triggers report generation <strong>on successful completion</strong> — no manual second run.
+</p>
 </div></div>
+<div style="margin-top: 1em; padding: 0.8em 1em; background: #e8f5f0; border-left: 4px solid #208F6E; border-radius: 6px; font-size: 0.85em;">
+<p><i class="mdi mdi-flask-outline" style="color: #208F6E;"></i>&nbsp; <strong>Report plugins ecosystem</strong> <em>(WIP — not yet on PyPI as of Q2 2026)</em></p>
+<ul>
+<li><code>snakemake-report-plugin-rocrate</code> → <strong>Provenance Run Crate</strong> <em>(Workflow-Run RO-Crate profile, Leo et al.&nbsp;PLOS ONE 2024)</em></li>
+<li><code>snakemake-report-plugin-nanopub</code> → machine-readable nanopublications</li>
+</ul>
+</div>
 </section></section>
 <section>
 <section id="section-2" class="title-slide slide level1 section-divider center" data-background-color="#8E44AD">
@@ -962,25 +986,23 @@ Strictly objective · pick on <em>fit</em>, not on taste
 <h2>Ecosystem &amp; community</h2>
 <div class="columns">
 <div class="column" style="width:50%;">
-<div style="background: white; display: inline-block; padding: 8px 14px; border-radius: 8px;">
-<p><img src="https://raw.githubusercontent.com/nf-core/logos/master/nf-core-logos/nf-core-logo-darkbg.png" style="height: 36px;" alt="nf-core"></p>
-</div>
-<h3 id="nf-core-jul-2025">nf-core <em>(Jul 2025)</em></h3>
+<p><img src="https://raw.githubusercontent.com/nf-core/logos/master/nf-core-logos/nf-core-logo.svg" style="height: 46px; background: white; padding: 4px 10px; border-radius: 6px;" alt="nf-core"></p>
+<h3 id="nf-core">nf-core</h3>
 <ul>
-<li><strong>124</strong> curated pipelines</li>
-<li><strong>1,400+</strong> modules · <strong>70+</strong> subworkflows</li>
-<li><strong>2,600</strong> contributors · <strong>10,800</strong> Slack</li>
-<li>Strict template · <code>nf-test</code> standard</li>
+<li><strong>124</strong> pipelines · <strong>~1,500</strong> modules · ~<strong>72</strong> subworkflows</li>
+<li><strong>&gt;2,600</strong> contributors · <strong>&gt;10,000</strong> Slack</li>
+<li>Strict template · <strong><code>nf-test</code></strong> standard</li>
 </ul>
-</div><div class="column" style="width:50%;">
-<div style="background: white; display: inline-block; padding: 8px 14px; border-radius: 8px;">
-<p><img src="https://avatars.githubusercontent.com/u/33450111?s=80&amp;v=4" style="height: 36px; border-radius: 6px;" alt="Snakemake"></p>
+<div style="font-size: 0.6em; color: #7f8c8d; margin-top: 0.3em;">
+<p>Langer et al., <em>Genome Biology</em> 26:228 (2025) · Feb 2025 figures</p>
 </div>
+</div><div class="column" style="width:50%;">
+<p><img src="https://avatars.githubusercontent.com/u/33450111?s=80&amp;v=4" style="height: 46px; background: white; padding: 4px 10px; border-radius: 6px;" alt="Snakemake"></p>
 <h3 id="snakemake">Snakemake</h3>
 <ul>
-<li><strong>Workflow Catalog</strong> (auto-indexed)</li>
+<li><strong>Workflow Catalog</strong> (auto-indexed from GitHub)</li>
 <li><strong>snakemake-workflows</strong> org: ~28 pipelines</li>
-<li><strong>snakemake-wrappers</strong>: hundreds, versioned</li>
+<li><strong>snakemake-wrappers</strong>: hundreds of versioned per-tool wrappers</li>
 <li>More federated, less curated</li>
 </ul>
 </div></div>
@@ -1308,9 +1330,9 @@ Copy-paste-ready
 </h4>
 <ul>
 <li><strong>Wratten et al.&nbsp;2021</strong> <em>Nat. Methods</em> — <a href="https://www.nature.com/articles/s41592-021-01254-9">10.1038/s41592-021-01254-9</a></li>
-<li><strong>nf-core</strong> <em>Genome Biology</em> Jul 2025 — <a href="https://link.springer.com/article/10.1186/s13059-025-03673-9">s13059-025-03673-9</a></li>
-<li><strong>EESSI</strong> — <a href="https://www.eessi.io">eessi.io</a></li>
-<li><strong>pip 26.1 cooldowns</strong> — <a href="https://ichard26.github.io/blog/2026/04/whats-new-in-pip-26.1/">ichard26.github.io</a></li>
+<li><strong>Langer et al.&nbsp;2025</strong> <em>Genome Biology</em> — <a href="https://link.springer.com/article/10.1186/s13059-025-03673-9">10.1186/s13059-025-03673-9</a></li>
+<li><strong>Leo et al.&nbsp;2024</strong> <em>PLOS ONE</em> — Workflow-Run RO-Crate — <a href="https://doi.org/10.1371/journal.pone.0309210">10.1371/journal.pone.0309210</a></li>
+<li><strong>EESSI</strong> — <a href="https://www.eessi.io">eessi.io</a> · <strong>pip 26.1 cooldowns</strong> — <a href="https://ichard26.github.io/blog/2026/04/whats-new-in-pip-26.1/">ichard26.github.io</a></li>
 </ul>
 </div></div>
 <div style="text-align: center; margin-top: 1.4em; font-size: 0.65em; color: #a3e4d7;">
