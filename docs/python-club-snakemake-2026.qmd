@@ -75,36 +75,47 @@ Wratten, Wilm, Göke — *Nat. Methods* 2021 · [10.1038/s41592-021-01254-9](htt
 
 ## Why workflow management?
 
-> *"Data analyses usually entail the application of **many** command-line tools or scripts to **transform, filter, aggregate** or plot data and results."*
-
-::: {style="text-align: right; font-size: 0.6em; margin-top: 0.3em; color: #7f8c8d;"}
-— J. Köster · <em>Snakemake intro · updates 2026</em>
+::: {style="text-align: center; font-size: 1.15em; color: #0f3a30; font-weight: 600; margin-bottom: 0.6em;"}
+<i class="mdi mdi-flask" style="color: #208F6E;"></i>&nbsp; Sustainable data analysis
 :::
 
-::: {style="margin-top: 1em;"}
-> *"**Reproducibility alone is by no means sufficient** to deliver an analysis of lasting impact."*
+::: {.triad}
+::: {.columns}
+::: {.column width="33%"}
+::: {.triad-card .triad-r}
+<i class="mdi mdi-shield-check triad-icon"></i>
+<div class="triad-title">Reproducibility</div>
+<ul>
+<li>check computational validity</li>
+<li>apply same analysis to new data</li>
+</ul>
+:::
+:::
+::: {.column width="33%"}
+::: {.triad-card .triad-a}
+<i class="mdi mdi-cog-refresh triad-icon"></i>
+<div class="triad-title">Adaptability</div>
+<ul>
+<li>modify analysis</li>
+<li>extend analysis</li>
+</ul>
+:::
+:::
+::: {.column width="33%"}
+::: {.triad-card .triad-t}
+<i class="mdi mdi-eye-outline triad-icon"></i>
+<div class="triad-title">Transparency</div>
+<ul>
+<li>check methodological validity</li>
+<li>understand analysis</li>
+</ul>
+:::
+:::
+:::
 :::
 
-::: {style="text-align: right; font-size: 0.6em; margin-top: 0.3em; color: #7f8c8d;"}
-— Mölder et al., F1000Research v3 (2025)
-:::
-
-::: {.columns style="margin-top: 1.4em;"}
-::: {.column width="33%" style="text-align: center;"}
-<i class="mdi mdi-shield-check" style="font-size: 2.6em; color: #208F6E;"></i>
-<p style="font-weight: 700; color: #0f3a30; margin: 0.2em 0 0;">Reproducible</p>
-<p style="font-size: 0.7em; color: #7f8c8d; margin: 0;">same input → same output</p>
-:::
-::: {.column width="33%" style="text-align: center;"}
-<i class="mdi mdi-cog-refresh" style="font-size: 2.6em; color: #208F6E;"></i>
-<p style="font-weight: 700; color: #0f3a30; margin: 0.2em 0 0;">Adaptable</p>
-<p style="font-size: 0.7em; color: #7f8c8d; margin: 0;">new data, new questions</p>
-:::
-::: {.column width="33%" style="text-align: center;"}
-<i class="mdi mdi-eye-outline" style="font-size: 2.6em; color: #208F6E;"></i>
-<p style="font-weight: 700; color: #0f3a30; margin: 0.2em 0 0;">Transparent</p>
-<p style="font-size: 0.7em; color: #7f8c8d; margin: 0;">others can judge it</p>
-:::
+::: {style="text-align: right; font-size: 0.55em; margin-top: 0.6em; color: #7f8c8d;"}
+Adapted from J. Köster · <em>Snakemake intro · updates 2026</em> · Mölder et al., F1000Research v3 (2025)
 :::
 
 ## One rule, four ideas
@@ -358,23 +369,54 @@ snakemake --default-storage-provider s3 \
 
 ## CLI rename — what to change in your profile
 
-::: {.cli-rename}
+::: {.cli-diff}
 
-| v7 | v8 / v9 |
-|----|---------|
-| `--use-conda` | `--sdm conda` |
-| `--use-singularity` | `--sdm apptainer` |
-| `--use-envmodules` | `--sdm env-modules` |
-| `--singularity-args` | `--apptainer-args` |
-| `--cluster "sbatch ..."` | `--executor slurm` *(or `cluster-generic`)* |
-| `--drmaa` · `--kubernetes` · `--google-lifesciences` | `--executor <name>` |
-| `--conda-frontend mamba` | <i class="mdi mdi-close-circle" style="color: #C0392B;"></i> removed |
-| `--restart-times N` | `--retries N` |
+::: {.diff-row}
+::: {.old} `--use-conda` :::
+<i class="mdi mdi-arrow-right diff-arrow"></i>
+::: {.new} `--sdm conda` :::
+:::
+
+::: {.diff-row}
+::: {.old} `--use-singularity` :::
+<i class="mdi mdi-arrow-right diff-arrow"></i>
+::: {.new} `--sdm apptainer` :::
+:::
+
+::: {.diff-row}
+::: {.old} `--use-envmodules` :::
+<i class="mdi mdi-arrow-right diff-arrow"></i>
+::: {.new} `--sdm env-modules` :::
+:::
+
+::: {.diff-row}
+::: {.old} `--singularity-args` :::
+<i class="mdi mdi-arrow-right diff-arrow"></i>
+::: {.new} `--apptainer-args` :::
+:::
+
+::: {.diff-row}
+::: {.old} `--cluster "sbatch ..."` :::
+<i class="mdi mdi-arrow-right diff-arrow"></i>
+::: {.new} `--executor slurm` :::
+:::
+
+::: {.diff-row}
+::: {.old} `--conda-frontend mamba` :::
+<i class="mdi mdi-arrow-right diff-arrow"></i>
+::: {.new .removed} <i class="mdi mdi-close-circle"></i>&nbsp; removed :::
+:::
+
+::: {.diff-row}
+::: {.old} `--restart-times N` :::
+<i class="mdi mdi-arrow-right diff-arrow"></i>
+::: {.new} `--retries N` :::
+:::
 
 :::
 
-::: {style="margin-top: 0.6em; font-size: 0.8em;"}
-<i class="mdi mdi-camera" style="color: #8E44AD;"></i>&nbsp; Profile schema is versioned too: place a `config.v8+.yaml` next to the legacy `config.yaml`.
+::: {style="margin-top: 0.8em; font-size: 0.78em; text-align: center; color: #7f8c8d;"}
+<i class="mdi mdi-information" style="color: #8E44AD;"></i>&nbsp; Profile schema is versioned too · place `config.v8+.yaml` next to the legacy `config.yaml`
 :::
 
 ## What actually matters in v9.x

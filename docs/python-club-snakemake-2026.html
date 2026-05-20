@@ -466,46 +466,61 @@ Adapted from Johannes Köster · <em>Snakemake intro · updates 2026</em>
 </section>
 <section id="why-workflow-management" class="slide level2">
 <h2>Why workflow management?</h2>
-<blockquote>
-<p><em>“Data analyses usually entail the application of <strong>many</strong> command-line tools or scripts to <strong>transform, filter, aggregate</strong> or plot data and results.”</em></p>
-</blockquote>
-<div style="text-align: right; font-size: 0.6em; margin-top: 0.3em; color: #7f8c8d;">
-<p>— J. Köster · <em>Snakemake intro · updates 2026</em></p>
+<div style="text-align: center; font-size: 1.15em; color: #0f3a30; font-weight: 600; margin-bottom: 0.6em;">
+<p><i class="mdi mdi-flask" style="color: #208F6E;"></i>&nbsp; Sustainable data analysis</p>
 </div>
-<div style="margin-top: 1em;">
-<blockquote>
-<p><em>“<strong>Reproducibility alone is by no means sufficient</strong> to deliver an analysis of lasting impact.”</em></p>
-</blockquote>
+<div class="triad">
+<div class="columns">
+<div class="column" style="width:33%;">
+<div class="triad-card triad-r">
+<i class="mdi mdi-shield-check triad-icon"></i>
+<div class="triad-title">
+Reproducibility
 </div>
-<div style="text-align: right; font-size: 0.6em; margin-top: 0.3em; color: #7f8c8d;">
-<p>— Mölder et al., F1000Research v3 (2025)</p>
+<ul>
+<li>
+check computational validity
+</li>
+<li>
+apply same analysis to new data
+</li>
+</ul>
 </div>
-<div class="columns" style="margin-top: 1.4em;">
-<div class="column" style="text-align: center;">
-<i class="mdi mdi-shield-check" style="font-size: 2.6em; color: #208F6E;"></i>
-<p style="font-weight: 700; color: #0f3a30; margin: 0.2em 0 0;">
-Reproducible
-</p>
-<p style="font-size: 0.7em; color: #7f8c8d; margin: 0;">
-same input → same output
-</p>
-</div><div class="column" style="text-align: center;">
-<i class="mdi mdi-cog-refresh" style="font-size: 2.6em; color: #208F6E;"></i>
-<p style="font-weight: 700; color: #0f3a30; margin: 0.2em 0 0;">
-Adaptable
-</p>
-<p style="font-size: 0.7em; color: #7f8c8d; margin: 0;">
-new data, new questions
-</p>
-</div><div class="column" style="text-align: center;">
-<i class="mdi mdi-eye-outline" style="font-size: 2.6em; color: #208F6E;"></i>
-<p style="font-weight: 700; color: #0f3a30; margin: 0.2em 0 0;">
-Transparent
-</p>
-<p style="font-size: 0.7em; color: #7f8c8d; margin: 0;">
-others can judge it
-</p>
+</div><div class="column" style="width:33%;">
+<div class="triad-card triad-a">
+<i class="mdi mdi-cog-refresh triad-icon"></i>
+<div class="triad-title">
+Adaptability
+</div>
+<ul>
+<li>
+modify analysis
+</li>
+<li>
+extend analysis
+</li>
+</ul>
+</div>
+</div><div class="column" style="width:33%;">
+<div class="triad-card triad-t">
+<i class="mdi mdi-eye-outline triad-icon"></i>
+<div class="triad-title">
+Transparency
+</div>
+<ul>
+<li>
+check methodological validity
+</li>
+<li>
+understand analysis
+</li>
+</ul>
+</div>
 </div></div>
+</div>
+<div style="text-align: right; font-size: 0.55em; margin-top: 0.6em; color: #7f8c8d;">
+<p>Adapted from J. Köster · <em>Snakemake intro · updates 2026</em> · Mölder et al., F1000Research v3 (2025)</p>
+</div>
 </section>
 <section id="one-rule-four-ideas" class="slide level2">
 <h2>One rule, four ideas</h2>
@@ -745,56 +760,31 @@ v8 / v9 — one flag
 </section>
 <section id="cli-rename-what-to-change-in-your-profile" class="slide level2">
 <h2>CLI rename — what to change in your profile</h2>
-<div class="cli-rename">
-<table class="caption-top">
-<colgroup>
-<col style="width: 30%">
-<col style="width: 69%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>v7</th>
-<th>v8 / v9</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>--use-conda</code></td>
-<td><code>--sdm conda</code></td>
-</tr>
-<tr class="even">
-<td><code>--use-singularity</code></td>
-<td><code>--sdm apptainer</code></td>
-</tr>
-<tr class="odd">
-<td><code>--use-envmodules</code></td>
-<td><code>--sdm env-modules</code></td>
-</tr>
-<tr class="even">
-<td><code>--singularity-args</code></td>
-<td><code>--apptainer-args</code></td>
-</tr>
-<tr class="odd">
-<td><code>--cluster "sbatch ..."</code></td>
-<td><code>--executor slurm</code> <em>(or <code>cluster-generic</code>)</em></td>
-</tr>
-<tr class="even">
-<td><code>--drmaa</code> · <code>--kubernetes</code> · <code>--google-lifesciences</code></td>
-<td><code>--executor &lt;name&gt;</code></td>
-</tr>
-<tr class="odd">
-<td><code>--conda-frontend mamba</code></td>
-<td><i class="mdi mdi-close-circle" style="color: #C0392B;"></i> removed</td>
-</tr>
-<tr class="even">
-<td><code>--restart-times N</code></td>
-<td><code>--retries N</code></td>
-</tr>
-</tbody>
-</table>
+<div class="cli-diff">
+<div class="diff-row">
+<p>::: {.old} <code>--use-conda</code> ::: <i class="mdi mdi-arrow-right diff-arrow"></i> ::: {.new} <code>--sdm conda</code> :::</p>
 </div>
-<div style="margin-top: 0.6em; font-size: 0.8em;">
-<p><i class="mdi mdi-camera" style="color: #8E44AD;"></i>&nbsp; Profile schema is versioned too: place a <code>config.v8+.yaml</code> next to the legacy <code>config.yaml</code>.</p>
+<div class="diff-row">
+<p>::: {.old} <code>--use-singularity</code> ::: <i class="mdi mdi-arrow-right diff-arrow"></i> ::: {.new} <code>--sdm apptainer</code> :::</p>
+</div>
+<div class="diff-row">
+<p>::: {.old} <code>--use-envmodules</code> ::: <i class="mdi mdi-arrow-right diff-arrow"></i> ::: {.new} <code>--sdm env-modules</code> :::</p>
+</div>
+<div class="diff-row">
+<p>::: {.old} <code>--singularity-args</code> ::: <i class="mdi mdi-arrow-right diff-arrow"></i> ::: {.new} <code>--apptainer-args</code> :::</p>
+</div>
+<div class="diff-row">
+<p>::: {.old} <code>--cluster "sbatch ..."</code> ::: <i class="mdi mdi-arrow-right diff-arrow"></i> ::: {.new} <code>--executor slurm</code> :::</p>
+</div>
+<div class="diff-row">
+<p>::: {.old} <code>--conda-frontend mamba</code> ::: <i class="mdi mdi-arrow-right diff-arrow"></i> ::: {.new .removed} <i class="mdi mdi-close-circle"></i>&nbsp; removed :::</p>
+</div>
+<div class="diff-row">
+<p>::: {.old} <code>--restart-times N</code> ::: <i class="mdi mdi-arrow-right diff-arrow"></i> ::: {.new} <code>--retries N</code> :::</p>
+</div>
+</div>
+<div style="margin-top: 0.8em; font-size: 0.78em; text-align: center; color: #7f8c8d;">
+<p><i class="mdi mdi-information" style="color: #8E44AD;"></i>&nbsp; Profile schema is versioned too · place <code>config.v8+.yaml</code> next to the legacy <code>config.yaml</code></p>
 </div>
 </section>
 <section id="what-actually-matters-in-v9.x" class="slide level2">
