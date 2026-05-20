@@ -10,7 +10,7 @@
 <link href="python-club-snakemake-2026_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
   <meta name="generator" content="quarto-1.5.57">
 
-  <meta name="author" content="Python Club seminar">
+  <meta name="author" content="Python Club">
   <meta name="dcterms.date" content="2026-05-20">
   <title>Snakemake in 2026</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -388,22 +388,23 @@
       margin-right: 0; 
     }
   </style>
-  <script src="python-club-snakemake-2026_files/libs/quarto-diagram/mermaid.min.js"></script>
-  <script src="python-club-snakemake-2026_files/libs/quarto-diagram/mermaid-init.js"></script>
-  <link href="python-club-snakemake-2026_files/libs/quarto-diagram/mermaid.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
 </head>
 <body class="quarto-light">
   <div class="reveal">
     <div class="slides">
 
-<section id="title-slide" data-background-color="#1f2a44" class="quarto-title-block center">
+<section id="title-slide" data-background-color="#0f3a30" class="quarto-title-block center">
   <h1 class="title">Snakemake in 2026</h1>
-  <p class="subtitle">What’s new since v7, an honest Nextflow comparison, and EMBL HPC field notes</p>
+  <p class="subtitle">Updates since v7 · honest Nextflow comparison · EMBL HPC field notes</p>
 
 <div class="quarto-title-authors">
 <div class="quarto-title-author">
 <div class="quarto-title-author-name">
-Python Club seminar 
+Python Club 
 </div>
 </div>
 </div>
@@ -411,74 +412,31 @@ Python Club seminar
   <p class="date">2026-05-20</p>
 </section>
 <section>
-<section id="why-this-talk" class="title-slide slide level1 center" data-background-color="#1f2a44">
-<h1>Why this talk</h1>
-<aside class="notes">
-<p>30 seconds. Hook with the pain point. Don’t define anything yet — make them remember the last time a pipeline blew up.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="the-pain-point" class="slide level2">
-<h2>The pain point</h2>
-<blockquote>
-<p><em>“Raise your hand if your last pipeline was a chain of <code>bash</code> + <code>nohup</code> + a README with the commands in the right order.”</em></p>
-<p><em>“Keep it up if you’ve ever lost a week because someone re-ran step 3 with new inputs and forgot to re-run step 4.”</em></p>
-</blockquote>
-<div class="fragment">
-<p>That’s the problem a workflow manager solves.</p>
+<section id="section" class="title-slide slide level1 center" data-background-color="#0f3a30">
+<h1></h1>
+<div style="text-align: center; padding-top: 1em;">
+<p><img src="https://avatars.githubusercontent.com/u/33450111?s=200&amp;v=4" style="height: 140px; border-radius: 20px;" alt="Snakemake"></p>
+<h1 style="color: #fff; margin-top: 0.4em;">
+Snakemake in 2026
+</h1>
+<p style="color: #a3e4d7; font-size: 0.7em; margin-top: 0;">
+v7 → v9 · Nextflow side-by-side · EMBL HPC
+</p>
+<p style="color: #d6eee7; font-size: 0.45em; margin-top: 2em;">
+Python Club · 2026
+</p>
 </div>
 </section>
-<section id="agenda-40-minutes" class="slide level2">
-<h2>Agenda — 40 minutes</h2>
-<table class="caption-top">
-<thead>
-<tr class="header">
-<th>Time</th>
-<th>Section</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>5 min</td>
-<td>Workflow managers, FAIR, why bother</td>
-</tr>
-<tr class="even">
-<td>3 min</td>
-<td>Snakemake core concepts (refresher)</td>
-</tr>
-<tr class="odd">
-<td>10 min</td>
-<td><strong>v7 → v8 → v9</strong>: what actually changed</td>
-</tr>
-<tr class="even">
-<td>9 min</td>
-<td><strong>Snakemake vs Nextflow</strong>: low-level, objective</td>
-</tr>
-<tr class="odd">
-<td>5 min</td>
-<td>Live demo on EMBL SLURM</td>
-</tr>
-<tr class="even">
-<td>3 min</td>
-<td>EMBL HPC checklist</td>
-</tr>
-<tr class="odd">
-<td>5 min</td>
-<td>Q&amp;A</td>
-</tr>
-</tbody>
-</table>
+<section id="where-workflow-managers-fit" class="slide level2" data-background-color="#34495E">
+<h2>Where workflow managers fit</h2>
+<div style="text-align: center;">
+<p><img src="https://media.springernature.com/full/springer-static/image/art%3A10.1038%2Fs41592-021-01254-9/MediaObjects/41592_2021_1254_Fig1_HTML.png?as=webp" style="max-height: 540px; background: white; padding: 8px; border-radius: 6px;" alt="Wratten et al. 2021 Nature Methods Fig 1"></p>
+</div>
+<div style="text-align: center; font-size: 0.55em; color: #ecf0f1; margin-top: 0.6em;">
+<p>Wratten, Wilm, Göke — <em>Nat. Methods</em> 2021 · <a href="https://www.nature.com/articles/s41592-021-01254-9">10.1038/s41592-021-01254-9</a></p>
+</div>
 <aside class="notes">
-<p>This talk is not “which is better”. I’ll be explicit about what’s a fact and what’s a tradeoff.</p>
+<p>30 seconds. Audience knows WMS already — use the figure to set context, not teach. Point at Snakemake’s quadrant briefly.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -490,156 +448,35 @@ Python Club seminar
           overflow: hidden!important;
           display:block!important;
       }</style></aside>
+</section>
+<section id="agenda" class="slide level2" data-background-color="#34495E">
+<h2>Agenda</h2>
+<div class="agenda-grid">
+<ul>
+<li><i class="mdi mdi-rocket-launch"></i>&nbsp;<strong>Snakemake refresher</strong> — Köster-style — <em>4 min</em></li>
+<li><i class="mdi mdi-puzzle"></i>&nbsp;<strong>v7 → v9</strong> — what actually changed — <em>10 min</em></li>
+<li><i class="mdi mdi-scale-balance"></i>&nbsp;<strong>vs Nextflow</strong> — low-level, objective — <em>9 min</em></li>
+<li><i class="mdi mdi-server-network"></i>&nbsp;<strong>EMBL HPC</strong> — caching, storage, grouping, EESSI — <em>7 min</em></li>
+<li><i class="mdi mdi-play-circle"></i>&nbsp;<strong>Live demo</strong> — SLURM — <em>5 min</em></li>
+<li><i class="mdi mdi-comment-question"></i>&nbsp;<strong>Q&amp;A</strong> — <em>5 min</em></li>
+</ul>
+</div>
 </section></section>
 <section>
-<section id="whats-a-workflow-manager" class="title-slide slide level1 center" data-background-color="#1f2a44">
-<h1>What’s a workflow manager?</h1>
-
-</section>
-<section id="three-properties" class="slide level2">
-<h2>Three properties</h2>
-<div>
-<ul>
-<li class="fragment"><strong>Declarative</strong> — describe <em>what</em> should exist (the outputs), not <em>how</em> to get there step by step.</li>
-<li class="fragment"><strong>DAG-based</strong> — the tool figures out the dependency graph and what’s stale.</li>
-<li class="fragment"><strong>Portable</strong> — same workflow definition runs on laptop / SLURM / Kubernetes / AWS Batch. Executor is configuration, not code.</li>
-</ul>
+<section id="section-1" class="title-slide slide level1 section-divider center" data-background-color="#208F6E">
+<h1></h1>
+<div style="text-align: center;">
+<p><i class="mdi mdi-rocket-launch" style="font-size: 4em; color: #fff;"></i></p>
+<h1 style="color: #fff;">
+Snakemake — refresher
+</h1>
+<p style="color: #d6eee7; font-size: 0.6em;">
+Slides adapted from Johannes Köster’s <em>Snakemake intro · updates 2026</em><br><a href="https://slides.com/johanneskoester/snakemake-intro-updates-2026" style="color: #fff;">slides.com/johanneskoester</a> · slides 3–12
+</p>
 </div>
-<aside class="notes">
-<p>Anchor these three properties — every later slide is a consequence of one of them.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
 </section>
-<section id="fair-principles-workflow-managers" class="slide level2">
-<h2>FAIR principles → workflow managers</h2>
-<table class="caption-top">
-<colgroup>
-<col style="width: 17%">
-<col style="width: 82%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>FAIR</th>
-<th>Workflow-manager equivalent</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><strong>F</strong>indable</td>
-<td>Workflow Catalog · standard repo layout · Zenodo/CFF citation</td>
-</tr>
-<tr class="even">
-<td><strong>A</strong>ccessible</td>
-<td>Git-hosted · containers/conda bundled · reproducible by anyone</td>
-</tr>
-<tr class="odd">
-<td><strong>I</strong>nteroperable</td>
-<td>Same workflow laptop → SLURM → cloud · standard reports</td>
-</tr>
-<tr class="even">
-<td><strong>R</strong>eusable</td>
-<td>Pinned envs · content-addressed outputs · machine-readable provenance</td>
-</tr>
-</tbody>
-</table>
-<aside class="notes">
-<p>FAIR was originally about <em>data</em>. The WorkflowHub / nf-core / Snakemake communities adopted it for <em>workflows</em>.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="kösters-framing-the-triad" class="slide level2">
-<h2>Köster’s framing — the triad</h2>
-<blockquote>
-<p><em>“We postulate that it is equally important to ensure adaptability and transparency. The former describes the ability to modify the analysis to answer extended or slightly different research questions. The latter describes the ability to understand the analysis in order to judge whether it is not only technically, but methodologically valid.”</em></p>
-</blockquote>
-<div style="text-align: right; font-style: italic;">
-<p>— Mölder et al., F1000Research 10:33 (rolling paper, v3 Sep 2025)</p>
-</div>
-<div class="fragment">
-<p><strong>Reproducibility + Adaptability + Transparency</strong></p>
-</div>
-<aside class="notes">
-<p>Köster doesn’t pitch pure FAIR — he uses this triad. Cite the rolling paper v3 from Sep 2025 — most current source.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="a-few-numbers" class="slide level2">
-<h2>A few numbers</h2>
-<div class="columns">
-<div class="column" style="width:50%;">
-<h3 id="snakemake">Snakemake</h3>
-<ul>
-<li>Founding paper: Köster &amp; Rahmann, <em>Bioinformatics</em> <strong>2012</strong></li>
-<li><blockquote>
-<p>1,000,000 downloads</p>
-</blockquote></li>
-<li><blockquote>
-<p>2,000 citations</p>
-</blockquote></li>
-<li>~11 new citations / week</li>
-<li>Rolling F1000 paper, v3 Sep 2025</li>
-</ul>
-</div><div class="column" style="width:50%;">
-<h3 id="nextflow-nf-core">Nextflow / nf-core</h3>
-<ul>
-<li>Founding paper: Di Tommaso et al., <em>Nat. Biotechnol.</em> <strong>2017</strong></li>
-<li>nf-core (<em>Genome Biology</em> Jul 2025):
-<ul>
-<li><strong>124</strong> curated pipelines</li>
-<li><strong>1400+</strong> modules</li>
-<li><strong>2600</strong> contributors</li>
-<li><strong>10,800</strong> Slack members</li>
-</ul></li>
-</ul>
-</div></div>
-<aside class="notes">
-<p>Both are mature, both are in production at EMBL. This sets up the “no which is better” framing.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section></section>
-<section>
-<section id="snakemake-core-in-3-minutes" class="title-slide slide level1 center" data-background-color="#1f2a44">
-<h1>Snakemake core, in 3 minutes</h1>
-
-</section>
-<section id="the-object-model-one-rule-four-ideas" class="slide level2">
-<h2>The object model — one rule, four ideas</h2>
+<section id="one-rule-four-ideas" class="slide level2" data-background-color="#208F6E" data-color="white">
+<h2>One rule, four ideas</h2>
 <div class="sourceCode" id="cb1" data-code-line-numbers="|1|2-3|4-6|7"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href=""></a>rule align:</span>
 <span id="cb1-2"><a href=""></a>    <span class="bu">input</span>:  <span class="st">"fastq/</span><span class="sc">{sample}</span><span class="st">.fq.gz"</span>      <span class="co"># wildcards</span></span>
 <span id="cb1-3"><a href=""></a>    output: <span class="st">"bam/</span><span class="sc">{sample}</span><span class="st">.bam"</span></span>
@@ -647,206 +484,36 @@ Python Club seminar
 <span id="cb1-5"><a href=""></a>    resources: mem_mb<span class="op">=</span><span class="dv">16_000</span>, runtime<span class="op">=</span><span class="dv">120</span></span>
 <span id="cb1-6"><a href=""></a>    conda:  <span class="st">"envs/bwa.yaml"</span>             <span class="co"># per-rule software</span></span>
 <span id="cb1-7"><a href=""></a>    shell:  <span class="st">"bwa mem -t </span><span class="sc">{threads}</span><span class="st"> ref </span><span class="sc">{input}</span><span class="st"> | samtools sort -o </span><span class="sc">{output}</span><span class="st">"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<aside class="notes">
-<p>A Snakefile is just Python with extra top-level constructs. Highlight: rule, wildcards, resources, per-rule env.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
+<div class="columns" style="margin-top: 1em;">
+<div class="column" style="width:25%;">
+<p><i class="mdi mdi-puzzle-outline" style="color: #208F6E;"></i> <strong>Rule</strong></p>
+</div><div class="column" style="width:25%;">
+<p><i class="mdi mdi-asterisk" style="color: #208F6E;"></i> <strong>Wildcards</strong></p>
+</div><div class="column" style="width:25%;">
+<p><i class="mdi mdi-cpu-64-bit" style="color: #208F6E;"></i> <strong>Resources</strong></p>
+</div><div class="column" style="width:25%;">
+<p><i class="mdi mdi-package-variant" style="color: #208F6E;"></i> <strong>Env per rule</strong></p>
+</div></div>
 </section>
-<section id="pull-based-dag-make-style" class="slide level2">
-<h2>Pull-based DAG (Make-style)</h2>
-<div class="cell" data-reveal="true" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb2-1"><a href="" aria-hidden="true" tabindex="-1"></a>flowchart LR</span>
-<span id="cb2-2"><a href="" aria-hidden="true" tabindex="-1"></a>    A[fastq/A.fq.gz] --&gt; B[align A]</span>
-<span id="cb2-3"><a href="" aria-hidden="true" tabindex="-1"></a>    B --&gt; C[bam/A.bam]</span>
-<span id="cb2-4"><a href="" aria-hidden="true" tabindex="-1"></a>    C --&gt; D[call_variants A]</span>
-<span id="cb2-5"><a href="" aria-hidden="true" tabindex="-1"></a>    D --&gt; E[vcf/A.vcf]</span>
-<span id="cb2-6"><a href="" aria-hidden="true" tabindex="-1"></a>    style A fill:#e3f2fd,stroke:#1565c0</span>
-<span id="cb2-7"><a href="" aria-hidden="true" tabindex="-1"></a>    style C fill:#fff9c4,stroke:#f9a825</span>
-<span id="cb2-8"><a href="" aria-hidden="true" tabindex="-1"></a>    style E fill:#c8e6c9,stroke:#2e7d32</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div>
-<p></p><figure class=""><p></p>
-<div>
-
-</div>
-<p></p></figure><p></p>
-</div>
-</div>
-</div>
-<p>You ask for <strong><code>vcf/A.vcf</code></strong>. Snakemake recurses back: <em>“what do I need? which rule produces it?”</em> until it hits files that exist.</p>
-<div class="fragment">
-<p><strong><code>--dry-run</code> shows the whole plan before anything executes.</strong></p>
-</div>
-<aside class="notes">
-<p>This is the single most important concept. It shows up again as the deepest semantic difference vs Nextflow.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="reproducibility-primitives" class="slide level2">
-<h2>Reproducibility primitives</h2>
-<ul>
-<li><code>conda:</code> / <code>container:</code> per rule</li>
-<li><code>--report report.html</code> — single-file shareable provenance</li>
-<li><code>.snakemake/</code> tracks code, params, inputs, env hashes → smart rerun</li>
-</ul>
-</section></section>
-<section>
-<section id="v7-v8-v9-what-changed" class="title-slide slide level1 center" data-background-color="#7b1fa2">
-<h1>v7 → v8 → v9: what changed</h1>
-
-</section>
-<section id="the-headline" class="slide level2">
-<h2>The headline</h2>
-<div class="r-fit-text">
-<p>v8 (Jan 2024) was the disruption.</p>
-</div>
-<div class="r-fit-text">
-<p>v9 (Feb 2025) is mostly invisible.</p>
-</div>
-<div class="fragment">
-<p>The whole engine was decomposed into a <strong>plugin framework</strong>.</p>
-</div>
-</section>
-<section id="v7-monolith" class="slide level2">
-<h2>v7: monolith</h2>
-<div class="cell" data-reveal="true" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb3-1"><a href="" aria-hidden="true" tabindex="-1"></a>flowchart TB</span>
-<span id="cb3-2"><a href="" aria-hidden="true" tabindex="-1"></a>    SMK[Snakemake v7 core]</span>
-<span id="cb3-3"><a href="" aria-hidden="true" tabindex="-1"></a>    SMK --- SLURM</span>
-<span id="cb3-4"><a href="" aria-hidden="true" tabindex="-1"></a>    SMK --- DRMAA</span>
-<span id="cb3-5"><a href="" aria-hidden="true" tabindex="-1"></a>    SMK --- K8S[Kubernetes]</span>
-<span id="cb3-6"><a href="" aria-hidden="true" tabindex="-1"></a>    SMK --- GLS[Google LifeSciences]</span>
-<span id="cb3-7"><a href="" aria-hidden="true" tabindex="-1"></a>    SMK --- S3</span>
-<span id="cb3-8"><a href="" aria-hidden="true" tabindex="-1"></a>    SMK --- GS[Google Storage]</span>
-<span id="cb3-9"><a href="" aria-hidden="true" tabindex="-1"></a>    SMK --- HTTP</span>
-<span id="cb3-10"><a href="" aria-hidden="true" tabindex="-1"></a>    SMK --- FTP</span>
-<span id="cb3-11"><a href="" aria-hidden="true" tabindex="-1"></a>    SMK --- CONDA[conda]</span>
-<span id="cb3-12"><a href="" aria-hidden="true" tabindex="-1"></a>    SMK --- SING[singularity]</span>
-<span id="cb3-13"><a href="" aria-hidden="true" tabindex="-1"></a>    SMK --- EM[env-modules]</span>
-<span id="cb3-14"><a href="" aria-hidden="true" tabindex="-1"></a>    style SMK fill:#fce4ec,stroke:#c2185b,stroke-width:3px</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div>
-<p></p><figure class=""><p></p>
-<div>
-
-</div>
-<p></p></figure><p></p>
-</div>
-</div>
-</div>
-<p>All executors, storage backends, software-deployment in <strong>one package</strong>.</p>
-</section>
-<section id="v8-plugin-framework" class="slide level2">
-<h2>v8: plugin framework</h2>
-<div class="cell" data-reveal="true" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb4-1"><a href="" aria-hidden="true" tabindex="-1"></a>flowchart TB</span>
-<span id="cb4-2"><a href="" aria-hidden="true" tabindex="-1"></a>    SMK[Snakemake v8/v9 core] --- IF1[interface-executor-plugins]</span>
-<span id="cb4-3"><a href="" aria-hidden="true" tabindex="-1"></a>    SMK --- IF2[interface-storage-plugins]</span>
-<span id="cb4-4"><a href="" aria-hidden="true" tabindex="-1"></a>    SMK --- IF3[interface-logger-plugins]</span>
-<span id="cb4-5"><a href="" aria-hidden="true" tabindex="-1"></a>    IF1 --- E1[plugin-slurm]</span>
-<span id="cb4-6"><a href="" aria-hidden="true" tabindex="-1"></a>    IF1 --- E2[plugin-kubernetes]</span>
-<span id="cb4-7"><a href="" aria-hidden="true" tabindex="-1"></a>    IF1 --- E3[plugin-googlebatch]</span>
-<span id="cb4-8"><a href="" aria-hidden="true" tabindex="-1"></a>    IF1 --- E4[plugin-azure-batch]</span>
-<span id="cb4-9"><a href="" aria-hidden="true" tabindex="-1"></a>    IF1 --- E5[plugin-flux]</span>
-<span id="cb4-10"><a href="" aria-hidden="true" tabindex="-1"></a>    IF2 --- S1[plugin-s3]</span>
-<span id="cb4-11"><a href="" aria-hidden="true" tabindex="-1"></a>    IF2 --- S2[plugin-fs]</span>
-<span id="cb4-12"><a href="" aria-hidden="true" tabindex="-1"></a>    IF2 --- S3p[plugin-gcs]</span>
-<span id="cb4-13"><a href="" aria-hidden="true" tabindex="-1"></a>    IF2 --- S4[plugin-zenodo]</span>
-<span id="cb4-14"><a href="" aria-hidden="true" tabindex="-1"></a>    IF3 --- L1[plugin-snkmt]</span>
-<span id="cb4-15"><a href="" aria-hidden="true" tabindex="-1"></a>    style SMK fill:#e8eaf6,stroke:#3949ab,stroke-width:3px</span>
-<span id="cb4-16"><a href="" aria-hidden="true" tabindex="-1"></a>    style IF1 fill:#fff3e0,stroke:#ef6c00</span>
-<span id="cb4-17"><a href="" aria-hidden="true" tabindex="-1"></a>    style IF2 fill:#fff3e0,stroke:#ef6c00</span>
-<span id="cb4-18"><a href="" aria-hidden="true" tabindex="-1"></a>    style IF3 fill:#fff3e0,stroke:#ef6c00</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div>
-<p></p><figure class=""><p></p>
-<div>
-
-</div>
-<p></p></figure><p></p>
-</div>
-</div>
-</div>
-<aside class="notes">
-<p>Each plugin is <code>pip install</code>-able. Settings declared as <code>@dataclass</code>, become CLI flags automatically.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="executor-plugins-how-it-looks" class="slide level2">
-<h2>Executor plugins — how it looks</h2>
-<div class="sourceCode" id="cb5" data-code-line-numbers="|1|2"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href=""></a><span class="ex">pip</span> install snakemake-executor-plugin-slurm</span>
-<span id="cb5-2"><a href=""></a><span class="ex">snakemake</span> <span class="at">--executor</span> slurm <span class="at">--jobs</span> 100 ...</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="fragment">
-<p><strong>Available officially (late 2025):</strong> <code>slurm</code>, <code>lsf</code>, <code>htcondor</code>, <code>kubernetes</code>, <code>googlebatch</code>, <code>azure-batch</code>, <code>flux</code>, <code>cluster-generic</code></p>
-<p>Catalog: <a href="https://snakemake.github.io/snakemake-plugin-catalog/" class="uri">https://snakemake.github.io/snakemake-plugin-catalog/</a></p>
-</div>
-<aside class="notes">
-<p>SLURM plugin submits Snakemake itself as the job script — necessary so <code>run:</code> blocks and wrappers work remotely. Installing the executor plugin also installs a companion <code>jobstep</code> plugin used on the worker.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="storage-plugins-the-storage-directive" class="slide level2">
-<h2>Storage plugins — the <code>storage</code> directive</h2>
+<section id="how-execution-works" class="slide level2">
+<h2>How execution works</h2>
 <div class="columns">
 <div class="column" style="width:50%;">
-<p><strong>v7 — imports inside Snakefile</strong></p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> snakemake.remote.S3 <span class="op">\</span></span>
-<span id="cb6-2"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="im">import</span> RemoteProvider</span>
-<span id="cb6-3"><a href="" aria-hidden="true" tabindex="-1"></a>S3 <span class="op">=</span> RemoteProvider()</span>
-<span id="cb6-4"><a href="" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-5"><a href="" aria-hidden="true" tabindex="-1"></a>rule x:</span>
-<span id="cb6-6"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>: S3.remote(</span>
-<span id="cb6-7"><a href="" aria-hidden="true" tabindex="-1"></a>        <span class="st">"bucket/in.txt"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><i class="mdi mdi-arrow-left-bold-circle" style="font-size: 2.5em; color: #208F6E;"></i></p>
+<h3 id="pull-based-dag">Pull-based DAG</h3>
+<p>Ask for an output file → Snakemake recurses back to find what’s needed → builds the static DAG → schedules jobs.</p>
+<p><code>--dry-run</code> shows the full plan before anything executes.</p>
 </div><div class="column" style="width:50%;">
-<p><strong>v8/v9 — directive</strong></p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="" aria-hidden="true" tabindex="-1"></a>storage:</span>
-<span id="cb7-2"><a href="" aria-hidden="true" tabindex="-1"></a>    provider<span class="op">=</span><span class="st">"s3"</span>,</span>
-<span id="cb7-3"><a href="" aria-hidden="true" tabindex="-1"></a>    max_requests_per_second<span class="op">=</span><span class="dv">10</span></span>
-<span id="cb7-4"><a href="" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-5"><a href="" aria-hidden="true" tabindex="-1"></a>rule x:</span>
-<span id="cb7-6"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>: storage(</span>
-<span id="cb7-7"><a href="" aria-hidden="true" tabindex="-1"></a>        <span class="st">"s3://bucket/in.txt"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><i class="mdi mdi-shield-check" style="font-size: 2.5em; color: #208F6E;"></i></p>
+<h3 id="reproducibility-built-in">Reproducibility built-in</h3>
+<ul>
+<li><code>conda:</code> / <code>container:</code> per rule</li>
+<li><code>--report report.html</code> provenance</li>
+<li><code>.snakemake/</code> tracks code, params, inputs, env hashes</li>
+</ul>
 </div></div>
-<div class="fragment">
-<p>Or workflow-wide: <code>--default-storage-provider s3 --default-storage-prefix s3://bucket/</code></p>
 <aside class="notes">
-<p>HPC-critical plugin: <code>snakemake-storage-plugin-fs</code> — stages data between shared FS and local scratch. See HPC section.</p>
+<p>This is the conceptual anchor for the whole talk. Pull-based DAG is what makes the v9 storage staging story work cleanly.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -858,32 +525,94 @@ Python Club seminar
           overflow: hidden!important;
           display:block!important;
       }</style></aside>
+</section></section>
+<section>
+<section id="section-2" class="title-slide slide level1 section-divider center" data-background-color="#8E44AD">
+<h1></h1>
+<div style="text-align: center;">
+<p><i class="mdi mdi-puzzle" style="font-size: 4em; color: #fff;"></i></p>
+<h1 style="color: #fff;">
+v7 → v9
+</h1>
+<p style="color: #e8d5f5; font-size: 0.7em;">
+v8 (Jan 2024) was the re-architecture · v9 is mostly invisible
+</p>
 </div>
+</section>
+<section id="monolith-plugin-framework" class="slide level2">
+<h2>Monolith → plugin framework</h2>
+<div class="columns">
+<div class="column" style="width:50%;">
+<h3 style="color: #8E44AD;">
+<i class="mdi mdi-package-variant-closed"></i>&nbsp; v7 (monolith)
+</h3>
+<p>All executors, all remote-storage backends, all software-deployment options shipped in <strong>one package</strong>.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">--use-conda</span> <span class="dt">\</span></span>
+<span id="cb2-2"><a href="" aria-hidden="true" tabindex="-1"></a>          <span class="at">--use-singularity</span> <span class="dt">\</span></span>
+<span id="cb2-3"><a href="" aria-hidden="true" tabindex="-1"></a>          <span class="at">--cluster</span> <span class="st">"sbatch ..."</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div><div class="column" style="width:50%;">
+<h3 style="color: #8E44AD;">
+<i class="mdi mdi-puzzle"></i>&nbsp; v8 / v9 (plugins)
+</h3>
+<p>Engine + <strong>5 plugin types</strong>, each pip-installable:</p>
+<ul>
+<li><i class="mdi mdi-server"></i>&nbsp; <strong>Executor</strong> — slurm, k8s, googlebatch, …</li>
+<li><i class="mdi mdi-database"></i>&nbsp; <strong>Storage</strong> — fs, s3, gcs, zenodo, …</li>
+<li><i class="mdi mdi-text-box"></i>&nbsp; <strong>Logger</strong> — snkmt, …</li>
+<li><i class="mdi mdi-file-document"></i>&nbsp; <strong>Report</strong> — rocrate, nanopub, …</li>
+<li><i class="mdi mdi-clock-fast"></i>&nbsp; <strong>Scheduler</strong> — greedy, ilp, milp</li>
+</ul>
+</div></div>
+</section>
+<section id="executor-storage-in-practice" class="slide level2 smaller">
+<h2>Executor &amp; storage in practice</h2>
+<div class="columns">
+<div class="column" style="width:50%;">
+<h3 style="color: #8E44AD;">
+<i class="mdi mdi-server"></i> Executor
+</h3>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install snakemake-executor-plugin-slurm</span>
+<span id="cb3-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">--executor</span> slurm <span class="at">--jobs</span> 100</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Available: <code>slurm</code> · <code>lsf</code> · <code>htcondor</code> · <code>kubernetes</code> · <code>googlebatch</code> · <code>azure-batch</code> · <code>flux</code> · <code>cluster-generic</code></p>
+<p><a href="https://snakemake.github.io/snakemake-plugin-catalog/">catalog</a></p>
+</div><div class="column" style="width:50%;">
+<h3 style="color: #8E44AD;">
+<i class="mdi mdi-database"></i> Storage
+</h3>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="" aria-hidden="true" tabindex="-1"></a>storage:</span>
+<span id="cb4-2"><a href="" aria-hidden="true" tabindex="-1"></a>    provider<span class="op">=</span><span class="st">"s3"</span>,</span>
+<span id="cb4-3"><a href="" aria-hidden="true" tabindex="-1"></a>    max_requests_per_second<span class="op">=</span><span class="dv">10</span></span>
+<span id="cb4-4"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="" aria-hidden="true" tabindex="-1"></a>rule x:</span>
+<span id="cb4-6"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>: storage(<span class="st">"s3://bucket/in.txt"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Or workflow-wide: <code>--default-storage-provider s3</code></p>
+</div></div>
 </section>
 <section id="software-deployment-unified" class="slide level2">
 <h2>Software deployment unified</h2>
 <div class="columns">
 <div class="column" style="width:50%;">
-<p><strong>v7</strong></p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">--use-conda</span></span>
-<span id="cb8-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">--use-singularity</span></span>
-<span id="cb8-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">--use-envmodules</span></span>
-<span id="cb8-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">--conda-frontend</span> mamba</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<h4 style="color: #8E44AD;">
+v7 — many flags
+</h4>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">--use-conda</span></span>
+<span id="cb5-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">--use-singularity</span></span>
+<span id="cb5-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">--use-envmodules</span></span>
+<span id="cb5-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">--conda-frontend</span> mamba</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div><div class="column" style="width:50%;">
-<p><strong>v8/v9 — one flag</strong></p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">--sdm</span> conda</span>
-<span id="cb9-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">--sdm</span> apptainer</span>
-<span id="cb9-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">--sdm</span> conda apptainer</span>
-<span id="cb9-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">--sdm</span> env-modules</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<h4 style="color: #8E44AD;">
+v8 / v9 — one flag
+</h4>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">--sdm</span> conda</span>
+<span id="cb6-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">--sdm</span> apptainer</span>
+<span id="cb6-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">--sdm</span> conda apptainer</span>
+<span id="cb6-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">--sdm</span> env-modules</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></div>
-<div class="fragment">
-<ul>
-<li><code>--conda-frontend mamba</code> <strong>gone</strong> — <code>libmamba</code> is the default solver.</li>
-<li>Roadmap: software-deployment will itself become a plugin (Pixi backend on the way).</li>
-</ul>
+<div style="margin-top: 1em;">
+<p><i class="mdi mdi-information" style="color: #8E44AD;"></i>&nbsp; <code>--conda-frontend mamba</code> removed · <code>libmamba</code> is the default solver · Pixi backend on the roadmap.</p>
 </div>
 </section>
-<section id="cli-rename-cheat-sheet" class="slide level2 scrollable">
+<section id="cli-rename-cheat-sheet" class="slide level2 smaller">
 <h2>CLI rename cheat sheet</h2>
 <table class="caption-top">
 <colgroup>
@@ -906,350 +635,173 @@ Python Club seminar
 <td>removed (pick an executor plugin)</td>
 </tr>
 <tr class="odd">
-<td><code>--kubernetes</code></td>
-<td><code>--executor kubernetes</code></td>
+<td><code>--kubernetes</code> · <code>--google-lifesciences</code> · <code>--tibanna</code></td>
+<td><code>--executor &lt;name&gt;</code></td>
 </tr>
 <tr class="even">
-<td><code>--google-lifesciences</code></td>
-<td><code>--executor googlebatch</code></td>
+<td><code>--use-conda</code> · <code>--use-singularity</code> · <code>--use-envmodules</code></td>
+<td><code>--sdm &lt;name&gt;</code></td>
 </tr>
 <tr class="odd">
-<td><code>--tibanna</code></td>
-<td><code>--executor tibanna</code></td>
-</tr>
-<tr class="even">
-<td><code>--use-conda</code></td>
-<td><code>--sdm conda</code></td>
-</tr>
-<tr class="odd">
-<td><code>--use-singularity</code></td>
-<td><code>--sdm apptainer</code></td>
-</tr>
-<tr class="even">
 <td><code>--singularity-args</code></td>
 <td><code>--apptainer-args</code></td>
 </tr>
-<tr class="odd">
-<td><code>--conda-frontend mamba</code></td>
-<td><strong>removed</strong></td>
-</tr>
 <tr class="even">
+<td><code>--conda-frontend mamba</code></td>
+<td><i class="mdi mdi-close-circle" style="color: #C0392B;"></i> removed</td>
+</tr>
+<tr class="odd">
 <td><code>--restart-times N</code></td>
 <td><code>--retries N</code></td>
 </tr>
 </tbody>
 </table>
-<div class="fragment">
-<p><strong>Profiles are now versioned.</strong> <code>config.v8+.yaml</code> overrides <code>config.yaml</code> on v8+.</p>
-<aside class="notes">
-<p>This is the slide people will photograph. Leave it on screen for a beat. Old v7 profiles do not work as-is on v8.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</div>
+<p><i class="mdi mdi-camera" style="color: #8E44AD;"></i>&nbsp; <em>Photographable slide — profile schema is now versioned too: <code>config.v8+.yaml</code></em></p>
 </section>
-<section id="reports-got-nicer" class="slide level2">
-<h2>Reports got nicer</h2>
-<ul>
-<li><code>category</code> / <code>subcategory</code> / <code>labels</code> as <strong>functions of wildcards</strong> → per-sample dynamic labelling</li>
-<li>Automatic toggle switches when items differ on one labelled dimension</li>
-<li>First-class <strong>Datavzrd</strong> embedding via <code>report(directory(...))</code></li>
-<li><code>--report-stylesheet custom.css</code> for branding</li>
-<li><code>--report-after-run</code> auto-generates on success (9.x)</li>
-</ul>
-</section>
-<section id="whats-actually-new-in-v9" class="slide level2">
-<h2>What’s actually new in v9?</h2>
-<blockquote>
-<p><em>“Between Snakemake 8 and Snakemake 9, there is only a single breaking change in how custom loggers are provided, such that hardly any user should be affected.”</em></p>
-<p>— official migration guide</p>
-</blockquote>
-<div class="fragment">
-<p>The change: <strong>logger plugins</strong> (<code>snakemake-logger-plugin-&lt;name&gt;</code>)</p>
-<p>Motivation: v7/v8 synchronous log handlers could crash workflows on monitoring-backend hiccups.</p>
-<p>First plugin: <code>snakemake-logger-plugin-snkmt</code> (SQLite/observability backend).</p>
-</div>
-</section>
-<section id="munich-hackathon-march-2026" class="slide level2">
-<h2>Munich Hackathon, March 2026</h2>
-<div class="columns">
-<div class="column" style="width:55%;">
-<p><strong>MDSI / TU Munich · 9–13 March · 40+ participants</strong></p>
-<p>Three roadmap themes from the BioHackrXiv report:</p>
-<div>
-<ul>
-<li class="fragment">Core <strong>performance on heterogeneous HPC</strong></li>
-<li class="fragment">Extending the <strong>plugin architecture</strong> for domain-specific extensions</li>
-<li class="fragment"><strong>Lowering the entry barrier</strong> for novices, without losing reproducibility</li>
-</ul>
-</div>
-</div><div class="column" style="width:45%;">
-<p>A burst of releases v9.17 → v9.21 landed tightly around and after the hackathon week — most are direct hackathon outputs.</p>
-<div style="font-size: 0.7em; color: #607d8b; margin-top: 1em;">
-<p>Refs: <br> BioHackrXiv <a href="https://index.biohackrxiv.org/2026/04/27/h6zqj.html">10.37044/osf.io/h6zqj_v1</a> <br> Issue <a href="https://github.com/snakemake/snakemake/issues/3807">#3807</a></p>
-</div>
-</div></div>
-<aside class="notes">
-<p>The slides.com deck itself returned 403 — what’s on the next two slides is reconstructed from the official Snakemake releases.atom feed and the BioHackrXiv post-hackathon report, not transcribed from his slides. Be honest about that if asked.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="what-landed-in-snakemake-9.17-9.21-marmay-2026" class="slide level2 smaller">
-<h2>What landed in Snakemake 9.17 → 9.21 (Mar–May 2026)</h2>
+<section id="highlights-9.17-9.21" class="slide level2 smaller">
+<h2>Highlights · 9.17 → 9.21</h2>
 <table class="caption-top">
 <colgroup>
-<col style="width: 28%">
-<col style="width: 18%">
-<col style="width: 53%">
+<col style="width: 50%">
+<col style="width: 50%">
 </colgroup>
 <thead>
 <tr class="header">
-<th>Version</th>
-<th>Date</th>
-<th>Headline change</th>
+<th><i class="mdi mdi-tag"></i></th>
+<th><i class="mdi mdi-star"></i> Headline</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td><strong>9.17.0</strong></td>
-<td>2026-03-13</td>
-<td><strong>Pluggable metadata persistence</strong> (files <em>or</em> database) · <strong>lambda rule <code>priority</code></strong> · topologically ordered job table</td>
+<td><strong>9.17</strong></td>
+<td>Pluggable metadata persistence (files or DB) · lambda rule <code>priority</code></td>
 </tr>
 <tr class="even">
-<td><strong>9.18.0</strong></td>
-<td>2026-03-25</td>
-<td><strong>Storage plugins expose checksums</strong> → cross-workflow cache correctness</td>
+<td><strong>9.18</strong></td>
+<td>Storage plugins expose <strong>checksums</strong> → cross-workflow cache correctness</td>
 </tr>
 <tr class="odd">
-<td><strong>9.19.0</strong></td>
-<td>2026-03-28</td>
-<td><code>profile.yaml</code> is the <strong>new default filename</strong> · pass a YAML file directly (not a directory)</td>
+<td><strong>9.19</strong></td>
+<td><code>profile.yaml</code> is the new default filename · pass a YAML file directly</td>
 </tr>
 <tr class="even">
-<td><strong>9.20.0</strong></td>
-<td>2026-05-02</td>
-<td><strong>Named multi-output caching</strong> · <code>subpath(..., with_suffix=...)</code> · ⚠ <strong>runtime CLI/profile values now interpreted as minutes (was seconds)</strong> · plugins without settings auto-deploy</td>
+<td><strong>9.20</strong></td>
+<td>Named multi-output caching · <code>subpath(with_suffix=...)</code> · <i class="mdi mdi-alert" style="color: #E67E22;"></i> <strong><code>runtime</code> now in <em>minutes</em></strong> (was seconds)</td>
 </tr>
 <tr class="odd">
-<td><strong>9.21.0</strong></td>
-<td>2026-05-14</td>
-<td>Filename-prefix helper · tuned SQLite PRAGMAs · <strong>auto-detected network filesystem type</strong></td>
+<td><strong>9.21</strong></td>
+<td>Filename-prefix helper · tuned SQLite PRAGMAs · auto-detect network FS type</td>
 </tr>
 </tbody>
 </table>
-<div title="Footgun">
 <div class="callout callout-warning callout-titled callout-style-default">
 <div class="callout-body">
 <div class="callout-title">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
-<p><strong>Footgun</strong></p>
+<p><strong>Warning</strong></p>
 </div>
 <div class="callout-content">
-<p><strong>Runtime unit change in 9.20</strong> — anyone with <code>runtime: 60</code> in a profile meant <em>60 seconds</em> in 9.19 and earlier; from 9.20 it means <em>60 minutes</em>. Audit your profiles when upgrading.</p>
+<p><strong>Footgun:</strong> <code>runtime: 60</code> in a profile meant <em>60 seconds</em> before 9.20 — now <em>60 minutes</em>.</p>
 </div>
 </div>
 </div>
-</div>
-<aside class="notes">
-<p>This is the most concrete actionable bullet on the slide — call it out verbally even if you skip the rest of the table.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
 </section>
-<section id="the-2026-plugin-ecosystem-five-categories" class="slide level2">
-<h2>The 2026 plugin ecosystem — five categories</h2>
-<div class="cell" data-reveal="true" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb10-1"><a href="" aria-hidden="true" tabindex="-1"></a>flowchart LR</span>
-<span id="cb10-2"><a href="" aria-hidden="true" tabindex="-1"></a>    SMK[Snakemake 9.x core]</span>
-<span id="cb10-3"><a href="" aria-hidden="true" tabindex="-1"></a>    SMK --- EX[Executor]</span>
-<span id="cb10-4"><a href="" aria-hidden="true" tabindex="-1"></a>    SMK --- ST[Storage]</span>
-<span id="cb10-5"><a href="" aria-hidden="true" tabindex="-1"></a>    SMK --- LG[Logger]</span>
-<span id="cb10-6"><a href="" aria-hidden="true" tabindex="-1"></a>    SMK --- RP[Report]</span>
-<span id="cb10-7"><a href="" aria-hidden="true" tabindex="-1"></a>    SMK --- SC[Scheduler]</span>
-<span id="cb10-8"><a href="" aria-hidden="true" tabindex="-1"></a>    EX --- EX1[slurm · lsf · k8s · googlebatch · azure-batch · flux · htcondor · cannon* · cluster-generic]</span>
-<span id="cb10-9"><a href="" aria-hidden="true" tabindex="-1"></a>    ST --- ST1[fs · s3 · gcs · http · zenodo · ftp · …]</span>
-<span id="cb10-10"><a href="" aria-hidden="true" tabindex="-1"></a>    LG --- LG1[snkmt SQLite/TUI · …]</span>
-<span id="cb10-11"><a href="" aria-hidden="true" tabindex="-1"></a>    RP --- RP1[rocrate* · nanopub* · default HTML]</span>
-<span id="cb10-12"><a href="" aria-hidden="true" tabindex="-1"></a>    SC --- SC1[greedy · ilp · MILP*]</span>
-<span id="cb10-13"><a href="" aria-hidden="true" tabindex="-1"></a>    style SMK fill:#e8eaf6,stroke:#3949ab,stroke-width:3px</span>
-<span id="cb10-14"><a href="" aria-hidden="true" tabindex="-1"></a>    style EX fill:#fff3e0,stroke:#ef6c00</span>
-<span id="cb10-15"><a href="" aria-hidden="true" tabindex="-1"></a>    style ST fill:#fff3e0,stroke:#ef6c00</span>
-<span id="cb10-16"><a href="" aria-hidden="true" tabindex="-1"></a>    style LG fill:#fff3e0,stroke:#ef6c00</span>
-<span id="cb10-17"><a href="" aria-hidden="true" tabindex="-1"></a>    style RP fill:#fff3e0,stroke:#ef6c00</span>
-<span id="cb10-18"><a href="" aria-hidden="true" tabindex="-1"></a>    style SC fill:#fff3e0,stroke:#ef6c00</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div>
-<p></p><figure class=""><p></p>
-<div>
-
-</div>
-<p></p></figure><p></p>
-</div>
-</div>
-</div>
-<div style="font-size: 0.7em; color: #607d8b;">
-<p>* = new or formalized through the 2025–2026 cycle. <strong>rocrate</strong> = Workflow-Run RO-Crate (FAIR provenance, Leo et al.&nbsp;2024). <strong>nanopub</strong> = Nanopublications. <strong>cannon</strong> = Harvard auto-partition selection. <strong>MILP</strong> = community scheduler plugin (#3646).</p>
-</div>
-<aside class="notes">
-<p>The deck’s biggest single point: in 2026 the plugin architecture has reached five orthogonal categories. RO-Crate report plugin closes the FAIR-provenance loop nicely with the earlier FAIR slide.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="v7-v8-migration-footguns" class="slide level2">
-<h2>v7 → v8 migration footguns</h2>
+<section id="migration-footguns" class="slide level2">
+<h2>Migration footguns</h2>
 <div>
 <ul>
-<li class="fragment"><code>dynamic()</code> outputs → use <strong>checkpoints</strong></li>
-<li class="fragment"><code>version:</code> directive removed → use <code>conda:</code> / <code>container:</code></li>
-<li class="fragment"><code>subworkflow:</code> removed → use <code>module:</code> + <code>use rule * from foo as foo_*</code></li>
-<li class="fragment"><code>from snakemake.remote.*</code> → <code>storage</code> directive</li>
-<li class="fragment">Profiles must be updated (dead flags)</li>
-<li class="fragment">CI must <code>pip install snakemake-executor-plugin-slurm</code> explicitly</li>
-<li class="fragment">NCBI / EGA remote providers → became <strong>wrappers</strong>, not storage plugins</li>
-<li class="fragment">⚠ <strong>9.20 (May 2026): <code>runtime</code> profile values now in minutes, not seconds</strong> — audit profiles</li>
+<li class="fragment"><i class="mdi mdi-close-circle" style="color: #C0392B;"></i>&nbsp; <code>dynamic()</code> outputs → use <strong>checkpoints</strong></li>
+<li class="fragment"><i class="mdi mdi-close-circle" style="color: #C0392B;"></i>&nbsp; <code>version:</code> directive → use <code>conda:</code> / <code>container:</code></li>
+<li class="fragment"><i class="mdi mdi-close-circle" style="color: #C0392B;"></i>&nbsp; <code>subworkflow:</code> → <code>module:</code> + <code>use rule * from foo as foo_*</code></li>
+<li class="fragment"><i class="mdi mdi-close-circle" style="color: #C0392B;"></i>&nbsp; <code>from snakemake.remote.*</code> → <code>storage</code> directive</li>
+<li class="fragment"><i class="mdi mdi-alert" style="color: #E67E22;"></i>&nbsp; CI must <code>pip install snakemake-executor-plugin-slurm</code> explicitly</li>
+<li class="fragment"><i class="mdi mdi-alert" style="color: #E67E22;"></i>&nbsp; v9.20: audit <code>runtime:</code> values (seconds → minutes)</li>
+<li class="fragment"><i class="mdi mdi-alert" style="color: #E67E22;"></i>&nbsp; v7 profiles reference removed flags — silently broken on v8</li>
 </ul>
 </div>
-<aside class="notes">
-<p>All of these surfaced in MosaiCatcher CI. The CI install step is the most common silent failure.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
 </section></section>
 <section>
-<section id="snakemake-vs-nextflow" class="title-slide slide level1 center" data-background-color="#2e7d32">
-<h1>Snakemake vs Nextflow</h1>
-
+<section id="section-3" class="title-slide slide level1 section-divider center" data-background-color="#2980B9">
+<h1></h1>
+<div style="text-align: center; padding-top: 1em;">
+<p><img src="https://avatars.githubusercontent.com/u/33450111?s=120&amp;v=4" style="height: 90px; border-radius: 12px; vertical-align: middle;" alt="Snakemake"> <span style="font-size: 3em; color: #fff; margin: 0 0.5em; vertical-align: middle;">vs</span> <img src="https://avatars.githubusercontent.com/u/6698688?s=120&amp;v=4" style="height: 90px; border-radius: 12px; vertical-align: middle;" alt="Nextflow"></p>
+<h1 style="color: #fff; margin-top: 0.6em;">
+Snakemake vs Nextflow
+</h1>
+<p style="color: #d4e8f5; font-size: 0.6em;">
+Strictly objective · pick on <em>fit</em>, not on taste
+</p>
+</div>
 </section>
-<section id="framing-slide" class="slide level2">
-<h2>Framing slide</h2>
-<div class="r-fit-text">
-<p>No “which is better”.</p>
-</div>
-<div class="r-fit-text fragment">
-<p>Compare on technical primitives,</p>
-</div>
-<div class="r-fit-text fragment">
-<p>pick on <strong>fit</strong>, not on <strong>taste</strong>.</p>
-</div>
-<aside class="notes">
-<p>Set the tone explicitly. Both are mature, both run in production at EMBL.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="the-deepest-difference-dataflow-model" class="slide level2">
-<h2>The deepest difference: dataflow model</h2>
+<section id="the-deepest-difference-dataflow" class="slide level2">
+<h2>The deepest difference — dataflow</h2>
 <div class="columns">
 <div class="column" style="width:50%;">
-<h3 id="snakemake-pull">Snakemake — pull</h3>
+<h3 style="color: #2980B9;">
+<i class="mdi mdi-arrow-left-bold-circle"></i>&nbsp; Snakemake — <strong>pull</strong>
+</h3>
+<p>Target-driven, Make-style.</p>
+<blockquote>
+<p><em>“What file do I want?”</em></p>
+</blockquote>
 <ul>
-<li><strong>Target-driven</strong> (Make-style)</li>
-<li>You request an output file</li>
-<li>Tool recurses back: <em>“what do I need?”</em></li>
-<li>Bottoms out at existing inputs</li>
-<li>Mental model: <strong>“what file do I want?”</strong></li>
-</ul>
-</div><div class="column" style="width:50%;">
-<h3 id="nextflow-push">Nextflow — push</h3>
-<ul>
-<li><strong>Channel-driven</strong> (Kahn / CSP / dataflow)</li>
-<li><code>process</code>es connected by <code>channel</code>s</li>
-<li>Values flow asynchronously</li>
-<li>A <code>process</code> fires when each input channel has a record</li>
-<li>Mental model: <strong>“what stream into what process?”</strong></li>
-</ul>
-</div></div>
-<aside class="notes">
-<p>This explains every other downstream difference. Spend a beat here.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="dag-construction" class="slide level2">
-<h2>DAG construction</h2>
-<div class="columns">
-<div class="column" style="width:50%;">
-<h3 id="snakemake-1">Snakemake</h3>
-<ul>
-<li><strong>Static, up-front</strong></li>
+<li>Request output → recurse back</li>
+<li>Static DAG, built up-front</li>
 <li><code>--dry-run</code> shows the full plan</li>
-<li><code>--dag</code> / <code>--rulegraph</code> → Graphviz</li>
-<li>Conditional flow via Python (input functions)</li>
-<li><strong>Checkpoints</strong> when output contents drive downstream inputs</li>
+<li>Conditional flow via Python / checkpoints</li>
 </ul>
 </div><div class="column" style="width:50%;">
-<h3 id="nextflow">Nextflow</h3>
+<h3 style="color: #2980B9;">
+<i class="mdi mdi-arrow-right-bold-circle"></i>&nbsp; Nextflow — <strong>push</strong>
+</h3>
+<p>Channel-driven, Kahn / CSP-style.</p>
+<blockquote>
+<p><em>“What stream into what process?”</em></p>
+</blockquote>
 <ul>
-<li><strong>Dynamic, at runtime</strong></li>
-<li>Channels evaluated lazily as records arrive</li>
-<li>Scatter/gather from operators (<code>splitFastq</code>, <code>groupTuple</code>)</li>
-<li><code>-preview</code>, <code>-with-dag</code> are approximations</li>
-<li>True graph only exists once channels emit</li>
+<li>Channels emit records</li>
+<li>Processes fire on input availability</li>
+<li>Dynamic DAG, materializes at runtime</li>
+<li>Branching native via operators</li>
 </ul>
 </div></div>
 </section>
-<section id="language-tooling" class="slide level2">
-<h2>Language &amp; tooling</h2>
+<section id="resume-cache-myth-buster" class="slide level2">
+<h2>Resume / cache — myth-buster</h2>
+<div class="columns">
+<div class="column" style="width:50%;">
+<h4 style="color: #2980B9;">
+<i class="mdi mdi-clock-outline"></i>&nbsp; Snakemake
+</h4>
+<p>File timestamps + tracked metadata in <code>.snakemake/</code>.</p>
+<p>Triggers: <code>--rerun-triggers {mtime, params, input, software-env, code}</code>.</p>
+<p><em>Make pitfall:</em> touching an input invalidates downstream.</p>
+</div><div class="column" style="width:50%;">
+<h4 style="color: #2980B9;">
+<i class="mdi mdi-hash"></i>&nbsp; Nextflow
+</h4>
+<p>Hash in <code>.nextflow/cache/</code> (LevelDB).</p>
+<p>Hashes script + input <em>attributes</em> (path/size/<strong>mtime</strong>) by default — <strong>not contents</strong>.</p>
+<p><code>cache 'deep'</code> → true content hash · <code>cache 'lenient'</code> for shared FS.</p>
+</div></div>
+<div class="callout callout-warning callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>Warning</strong></p>
+</div>
+<div class="callout-content">
+<p><em>“Nextflow -resume is content-hashed”</em> — <strong>partially false</strong>. Default = file attributes incl.&nbsp;mtime. Both tools are sensitive to FS metadata. Neither is magic.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="executor-matrix" class="slide level2 smaller scrollable">
+<h2>Executor matrix</h2>
 <table class="caption-top">
 <colgroup>
 <col style="width: 33%">
@@ -1259,173 +811,54 @@ Python Club seminar
 <thead>
 <tr class="header">
 <th></th>
-<th>Snakemake</th>
-<th>Nextflow</th>
+<th><i class="mdi mdi-snake" style="color: #208F6E;"></i> Snakemake</th>
+<th><i class="mdi mdi-source-branch" style="color: #5e9c1e;"></i> Nextflow</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>Host language</td>
-<td>Python-embedded DSL</td>
-<td>Groovy DSL2 on the JVM</td>
+<td>SLURM · LSF · HTCondor · Kubernetes · Flux</td>
+<td><i class="mdi mdi-check-circle" style="color: #208F6E;"></i> plugins</td>
+<td><i class="mdi mdi-check-circle" style="color: #5e9c1e;"></i> built-in</td>
 </tr>
 <tr class="even">
-<td>Runtime</td>
-<td>CPython</td>
-<td><strong>Java 17+</strong> (since 25.04, May 2025)</td>
+<td>Google Batch · Azure Batch</td>
+<td><i class="mdi mdi-check-circle" style="color: #208F6E;"></i> plugins</td>
+<td><i class="mdi mdi-check-circle" style="color: #5e9c1e;"></i> built-in</td>
 </tr>
 <tr class="odd">
-<td>Debugging</td>
-<td><code>pdb</code> + <code>--debug</code> + <code>--printshellcmds</code></td>
-<td>log-driven via <code>work/.command.{sh,log}</code></td>
-</tr>
-<tr class="even">
-<td>IDE</td>
-<td>Python ecosystem + <code>snakefmt</code></td>
-<td>Seqera VS Code Nextflow Language Server</td>
-</tr>
-</tbody>
-</table>
-<div class="fragment">
-<div title="Myth-buster">
-<div class="callout callout-warning callout-titled callout-style-default">
-<div class="callout-body">
-<div class="callout-title">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<p><strong>Myth-buster</strong></p>
-</div>
-<div class="callout-content">
-<p><em>“Nextflow needs Java”</em> — <strong>true</strong>. Specifically Java 17+ since Nextflow 25.04 (May 2025). Java 11 is no longer supported.</p>
-</div>
-</div>
-</div>
-</div>
-</div>
-</section>
-<section id="resume-cache-the-myth-buster-slide" class="slide level2">
-<h2>Resume / cache — the myth-buster slide</h2>
-<div class="columns">
-<div class="column" style="width:50%;">
-<h3 id="snakemake-2">Snakemake</h3>
-<ul>
-<li>File <strong>timestamps + tracked metadata</strong> (<code>.snakemake/</code>)</li>
-<li>Rerun triggers: <code>mtime</code>, <code>params</code>, <code>input</code>, <code>software-env</code>, <code>code</code></li>
-<li>Configurable: <code>--rerun-triggers ...</code></li>
-<li><em>Make pitfall:</em> touching an input invalidates downstream</li>
-</ul>
-</div><div class="column" style="width:50%;">
-<h3 id="nextflow-1">Nextflow</h3>
-<ul>
-<li>Hash in <code>.nextflow/cache/&lt;session&gt;/</code> (LevelDB)</li>
-<li>Hashes script body, input values, <strong>file attributes (path/size/mtime)</strong> — <em>not contents</em> by default</li>
-<li><code>cache 'deep'</code> → true content hash</li>
-<li><code>cache 'lenient'</code> → relaxed for shared FS</li>
-<li>Debug: <code>-dump-hashes</code></li>
-</ul>
-</div></div>
-<div class="fragment">
-<div title="Myth-buster">
-<div class="callout callout-warning callout-titled callout-style-default">
-<div class="callout-body">
-<div class="callout-title">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<p><strong>Myth-buster</strong></p>
-</div>
-<div class="callout-content">
-<p><em>“Nextflow -resume is content-hashed, immune to mtime issues”</em> — <strong>partially false</strong>. Default is file <em>attributes</em> (incl.&nbsp;mtime); content hashing is opt-in via <code>cache 'deep'</code>. Shared-FS mtime jitter is a documented cause of spurious cache misses.</p>
-</div>
-</div>
-</div>
-</div>
-</div>
-</section>
-<section id="executor-support-matrix" class="slide level2 scrollable">
-<h2>Executor support matrix</h2>
-<table class="caption-top">
-<thead>
-<tr class="header">
-<th>Backend</th>
-<th>Snakemake</th>
-<th>Nextflow</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>SLURM</td>
-<td>✅ <code>-slurm</code></td>
-<td>✅ <code>slurm</code></td>
-</tr>
-<tr class="even">
-<td>LSF</td>
-<td>✅ <code>-lsf</code></td>
-<td>✅ <code>lsf</code></td>
-</tr>
-<tr class="odd">
-<td>SGE / PBS / OAR / Moab / NQSII</td>
-<td>community</td>
-<td>✅ all built-in</td>
-</tr>
-<tr class="even">
-<td>HTCondor</td>
-<td>✅ <code>-htcondor</code></td>
-<td>✅ <code>condor</code></td>
-</tr>
-<tr class="odd">
-<td>Kubernetes</td>
-<td>✅ <code>-kubernetes</code></td>
-<td>✅ <code>k8s</code></td>
-</tr>
-<tr class="even">
-<td>Google Batch</td>
-<td>✅ <code>-googlebatch</code></td>
-<td>✅ <code>google-batch</code></td>
-</tr>
-<tr class="odd">
-<td>Azure Batch</td>
-<td>✅ <code>-azure-batch</code></td>
-<td>✅ <code>azurebatch</code></td>
+<td>SGE · PBS · OAR · Moab · NQSII</td>
+<td><i class="mdi mdi-account-multiple"></i> community</td>
+<td><i class="mdi mdi-check-circle" style="color: #5e9c1e;"></i> built-in</td>
 </tr>
 <tr class="even">
 <td><strong>AWS Batch</strong></td>
-<td>❌ no official plugin</td>
-<td>✅ <code>awsbatch</code> (first-class)</td>
+<td><i class="mdi mdi-close-circle" style="color: #C0392B;"></i> no official plugin</td>
+<td><i class="mdi mdi-check-circle" style="color: #5e9c1e;"></i> <code>awsbatch</code> first-class</td>
 </tr>
 <tr class="odd">
-<td>Flux</td>
-<td>✅ <code>-flux</code></td>
-<td>✅ <code>flux</code></td>
-</tr>
-<tr class="even">
 <td>TES</td>
-<td>community</td>
-<td>✅ <code>tes</code></td>
+<td><i class="mdi mdi-account-multiple"></i> community</td>
+<td><i class="mdi mdi-check-circle" style="color: #5e9c1e;"></i> built-in</td>
 </tr>
 </tbody>
 </table>
-<div class="fragment">
-<div title="Myth-buster">
 <div class="callout callout-warning callout-titled callout-style-default">
 <div class="callout-body">
 <div class="callout-title">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
-<p><strong>Myth-buster</strong></p>
+<p><strong>Warning</strong></p>
 </div>
 <div class="callout-content">
-<p><em>“Snakemake can’t do cloud”</em> — <strong>false</strong>. Kubernetes / Google Batch / Azure Batch are official. <em>“Snakemake can’t do AWS Batch”</em> — closer to true; no official plugin (use K8s-on-EKS, TES, or community <code>pcluster-slurm</code>).</p>
-</div>
-</div>
+<p><em>“Snakemake can’t do cloud”</em> — <strong>false</strong> (K8s · GCP · Azure are official). <em>“Snakemake can’t do AWS Batch”</em> — closer to true (no official plugin).</p>
 </div>
 </div>
 </div>
 </section>
-<section id="software-deployment-containers" class="slide level2">
-<h2>Software deployment &amp; containers</h2>
+<section id="software-containers" class="slide level2">
+<h2>Software &amp; containers</h2>
 <table class="caption-top">
 <colgroup>
 <col style="width: 33%">
@@ -1435,293 +868,386 @@ Python Club seminar
 <thead>
 <tr class="header">
 <th></th>
-<th>Snakemake</th>
-<th>Nextflow / nf-core</th>
+<th><i class="mdi mdi-snake" style="color: #208F6E;"></i> Snakemake</th>
+<th><i class="mdi mdi-source-branch" style="color: #5e9c1e;"></i> Nextflow / nf-core</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>Per-rule conda</td>
-<td><code>conda: "envs/x.yaml"</code></td>
-<td><code>conda</code> directive</td>
+<td>Per-rule env</td>
+<td><code>conda:</code> + <code>container:</code></td>
+<td><code>conda</code> + <code>container</code> directive</td>
 </tr>
 <tr class="even">
-<td>Per-rule container</td>
-<td><code>container: "docker://..."</code></td>
-<td><code>container</code> directive</td>
-</tr>
-<tr class="odd">
-<td>Compose conda + container</td>
+<td>Compose</td>
 <td><code>--sdm conda apptainer</code></td>
 <td>engine + conda</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>Curated registry</td>
 <td>snakemake-wrappers</td>
 <td>BioContainers · mulled · <strong>Seqera Containers</strong></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>Build on demand</td>
 <td>—</td>
-<td><strong>Wave</strong> (OSS)</td>
+<td><strong>Wave</strong> (Apache-2.0 OSS)</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>POSIX over S3/GCS</td>
 <td>—</td>
 <td><strong>Fusion</strong> (commercial)</td>
 </tr>
 </tbody>
 </table>
-<div class="fragment">
-<div title="Myth-buster">
 <div class="callout callout-warning callout-titled callout-style-default">
 <div class="callout-body">
 <div class="callout-title">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
-<p><strong>Myth-buster</strong></p>
+<p><strong>Warning</strong></p>
 </div>
 <div class="callout-content">
-<p><em>“Wave and Fusion are both Seqera commercial”</em> — <strong>partially false</strong>. <strong>Wave is open-source</strong> (Apache-2.0). Fusion is part of the commercial Seqera Platform.</p>
+<p><strong>Wave is open-source.</strong> Fusion is part of the commercial Seqera Platform.</p>
 </div>
 </div>
 </div>
-</div>
-</div>
-</section>
-<section id="reports-observability" class="slide level2">
-<h2>Reports &amp; observability</h2>
-<div class="columns">
-<div class="column" style="width:50%;">
-<h3 id="snakemake-3">Snakemake</h3>
-<ul>
-<li><code>--report report.html</code> — single-file</li>
-<li>Provenance · rule graph · <code>report()</code> outputs</li>
-<li>Per-job <code>benchmark:</code> TSV</li>
-<li>No first-party control plane</li>
-</ul>
-</div><div class="column" style="width:50%;">
-<h3 id="nextflow-2">Nextflow</h3>
-<ul>
-<li><code>-with-report</code> · <code>-with-trace</code> · <code>-with-timeline</code> · <code>-with-dag</code> · <code>-with-weblog</code></li>
-<li><strong>Seqera Platform</strong> (formerly Tower)</li>
-<li>Tower OSS (MPL-2.0) · Platform commercial</li>
-<li>Persistent multi-user views</li>
-</ul>
-</div></div>
 </section>
 <section id="ecosystem-community" class="slide level2">
 <h2>Ecosystem &amp; community</h2>
 <div class="columns">
 <div class="column" style="width:50%;">
-<h3 id="nf-core-jul-2025">nf-core (Jul 2025)</h3>
+<p><img src="https://nf-co.re/images/nf-core-logo.svg" style="height: 50px;" alt="nf-core"></p>
+<h3 id="nf-core-jul-2025">nf-core <em>(Jul 2025)</em></h3>
 <ul>
 <li><strong>124</strong> curated pipelines</li>
-<li><strong>1,400+</strong> modules</li>
-<li><strong>70+</strong> subworkflows</li>
-<li>Strict template &amp; lint regime</li>
-<li><code>nf-test</code> is the standard</li>
+<li><strong>1,400+</strong> modules · <strong>70+</strong> subworkflows</li>
+<li><strong>2,600</strong> contributors · <strong>10,800</strong> Slack members</li>
+<li>Strict template · <code>nf-test</code> standard</li>
 </ul>
 </div><div class="column" style="width:50%;">
-<h3 id="snakemake-4">Snakemake</h3>
+<p><img src="https://avatars.githubusercontent.com/u/33450111?s=80&amp;v=4" style="height: 50px; border-radius: 8px;" alt="Snakemake"></p>
+<h3 id="snakemake">Snakemake</h3>
 <ul>
-<li><strong>Workflow Catalog</strong> (static index)</li>
-<li><code>snakemake-workflows</code> org: ~28 reference pipelines</li>
-<li><strong>snakemake-wrappers</strong>: hundreds, versioned per tool</li>
+<li><strong>Workflow Catalog</strong> (auto-indexed)</li>
+<li><strong>snakemake-workflows</strong> org: ~28 pipelines</li>
+<li><strong>snakemake-wrappers</strong>: hundreds, versioned</li>
 <li>More federated, less curated</li>
 </ul>
 </div></div>
-<div class="fragment">
-<p><strong>Honest summary:</strong> nf-core sets a higher bar for pipeline standardization. Snakemake is broader at the wrapper level, less curated at the pipeline level.</p>
+<div style="margin-top: 0.6em; font-size: 0.75em;">
+<p><i class="mdi mdi-information" style="color: #2980B9;"></i>&nbsp; nf-core sets a higher pipeline-standardization bar; Snakemake is broader at the wrapper level.</p>
 </div>
 </section>
-<section id="when-does-each-shine" class="slide level2">
-<h2>When does each shine?</h2>
+<section id="when-does-each-fit" class="slide level2">
+<h2>When does each fit?</h2>
 <div class="columns">
 <div class="column" style="width:50%;">
-<h3 id="snakemake-fits-when">Snakemake fits when…</h3>
+<h4 style="color: #2980B9;">
+<i class="mdi mdi-snake"></i>&nbsp; Snakemake fits when…
+</h4>
 <ul>
-<li>Team is <strong>Python-native</strong></li>
-<li>Pipeline is <strong>target / file-driven</strong></li>
+<li>Team is <i class="mdi mdi-language-python"></i> Python-native</li>
+<li>Pipeline is <strong>file / target-driven</strong></li>
+<li>You want the <strong>DAG up-front</strong></li>
 <li>Debugging needs interactive Python</li>
-<li>You want the <strong>DAG up front</strong></li>
-<li>One Snakefile readable end-to-end</li>
+<li>One Snakefile, readable end-to-end</li>
 </ul>
 </div><div class="column" style="width:50%;">
-<h3 id="nextflow-fits-when">Nextflow fits when…</h3>
+<h4 style="color: #2980B9;">
+<i class="mdi mdi-source-branch"></i>&nbsp; Nextflow fits when…
+</h4>
 <ul>
-<li>Team has <strong>Java/Groovy/Scala</strong> people</li>
+<li>Team has Groovy / JVM people</li>
 <li>Pipeline is <strong>stream / event-driven</strong></li>
-<li><strong>AWS Batch / Fusion</strong> matter</li>
+<li><strong>AWS Batch</strong> or <strong>Fusion</strong> matter</li>
 <li>You want <strong>nf-core</strong> off-the-shelf</li>
+<li>You want <strong>Seqera Platform</strong> observability</li>
 </ul>
 </div></div>
 </section></section>
 <section>
-<section id="embl-hpc-5-things-to-check" class="title-slide slide level1 center" data-background-color="#e65100">
-<h1>EMBL HPC: 5 things to check</h1>
-
-</section>
-<section id="the-5-point-checklist" class="slide level2">
-<h2>The 5-point checklist</h2>
-<div>
-<ol type="1">
-<li class="fragment"><strong>Throttle scheduler submissions</strong> — <code>max-jobs-per-second: 10</code></li>
-<li class="fragment"><strong>Stage compute through scratch</strong> — <code>default-storage-provider: fs</code> + <code>local-storage-prefix: /scratch/$USER/&lt;wf&gt;</code></li>
-<li class="fragment"><strong>Remove <code>input-output</code></strong> from <code>shared-fs-usage</code> — otherwise step 2 is bypassed</li>
-<li class="fragment"><strong>Enable Snakemake output cache</strong> — <code>SNAKEMAKE_OUTPUT_CACHE=/scratch_cached/&lt;group&gt;/snakemake_cache</code></li>
-<li class="fragment"><strong>Share conda + apptainer caches</strong> — group-writable parallel FS, <strong>setgid bit</strong> (<code>chmod 2775</code>)</li>
-</ol>
+<section id="section-4" class="title-slide slide level1 section-divider center" data-background-color="#E67E22">
+<h1></h1>
+<div style="text-align: center;">
+<p><i class="mdi mdi-server-network" style="font-size: 4em; color: #fff;"></i></p>
+<h1 style="color: #fff;">
+EMBL HPC field notes
+</h1>
+<p style="color: #fdebd0; font-size: 0.7em;">
+Caching · storage · grouping · arrays · EESSI
+</p>
 </div>
-<aside class="notes">
-<p>Full draft in <code>docs/hpc-pipeline-optimization_ongoing.md</code> (1241 lines). These 5 are highest impact.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
 </section>
-<section id="the-whole-story-in-5-lines" class="slide level2">
-<h2>The whole story in 5 lines</h2>
+<section id="five-pillars" class="slide level2" data-background-color="#fdf2e9">
+<h2>Five pillars</h2>
+<div class="columns" style="margin-top: 1em;">
+<div class="column" style="text-align: center;">
+<p><i class="mdi mdi-cached" style="font-size: 3em; color: #E67E22;"></i></p>
+<p><strong>Workflow caching</strong></p>
+<p><code>SNAKEMAKE_OUTPUT_CACHE</code></p>
+</div><div class="column" style="text-align: center;">
+<p><i class="mdi mdi-docker" style="font-size: 3em; color: #E67E22;"></i></p>
+<p><strong>Container caching</strong></p>
+<p>Shared <code>apptainer-prefix</code></p>
+</div><div class="column" style="text-align: center;">
+<p><i class="mdi mdi-database" style="font-size: 3em; color: #E67E22;"></i></p>
+<p><strong>Storage staging</strong></p>
+<p><code>fs</code> plugin · scratch</p>
+</div><div class="column" style="text-align: center;">
+<p><i class="mdi mdi-group" style="font-size: 3em; color: #E67E22;"></i></p>
+<p><strong>Job grouping &amp; arrays</strong></p>
+<p><code>group:</code> · <code>--group-components</code></p>
+</div><div class="column" style="text-align: center;">
+<p><i class="mdi mdi-package-variant" style="font-size: 3em; color: #E67E22;"></i></p>
+<p><strong>EESSI / env-modules</strong></p>
+<p><code>--sdm env-modules</code></p>
+</div></div>
+</section>
+<section id="caching-workflow-containers" class="slide level2">
+<h2>1 · Caching — workflow + containers</h2>
+<div class="columns">
+<div class="column" style="width:50%;">
+<h4 style="color: #E67E22;">
+<i class="mdi mdi-cached"></i>&nbsp; Workflow output cache
+</h4>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">SNAKEMAKE_OUTPUT_CACHE</span><span class="op">=</span><span class="dt">\</span></span>
+<span id="cb7-2"><a href="" aria-hidden="true" tabindex="-1"></a>  /scratch_cached/<span class="op">&lt;</span>group<span class="op">&gt;</span>/snakemake_cache</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Per rule:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="" aria-hidden="true" tabindex="-1"></a>rule index_ref:</span>
+<span id="cb8-2"><a href="" aria-hidden="true" tabindex="-1"></a>    output: <span class="st">"ref.fa.bwt"</span></span>
+<span id="cb8-3"><a href="" aria-hidden="true" tabindex="-1"></a>    cache: <span class="va">True</span>   <span class="co"># shared across users</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Computed indexes (BWA, STAR, ref dicts) reused across users → minutes saved per run.</p>
+</div><div class="column" style="width:50%;">
+<h4 style="color: #E67E22;">
+<i class="mdi mdi-docker"></i>&nbsp; Container &amp; conda cache
+</h4>
+<div class="sourceCode" id="cb9"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb9-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="co"># profile</span></span>
+<span id="cb9-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">conda-prefix</span><span class="kw">:</span><span class="at">     /g/&lt;group&gt;/shared/conda</span></span>
+<span id="cb9-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">apptainer-prefix</span><span class="kw">:</span><span class="at"> /g/&lt;group&gt;/shared/apptainer</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><i class="mdi mdi-folder-lock" style="color: #E67E22;"></i>&nbsp; Group-writable, <code>chmod 2775</code> (setgid) → no per-user re-solves.</p>
+<p><i class="mdi mdi-rocket" style="color: #E67E22;"></i>&nbsp; Pre-warm: <code>snakemake --conda-create-envs-only</code></p>
+</div></div>
+</section>
+<section id="storage-staging-via-fs-plugin" class="slide level2">
+<h2>2 · Storage — staging via <code>fs</code> plugin</h2>
 <div class="code-with-filename">
 <div class="code-with-filename-file">
 <pre><strong>profile/config.yaml</strong></pre>
 </div>
-<div class="sourceCode" id="cb11" data-filename="profile/config.yaml"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb11-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">executor</span><span class="kw">:</span><span class="at"> slurm</span></span>
-<span id="cb11-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">default-storage-provider</span><span class="kw">:</span><span class="at"> fs</span></span>
-<span id="cb11-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">local-storage-prefix</span><span class="kw">:</span><span class="at"> /scratch/$USER/snakemake_test/local</span></span>
-<span id="cb11-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">slurm-efficiency-report</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
-<span id="cb11-5"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">max-jobs-per-second</span><span class="kw">:</span><span class="at"> </span><span class="dv">10</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb10" data-filename="profile/config.yaml" data-code-line-numbers="|2|3|4-7"><pre class="sourceCode numberSource yaml number-lines code-with-copy"><code class="sourceCode yaml"><span id="cb10-1"><a href=""></a><span class="fu">executor</span><span class="kw">:</span><span class="at"> slurm</span></span>
+<span id="cb10-2"><a href=""></a><span class="fu">default-storage-provider</span><span class="kw">:</span><span class="at"> fs</span><span class="co">                       # auto-stage to scratch</span></span>
+<span id="cb10-3"><a href=""></a><span class="fu">local-storage-prefix</span><span class="kw">:</span><span class="at"> /scratch/$USER/snakemake/&lt;wf&gt;</span></span>
+<span id="cb10-4"><a href=""></a><span class="fu">shared-fs-usage</span><span class="kw">:</span><span class="co">                                   # what stays on shared FS</span></span>
+<span id="cb10-5"><a href=""></a><span class="at">  </span><span class="kw">-</span><span class="at"> persistence</span></span>
+<span id="cb10-6"><a href=""></a><span class="at">  </span><span class="kw">-</span><span class="at"> software-deployment</span></span>
+<span id="cb10-7"><a href=""></a><span class="at">  </span><span class="kw">-</span><span class="at"> sources</span><span class="co">                                        # NOT input-output!</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="fragment">
-<p>That’s it. Everything else is per-rule resources.</p>
-</div>
-</section>
-<section id="storage-tier-cheat-sheet" class="slide level2">
-<h2>Storage tier cheat sheet</h2>
 <table class="caption-top">
 <colgroup>
-<col style="width: 50%">
-<col style="width: 27%">
-<col style="width: 22%">
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
 </colgroup>
 <thead>
 <tr class="header">
-<th>Data type</th>
-<th>Tier</th>
+<th><i class="mdi mdi-file"></i> Data</th>
+<th><i class="mdi mdi-harddisk"></i> Tier</th>
 <th>Why</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>Reference genomes</td>
+<td>Reference genomes · indexes</td>
 <td>Cached parallel FS</td>
-<td>Read 100× during alignment</td>
+<td>Read 100×</td>
 </tr>
 <tr class="even">
 <td>BAM / CRAM intermediates</td>
 <td>Parallel FS</td>
-<td>High-throughput sequential writes</td>
+<td>Sequential writes</td>
 </tr>
 <tr class="odd">
-<td>Computed indexes (BWA, STAR)</td>
-<td>Cached parallel FS</td>
-<td>Repeated reads, expensive to rebuild</td>
+<td>Conda · containers</td>
+<td>Parallel FS (shared)</td>
+<td>Multi-user reuse</td>
 </tr>
 <tr class="even">
-<td>conda / container caches</td>
-<td>Parallel FS</td>
-<td>Shared across users</td>
-</tr>
-<tr class="odd">
-<td>Temp / sorting buffers</td>
+<td>Sorting · temp buffers</td>
 <td><strong>Local scratch</strong></td>
-<td>Ultra-fast, job-local</td>
+<td>Ultra-fast, per-job</td>
 </tr>
 </tbody>
 </table>
 </section>
-<section id="common-pitfalls" class="slide level2">
-<h2>Common pitfalls</h2>
-<div>
+<section id="job-grouping-fewer-slurm-submissions" class="slide level2">
+<h2>3 · Job grouping — fewer SLURM submissions</h2>
+<div class="columns">
+<div class="column" style="width:55%;">
+<div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="" aria-hidden="true" tabindex="-1"></a>rule trim:</span>
+<span id="cb11-2"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>:  <span class="st">"fastq/</span><span class="sc">{s}</span><span class="st">.fq.gz"</span></span>
+<span id="cb11-3"><a href="" aria-hidden="true" tabindex="-1"></a>    output: <span class="st">"trim/</span><span class="sc">{s}</span><span class="st">.fq.gz"</span></span>
+<span id="cb11-4"><a href="" aria-hidden="true" tabindex="-1"></a>    group:  <span class="st">"preproc"</span>   <span class="co"># ◀ same group</span></span>
+<span id="cb11-5"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-6"><a href="" aria-hidden="true" tabindex="-1"></a>rule align:</span>
+<span id="cb11-7"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>:  <span class="st">"trim/</span><span class="sc">{s}</span><span class="st">.fq.gz"</span></span>
+<span id="cb11-8"><a href="" aria-hidden="true" tabindex="-1"></a>    output: <span class="st">"bam/</span><span class="sc">{s}</span><span class="st">.bam"</span></span>
+<span id="cb11-9"><a href="" aria-hidden="true" tabindex="-1"></a>    group:  <span class="st">"preproc"</span>   <span class="co"># ◀ same SLURM job</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>CLI knobs:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">--groups</span> rulename=fast</span>
+<span id="cb12-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">--group-components</span> fast=10</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div><div class="column" style="width:45%;">
+<p><i class="mdi mdi-lightbulb-on" style="color: #E67E22;"></i>&nbsp; <strong>One sbatch instead of two</strong> per sample.</p>
+<p><i class="mdi mdi-lightbulb-on" style="color: #E67E22;"></i>&nbsp; Shares scratch between rules.</p>
+<p><i class="mdi mdi-lightbulb-on" style="color: #E67E22;"></i>&nbsp; Resource math: <br> &nbsp;&nbsp;parallel → sum cpus, max runtime <br> &nbsp;&nbsp;serial → max cpus, sum runtime</p>
+</div></div>
+</section>
+<section id="job-arrays-submitting-at-scale" class="slide level2">
+<h2>4 · Job arrays — submitting at scale</h2>
+<div class="columns">
+<div class="column" style="width:55%;">
+<p>For thousands of similar samples, the SLURM executor plugin batches Snakemake jobs into <strong><code>sbatch --array=…</code></strong> submissions automatically.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb13-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="co"># profile</span></span>
+<span id="cb13-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">executor</span><span class="kw">:</span><span class="at"> slurm</span></span>
+<span id="cb13-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">slurm-job-array</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span><span class="co">       # opt-in batching</span></span>
+<span id="cb13-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">jobs</span><span class="kw">:</span><span class="at"> </span><span class="dv">500</span></span>
+<span id="cb13-5"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">max-jobs-per-second</span><span class="kw">:</span><span class="at"> </span><span class="dv">10</span><span class="co">     # throttle controller</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><i class="mdi mdi-information" style="color: #E67E22;"></i>&nbsp; Combined with <code>group:</code> → array of grouped jobs.</p>
+</div><div class="column" style="width:45%;">
+<p><i class="mdi mdi-checkbox-marked-circle" style="color: #2ECC71;"></i>&nbsp; <strong>Fewer scheduler RPCs</strong></p>
+<p><i class="mdi mdi-checkbox-marked-circle" style="color: #2ECC71;"></i>&nbsp; Single <code>squeue</code> entry</p>
+<p><i class="mdi mdi-checkbox-marked-circle" style="color: #2ECC71;"></i>&nbsp; Per-task logs preserved (<code>%A_%a</code>)</p>
+<p><i class="mdi mdi-alert" style="color: #E67E22;"></i>&nbsp; Heterogeneous resources → keep separate</p>
+</div></div>
+</section>
+<section id="eessi-env-modules-everywhere" class="slide level2">
+<h2>5 · EESSI — env-modules everywhere</h2>
+<div class="columns">
+<div class="column" style="width:55%;">
+<p><strong>EESSI</strong> = European Environment for Scientific Software Installations — a CernVM-FS stream of pre-built scientific software, mountable on any HPC.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="bu">source</span> /cvmfs/software.eessi.io/versions/2023.06/init/bash</span>
+<span id="cb14-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">module</span> load BWA SAMtools STAR</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Per rule:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="" aria-hidden="true" tabindex="-1"></a>rule align:</span>
+<span id="cb15-2"><a href="" aria-hidden="true" tabindex="-1"></a>    envmodules: <span class="st">"BWA/0.7.17"</span>, <span class="st">"SAMtools/1.18"</span></span>
+<span id="cb15-3"><a href="" aria-hidden="true" tabindex="-1"></a>    shell: <span class="st">"bwa mem ... | samtools sort ..."</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Invoke with <code>--sdm env-modules</code>.</p>
+</div><div class="column" style="width:45%;">
+<p><i class="mdi mdi-rocket-launch" style="color: #E67E22;"></i>&nbsp; <strong>No conda solve · no image pull</strong></p>
+<p><i class="mdi mdi-earth" style="color: #E67E22;"></i>&nbsp; Identical tool versions across sites</p>
+<p><i class="mdi mdi-shield-check" style="color: #E67E22;"></i>&nbsp; Reproducibility comparable to containers</p>
+<p><a href="https://www.eessi.io">eessi.io</a></p>
+</div></div>
+</section>
+<section id="bonus-dependency-cooldowns" class="slide level2" data-background-color="#fef5e7">
+<h2>Bonus · dependency cooldowns</h2>
+<h4 style="color: #F39C12;">
+<i class="mdi mdi-shield-lock"></i>&nbsp; Why
+</h4>
+<p>Malicious PyPI / conda releases are usually yanked within hours to days. Tell your resolver to ignore versions published in the last <em>N</em> days → compromised releases disappear before your build ever sees them. Bonus: dampens surprise breakage.</p>
+<div class="columns" style="margin-top: 0.6em;">
+<div class="column" style="width:50%;">
+<h4 style="color: #F39C12;">
+<i class="mdi mdi-language-python"></i>&nbsp; pip 26.1 (Apr 2026)
+</h4>
+<div class="sourceCode" id="cb16"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb16-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install <span class="at">--uploaded-prior-to</span><span class="op">=</span>P7D requests</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <ul>
-<li class="fragment"><strong>Stale <code>.snakemake/</code> locks</strong> when two users share a checkout → per-user <code>--workflow-profile</code></li>
-<li class="fragment"><strong>Conda env build races</strong> → pre-build with <code>--conda-create-envs-only</code>, share <code>conda-prefix</code></li>
-<li class="fragment"><strong><code>$JOBID</code> not expanded</strong> in scratch paths → upgrade to Snakemake <strong>9.3.4+</strong></li>
-<li class="fragment"><strong><code>--conda-frontend mamba</code> in profile</strong> → warning on v8, error on v9, just delete it</li>
-<li class="fragment"><strong>Old v7 <code>--cluster "sbatch ..."</code> in CI</strong> → silently broken on v8, replace with <code>--executor slurm</code></li>
+<li>26.0 → absolute date only · 26.1 → ISO-8601 relative duration</li>
+<li>Also in <code>pip.conf</code></li>
+<li>Relies on PEP 700 upload time (PyPI; may no-op on custom indexes)</li>
 </ul>
+</div><div class="column" style="width:50%;">
+<h4 style="color: #F39C12;">
+<i class="mdi mdi-package-variant"></i>&nbsp; Pixi · <code>exclude-newer</code>
+</h4>
+<div class="sourceCode" id="cb17"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb17-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">[workspace]</span></span>
+<span id="cb17-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="dt">exclude-newer</span> <span class="op">=</span> <span class="st">"14d"</span></span>
+<span id="cb17-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="dt">channels</span> <span class="op">=</span> <span class="op">[</span></span>
+<span id="cb17-4"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="st">"conda-forge"</span><span class="op">,</span></span>
+<span id="cb17-5"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="op">{ </span><span class="dt">channel</span><span class="op"> =</span> <span class="st">".../internal"</span><span class="op">, </span><span class="dt">exclude-newer</span><span class="op"> =</span> <span class="st">"0d"</span><span class="op"> }</span></span>
+<span id="cb17-6"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">]</span></span>
+<span id="cb17-7"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-8"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">[exclude-newer]</span></span>
+<span id="cb17-9"><a href="" aria-hidden="true" tabindex="-1"></a><span class="dt">openssl</span> <span class="op">=</span> <span class="st">"0d"</span>   <span class="co"># bypass for urgent CVE</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></div>
+<div style="font-size: 0.6em; margin-top: 0.6em; color: #7f8c8d;">
+<p>Same concept as uv/rattler · 7 days is the commonly cited default · <a href="https://ichard26.github.io/blog/2026/04/whats-new-in-pip-26.1/">Richard Si’s writeup</a></p>
 </div>
 </section></section>
 <section>
-<section id="live-demo" class="title-slide slide level1 center" data-background-color="#1f2a44">
-<h1>Live demo</h1>
-
+<section id="section-5" class="title-slide slide level1 section-divider center" data-background-color="#16A085">
+<h1></h1>
+<div style="text-align: center;">
+<p><i class="mdi mdi-play-circle" style="font-size: 4em; color: #fff;"></i></p>
+<h1 style="color: #fff;">
+Live demo
+</h1>
+<p style="color: #d1f2eb; font-size: 0.65em;">
+<code style="color: #fff;">dev/snakemake-v9-features/</code>
+</p>
+</div>
 </section>
 <section id="what-youll-see-5-min" class="slide level2">
-<h2>What you’ll see (~5 min)</h2>
-<p>Repo path: <strong><code>dev/snakemake-v9-features/</code></strong></p>
+<h2>What you’ll see (≈5 min)</h2>
+<div class="columns">
+<div class="column" style="width:60%;">
+<div class="sourceCode" id="cb18"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb18-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">~/.pixi/bin/pixi</span> run snakemake <span class="dt">\</span></span>
+<span id="cb18-2"><a href="" aria-hidden="true" tabindex="-1"></a>   <span class="at">--profile</span> dev/snakemake-v9-features/profile <span class="dt">\</span></span>
+<span id="cb18-3"><a href="" aria-hidden="true" tabindex="-1"></a>   <span class="at">--jobs</span> 10</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div>
 <ul>
-<li class="fragment">Minimal 5-rule workflow</li>
-<li class="fragment"><code>group: "processing"</code> keyword — multiple rules in one SLURM job</li>
-<li class="fragment"><code>fs</code> storage provider — auto-stage between <code>/g/...</code> and <code>/scratch/$USER/...</code></li>
-<li class="fragment"><code>slurm-efficiency-report: true</code> — flags under-utilized jobs (&lt;80%)</li>
-<li class="fragment">Scales 3 → 100 samples by changing one config line</li>
+<li class="fragment"><i class="mdi mdi-check" style="color: #16A085;"></i>&nbsp; Minimal 5-rule workflow</li>
+<li class="fragment"><i class="mdi mdi-check" style="color: #16A085;"></i>&nbsp; <code>group: "processing"</code> — multi-rule single SLURM job</li>
+<li class="fragment"><i class="mdi mdi-check" style="color: #16A085;"></i>&nbsp; <code>fs</code> storage provider auto-stages to <code>/scratch/$USER/</code></li>
+<li class="fragment"><i class="mdi mdi-check" style="color: #16A085;"></i>&nbsp; <code>slurm-efficiency-report: true</code> flags &lt;80% util</li>
+<li class="fragment"><i class="mdi mdi-check" style="color: #16A085;"></i>&nbsp; Scales 3 → 100 samples by one config line</li>
 </ul>
 </div>
-<aside class="notes">
-<p>Have the screen-recording fallback ready. If queue is slow, switch at t=2:30.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
+</div><div class="column" style="width:40%;">
+<div style="background: #d1f2eb; padding: 1em; border-radius: 8px; margin-top: 1em;">
+<p><i class="mdi mdi-folder" style="color: #16A085;"></i>&nbsp; <strong>Path</strong> <code style="display: block; margin-top: 0.5em; font-size: 0.7em;">dev/snakemake-v9-features/</code> <i class="mdi mdi-video" style="color: #16A085; margin-top: 1em; display: block;"></i>&nbsp; Recording ready as fallback</p>
+</div>
+</div></div>
 </section></section>
 <section>
-<section id="qa" class="title-slide slide level1 center" data-background-color="#1f2a44">
+<section id="qa" class="title-slide slide level1 center" data-background-color="#0f3a30">
 <h1>Q&amp;A</h1>
 
 </section>
 <section id="further-reading" class="slide level2">
 <h2>Further reading</h2>
+<div class="columns">
+<div class="column" style="width:50%;">
+<h4 style="color: #208F6E;">
+<i class="mdi mdi-snake"></i>&nbsp; Snakemake
+</h4>
 <ul>
-<li>Mölder et al.&nbsp;2021 (rolling, v3 Sep 2025) — <a href="https://doi.org/10.12688/f1000research.29032.3" class="uri">https://doi.org/10.12688/f1000research.29032.3</a></li>
-<li>Snakemake migration guide — <a href="https://snakemake.readthedocs.io/en/stable/getting_started/migration.html" class="uri">https://snakemake.readthedocs.io/en/stable/getting_started/migration.html</a></li>
-<li>Plugin catalog — <a href="https://snakemake.github.io/snakemake-plugin-catalog/" class="uri">https://snakemake.github.io/snakemake-plugin-catalog/</a></li>
-<li>Köster’s slides hub — <a href="https://slides.com/johanneskoester" class="uri">https://slides.com/johanneskoester</a></li>
-<li>ISMB/ECCB 2021 keynote — <a href="https://www.youtube.com/watch?v=LchfsoH1ITg" class="uri">https://www.youtube.com/watch?v=LchfsoH1ITg</a></li>
-<li>Workflow Catalog — <a href="https://snakemake.github.io/snakemake-workflow-catalog/" class="uri">https://snakemake.github.io/snakemake-workflow-catalog/</a></li>
-<li>nf-core paper (Jul 2025) — <a href="https://link.springer.com/article/10.1186/s13059-025-03673-9" class="uri">https://link.springer.com/article/10.1186/s13059-025-03673-9</a></li>
-<li>This deck’s source — <code>docs/python-club-snakemake-2026.{md,qmd}</code></li>
+<li><strong>Köster’s 2026 deck</strong> — <a href="https://slides.com/johanneskoester/snakemake-intro-updates-2026">slides.com/johanneskoester/snakemake-intro-updates-2026</a></li>
+<li><strong>Rolling paper</strong> (Mölder et al., F1000 v3 Sep 2025) — <a href="https://doi.org/10.12688/f1000research.29032.3">doi:10.12688/f1000research.29032.3</a></li>
+<li><strong>Migration guide</strong> — <a href="https://snakemake.readthedocs.io/en/stable/getting_started/migration.html">readthedocs</a></li>
+<li><strong>Plugin catalog</strong> — <a href="https://snakemake.github.io/snakemake-plugin-catalog/">snakemake.github.io/snakemake-plugin-catalog</a></li>
 </ul>
-</section>
-<section id="thank-you" class="slide level2">
-<h2>Thank you</h2>
-<div class="r-fit-text">
-<p>Questions?</p>
-</div>
-<div style="text-align: center; margin-top: 2em;">
-<p>Deck + speaker notes:</p>
-<p><code>docs/python-club-snakemake-2026.{md,qmd}</code></p>
-<p>HPC long-form: <code>docs/hpc-pipeline-optimization_ongoing.md</code></p>
-</div>
+</div><div class="column" style="width:50%;">
+<h4 style="color: #2980B9;">
+<i class="mdi mdi-source-branch"></i>&nbsp; Context
+</h4>
+<ul>
+<li><strong>Wratten et al.&nbsp;2021</strong> <em>Nat. Methods</em> — <a href="https://www.nature.com/articles/s41592-021-01254-9">10.1038/s41592-021-01254-9</a></li>
+<li><strong>nf-core</strong> <em>Genome Biology</em> Jul 2025 — <a href="https://link.springer.com/article/10.1186/s13059-025-03673-9">s13059-025-03673-9</a></li>
+<li><strong>EESSI</strong> — <a href="https://www.eessi.io">eessi.io</a></li>
+</ul>
+<h4 style="color: #E67E22; margin-top: 1em;">
+<i class="mdi mdi-server-network"></i>&nbsp; In this repo
+</h4>
+<ul>
+<li><code>docs/hpc-pipeline-optimization_ongoing.md</code></li>
+<li><code>dev/snakemake-v9-features/</code></li>
+</ul>
+</div></div>
 <div class="quarto-auto-generated-content">
 <div class="footer footer-default">
-<p>Python Club · Snakemake · 2026-05-20</p>
+<p>Python Club · Snakemake · 2026</p>
 </div>
 </div>
 </section></section>

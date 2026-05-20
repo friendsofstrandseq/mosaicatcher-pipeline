@@ -1,7 +1,7 @@
 ---
 title: "Snakemake in 2026"
-subtitle: "What's new since v7, an honest Nextflow comparison, and EMBL HPC field notes"
-author: "Python Club seminar"
+subtitle: "Updates since v7 · honest Nextflow comparison · EMBL HPC field notes"
+author: "Python Club"
 date: today
 format:
   revealjs:
@@ -10,7 +10,6 @@ format:
     progress: true
     history: false
     transition: fade
-    incremental: false
     code-line-numbers: false
     highlight-style: github
     width: 1280
@@ -18,121 +17,67 @@ format:
     pdf-export: true
     chalkboard: true
     menu: true
-    footer: "Python Club · Snakemake · {{< meta date >}}"
+    footer: "Python Club · Snakemake · 2026"
+    include-in-header:
+      text: |
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     title-slide-attributes:
-      data-background-color: "#1f2a44"
+      data-background-color: "#0f3a30"
 execute:
   echo: true
   eval: false
 ---
 
-# Why this talk { background-color="#1f2a44" }
+# {.title-slide background-color="#0f3a30"}
 
-::: {.notes}
-30 seconds. Hook with the pain point. Don't define anything yet — make them remember the last time a pipeline blew up.
+::: {style="text-align: center; padding-top: 1em;"}
+<img src="https://avatars.githubusercontent.com/u/33450111?s=200&v=4" style="height: 140px; border-radius: 20px;" alt="Snakemake"/>
+
+<h1 style="color: #fff; margin-top: 0.4em;">Snakemake in 2026</h1>
+<p style="color: #a3e4d7; font-size: 0.7em; margin-top: 0;">v7 → v9 · Nextflow side-by-side · EMBL HPC</p>
+<p style="color: #d6eee7; font-size: 0.45em; margin-top: 2em;">Python Club · 2026</p>
 :::
 
-## The pain point
+## Where workflow managers fit { background-color="#34495E" }
 
-> *"Raise your hand if your last pipeline was a chain of `bash` + `nohup` + a README with the commands in the right order."*
->
-> *"Keep it up if you've ever lost a week because someone re-ran step 3 with new inputs and forgot to re-run step 4."*
-
-. . .
-
-That's the problem a workflow manager solves.
-
-## Agenda — 40 minutes
-
-| Time | Section |
-|------|---------|
-| 5 min | Workflow managers, FAIR, why bother |
-| 3 min | Snakemake core concepts (refresher) |
-| 10 min | **v7 → v8 → v9**: what actually changed |
-| 9 min | **Snakemake vs Nextflow**: low-level, objective |
-| 5 min | Live demo on EMBL SLURM |
-| 3 min | EMBL HPC checklist |
-| 5 min | Q&A |
-
-::: {.notes}
-This talk is not "which is better". I'll be explicit about what's a fact and what's a tradeoff.
+::: {style="text-align: center;"}
+<img src="https://media.springernature.com/full/springer-static/image/art%3A10.1038%2Fs41592-021-01254-9/MediaObjects/41592_2021_1254_Fig1_HTML.png?as=webp"
+     style="max-height: 540px; background: white; padding: 8px; border-radius: 6px;"
+     alt="Wratten et al. 2021 Nature Methods Fig 1"/>
 :::
 
-# What's a workflow manager? { background-color="#1f2a44" }
-
-## Three properties
-
-::: {.incremental}
-- **Declarative** — describe *what* should exist (the outputs), not *how* to get there step by step.
-- **DAG-based** — the tool figures out the dependency graph and what's stale.
-- **Portable** — same workflow definition runs on laptop / SLURM / Kubernetes / AWS Batch. Executor is configuration, not code.
+::: {style="text-align: center; font-size: 0.55em; color: #ecf0f1; margin-top: 0.6em;"}
+Wratten, Wilm, Göke — *Nat. Methods* 2021 · [10.1038/s41592-021-01254-9](https://www.nature.com/articles/s41592-021-01254-9)
 :::
 
 ::: {.notes}
-Anchor these three properties — every later slide is a consequence of one of them.
+30 seconds. Audience knows WMS already — use the figure to set context, not teach. Point at Snakemake's quadrant briefly.
 :::
 
-## FAIR principles → workflow managers
+## Agenda { background-color="#34495E" }
 
-| FAIR | Workflow-manager equivalent |
-|------|-----------------------------|
-| **F**indable | Workflow Catalog · standard repo layout · Zenodo/CFF citation |
-| **A**ccessible | Git-hosted · containers/conda bundled · reproducible by anyone |
-| **I**nteroperable | Same workflow laptop → SLURM → cloud · standard reports |
-| **R**eusable | Pinned envs · content-addressed outputs · machine-readable provenance |
-
-::: {.notes}
-FAIR was originally about *data*. The WorkflowHub / nf-core / Snakemake communities adopted it for *workflows*.
+::: {.agenda-grid}
+- <i class="mdi mdi-rocket-launch"></i>&nbsp;**Snakemake refresher** — Köster-style — *4 min*
+- <i class="mdi mdi-puzzle"></i>&nbsp;**v7 → v9** — what actually changed — *10 min*
+- <i class="mdi mdi-scale-balance"></i>&nbsp;**vs Nextflow** — low-level, objective — *9 min*
+- <i class="mdi mdi-server-network"></i>&nbsp;**EMBL HPC** — caching, storage, grouping, EESSI — *7 min*
+- <i class="mdi mdi-play-circle"></i>&nbsp;**Live demo** — SLURM — *5 min*
+- <i class="mdi mdi-comment-question"></i>&nbsp;**Q&A** — *5 min*
 :::
 
-## Köster's framing — the triad
+# {.section-divider background-color="#208F6E"}
 
-> *"We postulate that it is equally important to ensure adaptability and transparency. The former describes the ability to modify the analysis to answer extended or slightly different research questions. The latter describes the ability to understand the analysis in order to judge whether it is not only technically, but methodologically valid."*
+::: {style="text-align: center;"}
+<i class="mdi mdi-rocket-launch" style="font-size: 4em; color: #fff;"></i>
 
-::: {style="text-align: right; font-style: italic;"}
-— Mölder et al., F1000Research 10:33 (rolling paper, v3 Sep 2025)
+<h1 style="color: #fff;">Snakemake — refresher</h1>
+<p style="color: #d6eee7; font-size: 0.6em;">Slides adapted from Johannes Köster's <em>Snakemake intro · updates 2026</em><br/><a href="https://slides.com/johanneskoester/snakemake-intro-updates-2026" style="color: #fff;">slides.com/johanneskoester</a> · slides 3–12</p>
 :::
 
-::: {.fragment}
-**Reproducibility + Adaptability + Transparency**
-:::
-
-::: {.notes}
-Köster doesn't pitch pure FAIR — he uses this triad. Cite the rolling paper v3 from Sep 2025 — most current source.
-:::
-
-## A few numbers
-
-::: {.columns}
-
-::: {.column width="50%"}
-### Snakemake
-- Founding paper: Köster & Rahmann, *Bioinformatics* **2012**
-- >1,000,000 downloads
-- >2,000 citations
-- ~11 new citations / week
-- Rolling F1000 paper, v3 Sep 2025
-:::
-
-::: {.column width="50%"}
-### Nextflow / nf-core
-- Founding paper: Di Tommaso et al., *Nat. Biotechnol.* **2017**
-- nf-core (*Genome Biology* Jul 2025):
-  - **124** curated pipelines
-  - **1400+** modules
-  - **2600** contributors
-  - **10,800** Slack members
-:::
-
-::::
-
-::: {.notes}
-Both are mature, both are in production at EMBL. This sets up the "no which is better" framing.
-:::
-
-# Snakemake core, in 3 minutes { background-color="#1f2a44" }
-
-## The object model — one rule, four ideas
+## One rule, four ideas { background-color="#208F6E" data-color="white"}
 
 ```{.python code-line-numbers="|1|2-3|4-6|7"}
 rule align:
@@ -144,655 +89,640 @@ rule align:
     shell:  "bwa mem -t {threads} ref {input} | samtools sort -o {output}"
 ```
 
-::: {.notes}
-A Snakefile is just Python with extra top-level constructs. Highlight: rule, wildcards, resources, per-rule env.
+::: {.columns style="margin-top: 1em;"}
+::: {.column width="25%"}
+<i class="mdi mdi-puzzle-outline" style="color: #208F6E;"></i> **Rule**
+:::
+::: {.column width="25%"}
+<i class="mdi mdi-asterisk" style="color: #208F6E;"></i> **Wildcards**
+:::
+::: {.column width="25%"}
+<i class="mdi mdi-cpu-64-bit" style="color: #208F6E;"></i> **Resources**
+:::
+::: {.column width="25%"}
+<i class="mdi mdi-package-variant" style="color: #208F6E;"></i> **Env per rule**
+:::
 :::
 
-## Pull-based DAG (Make-style)
-
-```{mermaid}
-%%| fig-align: center
-flowchart LR
-    A[fastq/A.fq.gz] --> B[align A]
-    B --> C[bam/A.bam]
-    C --> D[call_variants A]
-    D --> E[vcf/A.vcf]
-    style A fill:#e3f2fd,stroke:#1565c0
-    style C fill:#fff9c4,stroke:#f9a825
-    style E fill:#c8e6c9,stroke:#2e7d32
-```
-
-You ask for **`vcf/A.vcf`**. Snakemake recurses back: *"what do I need? which rule produces it?"* until it hits files that exist.
-
-::: {.fragment}
-**`--dry-run` shows the whole plan before anything executes.**
-:::
-
-::: {.notes}
-This is the single most important concept. It shows up again as the deepest semantic difference vs Nextflow.
-:::
-
-## Reproducibility primitives
-
-- `conda:` / `container:` per rule
-- `--report report.html` — single-file shareable provenance
-- `.snakemake/` tracks code, params, inputs, env hashes → smart rerun
-
-# v7 → v8 → v9: what changed { background-color="#7b1fa2" }
-
-## The headline
-
-::: {.r-fit-text}
-v8 (Jan 2024) was the disruption.
-:::
-
-::: {.r-fit-text}
-v9 (Feb 2025) is mostly invisible.
-:::
-
-. . .
-
-The whole engine was decomposed into a **plugin framework**.
-
-## v7: monolith
-
-```{mermaid}
-%%| fig-align: center
-flowchart TB
-    SMK[Snakemake v7 core]
-    SMK --- SLURM
-    SMK --- DRMAA
-    SMK --- K8S[Kubernetes]
-    SMK --- GLS[Google LifeSciences]
-    SMK --- S3
-    SMK --- GS[Google Storage]
-    SMK --- HTTP
-    SMK --- FTP
-    SMK --- CONDA[conda]
-    SMK --- SING[singularity]
-    SMK --- EM[env-modules]
-    style SMK fill:#fce4ec,stroke:#c2185b,stroke-width:3px
-```
-
-All executors, storage backends, software-deployment in **one package**.
-
-## v8: plugin framework
-
-```{mermaid}
-%%| fig-align: center
-flowchart TB
-    SMK[Snakemake v8/v9 core] --- IF1[interface-executor-plugins]
-    SMK --- IF2[interface-storage-plugins]
-    SMK --- IF3[interface-logger-plugins]
-    IF1 --- E1[plugin-slurm]
-    IF1 --- E2[plugin-kubernetes]
-    IF1 --- E3[plugin-googlebatch]
-    IF1 --- E4[plugin-azure-batch]
-    IF1 --- E5[plugin-flux]
-    IF2 --- S1[plugin-s3]
-    IF2 --- S2[plugin-fs]
-    IF2 --- S3p[plugin-gcs]
-    IF2 --- S4[plugin-zenodo]
-    IF3 --- L1[plugin-snkmt]
-    style SMK fill:#e8eaf6,stroke:#3949ab,stroke-width:3px
-    style IF1 fill:#fff3e0,stroke:#ef6c00
-    style IF2 fill:#fff3e0,stroke:#ef6c00
-    style IF3 fill:#fff3e0,stroke:#ef6c00
-```
-
-::: {.notes}
-Each plugin is `pip install`-able. Settings declared as `@dataclass`, become CLI flags automatically.
-:::
-
-## Executor plugins — how it looks
-
-```{.bash code-line-numbers="|1|2"}
-pip install snakemake-executor-plugin-slurm
-snakemake --executor slurm --jobs 100 ...
-```
-
-::: {.fragment}
-**Available officially (late 2025):** `slurm`, `lsf`, `htcondor`, `kubernetes`, `googlebatch`, `azure-batch`, `flux`, `cluster-generic`
-
-Catalog: <https://snakemake.github.io/snakemake-plugin-catalog/>
-:::
-
-::: {.notes}
-SLURM plugin submits Snakemake itself as the job script — necessary so `run:` blocks and wrappers work remotely. Installing the executor plugin also installs a companion `jobstep` plugin used on the worker.
-:::
-
-## Storage plugins — the `storage` directive
+## How execution works
 
 ::: {.columns}
-
 ::: {.column width="50%"}
-**v7 — imports inside Snakefile**
-```{.python}
-from snakemake.remote.S3 \
-    import RemoteProvider
-S3 = RemoteProvider()
+<i class="mdi mdi-arrow-left-bold-circle" style="font-size: 2.5em; color: #208F6E;"></i>
 
-rule x:
-    input: S3.remote(
-        "bucket/in.txt")
+### Pull-based DAG
+
+Ask for an output file → Snakemake recurses back to find what's needed → builds the static DAG → schedules jobs.
+
+`--dry-run` shows the full plan before anything executes.
+:::
+::: {.column width="50%"}
+<i class="mdi mdi-shield-check" style="font-size: 2.5em; color: #208F6E;"></i>
+
+### Reproducibility built-in
+
+- `conda:` / `container:` per rule
+- `--report report.html` provenance
+- `.snakemake/` tracks code, params, inputs, env hashes
+:::
+:::
+
+::: {.notes}
+This is the conceptual anchor for the whole talk. Pull-based DAG is what makes the v9 storage staging story work cleanly.
+:::
+
+# {.section-divider background-color="#8E44AD"}
+
+::: {style="text-align: center;"}
+<i class="mdi mdi-puzzle" style="font-size: 4em; color: #fff;"></i>
+
+<h1 style="color: #fff;">v7 → v9</h1>
+<p style="color: #e8d5f5; font-size: 0.7em;">v8 (Jan 2024) was the re-architecture · v9 is mostly invisible</p>
+:::
+
+## Monolith → plugin framework
+
+::: {.columns}
+::: {.column width="50%"}
+
+<h3 style="color: #8E44AD;"><i class="mdi mdi-package-variant-closed"></i>&nbsp; v7 (monolith)</h3>
+
+All executors, all remote-storage backends, all software-deployment options shipped in **one package**.
+
+```bash
+snakemake --use-conda \
+          --use-singularity \
+          --cluster "sbatch ..."
 ```
 :::
 
 ::: {.column width="50%"}
-**v8/v9 — directive**
-```{.python}
+
+<h3 style="color: #8E44AD;"><i class="mdi mdi-puzzle"></i>&nbsp; v8 / v9 (plugins)</h3>
+
+Engine + **5 plugin types**, each pip-installable:
+
+- <i class="mdi mdi-server"></i>&nbsp; **Executor** — slurm, k8s, googlebatch, …
+- <i class="mdi mdi-database"></i>&nbsp; **Storage** — fs, s3, gcs, zenodo, …
+- <i class="mdi mdi-text-box"></i>&nbsp; **Logger** — snkmt, …
+- <i class="mdi mdi-file-document"></i>&nbsp; **Report** — rocrate, nanopub, …
+- <i class="mdi mdi-clock-fast"></i>&nbsp; **Scheduler** — greedy, ilp, milp
+:::
+:::
+
+## Executor & storage in practice {.smaller}
+
+::: {.columns}
+::: {.column width="50%"}
+<h3 style="color: #8E44AD;"><i class="mdi mdi-server"></i> Executor</h3>
+
+```bash
+pip install snakemake-executor-plugin-slurm
+snakemake --executor slurm --jobs 100
+```
+
+Available: `slurm` · `lsf` · `htcondor` · `kubernetes` ·
+`googlebatch` · `azure-batch` · `flux` · `cluster-generic`
+
+[catalog](https://snakemake.github.io/snakemake-plugin-catalog/)
+:::
+
+::: {.column width="50%"}
+<h3 style="color: #8E44AD;"><i class="mdi mdi-database"></i> Storage</h3>
+
+```python
 storage:
     provider="s3",
     max_requests_per_second=10
 
 rule x:
-    input: storage(
-        "s3://bucket/in.txt")
+    input: storage("s3://bucket/in.txt")
 ```
+
+Or workflow-wide: `--default-storage-provider s3`
 :::
-
-::::
-
-. . .
-
-Or workflow-wide: `--default-storage-provider s3 --default-storage-prefix s3://bucket/`
-
-::: {.notes}
-HPC-critical plugin: `snakemake-storage-plugin-fs` — stages data between shared FS and local scratch. See HPC section.
 :::
 
 ## Software deployment unified
 
 ::: {.columns}
-
 ::: {.column width="50%"}
-**v7**
-```{.bash}
+<h4 style="color: #8E44AD;">v7 — many flags</h4>
+```bash
 --use-conda
 --use-singularity
 --use-envmodules
 --conda-frontend mamba
 ```
 :::
-
 ::: {.column width="50%"}
-**v8/v9 — one flag**
-```{.bash}
+<h4 style="color: #8E44AD;">v8 / v9 — one flag</h4>
+```bash
 --sdm conda
 --sdm apptainer
 --sdm conda apptainer
 --sdm env-modules
 ```
 :::
-
-::::
-
-::: {.fragment}
-- `--conda-frontend mamba` **gone** — `libmamba` is the default solver.
-- Roadmap: software-deployment will itself become a plugin (Pixi backend on the way).
 :::
 
-## CLI rename cheat sheet { .scrollable }
+::: {style="margin-top: 1em;"}
+<i class="mdi mdi-information" style="color: #8E44AD;"></i>&nbsp; `--conda-frontend mamba` removed · `libmamba` is the default solver · Pixi backend on the roadmap.
+:::
+
+## CLI rename cheat sheet {.smaller}
 
 | v7 | v8 / v9 |
 |----|---------|
 | `--cluster "sbatch ..."` | `--executor cluster-generic --cluster-generic-submit-cmd "sbatch ..."` |
 | `--drmaa` | removed (pick an executor plugin) |
-| `--kubernetes` | `--executor kubernetes` |
-| `--google-lifesciences` | `--executor googlebatch` |
-| `--tibanna` | `--executor tibanna` |
-| `--use-conda` | `--sdm conda` |
-| `--use-singularity` | `--sdm apptainer` |
+| `--kubernetes` · `--google-lifesciences` · `--tibanna` | `--executor <name>` |
+| `--use-conda` · `--use-singularity` · `--use-envmodules` | `--sdm <name>` |
 | `--singularity-args` | `--apptainer-args` |
-| `--conda-frontend mamba` | **removed** |
+| `--conda-frontend mamba` | <i class="mdi mdi-close-circle" style="color: #C0392B;"></i> removed |
 | `--restart-times N` | `--retries N` |
 
-. . .
+<i class="mdi mdi-camera" style="color: #8E44AD;"></i>&nbsp; *Photographable slide — profile schema is now versioned too: `config.v8+.yaml`*
 
-**Profiles are now versioned.** `config.v8+.yaml` overrides `config.yaml` on v8+.
+## Highlights · 9.17 → 9.21 {.smaller}
 
-::: {.notes}
-This is the slide people will photograph. Leave it on screen for a beat. Old v7 profiles do not work as-is on v8.
+| <i class="mdi mdi-tag"></i> | <i class="mdi mdi-star"></i> Headline |
+|---|---|
+| **9.17** | Pluggable metadata persistence (files or DB) · lambda rule `priority` |
+| **9.18** | Storage plugins expose **checksums** → cross-workflow cache correctness |
+| **9.19** | `profile.yaml` is the new default filename · pass a YAML file directly |
+| **9.20** | Named multi-output caching · `subpath(with_suffix=...)` · <i class="mdi mdi-alert" style="color: #E67E22;"></i> **`runtime` now in *minutes*** (was seconds) |
+| **9.21** | Filename-prefix helper · tuned SQLite PRAGMAs · auto-detect network FS type |
+
+::: {.callout-warning}
+**Footgun:** `runtime: 60` in a profile meant *60 seconds* before 9.20 — now *60 minutes*.
 :::
 
-## Reports got nicer
-
-- `category` / `subcategory` / `labels` as **functions of wildcards** → per-sample dynamic labelling
-- Automatic toggle switches when items differ on one labelled dimension
-- First-class **Datavzrd** embedding via `report(directory(...))`
-- `--report-stylesheet custom.css` for branding
-- `--report-after-run` auto-generates on success (9.x)
-
-## What's actually new in v9?
-
-> *"Between Snakemake 8 and Snakemake 9, there is only a single breaking change in how custom loggers are provided, such that hardly any user should be affected."*
->
-> — official migration guide
-
-::: {.fragment}
-The change: **logger plugins** (`snakemake-logger-plugin-<name>`)
-
-Motivation: v7/v8 synchronous log handlers could crash workflows on monitoring-backend hiccups.
-
-First plugin: `snakemake-logger-plugin-snkmt` (SQLite/observability backend).
-:::
-
-## Munich Hackathon, March 2026
-
-::: {.columns}
-
-::: {.column width="55%"}
-**MDSI / TU Munich · 9–13 March · 40+ participants**
-
-Three roadmap themes from the BioHackrXiv report:
+## Migration footguns
 
 ::: {.incremental}
-- Core **performance on heterogeneous HPC**
-- Extending the **plugin architecture** for domain-specific extensions
-- **Lowering the entry barrier** for novices, without losing reproducibility
-:::
-:::
-
-::: {.column width="45%"}
-A burst of releases v9.17 → v9.21 landed tightly around and after the hackathon week — most are direct hackathon outputs.
-
-::: {style="font-size: 0.7em; color: #607d8b; margin-top: 1em;"}
-Refs: <br>
-BioHackrXiv [10.37044/osf.io/h6zqj_v1](https://index.biohackrxiv.org/2026/04/27/h6zqj.html) <br>
-Issue [#3807](https://github.com/snakemake/snakemake/issues/3807)
-:::
+- <i class="mdi mdi-close-circle" style="color: #C0392B;"></i>&nbsp; `dynamic()` outputs → use **checkpoints**
+- <i class="mdi mdi-close-circle" style="color: #C0392B;"></i>&nbsp; `version:` directive → use `conda:` / `container:`
+- <i class="mdi mdi-close-circle" style="color: #C0392B;"></i>&nbsp; `subworkflow:` → `module:` + `use rule * from foo as foo_*`
+- <i class="mdi mdi-close-circle" style="color: #C0392B;"></i>&nbsp; `from snakemake.remote.*` → `storage` directive
+- <i class="mdi mdi-alert" style="color: #E67E22;"></i>&nbsp; CI must `pip install snakemake-executor-plugin-slurm` explicitly
+- <i class="mdi mdi-alert" style="color: #E67E22;"></i>&nbsp; v9.20: audit `runtime:` values (seconds → minutes)
+- <i class="mdi mdi-alert" style="color: #E67E22;"></i>&nbsp; v7 profiles reference removed flags — silently broken on v8
 :::
 
-::::
+# {.section-divider background-color="#2980B9"}
 
-::: {.notes}
-The slides.com deck itself returned 403 — what's on the next two slides is reconstructed from the official Snakemake releases.atom feed and the BioHackrXiv post-hackathon report, not transcribed from his slides. Be honest about that if asked.
+::: {style="text-align: center; padding-top: 1em;"}
+<img src="https://avatars.githubusercontent.com/u/33450111?s=120&v=4" style="height: 90px; border-radius: 12px; vertical-align: middle;" alt="Snakemake"/>
+<span style="font-size: 3em; color: #fff; margin: 0 0.5em; vertical-align: middle;">vs</span>
+<img src="https://avatars.githubusercontent.com/u/6698688?s=120&v=4" style="height: 90px; border-radius: 12px; vertical-align: middle;" alt="Nextflow"/>
+
+<h1 style="color: #fff; margin-top: 0.6em;">Snakemake vs Nextflow</h1>
+<p style="color: #d4e8f5; font-size: 0.6em;">Strictly objective · pick on <em>fit</em>, not on taste</p>
 :::
 
-## What landed in Snakemake 9.17 → 9.21 (Mar–May 2026) { .smaller }
-
-| Version | Date | Headline change |
-|---------|------|-----------------|
-| **9.17.0** | 2026-03-13 | **Pluggable metadata persistence** (files *or* database) · **lambda rule `priority`** · topologically ordered job table |
-| **9.18.0** | 2026-03-25 | **Storage plugins expose checksums** → cross-workflow cache correctness |
-| **9.19.0** | 2026-03-28 | `profile.yaml` is the **new default filename** · pass a YAML file directly (not a directory) |
-| **9.20.0** | 2026-05-02 | **Named multi-output caching** · `subpath(..., with_suffix=...)` · ⚠ **runtime CLI/profile values now interpreted as minutes (was seconds)** · plugins without settings auto-deploy |
-| **9.21.0** | 2026-05-14 | Filename-prefix helper · tuned SQLite PRAGMAs · **auto-detected network filesystem type** |
-
-::: {.callout-warning title="Footgun"}
-**Runtime unit change in 9.20** — anyone with `runtime: 60` in a profile meant *60 seconds* in 9.19 and earlier; from 9.20 it means *60 minutes*. Audit your profiles when upgrading.
-:::
-
-::: {.notes}
-This is the most concrete actionable bullet on the slide — call it out verbally even if you skip the rest of the table.
-:::
-
-## The 2026 plugin ecosystem — five categories
-
-```{mermaid}
-%%| fig-align: center
-flowchart LR
-    SMK[Snakemake 9.x core]
-    SMK --- EX[Executor]
-    SMK --- ST[Storage]
-    SMK --- LG[Logger]
-    SMK --- RP[Report]
-    SMK --- SC[Scheduler]
-    EX --- EX1[slurm · lsf · k8s · googlebatch · azure-batch · flux · htcondor · cannon* · cluster-generic]
-    ST --- ST1[fs · s3 · gcs · http · zenodo · ftp · …]
-    LG --- LG1[snkmt SQLite/TUI · …]
-    RP --- RP1[rocrate* · nanopub* · default HTML]
-    SC --- SC1[greedy · ilp · MILP*]
-    style SMK fill:#e8eaf6,stroke:#3949ab,stroke-width:3px
-    style EX fill:#fff3e0,stroke:#ef6c00
-    style ST fill:#fff3e0,stroke:#ef6c00
-    style LG fill:#fff3e0,stroke:#ef6c00
-    style RP fill:#fff3e0,stroke:#ef6c00
-    style SC fill:#fff3e0,stroke:#ef6c00
-```
-
-::: {style="font-size: 0.7em; color: #607d8b;"}
-\* = new or formalized through the 2025–2026 cycle. **rocrate** = Workflow-Run RO-Crate (FAIR provenance, Leo et al. 2024). **nanopub** = Nanopublications. **cannon** = Harvard auto-partition selection. **MILP** = community scheduler plugin (#3646).
-:::
-
-::: {.notes}
-The deck's biggest single point: in 2026 the plugin architecture has reached five orthogonal categories. RO-Crate report plugin closes the FAIR-provenance loop nicely with the earlier FAIR slide.
-:::
-
-## v7 → v8 migration footguns
-
-::: {.incremental}
-- `dynamic()` outputs → use **checkpoints**
-- `version:` directive removed → use `conda:` / `container:`
-- `subworkflow:` removed → use `module:` + `use rule * from foo as foo_*`
-- `from snakemake.remote.*` → `storage` directive
-- Profiles must be updated (dead flags)
-- CI must `pip install snakemake-executor-plugin-slurm` explicitly
-- NCBI / EGA remote providers → became **wrappers**, not storage plugins
-- ⚠ **9.20 (May 2026): `runtime` profile values now in minutes, not seconds** — audit profiles
-:::
-
-::: {.notes}
-All of these surfaced in MosaiCatcher CI. The CI install step is the most common silent failure.
-:::
-
-# Snakemake vs Nextflow { background-color="#2e7d32" }
-
-## Framing slide
-
-::: {.r-fit-text}
-No "which is better".
-:::
-
-::: {.r-fit-text .fragment}
-Compare on technical primitives,
-:::
-
-::: {.r-fit-text .fragment}
-pick on **fit**, not on **taste**.
-:::
-
-::: {.notes}
-Set the tone explicitly. Both are mature, both run in production at EMBL.
-:::
-
-## The deepest difference: dataflow model
+## The deepest difference — dataflow
 
 ::: {.columns}
-
 ::: {.column width="50%"}
-### Snakemake — pull
-- **Target-driven** (Make-style)
-- You request an output file
-- Tool recurses back: *"what do I need?"*
-- Bottoms out at existing inputs
-- Mental model: **"what file do I want?"**
-:::
 
-::: {.column width="50%"}
-### Nextflow — push
-- **Channel-driven** (Kahn / CSP / dataflow)
-- `process`es connected by `channel`s
-- Values flow asynchronously
-- A `process` fires when each input channel has a record
-- Mental model: **"what stream into what process?"**
-:::
+<h3 style="color: #2980B9;"><i class="mdi mdi-arrow-left-bold-circle"></i>&nbsp; Snakemake — **pull**</h3>
 
-::::
+Target-driven, Make-style.
 
-::: {.notes}
-This explains every other downstream difference. Spend a beat here.
-:::
+> *"What file do I want?"*
 
-## DAG construction
-
-::: {.columns}
-
-::: {.column width="50%"}
-### Snakemake
-- **Static, up-front**
+- Request output → recurse back
+- Static DAG, built up-front
 - `--dry-run` shows the full plan
-- `--dag` / `--rulegraph` → Graphviz
-- Conditional flow via Python (input functions)
-- **Checkpoints** when output contents drive downstream inputs
+- Conditional flow via Python / checkpoints
 :::
 
 ::: {.column width="50%"}
-### Nextflow
-- **Dynamic, at runtime**
-- Channels evaluated lazily as records arrive
-- Scatter/gather from operators (`splitFastq`, `groupTuple`)
-- `-preview`, `-with-dag` are approximations
-- True graph only exists once channels emit
-:::
 
-::::
+<h3 style="color: #2980B9;"><i class="mdi mdi-arrow-right-bold-circle"></i>&nbsp; Nextflow — **push**</h3>
 
-## Language & tooling
+Channel-driven, Kahn / CSP-style.
 
-| | Snakemake | Nextflow |
-|---|---|---|
-| Host language | Python-embedded DSL | Groovy DSL2 on the JVM |
-| Runtime | CPython | **Java 17+** (since 25.04, May 2025) |
-| Debugging | `pdb` + `--debug` + `--printshellcmds` | log-driven via `work/.command.{sh,log}` |
-| IDE | Python ecosystem + `snakefmt` | Seqera VS Code Nextflow Language Server |
+> *"What stream into what process?"*
 
-::: {.fragment}
-::: {.callout-warning title="Myth-buster"}
-*"Nextflow needs Java"* — **true**. Specifically Java 17+ since Nextflow 25.04 (May 2025). Java 11 is no longer supported.
+- Channels emit records
+- Processes fire on input availability
+- Dynamic DAG, materializes at runtime
+- Branching native via operators
 :::
 :::
 
-## Resume / cache — the myth-buster slide
+## Resume / cache — myth-buster
 
 ::: {.columns}
+::: {.column width="50%"}
+<h4 style="color: #2980B9;"><i class="mdi mdi-clock-outline"></i>&nbsp; Snakemake</h4>
+
+File timestamps + tracked metadata in `.snakemake/`.
+
+Triggers: `--rerun-triggers {mtime, params, input, software-env, code}`.
+
+*Make pitfall:* touching an input invalidates downstream.
+:::
 
 ::: {.column width="50%"}
-### Snakemake
-- File **timestamps + tracked metadata** (`.snakemake/`)
-- Rerun triggers: `mtime`, `params`, `input`, `software-env`, `code`
-- Configurable: `--rerun-triggers ...`
-- *Make pitfall:* touching an input invalidates downstream
-:::
+<h4 style="color: #2980B9;"><i class="mdi mdi-hash"></i>&nbsp; Nextflow</h4>
 
-::: {.column width="50%"}
-### Nextflow
-- Hash in `.nextflow/cache/<session>/` (LevelDB)
-- Hashes script body, input values, **file attributes (path/size/mtime)** — *not contents* by default
-- `cache 'deep'` → true content hash
-- `cache 'lenient'` → relaxed for shared FS
-- Debug: `-dump-hashes`
-:::
+Hash in `.nextflow/cache/` (LevelDB).
 
-::::
+Hashes script + input *attributes* (path/size/**mtime**) by default — **not contents**.
 
-. . .
-
-::: {.callout-warning title="Myth-buster"}
-*"Nextflow -resume is content-hashed, immune to mtime issues"* — **partially false**. Default is file *attributes* (incl. mtime); content hashing is opt-in via `cache 'deep'`. Shared-FS mtime jitter is a documented cause of spurious cache misses.
-:::
-
-## Executor support matrix { .scrollable }
-
-| Backend | Snakemake | Nextflow |
-|---------|-----------|----------|
-| SLURM | ✅ `-slurm` | ✅ `slurm` |
-| LSF | ✅ `-lsf` | ✅ `lsf` |
-| SGE / PBS / OAR / Moab / NQSII | community | ✅ all built-in |
-| HTCondor | ✅ `-htcondor` | ✅ `condor` |
-| Kubernetes | ✅ `-kubernetes` | ✅ `k8s` |
-| Google Batch | ✅ `-googlebatch` | ✅ `google-batch` |
-| Azure Batch | ✅ `-azure-batch` | ✅ `azurebatch` |
-| **AWS Batch** | ❌ no official plugin | ✅ `awsbatch` (first-class) |
-| Flux | ✅ `-flux` | ✅ `flux` |
-| TES | community | ✅ `tes` |
-
-::: {.fragment}
-::: {.callout-warning title="Myth-buster"}
-*"Snakemake can't do cloud"* — **false**. Kubernetes / Google Batch / Azure Batch are official. *"Snakemake can't do AWS Batch"* — closer to true; no official plugin (use K8s-on-EKS, TES, or community `pcluster-slurm`).
+`cache 'deep'` → true content hash · `cache 'lenient'` for shared FS.
 :::
 :::
 
-## Software deployment & containers
+::: {.callout-warning}
+*"Nextflow -resume is content-hashed"* — **partially false**. Default = file attributes incl. mtime. Both tools are sensitive to FS metadata. Neither is magic.
+:::
 
-| | Snakemake | Nextflow / nf-core |
+## Executor matrix {.smaller .scrollable}
+
+| | <i class="mdi mdi-snake" style="color: #208F6E;"></i> Snakemake | <i class="mdi mdi-source-branch" style="color: #5e9c1e;"></i> Nextflow |
 |---|---|---|
-| Per-rule conda | `conda: "envs/x.yaml"` | `conda` directive |
-| Per-rule container | `container: "docker://..."` | `container` directive |
-| Compose conda + container | `--sdm conda apptainer` | engine + conda |
+| SLURM · LSF · HTCondor · Kubernetes · Flux | <i class="mdi mdi-check-circle" style="color: #208F6E;"></i> plugins | <i class="mdi mdi-check-circle" style="color: #5e9c1e;"></i> built-in |
+| Google Batch · Azure Batch | <i class="mdi mdi-check-circle" style="color: #208F6E;"></i> plugins | <i class="mdi mdi-check-circle" style="color: #5e9c1e;"></i> built-in |
+| SGE · PBS · OAR · Moab · NQSII | <i class="mdi mdi-account-multiple"></i> community | <i class="mdi mdi-check-circle" style="color: #5e9c1e;"></i> built-in |
+| **AWS Batch** | <i class="mdi mdi-close-circle" style="color: #C0392B;"></i> no official plugin | <i class="mdi mdi-check-circle" style="color: #5e9c1e;"></i> `awsbatch` first-class |
+| TES | <i class="mdi mdi-account-multiple"></i> community | <i class="mdi mdi-check-circle" style="color: #5e9c1e;"></i> built-in |
+
+::: {.callout-warning}
+*"Snakemake can't do cloud"* — **false** (K8s · GCP · Azure are official).
+*"Snakemake can't do AWS Batch"* — closer to true (no official plugin).
+:::
+
+## Software & containers
+
+| | <i class="mdi mdi-snake" style="color: #208F6E;"></i> Snakemake | <i class="mdi mdi-source-branch" style="color: #5e9c1e;"></i> Nextflow / nf-core |
+|---|---|---|
+| Per-rule env | `conda:` + `container:` | `conda` + `container` directive |
+| Compose | `--sdm conda apptainer` | engine + conda |
 | Curated registry | snakemake-wrappers | BioContainers · mulled · **Seqera Containers** |
-| Build on demand | — | **Wave** (OSS) |
+| Build on demand | — | **Wave** (Apache-2.0 OSS) |
 | POSIX over S3/GCS | — | **Fusion** (commercial) |
 
-::: {.fragment}
-::: {.callout-warning title="Myth-buster"}
-*"Wave and Fusion are both Seqera commercial"* — **partially false**. **Wave is open-source** (Apache-2.0). Fusion is part of the commercial Seqera Platform.
+::: {.callout-warning}
+**Wave is open-source.** Fusion is part of the commercial Seqera Platform.
 :::
-:::
-
-## Reports & observability
-
-::: {.columns}
-
-::: {.column width="50%"}
-### Snakemake
-- `--report report.html` — single-file
-- Provenance · rule graph · `report()` outputs
-- Per-job `benchmark:` TSV
-- No first-party control plane
-:::
-
-::: {.column width="50%"}
-### Nextflow
-- `-with-report` · `-with-trace` · `-with-timeline` · `-with-dag` · `-with-weblog`
-- **Seqera Platform** (formerly Tower)
-- Tower OSS (MPL-2.0) · Platform commercial
-- Persistent multi-user views
-:::
-
-::::
 
 ## Ecosystem & community
 
 ::: {.columns}
-
 ::: {.column width="50%"}
-### nf-core (Jul 2025)
+
+<img src="https://nf-co.re/images/nf-core-logo.svg" style="height: 50px;" alt="nf-core"/>
+
+### nf-core *(Jul 2025)*
 - **124** curated pipelines
-- **1,400+** modules
-- **70+** subworkflows
-- Strict template & lint regime
-- `nf-test` is the standard
+- **1,400+** modules · **70+** subworkflows
+- **2,600** contributors · **10,800** Slack members
+- Strict template · `nf-test` standard
 :::
 
 ::: {.column width="50%"}
+
+<img src="https://avatars.githubusercontent.com/u/33450111?s=80&v=4" style="height: 50px; border-radius: 8px;" alt="Snakemake"/>
+
 ### Snakemake
-- **Workflow Catalog** (static index)
-- `snakemake-workflows` org: ~28 reference pipelines
-- **snakemake-wrappers**: hundreds, versioned per tool
+- **Workflow Catalog** (auto-indexed)
+- **snakemake-workflows** org: ~28 pipelines
+- **snakemake-wrappers**: hundreds, versioned
 - More federated, less curated
 :::
-
-::::
-
-::: {.fragment}
-**Honest summary:** nf-core sets a higher bar for pipeline standardization. Snakemake is broader at the wrapper level, less curated at the pipeline level.
 :::
 
-## When does each shine?
+::: {style="margin-top: 0.6em; font-size: 0.75em;"}
+<i class="mdi mdi-information" style="color: #2980B9;"></i>&nbsp; nf-core sets a higher pipeline-standardization bar; Snakemake is broader at the wrapper level.
+:::
+
+## When does each fit?
 
 ::: {.columns}
-
 ::: {.column width="50%"}
-### Snakemake fits when…
-- Team is **Python-native**
-- Pipeline is **target / file-driven**
+<h4 style="color: #2980B9;"><i class="mdi mdi-snake"></i>&nbsp; Snakemake fits when…</h4>
+
+- Team is <i class="mdi mdi-language-python"></i> Python-native
+- Pipeline is **file / target-driven**
+- You want the **DAG up-front**
 - Debugging needs interactive Python
-- You want the **DAG up front**
-- One Snakefile readable end-to-end
+- One Snakefile, readable end-to-end
 :::
 
 ::: {.column width="50%"}
-### Nextflow fits when…
-- Team has **Java/Groovy/Scala** people
+<h4 style="color: #2980B9;"><i class="mdi mdi-source-branch"></i>&nbsp; Nextflow fits when…</h4>
+
+- Team has Groovy / JVM people
 - Pipeline is **stream / event-driven**
-- **AWS Batch / Fusion** matter
+- **AWS Batch** or **Fusion** matter
 - You want **nf-core** off-the-shelf
+- You want **Seqera Platform** observability
+:::
 :::
 
-::::
+# {.section-divider background-color="#E67E22"}
 
-# EMBL HPC: 5 things to check { background-color="#e65100" }
+::: {style="text-align: center;"}
+<i class="mdi mdi-server-network" style="font-size: 4em; color: #fff;"></i>
 
-## The 5-point checklist
-
-::: {.incremental}
-1. **Throttle scheduler submissions** — `max-jobs-per-second: 10`
-2. **Stage compute through scratch** — `default-storage-provider: fs` + `local-storage-prefix: /scratch/$USER/<wf>`
-3. **Remove `input-output`** from `shared-fs-usage` — otherwise step 2 is bypassed
-4. **Enable Snakemake output cache** — `SNAKEMAKE_OUTPUT_CACHE=/scratch_cached/<group>/snakemake_cache`
-5. **Share conda + apptainer caches** — group-writable parallel FS, **setgid bit** (`chmod 2775`)
+<h1 style="color: #fff;">EMBL HPC field notes</h1>
+<p style="color: #fdebd0; font-size: 0.7em;">Caching · storage · grouping · arrays · EESSI</p>
 :::
 
-::: {.notes}
-Full draft in `docs/hpc-pipeline-optimization_ongoing.md` (1241 lines). These 5 are highest impact.
+## Five pillars { background-color="#fdf2e9"}
+
+::: {.columns style="margin-top: 1em;"}
+::: {.column width="20%" style="text-align: center;"}
+<i class="mdi mdi-cached" style="font-size: 3em; color: #E67E22;"></i>
+
+**Workflow caching**
+
+`SNAKEMAKE_OUTPUT_CACHE`
+:::
+::: {.column width="20%" style="text-align: center;"}
+<i class="mdi mdi-docker" style="font-size: 3em; color: #E67E22;"></i>
+
+**Container caching**
+
+Shared `apptainer-prefix`
+:::
+::: {.column width="20%" style="text-align: center;"}
+<i class="mdi mdi-database" style="font-size: 3em; color: #E67E22;"></i>
+
+**Storage staging**
+
+`fs` plugin · scratch
+:::
+::: {.column width="20%" style="text-align: center;"}
+<i class="mdi mdi-group" style="font-size: 3em; color: #E67E22;"></i>
+
+**Job grouping & arrays**
+
+`group:` · `--group-components`
+:::
+::: {.column width="20%" style="text-align: center;"}
+<i class="mdi mdi-package-variant" style="font-size: 3em; color: #E67E22;"></i>
+
+**EESSI / env-modules**
+
+`--sdm env-modules`
+:::
 :::
 
-## The whole story in 5 lines
+## 1 · Caching — workflow + containers
 
-```{.yaml filename="profile/config.yaml"}
-executor: slurm
-default-storage-provider: fs
-local-storage-prefix: /scratch/$USER/snakemake_test/local
-slurm-efficiency-report: true
-max-jobs-per-second: 10
+::: {.columns}
+::: {.column width="50%"}
+<h4 style="color: #E67E22;"><i class="mdi mdi-cached"></i>&nbsp; Workflow output cache</h4>
+
+```bash
+export SNAKEMAKE_OUTPUT_CACHE=\
+  /scratch_cached/<group>/snakemake_cache
 ```
 
-. . .
+Per rule:
+```python
+rule index_ref:
+    output: "ref.fa.bwt"
+    cache: True   # shared across users
+```
 
-That's it. Everything else is per-rule resources.
+Computed indexes (BWA, STAR, ref dicts) reused across users → minutes saved per run.
+:::
 
-## Storage tier cheat sheet
+::: {.column width="50%"}
+<h4 style="color: #E67E22;"><i class="mdi mdi-docker"></i>&nbsp; Container & conda cache</h4>
 
-| Data type | Tier | Why |
-|-----------|------|-----|
-| Reference genomes | Cached parallel FS | Read 100× during alignment |
-| BAM / CRAM intermediates | Parallel FS | High-throughput sequential writes |
-| Computed indexes (BWA, STAR) | Cached parallel FS | Repeated reads, expensive to rebuild |
-| conda / container caches | Parallel FS | Shared across users |
-| Temp / sorting buffers | **Local scratch** | Ultra-fast, job-local |
+```yaml
+# profile
+conda-prefix:     /g/<group>/shared/conda
+apptainer-prefix: /g/<group>/shared/apptainer
+```
 
-## Common pitfalls
+<i class="mdi mdi-folder-lock" style="color: #E67E22;"></i>&nbsp; Group-writable, `chmod 2775` (setgid) → no per-user re-solves.
+
+<i class="mdi mdi-rocket" style="color: #E67E22;"></i>&nbsp; Pre-warm: `snakemake --conda-create-envs-only`
+:::
+:::
+
+## 2 · Storage — staging via `fs` plugin
+
+```{.yaml filename="profile/config.yaml" code-line-numbers="|2|3|4-7"}
+executor: slurm
+default-storage-provider: fs                       # auto-stage to scratch
+local-storage-prefix: /scratch/$USER/snakemake/<wf>
+shared-fs-usage:                                   # what stays on shared FS
+  - persistence
+  - software-deployment
+  - sources                                        # NOT input-output!
+```
+
+| <i class="mdi mdi-file"></i> Data | <i class="mdi mdi-harddisk"></i> Tier | Why |
+|---|---|---|
+| Reference genomes · indexes | Cached parallel FS | Read 100× |
+| BAM / CRAM intermediates | Parallel FS | Sequential writes |
+| Conda · containers | Parallel FS (shared) | Multi-user reuse |
+| Sorting · temp buffers | **Local scratch** | Ultra-fast, per-job |
+
+## 3 · Job grouping — fewer SLURM submissions
+
+::: {.columns}
+::: {.column width="55%"}
+```python
+rule trim:
+    input:  "fastq/{s}.fq.gz"
+    output: "trim/{s}.fq.gz"
+    group:  "preproc"   # ◀ same group
+
+rule align:
+    input:  "trim/{s}.fq.gz"
+    output: "bam/{s}.bam"
+    group:  "preproc"   # ◀ same SLURM job
+```
+
+CLI knobs:
+```bash
+--groups rulename=fast
+--group-components fast=10
+```
+:::
+
+::: {.column width="45%"}
+<i class="mdi mdi-lightbulb-on" style="color: #E67E22;"></i>&nbsp; **One sbatch instead of two** per sample.
+
+<i class="mdi mdi-lightbulb-on" style="color: #E67E22;"></i>&nbsp; Shares scratch between rules.
+
+<i class="mdi mdi-lightbulb-on" style="color: #E67E22;"></i>&nbsp; Resource math: <br/>
+&nbsp;&nbsp;parallel → sum cpus, max runtime <br/>
+&nbsp;&nbsp;serial → max cpus, sum runtime
+:::
+:::
+
+## 4 · Job arrays — submitting at scale
+
+::: {.columns}
+::: {.column width="55%"}
+For thousands of similar samples, the SLURM executor plugin batches Snakemake jobs into **`sbatch --array=…`** submissions automatically.
+
+```yaml
+# profile
+executor: slurm
+slurm-job-array: true       # opt-in batching
+jobs: 500
+max-jobs-per-second: 10     # throttle controller
+```
+
+<i class="mdi mdi-information" style="color: #E67E22;"></i>&nbsp; Combined with `group:` → array of grouped jobs.
+:::
+
+::: {.column width="45%"}
+<i class="mdi mdi-checkbox-marked-circle" style="color: #2ECC71;"></i>&nbsp; **Fewer scheduler RPCs**
+
+<i class="mdi mdi-checkbox-marked-circle" style="color: #2ECC71;"></i>&nbsp; Single `squeue` entry
+
+<i class="mdi mdi-checkbox-marked-circle" style="color: #2ECC71;"></i>&nbsp; Per-task logs preserved (`%A_%a`)
+
+<i class="mdi mdi-alert" style="color: #E67E22;"></i>&nbsp; Heterogeneous resources → keep separate
+:::
+:::
+
+## 5 · EESSI — env-modules everywhere
+
+::: {.columns}
+::: {.column width="55%"}
+**EESSI** = European Environment for Scientific Software Installations — a CernVM-FS stream of pre-built scientific software, mountable on any HPC.
+
+```bash
+source /cvmfs/software.eessi.io/versions/2023.06/init/bash
+module load BWA SAMtools STAR
+```
+
+Per rule:
+```python
+rule align:
+    envmodules: "BWA/0.7.17", "SAMtools/1.18"
+    shell: "bwa mem ... | samtools sort ..."
+```
+Invoke with `--sdm env-modules`.
+:::
+
+::: {.column width="45%"}
+<i class="mdi mdi-rocket-launch" style="color: #E67E22;"></i>&nbsp; **No conda solve · no image pull**
+
+<i class="mdi mdi-earth" style="color: #E67E22;"></i>&nbsp; Identical tool versions across sites
+
+<i class="mdi mdi-shield-check" style="color: #E67E22;"></i>&nbsp; Reproducibility comparable to containers
+
+[eessi.io](https://www.eessi.io)
+:::
+:::
+
+## Bonus · dependency cooldowns { background-color="#fef5e7"}
+
+<h4 style="color: #F39C12;"><i class="mdi mdi-shield-lock"></i>&nbsp; Why</h4>
+
+Malicious PyPI / conda releases are usually yanked within hours to days. Tell your resolver to ignore versions published in the last *N* days → compromised releases disappear before your build ever sees them. Bonus: dampens surprise breakage.
+
+::: {.columns style="margin-top: 0.6em;"}
+::: {.column width="50%"}
+<h4 style="color: #F39C12;"><i class="mdi mdi-language-python"></i>&nbsp; pip 26.1 (Apr 2026)</h4>
+
+```bash
+pip install --uploaded-prior-to=P7D requests
+```
+
+- 26.0 → absolute date only · 26.1 → ISO-8601 relative duration
+- Also in `pip.conf`
+- Relies on PEP 700 upload time (PyPI; may no-op on custom indexes)
+:::
+
+::: {.column width="50%"}
+<h4 style="color: #F39C12;"><i class="mdi mdi-package-variant"></i>&nbsp; Pixi · `exclude-newer`</h4>
+
+```toml
+[workspace]
+exclude-newer = "14d"
+channels = [
+  "conda-forge",
+  { channel = ".../internal", exclude-newer = "0d" }
+]
+
+[exclude-newer]
+openssl = "0d"   # bypass for urgent CVE
+```
+:::
+:::
+
+::: {style="font-size: 0.6em; margin-top: 0.6em; color: #7f8c8d;"}
+Same concept as uv/rattler · 7 days is the commonly cited default · [Richard Si's writeup](https://ichard26.github.io/blog/2026/04/whats-new-in-pip-26.1/)
+:::
+
+# {.section-divider background-color="#16A085"}
+
+::: {style="text-align: center;"}
+<i class="mdi mdi-play-circle" style="font-size: 4em; color: #fff;"></i>
+
+<h1 style="color: #fff;">Live demo</h1>
+<p style="color: #d1f2eb; font-size: 0.65em;"><code style="color: #fff;">dev/snakemake-v9-features/</code></p>
+:::
+
+## What you'll see (≈5 min)
+
+::: {.columns}
+::: {.column width="60%"}
+
+```bash
+~/.pixi/bin/pixi run snakemake \
+   --profile dev/snakemake-v9-features/profile \
+   --jobs 10
+```
 
 ::: {.incremental}
-- **Stale `.snakemake/` locks** when two users share a checkout → per-user `--workflow-profile`
-- **Conda env build races** → pre-build with `--conda-create-envs-only`, share `conda-prefix`
-- **`$JOBID` not expanded** in scratch paths → upgrade to Snakemake **9.3.4+**
-- **`--conda-frontend mamba` in profile** → warning on v8, error on v9, just delete it
-- **Old v7 `--cluster "sbatch ..."` in CI** → silently broken on v8, replace with `--executor slurm`
+- <i class="mdi mdi-check" style="color: #16A085;"></i>&nbsp; Minimal 5-rule workflow
+- <i class="mdi mdi-check" style="color: #16A085;"></i>&nbsp; `group: "processing"` — multi-rule single SLURM job
+- <i class="mdi mdi-check" style="color: #16A085;"></i>&nbsp; `fs` storage provider auto-stages to `/scratch/$USER/`
+- <i class="mdi mdi-check" style="color: #16A085;"></i>&nbsp; `slurm-efficiency-report: true` flags <80% util
+- <i class="mdi mdi-check" style="color: #16A085;"></i>&nbsp; Scales 3 → 100 samples by one config line
+:::
 :::
 
-# Live demo { background-color="#1f2a44" }
-
-## What you'll see (~5 min)
-
-Repo path: **`dev/snakemake-v9-features/`**
-
-::: {.incremental}
-- Minimal 5-rule workflow
-- `group: "processing"` keyword — multiple rules in one SLURM job
-- `fs` storage provider — auto-stage between `/g/...` and `/scratch/$USER/...`
-- `slurm-efficiency-report: true` — flags under-utilized jobs (<80%)
-- Scales 3 → 100 samples by changing one config line
+::: {.column width="40%"}
+<div style="background: #d1f2eb; padding: 1em; border-radius: 8px; margin-top: 1em;">
+<i class="mdi mdi-folder" style="color: #16A085;"></i>&nbsp; <strong>Path</strong>
+<code style="display: block; margin-top: 0.5em; font-size: 0.7em;">dev/snakemake-v9-features/</code>
+<i class="mdi mdi-video" style="color: #16A085; margin-top: 1em; display: block;"></i>&nbsp; Recording ready as fallback
+</div>
+:::
 :::
 
-::: {.notes}
-Have the screen-recording fallback ready. If queue is slow, switch at t=2:30.
-:::
-
-# Q&A { background-color="#1f2a44" }
+# Q&A { background-color="#0f3a30" }
 
 ## Further reading
 
-- Mölder et al. 2021 (rolling, v3 Sep 2025) — <https://doi.org/10.12688/f1000research.29032.3>
-- Snakemake migration guide — <https://snakemake.readthedocs.io/en/stable/getting_started/migration.html>
-- Plugin catalog — <https://snakemake.github.io/snakemake-plugin-catalog/>
-- Köster's slides hub — <https://slides.com/johanneskoester>
-- ISMB/ECCB 2021 keynote — <https://www.youtube.com/watch?v=LchfsoH1ITg>
-- Workflow Catalog — <https://snakemake.github.io/snakemake-workflow-catalog/>
-- nf-core paper (Jul 2025) — <https://link.springer.com/article/10.1186/s13059-025-03673-9>
-- This deck's source — `docs/python-club-snakemake-2026.{md,qmd}`
+::: {.columns}
+::: {.column width="50%"}
+<h4 style="color: #208F6E;"><i class="mdi mdi-snake"></i>&nbsp; Snakemake</h4>
 
-## Thank you
-
-::: {.r-fit-text}
-Questions?
+- **Köster's 2026 deck** — [slides.com/johanneskoester/snakemake-intro-updates-2026](https://slides.com/johanneskoester/snakemake-intro-updates-2026)
+- **Rolling paper** (Mölder et al., F1000 v3 Sep 2025) — [doi:10.12688/f1000research.29032.3](https://doi.org/10.12688/f1000research.29032.3)
+- **Migration guide** — [readthedocs](https://snakemake.readthedocs.io/en/stable/getting_started/migration.html)
+- **Plugin catalog** — [snakemake.github.io/snakemake-plugin-catalog](https://snakemake.github.io/snakemake-plugin-catalog/)
 :::
 
-::: {style="text-align: center; margin-top: 2em;"}
-Deck + speaker notes:
+::: {.column width="50%"}
+<h4 style="color: #2980B9;"><i class="mdi mdi-source-branch"></i>&nbsp; Context</h4>
 
-`docs/python-club-snakemake-2026.{md,qmd}`
+- **Wratten et al. 2021** *Nat. Methods* — [10.1038/s41592-021-01254-9](https://www.nature.com/articles/s41592-021-01254-9)
+- **nf-core** *Genome Biology* Jul 2025 — [s13059-025-03673-9](https://link.springer.com/article/10.1186/s13059-025-03673-9)
+- **EESSI** — [eessi.io](https://www.eessi.io)
 
-HPC long-form: `docs/hpc-pipeline-optimization_ongoing.md`
+<h4 style="color: #E67E22; margin-top: 1em;"><i class="mdi mdi-server-network"></i>&nbsp; In this repo</h4>
+
+- `docs/hpc-pipeline-optimization_ongoing.md`
+- `dev/snakemake-v9-features/`
+:::
 :::

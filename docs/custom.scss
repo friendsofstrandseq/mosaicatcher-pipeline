@@ -1,81 +1,213 @@
-/* Custom theme for the Python Club Snakemake deck
-   Used by docs/python-club-snakemake-2026.qmd */
-
 /*-- scss:defaults --*/
+
+/* Snakemake brand palette */
+$smk-primary:   #208F6E;
+$smk-dark:      #0f3a30;
+$smk-light:     #a3e4d7;
+$smk-bg-soft:   #e8f5f0;
+
+/* Section palette (flat UI) */
+$sec-intro:  #34495E;   /* wet asphalt */
+$sec-core:   #208F6E;   /* snakemake green */
+$sec-v9:     #8E44AD;   /* wisteria */
+$sec-nf:     #2980B9;   /* belize blue */
+$sec-hpc:    #E67E22;   /* carrot */
+$sec-demo:   #16A085;   /* green sea */
+$sec-tip:    #F39C12;   /* orange */
+$danger:     #C0392B;   /* pomegranate */
+$success:    #2ECC71;   /* emerald */
+
+/* Typography — try Product Sans / Google Sans, fall back to Inter */
+$font-family-sans-serif: "Product Sans", "Google Sans", "Inter",
+                         -apple-system, BlinkMacSystemFont, "Segoe UI",
+                         Roboto, sans-serif;
+$font-family-monospace: "JetBrains Mono", "Fira Code", "Menlo",
+                        "Consolas", monospace;
+
 $body-bg: #fdfdfd;
-$body-color: #1a202c;
-$link-color: #2e7d32;
-$presentation-heading-color: #1f2a44;
+$body-color: #1f2d3d;
+$link-color: $smk-primary;
+$presentation-heading-color: $smk-dark;
 $presentation-heading-font-weight: 600;
 $presentation-font-size-root: 30px;
-$code-block-bg: #f5f7fa;
+$code-block-bg: #f4f7f6;
 $code-block-font-size: 0.78em;
 
 /*-- scss:rules --*/
 
-/* Tighten section-divider slides */
+.reveal {
+  font-family: $font-family-sans-serif;
+  letter-spacing: -0.005em;
+}
+
+.reveal h1, .reveal h2, .reveal h3, .reveal h4 {
+  font-family: $font-family-sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.reveal h2 {
+  color: $smk-dark;
+  border-bottom: 3px solid $smk-light;
+  padding-bottom: 0.25em;
+  margin-bottom: 0.5em;
+}
+
+/* Section dividers (slides with data-background-color set) */
 .reveal section[data-background-color] h1 {
-  color: #ffffff;
+  color: #ffffff !important;
   font-weight: 700;
+  border-bottom: none;
+  font-size: 2.4em;
+}
+.reveal section[data-background-color] h2 {
+  color: #ffffff !important;
+  border-bottom: none;
+}
+.reveal section[data-background-color] p,
+.reveal section[data-background-color] li {
+  color: #ffffff;
+}
+
+/* Title slide */
+.reveal .title-slide h1 {
+  color: #ffffff;
+  border-bottom: none;
+  font-weight: 800;
+  font-size: 2.6em;
+  letter-spacing: -0.025em;
+}
+
+/* Tables - dense + branded */
+.reveal table {
+  font-size: 0.72em;
+  border-collapse: collapse;
+  margin: 0.4em auto;
+  width: 95%;
+}
+.reveal table th {
+  background: $smk-bg-soft;
+  border-bottom: 2px solid $smk-primary;
+  padding: 0.4em 0.7em;
+  color: $smk-dark;
+  font-weight: 600;
+}
+.reveal table td {
+  padding: 0.32em 0.7em;
+  vertical-align: top;
+  border-bottom: 1px solid #ecf0f1;
+}
+.reveal table tr:last-child td {
   border-bottom: none;
 }
 
-/* Slightly smaller tables to fit dense comparison content */
-.reveal table {
-  font-size: 0.78em;
-  border-collapse: collapse;
-  margin: 0.4em auto;
+/* Code blocks */
+.reveal pre {
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(15, 58, 48, 0.08);
 }
-.reveal table th {
-  background: #eceff1;
-  border-bottom: 2px solid #1f2a44;
-  padding: 0.35em 0.6em;
-}
-.reveal table td {
-  padding: 0.3em 0.6em;
-  vertical-align: top;
-}
-
-/* Callouts a touch more compact */
-.reveal .callout {
-  font-size: 0.85em;
-  margin: 0.6em 0;
-}
-
-/* Code blocks: smaller mono so a full rule fits without overflow */
 .reveal pre code {
+  font-family: $font-family-monospace;
+  font-size: 0.78em;
+  line-height: 1.4;
+  padding: 0.9em 1.1em;
+}
+.reveal code {
+  font-family: $font-family-monospace;
+  color: $smk-dark;
+  background: $smk-bg-soft;
+  padding: 0.08em 0.35em;
+  border-radius: 3px;
+  font-size: 0.92em;
+}
+.reveal pre code {
+  background: #f4f7f6;
+}
+
+/* Callouts */
+.reveal .callout {
   font-size: 0.82em;
-  line-height: 1.3;
+  margin: 0.7em 0;
+  border-left-width: 4px;
+  border-radius: 6px;
+}
+.reveal .callout-warning {
+  border-left-color: $sec-hpc !important;
+}
+.reveal .callout-note {
+  border-left-color: $sec-nf !important;
+}
+
+/* MDI icon baseline alignment */
+.reveal .mdi {
+  vertical-align: -0.08em;
+}
+.reveal h2 .mdi,
+.reveal h3 .mdi,
+.reveal h4 .mdi {
+  vertical-align: -0.05em;
+}
+
+/* Two-column tightening */
+.reveal .columns {
+  gap: 1.2em;
+  align-items: start;
+}
+
+/* Agenda grid */
+.reveal .agenda-grid ul {
+  list-style: none;
+  padding-left: 0;
+  font-size: 0.9em;
+}
+.reveal .agenda-grid li {
+  margin: 0.45em 0;
+  padding: 0.45em 0.8em;
+  background: $smk-bg-soft;
+  border-left: 4px solid $smk-primary;
+  border-radius: 4px;
+}
+.reveal section[data-background-color] .agenda-grid li {
+  background: rgba(255,255,255,0.08);
+  border-left-color: $smk-light;
+  color: #fff;
+}
+
+/* Smaller-class tweak */
+.reveal .smaller p,
+.reveal .smaller li,
+.reveal .smaller td,
+.reveal .smaller th {
+  font-size: 0.78em;
 }
 
 /* Footer */
 .reveal .footer {
-  font-size: 0.55em;
-  color: #607d8b;
+  font-size: 0.5em;
+  color: #7f8c8d;
 }
 
-/* Fit-text headlines get a touch of weight */
-.reveal .r-fit-text {
-  font-weight: 700;
-  color: #1f2a44;
-  margin: 0.4em 0;
+/* Fragment incremental smoother */
+.reveal .fragment {
+  transition: opacity 0.2s ease-out;
 }
 
-/* Mermaid container centered, max-height to avoid overflow */
-.reveal .mermaid {
-  text-align: center;
-  max-height: 580px;
+/* Make blockquotes look like pull-quotes */
+.reveal blockquote {
+  border-left: 4px solid $smk-primary;
+  background: $smk-bg-soft;
+  padding: 0.6em 1em;
+  font-style: italic;
+  color: $smk-dark;
 }
 
-/* Two-column tweak: narrower gutter, tighter top padding */
-.reveal .columns {
-  gap: 1.2em;
+/* .scrollable for long tables */
+.reveal .scrollable {
+  overflow-y: auto;
+  max-height: 600px;
 }
 
-/* Make .smaller a bit more usable for slides with lots of text */
-.reveal .slide.smaller p,
-.reveal .slide.smaller li,
-.reveal .slide.smaller td,
-.reveal .slide.smaller th {
-  font-size: 0.85em;
+/* Hide annoying default chalkboard toolbar in print */
+@media print {
+  .reveal .chalkboard, .reveal .menu-button { display: none !important; }
 }
