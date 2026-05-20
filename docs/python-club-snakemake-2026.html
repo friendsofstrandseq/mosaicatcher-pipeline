@@ -1029,35 +1029,49 @@ Strictly objective · pick on <em>fit</em>, not on taste
 </div>
 <div class="cell" data-reveal="true" data-eval="true" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb15-1"><a href="" aria-hidden="true" tabindex="-1"></a>flowchart LR</span>
-<span id="cb15-2"><a href="" aria-hidden="true" tabindex="-1"></a>  IN(["Input touched"]):::trigger</span>
-<span id="cb15-3"><a href="" aria-hidden="true" tabindex="-1"></a>  IN --&gt; SMK{"Snakemake&lt;br/&gt;--rerun-triggers"}:::tool</span>
-<span id="cb15-4"><a href="" aria-hidden="true" tabindex="-1"></a>  IN --&gt; NF{"Nextflow&lt;br/&gt;-resume"}:::tool</span>
-<span id="cb15-5"><a href="" aria-hidden="true" tabindex="-1"></a>  SMK --&gt;|mtime / params /&lt;br/&gt;code / env changed| SMKY(["RERUN"]):::yes</span>
-<span id="cb15-6"><a href="" aria-hidden="true" tabindex="-1"></a>  SMK --&gt;|nothing changed| SMKN(["skip"]):::no</span>
-<span id="cb15-7"><a href="" aria-hidden="true" tabindex="-1"></a>  NF --&gt;|path · size · mtime&lt;br/&gt;changed| NFY(["RERUN"]):::yes</span>
-<span id="cb15-8"><a href="" aria-hidden="true" tabindex="-1"></a>  NF --&gt;|same attrs| NFN(["skip"]):::no</span>
-<span id="cb15-9"><a href="" aria-hidden="true" tabindex="-1"></a>  NF -.-&gt;|cache 'deep'| NFD(["skip iff content same"]):::deep</span>
-<span id="cb15-10"><a href="" aria-hidden="true" tabindex="-1"></a>  classDef trigger fill:#fff3e0,stroke:#E67E22,color:#6e3906,font-weight:600</span>
-<span id="cb15-11"><a href="" aria-hidden="true" tabindex="-1"></a>  classDef tool fill:#f4ecf7,stroke:#8E44AD,color:#4a235a</span>
-<span id="cb15-12"><a href="" aria-hidden="true" tabindex="-1"></a>  classDef yes fill:#fdecea,stroke:#C0392B,color:#922b21,font-weight:700</span>
-<span id="cb15-13"><a href="" aria-hidden="true" tabindex="-1"></a>  classDef no fill:#e8f5f0,stroke:#208F6E,color:#0f3a30</span>
-<span id="cb15-14"><a href="" aria-hidden="true" tabindex="-1"></a>  classDef deep fill:#e8f1f8,stroke:#2980B9,color:#1F3A5F</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb15-2"><a href="" aria-hidden="true" tabindex="-1"></a>  IN([Input touched])</span>
+<span id="cb15-3"><a href="" aria-hidden="true" tabindex="-1"></a>  IN --&gt; SMK{Snakemake}</span>
+<span id="cb15-4"><a href="" aria-hidden="true" tabindex="-1"></a>  IN --&gt; NF{Nextflow}</span>
+<span id="cb15-5"><a href="" aria-hidden="true" tabindex="-1"></a>  SMK --&gt;|mtime/params/code| SMKY([RERUN])</span>
+<span id="cb15-6"><a href="" aria-hidden="true" tabindex="-1"></a>  SMK --&gt;|nothing changed| SMKN([skip])</span>
+<span id="cb15-7"><a href="" aria-hidden="true" tabindex="-1"></a>  NF --&gt;|path/size/mtime| NFY([RERUN])</span>
+<span id="cb15-8"><a href="" aria-hidden="true" tabindex="-1"></a>  NF --&gt;|same attrs| NFN([skip])</span>
+<span id="cb15-9"><a href="" aria-hidden="true" tabindex="-1"></a>  NF -.-&gt;|cache deep| NFD([content check])</span>
+<span id="cb15-10"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-11"><a href="" aria-hidden="true" tabindex="-1"></a>  class IN trigger</span>
+<span id="cb15-12"><a href="" aria-hidden="true" tabindex="-1"></a>  class SMK,NF tool</span>
+<span id="cb15-13"><a href="" aria-hidden="true" tabindex="-1"></a>  class SMKY,NFY yes</span>
+<span id="cb15-14"><a href="" aria-hidden="true" tabindex="-1"></a>  class SMKN,NFN no</span>
+<span id="cb15-15"><a href="" aria-hidden="true" tabindex="-1"></a>  class NFD deep</span>
+<span id="cb15-16"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-17"><a href="" aria-hidden="true" tabindex="-1"></a>  classDef trigger fill:#fff3e0,stroke:#E67E22,color:#6e3906</span>
+<span id="cb15-18"><a href="" aria-hidden="true" tabindex="-1"></a>  classDef tool fill:#f4ecf7,stroke:#8E44AD,color:#4a235a</span>
+<span id="cb15-19"><a href="" aria-hidden="true" tabindex="-1"></a>  classDef yes fill:#fdecea,stroke:#C0392B,color:#922b21</span>
+<span id="cb15-20"><a href="" aria-hidden="true" tabindex="-1"></a>  classDef no fill:#e8f5f0,stroke:#208F6E,color:#0f3a30</span>
+<span id="cb15-21"><a href="" aria-hidden="true" tabindex="-1"></a>  classDef deep fill:#e8f1f8,stroke:#2980B9,color:#1F3A5F</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <p></p><figure class=""><p></p>
 <div>
 <pre class="mermaid mermaid-js">flowchart LR
-  IN(["Input touched"]):::trigger
-  IN --&gt; SMK{"Snakemake&lt;br/&gt;--rerun-triggers"}:::tool
-  IN --&gt; NF{"Nextflow&lt;br/&gt;-resume"}:::tool
-  SMK --&gt;|mtime / params /&lt;br/&gt;code / env changed| SMKY(["RERUN"]):::yes
-  SMK --&gt;|nothing changed| SMKN(["skip"]):::no
-  NF --&gt;|path · size · mtime&lt;br/&gt;changed| NFY(["RERUN"]):::yes
-  NF --&gt;|same attrs| NFN(["skip"]):::no
-  NF -.-&gt;|cache 'deep'| NFD(["skip iff content same"]):::deep
-  classDef trigger fill:#fff3e0,stroke:#E67E22,color:#6e3906,font-weight:600
+  IN([Input touched])
+  IN --&gt; SMK{Snakemake}
+  IN --&gt; NF{Nextflow}
+  SMK --&gt;|mtime/params/code| SMKY([RERUN])
+  SMK --&gt;|nothing changed| SMKN([skip])
+  NF --&gt;|path/size/mtime| NFY([RERUN])
+  NF --&gt;|same attrs| NFN([skip])
+  NF -.-&gt;|cache deep| NFD([content check])
+
+  class IN trigger
+  class SMK,NF tool
+  class SMKY,NFY yes
+  class SMKN,NFN no
+  class NFD deep
+
+  classDef trigger fill:#fff3e0,stroke:#E67E22,color:#6e3906
   classDef tool fill:#f4ecf7,stroke:#8E44AD,color:#4a235a
-  classDef yes fill:#fdecea,stroke:#C0392B,color:#922b21,font-weight:700
+  classDef yes fill:#fdecea,stroke:#C0392B,color:#922b21
   classDef no fill:#e8f5f0,stroke:#208F6E,color:#0f3a30
   classDef deep fill:#e8f1f8,stroke:#2980B9,color:#1F3A5F
 </pre>

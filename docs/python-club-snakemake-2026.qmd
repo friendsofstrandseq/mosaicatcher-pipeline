@@ -601,17 +601,24 @@ process CALL  { /* bam → vcf */ }
 %%| eval: true
 %%| fig-align: center
 flowchart LR
-  IN(["Input touched"]):::trigger
-  IN --> SMK{"Snakemake<br/>--rerun-triggers"}:::tool
-  IN --> NF{"Nextflow<br/>-resume"}:::tool
-  SMK -->|mtime / params /<br/>code / env changed| SMKY(["RERUN"]):::yes
-  SMK -->|nothing changed| SMKN(["skip"]):::no
-  NF -->|path · size · mtime<br/>changed| NFY(["RERUN"]):::yes
-  NF -->|same attrs| NFN(["skip"]):::no
-  NF -.->|cache 'deep'| NFD(["skip iff content same"]):::deep
-  classDef trigger fill:#fff3e0,stroke:#E67E22,color:#6e3906,font-weight:600
+  IN([Input touched])
+  IN --> SMK{Snakemake}
+  IN --> NF{Nextflow}
+  SMK -->|mtime/params/code| SMKY([RERUN])
+  SMK -->|nothing changed| SMKN([skip])
+  NF -->|path/size/mtime| NFY([RERUN])
+  NF -->|same attrs| NFN([skip])
+  NF -.->|cache deep| NFD([content check])
+
+  class IN trigger
+  class SMK,NF tool
+  class SMKY,NFY yes
+  class SMKN,NFN no
+  class NFD deep
+
+  classDef trigger fill:#fff3e0,stroke:#E67E22,color:#6e3906
   classDef tool fill:#f4ecf7,stroke:#8E44AD,color:#4a235a
-  classDef yes fill:#fdecea,stroke:#C0392B,color:#922b21,font-weight:700
+  classDef yes fill:#fdecea,stroke:#C0392B,color:#922b21
   classDef no fill:#e8f5f0,stroke:#208F6E,color:#0f3a30
   classDef deep fill:#e8f1f8,stroke:#2980B9,color:#1F3A5F
 ```
