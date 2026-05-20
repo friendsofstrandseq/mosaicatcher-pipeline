@@ -181,6 +181,38 @@ $code-block-font-size: 0.78em;
   font-size: 0.78em;
 }
 
+/* CLI rename table — keep readable */
+.reveal .cli-rename table {
+  font-size: 0.85em;
+  width: 95%;
+}
+.reveal .cli-rename table th,
+.reveal .cli-rename table td {
+  padding: 0.5em 0.8em;
+}
+.reveal .cli-rename code {
+  font-size: 0.95em;
+}
+
+/* "Four ideas" featured grid */
+.reveal .four-ideas {
+  margin: 0.6em auto 1em;
+  padding: 1em 0;
+  background: linear-gradient(180deg, #e8f5f0 0%, #ffffff 100%);
+  border-radius: 8px;
+}
+.reveal .four-ideas .big-label {
+  font-size: 1em;
+  font-weight: 700;
+  color: #0f3a30;
+  margin: 0.3em 0 0.1em;
+}
+.reveal .four-ideas .sub-label {
+  font-size: 0.7em;
+  color: #7f8c8d;
+  margin: 0;
+}
+
 /* Footer */
 .reveal .footer {
   font-size: 0.5em;
