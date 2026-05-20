@@ -71,6 +71,9 @@ workflow/test.txt
 !docs/images/plots/
 !docs/images/plots/*.png
 !docs/images/*.png
+!docs/python-club-snakemake-2026.html
+!docs/python-club-snakemake-2026_files/
+!docs/python-club-snakemake-2026_files/**
 !workflow/data/segdups/segDups_hg38_UCSCtrack.bed.gz
 !workflow/data/segdups/segDups_hg19_UCSCtrack.bed.gz
 !workflow/data/segdups/segDups_T2T_UCSCtrack.bed.gz

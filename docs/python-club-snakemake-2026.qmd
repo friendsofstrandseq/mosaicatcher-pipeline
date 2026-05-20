@@ -21,10 +21,6 @@ format:
     footer: "Python Club · Snakemake · {{< meta date >}}"
     title-slide-attributes:
       data-background-color: "#1f2a44"
-revealjs-plugins:
-  - mermaid
-filters:
-  - mermaid
 execute:
   echo: true
   eval: false
