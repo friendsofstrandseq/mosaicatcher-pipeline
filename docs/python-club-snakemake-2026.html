@@ -495,38 +495,46 @@ Transparent
 <h2>One rule, four ideas</h2>
 <div class="four-ideas">
 <div class="columns">
-<div class="column" style="text-align: center;">
-<i class="mdi mdi-puzzle-outline" style="font-size: 2.6em; color: #208F6E;"></i>
-<p class="big-label">
+<div class="column" style="width:25%;">
+<div class="idea-card fragment fade-in-then-semi-out">
+<i class="mdi mdi-puzzle-outline idea-icon"></i>
+<div class="big-label">
 Rule
-</p>
-<p class="sub-label">
+</div>
+<div class="sub-label">
 a unit of work
-</p>
-</div><div class="column" style="text-align: center;">
-<i class="mdi mdi-asterisk" style="font-size: 2.6em; color: #208F6E;"></i>
-<p class="big-label">
+</div>
+</div>
+</div><div class="column" style="width:25%;">
+<div class="idea-card fragment fade-in-then-semi-out">
+<i class="mdi mdi-asterisk idea-icon"></i>
+<div class="big-label">
 Wildcards
-</p>
-<p class="sub-label">
+</div>
+<div class="sub-label">
 inferred from targets
-</p>
-</div><div class="column" style="text-align: center;">
-<i class="mdi mdi-cpu-64-bit" style="font-size: 2.6em; color: #208F6E;"></i>
-<p class="big-label">
+</div>
+</div>
+</div><div class="column" style="width:25%;">
+<div class="idea-card fragment fade-in-then-semi-out">
+<i class="mdi mdi-cpu-64-bit idea-icon"></i>
+<div class="big-label">
 Resources
-</p>
-<p class="sub-label">
+</div>
+<div class="sub-label">
 cpu · mem · runtime
-</p>
-</div><div class="column" style="text-align: center;">
-<i class="mdi mdi-package-variant" style="font-size: 2.6em; color: #208F6E;"></i>
-<p class="big-label">
+</div>
+</div>
+</div><div class="column" style="width:25%;">
+<div class="idea-card fragment fade-in-then-semi-out">
+<i class="mdi mdi-package-variant idea-icon"></i>
+<div class="big-label">
 Env per rule
-</p>
-<p class="sub-label">
+</div>
+<div class="sub-label">
 conda · container
-</p>
+</div>
+</div>
 </div></div>
 </div>
 <div class="sourceCode" id="cb1" style="margin-top: 1.4em;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="" aria-hidden="true" tabindex="-1"></a>rule align:</span>
@@ -556,57 +564,6 @@ conda · container
 <i class="mdi mdi-lightbulb-on" style="color: #208F6E;"></i>&nbsp; Same Snakefile, different <code>expand()</code> → 3 samples or 3000.
 </p>
 </div></div>
-</section>
-<section id="scale-unchanged-one-workflow-many-backends" class="slide level2">
-<h2>Scale unchanged — one workflow, many backends</h2>
-<div class="columns">
-<div class="column" style="text-align: center;">
-<i class="mdi mdi-laptop" style="font-size: 2.4em; color: #208F6E;"></i>
-<p style="font-weight: 600;">
-Laptop
-</p>
-<p style="font-size: 0.7em; color: #7f8c8d;">
-–cores N
-</p>
-</div><div class="column" style="text-align: center;">
-<i class="mdi mdi-server" style="font-size: 2.4em; color: #208F6E;"></i>
-<p style="font-weight: 600;">
-SLURM / LSF
-</p>
-<p style="font-size: 0.7em; color: #7f8c8d;">
-–executor slurm
-</p>
-</div><div class="column" style="text-align: center;">
-<i class="mdi mdi-kubernetes" style="font-size: 2.4em; color: #208F6E;"></i>
-<p style="font-weight: 600;">
-Kubernetes
-</p>
-<p style="font-size: 0.7em; color: #7f8c8d;">
-–executor kubernetes
-</p>
-</div><div class="column" style="text-align: center;">
-<i class="mdi mdi-google-cloud" style="font-size: 2.4em; color: #208F6E;"></i>
-<p style="font-weight: 600;">
-Google Batch
-</p>
-<p style="font-size: 0.7em; color: #7f8c8d;">
-–executor googlebatch
-</p>
-</div><div class="column" style="text-align: center;">
-<i class="mdi mdi-microsoft-azure" style="font-size: 2.4em; color: #208F6E;"></i>
-<p style="font-weight: 600;">
-Azure Batch
-</p>
-<p style="font-size: 0.7em; color: #7f8c8d;">
-–executor azure-batch
-</p>
-</div></div>
-<div style="text-align: center; margin-top: 2em; font-size: 1.1em; color: #0f3a30; font-weight: 600;">
-<p>The workflow definition does not change.</p>
-</div>
-<div style="text-align: center; font-size: 0.75em; color: #7f8c8d; margin-top: 0.5em;">
-<p>Only the <strong>profile</strong> does.</p>
-</div>
 </section>
 <section id="reproducibility-primitives" class="slide level2">
 <h2>Reproducibility primitives</h2>
@@ -669,16 +626,55 @@ v8 (Jan 2024) was the re-architecture · v9 is mostly invisible
 </section>
 <section id="executor-in-practice" class="slide level2">
 <h2>Executor — in practice</h2>
-<h4 style="color: #8E44AD;">
-<i class="mdi mdi-server"></i>&nbsp; Install a backend, select with <code>--executor</code>
-</h4>
 <div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install snakemake-executor-plugin-slurm</span>
-<span id="cb6-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">--executor</span> slurm <span class="at">--jobs</span> 100 <span class="at">--default-resources</span> runtime=120 mem_mb=8000</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div style="margin-top: 0.8em;">
-<p><strong>Available officially:</strong> &nbsp; <code>slurm</code> · <code>lsf</code> · <code>htcondor</code> · <code>kubernetes</code> · <code>googlebatch</code> · <code>azure-batch</code> · <code>flux</code> · <code>cluster-generic</code></p>
+<span id="cb6-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">--executor</span> slurm <span class="at">--jobs</span> 100 <span class="dt">\</span></span>
+<span id="cb6-3"><a href="" aria-hidden="true" tabindex="-1"></a>          <span class="at">--default-resources</span> runtime=120 mem_mb=8000</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="exec-grid" style="margin-top: 1em;">
+<div class="columns">
+<div class="column" style="width:20%;">
+<div class="exec-card">
+<i class="mdi mdi-server-network exec-icon"></i>
+<div class="exec-label">
+SLURM
 </div>
-<div style="margin-top: 0.7em; font-size: 0.85em;">
-<p><i class="mdi mdi-link" style="color: #8E44AD;"></i>&nbsp; <a href="https://snakemake.github.io/snakemake-plugin-catalog/">snakemake.github.io/snakemake-plugin-catalog</a></p>
+<p><code>slurm</code></p>
+</div>
+</div><div class="column" style="width:20%;">
+<div class="exec-card">
+<i class="mdi mdi-server exec-icon"></i>
+<div class="exec-label">
+LSF · HTCondor
+</div>
+<p><code>lsf · htcondor</code></p>
+</div>
+</div><div class="column" style="width:20%;">
+<div class="exec-card">
+<i class="mdi mdi-kubernetes exec-icon"></i>
+<div class="exec-label">
+Kubernetes
+</div>
+<p><code>kubernetes</code></p>
+</div>
+</div><div class="column" style="width:20%;">
+<div class="exec-card">
+<i class="mdi mdi-google-cloud exec-icon"></i>
+<div class="exec-label">
+Google Batch
+</div>
+<p><code>googlebatch</code></p>
+</div>
+</div><div class="column" style="width:20%;">
+<div class="exec-card">
+<i class="mdi mdi-microsoft-azure exec-icon"></i>
+<div class="exec-label">
+Azure Batch
+</div>
+<p><code>azure-batch</code></p>
+</div>
+</div></div>
+</div>
+<div style="margin-top: 0.6em; font-size: 0.78em;">
+<p><i class="mdi mdi-link" style="color: #8E44AD;"></i>&nbsp; <a href="https://snakemake.github.io/snakemake-plugin-catalog/">snakemake.github.io/snakemake-plugin-catalog</a> — also <code>flux</code> · <code>cluster-generic</code></p>
 </div>
 </section>
 <section id="storage-in-practice" class="slide level2">
@@ -905,63 +901,6 @@ Strictly objective · pick on <em>fit</em>, not on taste
 </div>
 </div>
 </section>
-<section id="executor-matrix" class="slide level2 smaller">
-<h2>Executor matrix</h2>
-<table class="caption-top">
-<colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
-</colgroup>
-<thead>
-<tr class="header">
-<th></th>
-<th><i class="mdi mdi-snake" style="color: #208F6E;"></i> Snakemake</th>
-<th><i class="mdi mdi-source-branch" style="color: #5e9c1e;"></i> Nextflow</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>SLURM · LSF · HTCondor · Kubernetes · Flux</td>
-<td><i class="mdi mdi-check-circle" style="color: #208F6E;"></i> plugins</td>
-<td><i class="mdi mdi-check-circle" style="color: #5e9c1e;"></i> built-in</td>
-</tr>
-<tr class="even">
-<td>Google Batch · Azure Batch</td>
-<td><i class="mdi mdi-check-circle" style="color: #208F6E;"></i> plugins</td>
-<td><i class="mdi mdi-check-circle" style="color: #5e9c1e;"></i> built-in</td>
-</tr>
-<tr class="odd">
-<td>SGE · PBS · OAR · Moab · NQSII</td>
-<td><i class="mdi mdi-account-multiple"></i> community</td>
-<td><i class="mdi mdi-check-circle" style="color: #5e9c1e;"></i> built-in</td>
-</tr>
-<tr class="even">
-<td><strong>AWS Batch</strong></td>
-<td><i class="mdi mdi-close-circle" style="color: #C0392B;"></i> no official plugin</td>
-<td><i class="mdi mdi-check-circle" style="color: #5e9c1e;"></i> <code>awsbatch</code> first-class</td>
-</tr>
-<tr class="odd">
-<td>TES</td>
-<td><i class="mdi mdi-account-multiple"></i> community</td>
-<td><i class="mdi mdi-check-circle" style="color: #5e9c1e;"></i> built-in</td>
-</tr>
-</tbody>
-</table>
-<div class="callout callout-warning callout-titled callout-style-default">
-<div class="callout-body">
-<div class="callout-title">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<p><strong>Warning</strong></p>
-</div>
-<div class="callout-content">
-<p><em>“Snakemake can’t do cloud”</em> — <strong>false</strong> (K8s · GCP · Azure are official). <em>“Snakemake can’t do AWS Batch”</em> — closer to true (no official plugin).</p>
-</div>
-</div>
-</div>
-</section>
 <section id="software-containers" class="slide level2">
 <h2>Software &amp; containers</h2>
 <table class="caption-top">
@@ -972,34 +911,34 @@ Strictly objective · pick on <em>fit</em>, not on taste
 </colgroup>
 <thead>
 <tr class="header">
-<th></th>
+<th><i class="mdi mdi-format-list-checks" style="color: #1F3A5F;"></i>&nbsp; Capability</th>
 <th><i class="mdi mdi-snake" style="color: #208F6E;"></i> Snakemake</th>
-<th><i class="mdi mdi-source-branch" style="color: #5e9c1e;"></i> Nextflow / nf-core</th>
+<th><img src="https://avatars.githubusercontent.com/u/6698688?s=24&amp;v=4" style="height: 16px; vertical-align: middle; border-radius: 3px;">&nbsp; Nextflow / nf-core</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>Per-rule env</td>
+<td><i class="mdi mdi-tag-multiple"></i>&nbsp; Per-rule env</td>
 <td><code>conda:</code> + <code>container:</code></td>
 <td><code>conda</code> + <code>container</code> directive</td>
 </tr>
 <tr class="even">
-<td>Compose</td>
+<td><i class="mdi mdi-layers-triple"></i>&nbsp; Compose</td>
 <td><code>--sdm conda apptainer</code></td>
 <td>engine + conda</td>
 </tr>
 <tr class="odd">
-<td>Curated registry</td>
+<td><i class="mdi mdi-warehouse"></i>&nbsp; Curated registry</td>
 <td>snakemake-wrappers</td>
 <td>BioContainers · mulled · <strong>Seqera Containers</strong></td>
 </tr>
 <tr class="even">
-<td>Build on demand</td>
+<td><i class="mdi mdi-hammer-wrench"></i>&nbsp; Build on demand</td>
 <td>—</td>
 <td><strong>Wave</strong> (Apache-2.0 OSS)</td>
 </tr>
 <tr class="odd">
-<td>POSIX over S3/GCS</td>
+<td><i class="mdi mdi-folder-network"></i>&nbsp; POSIX over S3/GCS</td>
 <td>—</td>
 <td><strong>Fusion</strong> (commercial)</td>
 </tr>
@@ -1048,33 +987,6 @@ Strictly objective · pick on <em>fit</em>, not on taste
 <div style="margin-top: 0.6em; font-size: 0.75em;">
 <p><i class="mdi mdi-information" style="color: #1F3A5F;"></i>&nbsp; nf-core sets a higher pipeline-standardization bar; Snakemake is broader at the wrapper level.</p>
 </div>
-</section>
-<section id="when-does-each-fit" class="slide level2">
-<h2>When does each fit?</h2>
-<div class="columns">
-<div class="column" style="width:50%;">
-<h4 style="color: #1F3A5F;">
-<i class="mdi mdi-snake"></i>&nbsp; Snakemake fits when…
-</h4>
-<ul>
-<li>Team is <i class="mdi mdi-language-python"></i> Python-native</li>
-<li>Pipeline is <strong>file / target-driven</strong></li>
-<li>You want the <strong>DAG up-front</strong></li>
-<li>Debugging needs interactive Python</li>
-<li>One Snakefile, readable end-to-end</li>
-</ul>
-</div><div class="column" style="width:50%;">
-<h4 style="color: #1F3A5F;">
-<i class="mdi mdi-source-branch"></i>&nbsp; Nextflow fits when…
-</h4>
-<ul>
-<li>Team has Groovy / JVM people</li>
-<li>Pipeline is <strong>stream / event-driven</strong></li>
-<li><strong>AWS Batch</strong> or <strong>Fusion</strong> matter</li>
-<li>You want <strong>nf-core</strong> off-the-shelf</li>
-<li>You want <strong>Seqera Platform</strong> observability</li>
-</ul>
-</div></div>
 </section></section>
 <section>
 <section id="section-4" class="title-slide slide level1 section-divider center" data-background-color="#E67E22">
@@ -1089,30 +1001,58 @@ Caching · storage · grouping · arrays · EESSI
 </p>
 </div>
 </section>
-<section id="five-pillars" class="slide level2" data-background-color="#fdf2e9">
+<section id="five-pillars" class="slide level2">
 <h2>Five pillars</h2>
-<div class="columns" style="margin-top: 1em;">
-<div class="column" style="text-align: center;">
-<p><i class="mdi mdi-cached" style="font-size: 3em; color: #E67E22;"></i></p>
-<p><strong>Workflow caching</strong></p>
+<div class="pillars">
+<div class="columns">
+<div class="column" style="width:33%;">
+<div class="pillar-card">
+<i class="mdi mdi-cached pillar-icon"></i>
+<div class="pillar-label">
+Workflow caching
+</div>
 <p><code>SNAKEMAKE_OUTPUT_CACHE</code></p>
-</div><div class="column" style="text-align: center;">
-<p><i class="mdi mdi-docker" style="font-size: 3em; color: #E67E22;"></i></p>
-<p><strong>Container caching</strong></p>
-<p>Shared <code>apptainer-prefix</code></p>
-</div><div class="column" style="text-align: center;">
-<p><i class="mdi mdi-database" style="font-size: 3em; color: #E67E22;"></i></p>
-<p><strong>Storage staging</strong></p>
-<p><code>fs</code> plugin · scratch</p>
-</div><div class="column" style="text-align: center;">
-<p><i class="mdi mdi-group" style="font-size: 3em; color: #E67E22;"></i></p>
-<p><strong>Grouping &amp; arrays</strong></p>
-<p><code>group:</code> · <code>slurm-job-array</code></p>
-</div><div class="column" style="text-align: center;">
-<p><i class="mdi mdi-package-variant" style="font-size: 3em; color: #E67E22;"></i></p>
-<p><strong>EESSI / env-modules</strong></p>
-<p><code>--sdm env-modules</code></p>
+</div>
+</div><div class="column" style="width:33%;">
+<div class="pillar-card">
+<i class="mdi mdi-docker pillar-icon"></i>
+<div class="pillar-label">
+Container caching
+</div>
+<p><code>apptainer-prefix</code></p>
+</div>
+</div><div class="column" style="width:33%;">
+<div class="pillar-card">
+<i class="mdi mdi-database pillar-icon"></i>
+<div class="pillar-label">
+Storage staging
+</div>
+<p><code>fs plugin · scratch</code></p>
+</div>
 </div></div>
+<div class="columns" style="margin-top: 1em;">
+<div class="column" style="width:16%;">
+
+</div><div class="column" style="width:33%;">
+<div class="pillar-card">
+<i class="mdi mdi-group pillar-icon"></i>
+<div class="pillar-label">
+Grouping &amp; arrays
+</div>
+<p><code>group: · slurm-job-array</code></p>
+</div>
+</div><div class="column" style="width:33%;">
+<div class="pillar-card">
+<i class="mdi mdi-package-variant pillar-icon"></i>
+<div class="pillar-label">
+EESSI / env-modules
+</div>
+<p><code>–sdm env-modules</code></p>
+</div>
+</div><div class="column" style="width:16%;">
+
+</div></div>
+</div>
 </section>
 <section id="caching-workflow-containers" class="slide level2">
 <h2>1 · Caching — workflow + containers</h2>
@@ -1234,25 +1174,28 @@ Caching · storage · grouping · arrays · EESSI
 <p><a href="https://www.eessi.io">eessi.io</a></p>
 </div></div>
 </section>
-<section id="bonus-dependency-cooldowns" class="slide level2" data-background-color="#fef5e7">
+<section id="bonus-dependency-cooldowns" class="slide level2">
 <h2>Bonus · dependency cooldowns</h2>
-<h4 style="color: #F39C12;">
-<i class="mdi mdi-shield-lock"></i>&nbsp; Why
+<h4>
+<i class="mdi mdi-shield-lock" style="color: #E67E22;"></i>&nbsp; Why
 </h4>
-<p>Malicious PyPI / conda releases are usually yanked within hours to days. Tell your resolver to ignore versions published in the last <em>N</em> days → compromised releases disappear before your build ever sees them. Bonus: dampens surprise breakage.</p>
-<div class="columns" style="margin-top: 0.6em;">
+<p>Malicious PyPI / conda releases are usually yanked within hours to days. Tell your resolver to <strong>ignore versions published in the last <em>N</em> days</strong> → compromised releases disappear before your build ever sees them. Bonus: dampens surprise breakage.</p>
+<div class="columns" style="margin-top: 0.8em;">
 <div class="column" style="width:50%;">
-<h4 style="color: #F39C12;">
-<i class="mdi mdi-language-python"></i>&nbsp; pip 26.1 (Apr 2026)
+<div class="tip-card">
+<h4 style="color: #E67E22; margin-top: 0;">
+<i class="mdi mdi-language-python"></i>&nbsp; pip 26.1 <em>(Apr 2026)</em>
 </h4>
 <div class="sourceCode" id="cb19"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb19-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install <span class="at">--uploaded-prior-to</span><span class="op">=</span>P7D requests</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <ul>
-<li>26.0 → absolute date · 26.1 → ISO-8601 relative duration</li>
+<li>26.0 → absolute date · 26.1 → relative duration</li>
 <li>Also in <code>pip.conf</code></li>
-<li>Relies on PEP 700 upload time (PyPI)</li>
+<li>Relies on PEP 700 upload time</li>
 </ul>
+</div>
 </div><div class="column" style="width:50%;">
-<h4 style="color: #F39C12;">
+<div class="tip-card">
+<h4 style="color: #E67E22; margin-top: 0;">
 <i class="mdi mdi-package-variant"></i>&nbsp; Pixi · <code>exclude-newer</code>
 </h4>
 <div class="sourceCode" id="cb20"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb20-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">[workspace]</span></span>
@@ -1265,8 +1208,9 @@ Caching · storage · grouping · arrays · EESSI
 <span id="cb20-8"><a href="" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb20-9"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">[exclude-newer]</span></span>
 <span id="cb20-10"><a href="" aria-hidden="true" tabindex="-1"></a><span class="dt">openssl</span> <span class="op">=</span> <span class="st">"0d"</span>   <span class="co"># bypass for CVE</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 </div></div>
-<div style="font-size: 0.6em; margin-top: 0.6em; color: #7f8c8d;">
+<div style="font-size: 0.7em; margin-top: 0.8em; color: #7f8c8d; text-align: center;">
 <p>Same concept as uv/rattler · 7 days is the commonly cited default · <a href="https://ichard26.github.io/blog/2026/04/whats-new-in-pip-26.1/">Richard Si’s writeup</a></p>
 </div>
 </section></section>
@@ -1372,6 +1316,43 @@ Copy-paste-ready
 <div style="text-align: center; margin-top: 1.4em; font-size: 0.65em; color: #a3e4d7;">
 <p>In this repo: <code style="color: #fff;">docs/hpc-pipeline-optimization_ongoing.md</code> · <code style="color: #fff;">dev/snakemake-v9-features/</code></p>
 </div>
+</section></section>
+<section>
+<section id="section-6" class="title-slide slide level1 section-divider center" data-background-color="#7F8C8D" data-visibility="uncounted">
+<h1></h1>
+<div style="text-align: center;">
+<p><i class="mdi mdi-bookshelf" style="font-size: 4em; color: #fff;"></i></p>
+<h1 style="color: #fff;">
+Backup slides
+</h1>
+</div>
+</section>
+<section id="when-does-each-fit" class="slide level2" data-visibility="uncounted">
+<h2>When does each fit?</h2>
+<div class="columns">
+<div class="column" style="width:50%;">
+<h4 style="color: #1F3A5F;">
+<i class="mdi mdi-snake"></i>&nbsp; Snakemake fits when…
+</h4>
+<ul>
+<li>Team is <i class="mdi mdi-language-python"></i> Python-native</li>
+<li>Pipeline is <strong>file / target-driven</strong></li>
+<li>You want the <strong>DAG up-front</strong></li>
+<li>Debugging needs interactive Python</li>
+<li>One Snakefile, readable end-to-end</li>
+</ul>
+</div><div class="column" style="width:50%;">
+<h4 style="color: #1F3A5F;">
+<i class="mdi mdi-source-branch"></i>&nbsp; Nextflow fits when…
+</h4>
+<ul>
+<li>Team has Groovy / JVM people</li>
+<li>Pipeline is <strong>stream / event-driven</strong></li>
+<li><strong>AWS Batch</strong> or <strong>Fusion</strong> matter</li>
+<li>You want <strong>nf-core</strong> off-the-shelf</li>
+<li>You want <strong>Seqera Platform</strong> observability</li>
+</ul>
+</div></div>
 <div class="quarto-auto-generated-content">
 <div class="footer footer-default">
 <p>Python Club · Snakemake · 2026</p>
