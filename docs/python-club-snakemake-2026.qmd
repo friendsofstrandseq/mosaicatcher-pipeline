@@ -600,27 +600,32 @@ process CALL  { /* bam → vcf */ }
 ```{mermaid}
 %%| eval: true
 %%| fig-align: center
-flowchart LR
-  IN([Input touched])
-  IN --> SMK{Snakemake}
-  IN --> NF{Nextflow}
-  SMK -->|mtime/params/code| SMKY([RERUN])
-  SMK -->|nothing changed| SMKN([skip])
-  NF -->|path/size/mtime| NFY([RERUN])
-  NF -->|same attrs| NFN([skip])
-  NF -.->|cache deep| NFD([content check])
-
+graph LR
+  IN["Input touched"]
+  SMK["Snakemake"]
+  NF["Nextflow"]
+  RR1["RERUN"]
+  SK1["skip"]
+  RR2["RERUN"]
+  SK2["skip"]
+  CD["content check"]
+  IN --> SMK
+  IN --> NF
+  SMK -->|"mtime params code"| RR1
+  SMK -->|"unchanged"| SK1
+  NF -->|"path size mtime"| RR2
+  NF -->|"same attrs"| SK2
+  NF -.->|"cache deep"| CD
+  classDef trigger fill:#fff3e0,stroke:#E67E22,color:#6e3906;
+  classDef tool fill:#f4ecf7,stroke:#8E44AD,color:#4a235a;
+  classDef rerun fill:#fdecea,stroke:#C0392B,color:#922b21;
+  classDef skipped fill:#e8f5f0,stroke:#208F6E,color:#0f3a30;
+  classDef deepcheck fill:#e8f1f8,stroke:#2980B9,color:#1F3A5F;
   class IN trigger
   class SMK,NF tool
-  class SMKY,NFY yes
-  class SMKN,NFN no
-  class NFD deep
-
-  classDef trigger fill:#fff3e0,stroke:#E67E22,color:#6e3906
-  classDef tool fill:#f4ecf7,stroke:#8E44AD,color:#4a235a
-  classDef yes fill:#fdecea,stroke:#C0392B,color:#922b21
-  classDef no fill:#e8f5f0,stroke:#208F6E,color:#0f3a30
-  classDef deep fill:#e8f1f8,stroke:#2980B9,color:#1F3A5F
+  class RR1,RR2 rerun
+  class SK1,SK2 skipped
+  class CD deepcheck
 ```
 
 ::: {.callout-warning style="margin-top: 0.4em;"}
