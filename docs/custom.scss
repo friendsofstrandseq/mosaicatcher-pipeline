@@ -461,6 +461,101 @@ $code-block-font-size: 0.78em;
   color: #fff;
 }
 
+/* Agenda — wider, centred, large titles */
+.reveal .agenda-wide {
+  max-width: 1080px;
+  margin: 1.4em auto 0;
+}
+.reveal .agenda-wide ul {
+  list-style: none;
+  padding-left: 0;
+  font-size: 1.35em;
+}
+.reveal .agenda-wide li {
+  margin: 0.65em 0;
+  padding: 0.7em 1.4em;
+  background: rgba(255,255,255,0.08);
+  border-left: 5px solid #a3e4d7;
+  border-radius: 6px;
+  color: #fff;
+}
+.reveal .agenda-wide li .mdi {
+  font-size: 1.05em;
+  color: #a3e4d7;
+}
+
+/* Job stats panel */
+.reveal .jobstats {
+  background: #e8f5f0;
+  border-left: 4px solid #208F6E;
+  border-radius: 6px;
+  padding: 0.6em 0.9em;
+  margin-top: 0.6em;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.72em;
+}
+.reveal .jobstats .jobstats-title {
+  font-family: $font-family-sans-serif;
+  font-weight: 700;
+  color: #0f3a30;
+  margin-bottom: 0.3em;
+  font-size: 1.05em;
+}
+.reveal .jobstats .jobstats-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.15em 0.2em;
+  border-bottom: 1px dotted rgba(32,143,110,0.25);
+}
+.reveal .jobstats .jobstats-row:last-child { border-bottom: none; }
+.reveal .jobstats .jobstats-row code {
+  background: transparent;
+  color: #0f3a30;
+  padding: 0;
+}
+.reveal .jobstats .jobstats-total {
+  margin-top: 0.2em;
+  padding-top: 0.3em;
+  border-top: 2px solid #208F6E;
+  border-bottom: none;
+  font-weight: 700;
+}
+
+/* Five pillars — clean 3-col grid (icon · name · value) */
+.reveal .pillars-table {
+  max-width: 980px;
+  margin: 1em auto;
+}
+.reveal .pillars-table .pillar-row {
+  display: grid;
+  grid-template-columns: 70px 1fr 1.5fr;
+  align-items: center;
+  gap: 1.2em;
+  padding: 0.7em 1em;
+  border-bottom: 1px solid #f5cba7;
+}
+.reveal .pillars-table .pillar-row:last-child { border-bottom: none; }
+.reveal .pillars-table .pillar-row:nth-child(even) { background: #fef5e7; }
+.reveal .pillars-table .pillar-cell-icon {
+  font-size: 2.2em;
+  color: #E67E22;
+  text-align: center;
+  line-height: 1;
+}
+.reveal .pillars-table .pillar-cell-name {
+  font-weight: 700;
+  color: #6e3906;
+  font-size: 1.05em;
+}
+.reveal .pillars-table .pillar-cell-code {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.8em;
+  color: #b9620a;
+  background: rgba(230, 126, 34, 0.12);
+  padding: 0.3em 0.7em;
+  border-radius: 4px;
+}
+
 /* Köster "Define workflows in terms of rules" property list */
 .reveal .koester-props {
   font-size: 0.95em;
