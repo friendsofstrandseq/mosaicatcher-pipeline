@@ -286,23 +286,34 @@ Pick one or compose (`--sdm conda apptainer`).
 snakemake --report report.html --report-after-run
 ```
 
-```{.python style="font-size: 0.72em;"}
+```{.python style="font-size: 0.7em;"}
 rule plot_qc:
     input:  "qc/{s}.tsv"
     output: report(
         "plots/{s}.svg",
         caption="report/qc.rst",
         category="QC",
-        subcategory="Per cell",
         labels={"sample": "{s}"},
     )
     script: "scripts/plot_qc.py"
 ```
 
-::: {style="font-size: 0.72em; color: #7f8c8d; margin-top: 0.2em;"}
-`--report-after-run` (v9.1, Mar 2025) — no manual second run.
+::: {style="font-size: 0.7em; color: #7f8c8d; margin-top: 0.2em;"}
+`--report-after-run` (v9.1, Mar 2025) — no second run.
 :::
 :::
+:::
+
+## What a Snakemake report looks like
+
+::: {style="text-align: center;"}
+<iframe src="https://snakemake.github.io/resources/report.html"
+        style="width: 100%; height: 600px; border: 1px solid #208F6E; border-radius: 8px; box-shadow: 0 4px 14px rgba(0,0,0,0.2); background: white;"
+        loading="lazy"></iframe>
+:::
+
+::: {style="text-align: center; font-size: 0.65em; color: #7f8c8d; margin-top: 0.3em;"}
+Live example · <a href="https://snakemake.github.io/resources/report.html">snakemake.github.io/resources/report.html</a> — workflow, statistics, configuration, results & their captions, in one self-contained HTML.
 :::
 
 # {.section-divider background-color="#8E44AD"}
@@ -395,48 +406,38 @@ snakemake --executor slurm --jobs 100 \
 <i class="mdi mdi-link" style="color: #8E44AD;"></i>&nbsp; [snakemake.github.io/snakemake-plugin-catalog](https://snakemake.github.io/snakemake-plugin-catalog/) — also `flux` · `cluster-generic`
 :::
 
-## Storage — in practice
+## Storage — compose from anywhere
 
-::: {.columns}
-::: {.column width="55%"}
-<h4 style="color: #8E44AD; margin-top: 0;"><i class="mdi mdi-database"></i>&nbsp; Concrete: a reference + run from S3</h4>
+::: {style="font-size: 0.9em; margin-bottom: 0.4em;"}
+A single rule can pull inputs **from S3, Zenodo and a local FS at once**, write to GCS, and stage everything through a fast scratch tier — each backend is just another storage plugin.
+:::
 
-```{.python}
-storage s3_aws:
-    provider="s3",
-    max_requests_per_second=10,
-    endpoint_url="https://s3.eu-central-1.amazonaws.com"
+```{.python style="font-size: 0.72em;"}
+storage s3_aws:    provider="s3",     endpoint_url="https://s3.eu-central-1.amazonaws.com"
+storage refs_zen:  provider="zenodo", doi="10.5281/zenodo.1234567"
+storage out_gcs:   provider="gcs",    project="korbel-out"
 
 rule align:
     input:
-        reads = storage.s3_aws("s3://my-bucket/run42/{sample}.fq.gz"),
-        ref   = storage.s3_aws("s3://refs/hg38.fa")
+        reads = storage.s3_aws("s3://run42/{sample}.fq.gz"),         # ◀ raw data on S3
+        ref   = storage.refs_zen("hg38.fa"),                          # ◀ versioned reference on Zenodo
+        bed   = "panels/exome.bed",                                   # ◀ local file (default fs)
     output:
-        storage.s3_aws("s3://my-bucket/run42/{sample}.bam")
+        storage.out_gcs("gs://korbel-out/run42/{sample}.bam"),        # ◀ outputs straight to GCS
     threads: 8
-    conda:     "envs/bwa.yaml"
-    container: "docker://biocontainers/bwa:0.7.17"
-    shell:
-        "bwa mem -t {threads} {input.ref} {input.reads} | "
-        "samtools sort -o {output}"
-```
-:::
-
-::: {.column width="45%"}
-<h4 style="color: #8E44AD; margin-top: 0;"><i class="mdi mdi-flash"></i>&nbsp; Workflow-wide</h4>
-
-```bash
-snakemake \
-  --default-storage-provider s3 \
-  --default-storage-prefix s3://bucket/run42/
+    conda: "envs/bwa.yaml"
+    shell: "bwa mem -t {threads} {input.ref} {input.reads} | samtools sort -o {output}"
 ```
 
-<div style="margin-top: 0.8em; padding: 0.5em 0.8em; background: #f4ecf7; border-left: 4px solid #8E44AD; border-radius: 4px; font-size: 0.85em;">
-<i class="mdi mdi-information"></i>&nbsp; Storage plugins available: <code>fs</code> · <code>s3</code> · <code>gcs</code> · <code>azure</code> · <code>http</code> · <code>ftp</code> · <code>zenodo</code> · …
+::: {.columns style="margin-top: 0.5em;"}
+::: {.column width="50%"}
+<div style="padding: 0.5em 0.8em; background: #f4ecf7; border-left: 4px solid #8E44AD; border-radius: 4px; font-size: 0.78em;">
+<i class="mdi mdi-database"></i>&nbsp; **Storage plugins**: `fs` · `s3` · `gcs` · `azure` · `http` · `ftp` · `zenodo` · `xrootd` …
 </div>
-
-<div style="margin-top: 0.5em; padding: 0.5em 0.8em; background: #e8f5f0; border-left: 4px solid #208F6E; border-radius: 4px; font-size: 0.78em;">
-<i class="mdi mdi-tag"></i>&nbsp; v9.18: storage plugins now expose **checksums** → cross-workflow caching is correctness-safe
+:::
+::: {.column width="50%"}
+<div style="padding: 0.5em 0.8em; background: #e8f5f0; border-left: 4px solid #208F6E; border-radius: 4px; font-size: 0.78em;">
+<i class="mdi mdi-server-network"></i>&nbsp; **And the same for compute** — different rules can target different executors (SLURM, K8s, local) in one run via `set-resources`.
 </div>
 :::
 :::
@@ -477,7 +478,7 @@ rule align:
 ```
 
 ::: {style="margin-top: 0.6em; font-size: 0.82em;"}
-<i class="mdi mdi-information" style="color: #8E44AD;"></i>&nbsp; `--conda-frontend mamba` **removed** — `libmamba` is the default solver · Pixi backend on the roadmap.
+<i class="mdi mdi-information" style="color: #8E44AD;"></i>&nbsp; `--conda-frontend mamba` **removed** ([PR #3121](https://github.com/snakemake/snakemake/pull/3121)) — `libmamba` is the default solver since Conda 23.10 · Pixi backend on the roadmap.
 :::
 
 ## CLI rename — what to change in your profile
@@ -498,16 +499,59 @@ rule align:
 
 ## What actually matters in v9.x
 
+::: {style="font-size: 0.92em; margin-bottom: 0.4em;"}
+v8 (Jan 2024) was the **architectural** rewrite — engine + plugins. v9 (Feb 2025 →) is mostly **incremental polish on that architecture**. Worth pulling out:
+:::
+
 ::: {.v9-grid}
 ::: {.columns}
-::: {.column width="50%"}
+::: {.column width="33%"}
 ::: {.v9-card}
 <i class="mdi mdi-cached v9-icon"></i>
 <div class="v9-title">Performance &amp; cache</div>
 <ul>
 <li>storage-plugin **checksums** → safe cross-workflow caching</li>
 <li>**named multi-output** caching</li>
-<li>auto-detected network FS type</li>
+<li>auto-detected network FS type → fewer NFS surprises</li>
+</ul>
+:::
+:::
+
+::: {.column width="33%"}
+::: {.v9-card}
+<i class="mdi mdi-file-document v9-icon"></i>
+<div class="v9-title">Reports &amp; provenance</div>
+<ul>
+<li>**`--report-after-run`** (9.1) — auto HTML at the end of every run</li>
+<li>report plugins: `rocrate`, `nanopub` *(WIP)*</li>
+<li>per-output `report(...)` labels & categories</li>
+</ul>
+:::
+:::
+
+::: {.column width="33%"}
+::: {.v9-card}
+<i class="mdi mdi-tools v9-icon"></i>
+<div class="v9-title">Developer UX</div>
+<ul>
+<li>`profile.yaml` as default filename · pass a YAML file directly</li>
+<li>`subpath(with_suffix=…)` helper</li>
+<li>**pluggable metadata persistence** — `.snakemake/` to files *or* DB</li>
+</ul>
+:::
+:::
+:::
+:::
+
+::: {.columns style="margin-top: 0.8em;"}
+::: {.column width="50%"}
+::: {.v9-card}
+<i class="mdi mdi-puzzle v9-icon"></i>
+<div class="v9-title">Plugin ecosystem</div>
+<ul>
+<li>**5 categories** — executor · storage · logger · report · scheduler</li>
+<li>plugins **without settings auto-deploy** at run time</li>
+<li>fresh entries: `snkmt`, `firstfit`, `stomp`, `prometheus`, `rocrate`</li>
 </ul>
 :::
 :::
@@ -517,11 +561,10 @@ rule align:
 <i class="mdi mdi-package-variant-closed-remove v9-icon"></i>
 <div class="v9-title">The plugin tax</div>
 <ul>
-<li>workflows now ship a list of `pip install snakemake-*-plugin-*`</li>
-<li>plugin versions independent from core → pin everything</li>
-<li>conda recipes lag · CI envs break on plugin updates</li>
+<li>workflows ship a list of `pip install snakemake-*-plugin-*`</li>
+<li>plugin versions **independent** of core → pin everything</li>
+<li>conda-forge recipes lag · CI envs break on plugin updates</li>
 </ul>
-:::
 :::
 :::
 :::
@@ -573,21 +616,25 @@ snakemake --scheduler firstfit --jobs 5000
 
 ## Plugin catalog · report — RO-Crate / nanopub
 
+::: {style="font-size: 0.85em; margin-bottom: 0.5em;"}
+Report plugins **auto-activate when installed** — there is **no `--report-plugin` flag**. The standard `--report` invocation triggers whatever report plugins are on the Python path.
+:::
+
+```bash
+pip install snakemake-report-plugin-rocrate snakemake-report-plugin-nanopub
+snakemake --report report.html         # the installed plugins extend the output
+```
+
 ::: {.columns}
 ::: {.column width="50%"}
 ::: {.v9-card}
 <i class="mdi mdi-package-check v9-icon"></i>
 <div class="v9-title">`rocrate` — Provenance Run Crate</div>
 
-Emits a **Workflow-Run RO-Crate** (Leo et al. PLOS ONE 2024) — a JSON-LD bundle with the workflow, every input/output file, software versions, run metadata.
+Emits a **Workflow-Run RO-Crate** (Leo et al. PLOS ONE 2024) — JSON-LD bundle with the workflow, every input/output, software versions, run metadata.
 
-```bash
-snakemake --report-plugin rocrate \
-          --report run.crate.zip
-```
-
-::: {style="font-size: 0.7em; color: #7f8c8d; margin-top: 0.3em;"}
-<i class="mdi mdi-help-circle"></i>&nbsp; *I haven't actually run this — repo: [snakemake/snakemake-report-plugin-rocrate](https://github.com/snakemake/snakemake-report-plugin-rocrate). Worth a try-and-show in a follow-up.*
+::: {style="font-size: 0.72em; color: #7f8c8d; margin-top: 0.3em;"}
+<i class="mdi mdi-help-circle"></i>&nbsp; *Haven't run it yet — usage docs sparse. Repo: [snakemake/snakemake-report-plugin-rocrate](https://github.com/snakemake/snakemake-report-plugin-rocrate). Worth a try-and-show in a follow-up.*
 :::
 :::
 :::
@@ -597,23 +644,28 @@ snakemake --report-plugin rocrate \
 <i class="mdi mdi-link-variant v9-icon"></i>
 <div class="v9-title">`nanopub`</div>
 
-Publishes **machine-readable nanopublications** (FAIR semantic statements) tied to the workflow run — for cite-able data-analysis claims.
+Auto-publishes a **nanopublication** (FAIR semantic claim) after every successful run — workflow, configuration, dataset, report → linked nodes in the knowledge graph.
 
-```bash
-snakemake --report-plugin nanopub \
-          --report run.np.trig
-```
+::: {style="font-size: 0.72em; color: #7f8c8d; margin-top: 0.3em;"}
+Helper: `plot-nanopub-knowledge-graph` ([repo](https://github.com/snakemake/snakemake-report-plugin-nanopub)). Catalog: [plugins/report/nanopub](https://snakemake.github.io/snakemake-plugin-catalog/plugins/report/nanopub.html).
+:::
 :::
 :::
 :::
 
 ::: {style="margin-top: 0.7em; padding: 0.55em 0.9em; background: #f4ecf7; border-left: 4px solid #8E44AD; border-radius: 4px; font-size: 0.78em;"}
-<i class="mdi mdi-information"></i>&nbsp; **Status (Q2 2026).** Both report plugins WIP, not on PyPI yet. Compared to nf-core's `nf-prov`, the Snakemake provenance story is **promising but still early** — most plugins are 1-author, &lt; 100 stars.
+<i class="mdi mdi-information"></i>&nbsp; **Status (Q2 2026).** Both still **WIP, not on PyPI yet** — install from GitHub. Compared to nf-core's `nf-prov`, the Snakemake provenance story is **promising but early**.
 :::
 
-## Plugin catalog · logger — `stomp` (event bus)
+## Plugin catalog · logger — fleet observability
 
-**What.** A `logger` plugin that **publishes Snakemake events** to a STOMP message broker (RabbitMQ, ActiveMQ…). Useful for piping a fleet of Snakemake runs into one observability stack.
+::: {.columns}
+::: {.column width="50%"}
+::: {.v9-card}
+<i class="mdi mdi-broadcast v9-icon"></i>
+<div class="v9-title">`stomp` — message bus</div>
+
+Publishes Snakemake events over a **STOMP** broker (RabbitMQ, ActiveMQ…).
 
 ```bash
 pip install snakemake-logger-plugin-stomp
@@ -622,12 +674,34 @@ snakemake --logger stomp \
   --logger-stomp-destination "/queue/snakemake"
 ```
 
-::: {style="margin-top: 0.6em; padding: 0.55em 0.9em; background: #f4ecf7; border-left: 4px solid #8E44AD; border-radius: 4px; font-size: 0.82em;"}
-<i class="mdi mdi-information"></i>&nbsp; Pair with a Grafana / Loki stack to get a fleet-wide view of every Snakemake run across the cluster.
+::: {style="font-size: 0.72em; color: #7f8c8d; margin-top: 0.3em;"}
+[plugins/logger/stomp](https://snakemake.github.io/snakemake-plugin-catalog/plugins/logger/stomp.html)
+:::
+:::
 :::
 
-::: {style="font-size: 0.78em; color: #7f8c8d; margin-top: 0.4em;"}
-[plugins/logger/stomp](https://snakemake.github.io/snakemake-plugin-catalog/plugins/logger/stomp.html)
+::: {.column width="50%"}
+::: {.v9-card}
+<i class="mdi mdi-chart-line v9-icon"></i>
+<div class="v9-title">`prometheus` — metrics endpoint</div>
+
+Exposes job state, duration, success counts as a **Prometheus** scrape target — drop into your existing Grafana dashboards.
+
+```bash
+pip install snakemake-logger-plugin-prometheus
+snakemake --logger prometheus \
+  --logger-prometheus-port 9101
+```
+
+::: {style="font-size: 0.72em; color: #7f8c8d; margin-top: 0.3em;"}
+[plugins/logger/prometheus](https://snakemake.github.io/snakemake-plugin-catalog/plugins/logger/prometheus.html)
+:::
+:::
+:::
+:::
+
+::: {style="margin-top: 0.6em; padding: 0.55em 0.9em; background: #f4ecf7; border-left: 4px solid #8E44AD; border-radius: 4px; font-size: 0.82em;"}
+<i class="mdi mdi-information"></i>&nbsp; Both let you stop tailing log files and start querying a fleet of Snakemake runs across the cluster from one dashboard.
 :::
 
 ## Stability & backward-compatibility — issues to watch
@@ -648,8 +722,8 @@ The engine moves faster than user pipelines. Same Snakefile, different minor →
 - v7 profiles silently broken on v8 (removed flags)
 :::
 
-<div style="margin-top: 0.5em; padding: 0.6em 0.8em; background: #fdecea; border-left: 4px solid #C0392B; border-radius: 4px; font-size: 0.78em;">
-<b>CI / containers</b> — the legacy "fat" `snakemake` package no longer ships executors. Your Dockerfile / conda env now needs `snakemake-executor-plugin-slurm` (and friends) listed **explicitly**, or `--executor slurm` exits with *"plugin not found"*.
+<div style="margin-top: 0.5em; padding: 0.55em 0.8em; background: #fdecea; border-left: 4px solid #C0392B; border-radius: 4px; font-size: 0.8em;">
+<b>CI / containers</b> — list every plugin explicitly (`snakemake-executor-plugin-slurm`, …) or `--executor slurm` exits with *plugin not found*.
 </div>
 :::
 
@@ -754,10 +828,10 @@ process CALL  { /* bam → vcf */ }
 :::
 :::
 
-## Resume / cache — myth-buster
+## Resume / cache — what actually invalidates
 
-::: {style="text-align: center; font-size: 0.95em; color: #1F3A5F; margin-bottom: 0.6em; font-weight: 500;"}
-<i class="mdi mdi-help-circle" style="color: #E67E22;"></i>&nbsp; *"My input file changed. Will the job rerun?"*
+::: {style="text-align: center; font-size: 0.95em; color: #1F3A5F; margin-bottom: 0.5em; font-weight: 500;"}
+<i class="mdi mdi-help-circle" style="color: #E67E22;"></i>&nbsp; *"My input / code / container changed. Will the job rerun?"*
 :::
 
 ::: {.columns}
@@ -768,17 +842,17 @@ process CALL  { /* bam → vcf */ }
 | Signal | Default |
 |---|---|
 | `mtime` of inputs | ✅ |
+| `input` set (paths) | ✅ |
 | `params` value | ✅ |
-| `input` set | ✅ |
+| `code` of rule body | ✅ |
 | `software-env` hash | ✅ |
-| `code` of rule | ✅ |
 
 ::: {style="font-size: 0.74em; margin-top: 0.3em;"}
-Override: `--rerun-triggers mtime params input` &nbsp;·&nbsp; opt-out individually.
+Each trigger is **named & opt-out-able**: `--rerun-triggers mtime params input`.
 :::
 
 ::: {style="font-size: 0.72em; margin-top: 0.4em; padding: 0.4em 0.6em; background: #fdecea; border-left: 3px solid #C0392B; border-radius: 4px;"}
-<i class="mdi mdi-alert" style="color: #C0392B;"></i>&nbsp; **Sensitive in dev.** Touching a rule's *code* or *params* during iteration triggers a full rerun of every downstream job — easy to lose hours. Pin with `--rerun-triggers mtime` while iterating.
+<i class="mdi mdi-alert" style="color: #C0392B;"></i>&nbsp; **Sensitive in dev.** Touching `code` / `params` during iteration reruns every downstream job — pin `--rerun-triggers mtime` while iterating.
 :::
 :::
 :::
@@ -789,21 +863,22 @@ Override: `--rerun-triggers mtime params input` &nbsp;·&nbsp; opt-out individua
 
 | Signal | Default | `cache 'deep'` |
 |---|---|---|
-| file **path** | ✅ | ✅ |
-| file **size** | ✅ | ✅ |
-| file **mtime** | ✅ | — |
+| file **path** + **size** + **mtime** | ✅ | path+size |
 | file **SHA-256** | — | ✅ |
-| process script | ✅ | ✅ |
+| **`script:`** body (interpolated) | ✅ | ✅ |
+| **`container:`** directive (image ID) | ✅ | ✅ |
+| `ext` directive (≥ 23.09) | ✅ | ✅ |
+| other directives (cpus, memory…) | ❌ unless used in `script:` | same |
 
-::: {style="font-size: 0.78em; margin-top: 0.4em;"}
-The popular *"content-hashed by default"* claim is **partially false** — content hashing is opt-in via `cache 'deep'` on the process.
+::: {style="font-size: 0.72em; margin-top: 0.3em;"}
+NF does hash code, container & ext. The *"all content-hashed"* claim is still false — file content needs `cache 'deep'`.
 :::
 :::
 :::
 :::
 
-::: {style="margin-top: 0.6em; padding: 0.5em 0.9em; background: #fef5e7; border-left: 4px solid #E67E22; border-radius: 4px; font-size: 0.82em;"}
-<i class="mdi mdi-information"></i>&nbsp; **Bottom line.** Both tools default to **metadata-based** invalidation. Snakemake's surface area is wider (`code`, `params`, `software-env`); Nextflow's `cache 'deep'` is the only way to get true content hashes.
+::: {style="margin-top: 0.5em; padding: 0.45em 0.9em; background: #fef5e7; border-left: 4px solid #E67E22; border-radius: 4px; font-size: 0.78em;"}
+<i class="mdi mdi-information"></i>&nbsp; **Bottom line.** Default invalidation surfaces are comparable. Differences: Snakemake exposes each trigger by **name** for opt-out; Nextflow re-hashes if any *referenced* directive value moves; **file content** needs `cache 'deep'` (NF) or explicit `--rerun-triggers mtime` opt-out (SMK).
 :::
 
 ## Distribution layer
@@ -812,7 +887,7 @@ The popular *"content-hashed by default"* claim is **partially false** — conte
 |---|---|---|
 | <i class="mdi mdi-tag-multiple"></i>&nbsp; Per-rule env | `conda:` + `container:` + **`envmodules:`** | `conda` + `container` directive |
 | <i class="mdi mdi-layers-triple"></i>&nbsp; Compose | `--sdm conda apptainer env-modules` | engine + conda |
-| <i class="mdi mdi-cpu-64-bit"></i>&nbsp; HPC env-modules / EESSI | **native** via `envmodules:` | via `module load` in script |
+| <i class="mdi mdi-cpu-64-bit"></i>&nbsp; HPC env-modules / EESSI | native via `envmodules:` | native via `module:` directive |
 | <i class="mdi mdi-warehouse"></i>&nbsp; Curated registry | snakemake-wrappers | BioContainers · mulled · **Seqera Containers** |
 | <i class="mdi mdi-hammer-wrench"></i>&nbsp; Build on demand | — | **Wave** |
 | <i class="mdi mdi-folder-network"></i>&nbsp; POSIX over object storage | — | **Fusion** |
@@ -896,10 +971,16 @@ Per rule:
 ```python
 rule index_ref:
     output: "ref.fa.bwt"
-    cache: True   # shared across users
+    cache: True   # → goes into $SNAKEMAKE_OUTPUT_CACHE
 ```
 
-Computed indexes (BWA, STAR, ref dicts) reused across users → minutes saved per run.
+::: {style="font-size: 0.82em;"}
+The hash key includes **input file content, rule code, params, software-env, version**. As long as the recipe is identical, **user B reuses what user A built** — even from a different working tree.
+:::
+
+::: {style="font-size: 0.74em; margin-top: 0.3em; color: #7f8c8d;"}
+Concretely: BWA index on hg38 ≈ 1 h CPU · STAR index ≈ 1.5 h · gnomAD VCF tabix ≈ 30 min. Build once per group, not once per user.
+:::
 :::
 
 ::: {.column width="50%"}
@@ -907,15 +988,15 @@ Computed indexes (BWA, STAR, ref dicts) reused across users → minutes saved pe
 
 ```yaml
 # profile
-apptainer-prefix: /g/<group>/shared/apptainer
+apptainer-prefix: /scratch_cached/<group>/apptainer
 ```
 
-<i class="mdi mdi-folder-lock" style="color: #E67E22;"></i>&nbsp; Group-writable, `chmod 2775` (setgid) → image pulled **once** for the whole group.
+<i class="mdi mdi-folder-lock" style="color: #E67E22;"></i>&nbsp; On `/scratch_cached` (same fast tier as the workflow cache) → image pulled **once** for the whole group.
 
-<i class="mdi mdi-rocket" style="color: #E67E22;"></i>&nbsp; Pre-warm: `snakemake --containerize-only`
+<i class="mdi mdi-rocket" style="color: #E67E22;"></i>&nbsp; Pre-pull manually: `apptainer pull --dir $APPTAINER_CACHEDIR docker://...` (no Snakemake "container-prewarm" flag exists — first job pulls).
 
-<div style="margin-top: 0.6em; padding: 0.5em 0.8em; background: #fdebd0; border-left: 4px solid #E67E22; border-radius: 4px; font-size: 0.78em;">
-<i class="mdi mdi-package-variant" style="color: #E67E22;"></i>&nbsp; **Skip the cache entirely** when **EESSI** covers the tool — `envmodules:` loads a CernVM-FS module, no image pull, no conda solve.
+<div style="margin-top: 0.5em; padding: 0.5em 0.8em; background: #fdebd0; border-left: 4px solid #E67E22; border-radius: 4px; font-size: 0.78em;">
+<i class="mdi mdi-package-variant" style="color: #E67E22;"></i>&nbsp; **Skip the cache entirely** when **EESSI** covers the tool — `envmodules:` loads from CernVM-FS, no image pull, no conda solve.
 </div>
 :::
 :::
@@ -927,10 +1008,10 @@ The `fs` storage plugin treats **a local filesystem path as a "remote" storage b
 :::
 
 ::: {.threestep}
-<span class="threestep-box">shared FS<br/>(slow, big)</span>
+<span class="threestep-box">shared FS (slow)</span>
 <span class="threestep-arrow">→ stage-in →</span>
-<span class="threestep-box">local scratch<br/>(fast, small)</span>
-<span class="threestep-arrow">→ run job →</span>
+<span class="threestep-box">local scratch (fast)</span>
+<span class="threestep-arrow">→ run →</span>
 <span class="threestep-box">stage-out</span>
 <span class="threestep-arrow">→</span>
 <span class="threestep-box">shared FS</span>
@@ -1009,64 +1090,42 @@ rule index:
 ::: {style="margin-top: 0.7em; font-size: 0.78em;"}
 <i class="mdi mdi-lightbulb-on" style="color: #E67E22;"></i>&nbsp; Shared scratch · zero stage-in between steps · `temp()` cleaned at group end
 :::
+
+<div style="margin-top: 0.5em; padding: 0.5em 0.8em; background: #fdebd0; border-left: 4px solid #E67E22; border-radius: 4px; font-size: 0.74em;">
+<i class="mdi mdi-alert" style="color: #E67E22;"></i>&nbsp; **Specs are aligned at the group, not the rule.** Pick the *most demanding* rule's resources (cpu, mem, constraint=milan) — the whole group inherits them via `set-resources` on the group name.
+</div>
 :::
 :::
 
-## 4 · Job arrays — pack 1-CPU tasks into one SLURM submission
+## 4 · Job arrays — packed 1-CPU tasks
 
 ::: {.columns}
 ::: {.column width="50%"}
 ```{.yaml filename="profile/config.yaml"}
 executor: slurm
-slurm-array-jobs: all       # all eligible rules
-slurm-array-limit: 1000     # tasks / array
-
-# pack 10 single-CPU jobs into one array
+slurm-array-jobs: all
+slurm-array-limit: 1000
 group-components:
-  - count_cell=10
+  - count_cell=10     # 10 cells / array
 ```
-
-For a per-cell rule that needs **1 CPU each**:
 
 ```python
 rule count_cell:
     input:  "bam/{cell}.bam"
     output: "counts/{cell}.tsv"
     threads: 1
-    group:   "count_cell"     # ← the array
-```
-
-What lands on SLURM:
-
-```bash
-$ squeue -u $USER
-JOBID         NAME       NCPUS  ST
-12345_[1-10]  count_cell    1   PD
-# 1 sbatch · 10 tasks · 1 cpu each
-# but SLURM sees a 10-cpu allocation
+    group:   "count_cell"
 ```
 :::
 
 ::: {.column width="50%"}
 <div class="slurm-viz">
-<div class="slurm-header"><i class="mdi mdi-server-network"></i>&nbsp; <b>1 sbatch · 10 array tasks · 10 cpus total</b></div>
-<div class="array-row"><span class="array-tag">task 1</span><span class="array-step">1 cpu · cell A</span></div>
-<div class="array-row"><span class="array-tag">task 2</span><span class="array-step">1 cpu · cell B</span></div>
-<div class="array-row"><span class="array-tag">task 3</span><span class="array-step">1 cpu · cell C</span></div>
-<div class="array-row"><span class="array-tag">…</span><span class="array-step">…</span></div>
-<div class="array-row"><span class="array-tag">task 10</span><span class="array-step">1 cpu · cell J</span></div>
+<div class="slurm-header"><i class="mdi mdi-server-network"></i>&nbsp; <b>1 sbatch · 10 tasks · 10 cpus</b></div>
+<div class="array-row"><span class="array-tag">1–10</span><span class="array-step">1 cpu · cell A…J</span></div>
 </div>
 
-::: {style="margin-top: 0.6em; font-size: 0.76em;"}
-<i class="mdi mdi-lightbulb-on" style="color: #E67E22;"></i>&nbsp; *In theory:* big win for **many short 1-CPU jobs** (per-cell QC, per-chrom split) — one scheduler decision instead of N.
-:::
-
-<div style="margin-top: 0.4em; padding: 0.5em 0.8em; background: #fdecea; border-left: 4px solid #C0392B; border-radius: 4px; font-size: 0.78em;">
-<i class="mdi mdi-alert-octagon" style="color: #C0392B;"></i>&nbsp; **In practice (on our setup): parallelism is lost.** The 10 tasks inside the group ran **sequentially** in the same allocation — same wallclock as N separate jobs, no speed-up. Likely a `group-components` × `slurm-array-jobs` interaction. Test on your cluster before relying on this for throughput.
-</div>
-
-<div style="margin-top: 0.3em; font-size: 0.74em; color: #7f8c8d;">
-<i class="mdi mdi-alert" style="color: #E67E22;"></i>&nbsp; Heterogeneous resources → don't mix into one array.
+<div style="margin-top: 0.4em; padding: 0.45em 0.7em; background: #fdecea; border-left: 4px solid #C0392B; border-radius: 4px; font-size: 0.76em;">
+<i class="mdi mdi-alert-octagon" style="color: #C0392B;"></i>&nbsp; **Caveat:** on our setup the tasks ran **sequentially** inside the allocation — no speed-up. Test before relying on it.
 </div>
 :::
 :::
@@ -1103,12 +1162,12 @@ snakemake --sdm env-modules ...
 
 ## Bonus · dependency cooldowns
 
-::: {style="font-size: 0.88em; margin-bottom: 0.5em;"}
-<i class="mdi mdi-shield-lock" style="color: #E67E22;"></i>&nbsp; Coding-agent CI loops now `pip install` dozens of packages per push — a malicious patch version, **live for hours** before yanking, gets pulled. Tell the resolver to **ignore anything newer than N days**.
+::: {style="font-size: 0.9em; margin-bottom: 0.5em;"}
+<i class="mdi mdi-shield-lock" style="color: #E67E22;"></i>&nbsp; Tell your resolver to **ignore anything newer than N days** — malicious releases are usually yanked within hours.
 :::
 
-::: {style="font-size: 0.78em; margin-bottom: 0.5em; color: #6e3906; background: #fdebd0; padding: 0.4em 0.7em; border-left: 3px solid #E67E22; border-radius: 4px;"}
-**TeamPCP / "Mini Shai-Hulud" wave (Apr–May 2026):** PyTorch-Lightning (PyPI, ~42 min live), `mistralai`, `guardrails-ai`, TanStack (42 pkgs / 84 versions, **CVE-2026-45321**), SAP npm, `intercom-client`, `xinference`, `elementary-data`. Worm self-propagates via stolen npm/PyPI tokens, exfiltrates over Session messenger + GitHub dead-drops. **All blocked by a 7-day cooldown.**
+::: {style="font-size: 0.82em; margin-bottom: 0.5em; color: #6e3906; background: #fdebd0; padding: 0.5em 0.8em; border-left: 3px solid #E67E22; border-radius: 4px;"}
+**Mini Shai-Hulud wave, Apr–May 2026** — a self-propagating worm hit **PyTorch-Lightning** (PyPI, ~42 min live) and **TanStack** (42 packages / 84 versions, [CVE-2026-45321](https://nvd.nist.gov/vuln/detail/CVE-2026-45321)) — combined ~10 M downloads/mo. **A 7-day cooldown blocks both.**
 :::
 
 ::: {.columns style="margin-top: 0.4em;"}
@@ -1153,158 +1212,46 @@ openssl = "0d"
 # {.section-divider background-color="#16A085"}
 
 ::: {style="text-align: center;"}
-<i class="mdi mdi-file-cog" style="font-size: 4em; color: #fff;"></i>
+<i class="mdi mdi-chart-line" style="font-size: 4em; color: #fff;"></i>
 
-<h1 style="color: #fff;">Real EMBL profile</h1>
+<h1 style="color: #fff;">Closing the loop</h1>
 :::
 
-## Real EMBL profile {.smaller}
+## Job optimisation from the efficiency report
 
 ::: {.columns}
-::: {.column width="50%"}
-```{.yaml filename="config.v9+.yaml — execution & resources"}
-executor: slurm
-jobs: 150
-
-default-resources:
-  - mem_mb=500
-  - runtime=600
-  - slurm_partition='htc-el8'      # EMBL partition
-  - constraint=''                  # SLURM --constraint
-
-# Pin alignment to milan nodes (AVX2 path in sambamba)
-set-resources:
-  ashleys_bwa_strandseq_to_reference_alignment:
-    constraint: milan
-    slurm_partition: htc-el8
-  ashleys_samtools_sort_bam:
-    constraint: milan
-  ashleys_mark_duplicates:
-    constraint: milan
-  index_input_bam:
-    constraint: milan
-
-# Scheduler hygiene
-max-jobs-per-second: 10
-max-status-checks-per-second: 10
-latency-wait: 60
-local-cores: 32
-
-keep-going: true
-rerun-incomplete: true
-retries: 4                         # attempt-based mem scaling
-```
-:::
-
-::: {.column width="50%"}
-```{.yaml filename="config.v9+.yaml — software & storage"}
-software-deployment-method: [conda, apptainer]
-conda-frontend: conda
-
-# Shared caches (group-writable, setgid 2775)
-conda-prefix:     /g/korbel2/shared/conda_envs
-apptainer-prefix: /scratch/korbel/shared/apptainer_cache
-apptainer-args:   "-B /g,/scratch,/scratch_cached,/tmp"
-
-# Storage staging (off when data already on /scratch)
-default-storage-provider: none
-local-storage-prefix: /tmp/snakemake/local-storage
-
-# SLURM log hygiene
-slurm-logdir:                       /scratch/$USER/mosaicatcher_logs/slurm
-slurm-keep-successful-logs:         false
-slurm-delete-logfiles-older-than:   30
-
-# Efficiency reporting
-slurm-efficiency-report:       true
-slurm-efficiency-report-path:  /scratch/$USER/mosaicatcher_logs/slurm_efficiency_report.txt
-slurm-efficiency-threshold:    0.8
-```
-:::
-:::
-
-## Closing the loop — efficiency report
-
-::: {.columns}
-::: {.column width="55%"}
-The `slurm-efficiency-report` flag dumps **per-job CPU / memory utilisation** as a text file at the end of each run. Pair it with a notebook → audit which rules are **over-** or **under-requesting** resources.
-
-```{.python style="font-size: 0.78em;"}
-# workflow/scripts/toolbox/slurm_efficiency_analysis.ipynb
-import pandas as pd
-df = pd.read_csv(
-    "slurm_efficiency_report.txt", sep=r"\s+", engine="python"
-)
-under = df.query("cpu_eff < 0.5 or mem_eff < 0.3")
-over  = df.query("mem_eff > 0.95")
-# → propose new mem_mb / threads per rule
-```
-
-```{.python}
-rule index_input_bam:
-    resources:
-        mem_mb = lambda wc, attempt: 500 * attempt,   # auto-scale
-        runtime = 30,
-```
-:::
-
-::: {.column width="45%"}
-<div style="background: #d1f2eb; border-left: 4px solid #16A085; border-radius: 8px; padding: 0.8em 1em; font-size: 0.82em;">
-<i class="mdi mdi-notebook-edit" style="color: #16A085; font-size: 1.4em;"></i>
-
-<b>workflow/scripts/toolbox/slurm_efficiency_analysis.ipynb</b>
-
-Reads the efficiency report, groups by rule, plots CPU & RAM efficiency distributions, flags rules below `slurm-efficiency-threshold`, and proposes new `set-resources:` overrides.
-
-::: {style="font-size: 0.9em; margin-top: 0.5em;"}
-<i class="mdi mdi-check" style="color: #16A085;"></i>&nbsp; right-size `mem_mb`<br/>
-<i class="mdi mdi-check" style="color: #16A085;"></i>&nbsp; right-size `threads`<br/>
-<i class="mdi mdi-check" style="color: #16A085;"></i>&nbsp; spot starved I/O rules<br/>
-<i class="mdi mdi-check" style="color: #16A085;"></i>&nbsp; feeds back into profile
-:::
-</div>
-
-::: {style="margin-top: 0.5em; font-size: 0.72em; color: #7f8c8d;"}
-Loop: <b>run → report → notebook → updated `set-resources` → run</b>
-:::
-:::
-:::
-
-## What's still on the table {.smaller}
-
-::: {.columns}
-::: {.column width="50%"}
-**Could be enabled when ready:**
+::: {.column width="48%"}
+The SLURM executor can emit a **per-job CPU & memory utilisation report** at the end of every run:
 
 ```{.yaml}
-# Cross-workflow caching
-# export SNAKEMAKE_OUTPUT_CACHE=...
-
-# Job arrays (v9 plugin)
-slurm-array-jobs: all
-slurm-array-limit: 1000
-
-# QoS / priority
-slurm-qos: normal
-
-# Requeue preempted jobs automatically
-slurm-requeue: true
+slurm-efficiency-report:       true
+slurm-efficiency-report-path:  efficiency.txt
+slurm-efficiency-threshold:    0.8
 ```
+
+The idea, in one loop:
+
+::: {.threestep style="margin-top: 0.4em;"}
+<span class="threestep-box">run</span>
+<span class="threestep-arrow">→</span>
+<span class="threestep-box">efficiency report</span>
+<span class="threestep-arrow">→</span>
+<span class="threestep-box">notebook</span>
+<span class="threestep-arrow">→</span>
+<span class="threestep-box">updated set-resources</span>
 :::
 
-::: {.column width="50%"}
-**Useful SLURM plugin knobs not yet used:**
-
-- `slurm-status-command: sacct|squeue`
-- `slurm-init-seconds-before-status-checks`
-- `slurm-pass-command-as-script`
-- `slurm-exclude-failed-nodes`
-- `slurm-partition-config` (dynamic partition pick)
-- `slurm-jobname-prefix`
-
-::: {style="font-size: 0.7em; margin-top: 0.5em; color: #7f8c8d;"}
-Full reference: [snakemake-plugin-catalog · slurm](https://snakemake.github.io/snakemake-plugin-catalog/plugins/executor/slurm.html)
+::: {style="font-size: 0.78em; margin-top: 0.4em; color: #7f8c8d;"}
+Notebook: `workflow/scripts/toolbox/slurm_efficiency_analysis.ipynb` — plots CPU & RAM efficiency per rule, flags under-utilised rules, proposes overrides.
 :::
+:::
+
+::: {.column width="52%"}
+<div class="screenshot-placeholder">
+<i class="mdi mdi-chart-box"></i>
+<div class="screenshot-label">efficiency-per-rule plot</div>
+<div class="screenshot-hint">drop a screenshot here — `docs/images/efficiency_per_rule.png`</div>
+</div>
 :::
 :::
 
