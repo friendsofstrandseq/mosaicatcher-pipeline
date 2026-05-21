@@ -104,7 +104,11 @@ Wratten, Wilm, Göke — *Nat. Methods* 2021 · [10.1038/s41592-021-01254-9](htt
 Adapted from J. Köster · <em>Snakemake intro · updates 2026</em> · Mölder et al., F1000Research v3 (2025)
 :::
 
-## A rule — four ideas in one block
+## A rule — the unit of work
+
+::: {style="font-size: 0.95em; margin-bottom: 0.4em;"}
+A **pipeline is organised as a list of rules**. Each rule is **one step** — *e.g.* align FASTQs, call variants, build a plot — declared by its inputs, outputs and how to produce one from the other.
+:::
 
 ::: {.four-ideas}
 ::: {.columns}
@@ -193,11 +197,11 @@ DAG image: NBIS reproducible-research course · MRSA tutorial rulegraph
 :::
 :::
 
-## Checkpoints — prune the DAG at runtime
+## Conditional execution — checkpoints
 
 ::: {.columns}
 ::: {.column width="46%"}
-**Pattern.** Step 1 produces an **actionable verdict** (a table, a list of pass/fail cells). Step 2 should **only process the survivors** — the DAG must drop the discarded branches.
+**Pattern.** Step 1 produces an **actionable verdict** (a table, a pass/fail list). Step 2 must **only run on the survivors** — the DAG branches that should never execute are pruned at runtime.
 
 ```{.python style="font-size: 0.74em;"}
 # Step 1 — runs all cells, decides who passes
@@ -233,24 +237,24 @@ flowchart TD
   C4["count cell_4"] --> CP
   C5["count cell_5"] --> CP
   CP["checkpoint<br/>filter_cells"]
-  CP --> SV1["sv calls<br/>cell_1 ✓"]
-  CP -.-x X2["cell_2 ✗ skipped"]
-  CP --> SV3["sv calls<br/>cell_3 ✓"]
-  CP -.-x X4["cell_4 ✗ skipped"]
-  CP --> SV5["sv calls<br/>cell_5 ✓"]
-  SV1 --> ALL["rule all"]
-  SV3 --> ALL
-  SV5 --> ALL
+  CP --> SV1["sv calls cell_1 ✓"]
+  CP -. skipped .-> X2["cell_2 ✗"]
+  CP --> SV3["sv calls cell_3 ✓"]
+  CP -. skipped .-> X4["cell_4 ✗"]
+  CP --> SV5["sv calls cell_5 ✓"]
+  SV1 --> RA["rule all"]
+  SV3 --> RA
+  SV5 --> RA
   classDef cp fill:#fef5e7,stroke:#E67E22,color:#6e3906,stroke-width:2px;
   classDef pass fill:#e8f5f0,stroke:#208F6E,color:#0f3a30;
   classDef fail fill:#fdecea,stroke:#C0392B,color:#922b21,stroke-dasharray: 4 3;
   classDef src fill:#eef3f7,stroke:#7f8c8d,color:#34495E;
-  classDef end fill:#f4ecf7,stroke:#8E44AD,color:#4a235a;
+  classDef goal fill:#f4ecf7,stroke:#8E44AD,color:#4a235a;
   class CP cp
   class SV1,SV3,SV5 pass
   class X2,X4 fail
   class C1,C2,C3,C4,C5 src
-  class ALL end
+  class RA goal
 ```
 
 ::: {style="font-size: 0.72em; color: #7f8c8d; text-align: center; margin-top: 0.2em;"}
@@ -526,7 +530,7 @@ rule align:
 
 ::: {.columns}
 ::: {.column width="42%"}
-**What.** A `logger` plugin that streams Snakemake events into a **SQLite database** and serves a TUI/web dashboard — like `snakemake-watch` but persistent.
+**What.** A `logger` plugin that streams Snakemake events into a **SQLite database** and serves a TUI dashboard — persistent, multi-run.
 
 ```bash
 pip install snakemake-logger-plugin-snkmt
@@ -535,23 +539,23 @@ snkmt   # opens TUI on the DB
 ```
 
 ::: {style="font-size: 0.78em; color: #7f8c8d; margin-top: 0.4em;"}
-[plugins/logger/snkmt](https://snakemake.github.io/snakemake-plugin-catalog/plugins/logger/snkmt.html)
+[plugins/logger/snkmt](https://snakemake.github.io/snakemake-plugin-catalog/plugins/logger/snkmt.html) · [github.com/cademirch/snkmt](https://github.com/cademirch/snkmt)
 :::
 :::
 
 ::: {.column width="58%"}
-<div class="screenshot-placeholder">
-<i class="mdi mdi-monitor-screenshot"></i>
-<div class="screenshot-label">snkmt TUI</div>
-<div class="screenshot-hint">drop a screenshot here — `docs/images/snkmt.png`</div>
-</div>
+<img src="https://github.com/cademirch/snkmt/blob/main/docs/screenshots/dashboard.png?raw=true"
+     style="width: 100%; max-height: 480px; border-radius: 6px; box-shadow: 0 2px 10px rgba(0,0,0,0.18);"
+     alt="snkmt dashboard"/>
+
+::: {style="font-size: 0.65em; color: #7f8c8d; text-align: center; margin-top: 0.2em;"}
+snkmt dashboard — source: cademirch/snkmt
+:::
 :::
 :::
 
 ## Plugin catalog · scheduler — `firstfit`
 
-::: {.columns}
-::: {.column width="42%"}
 **What.** Replaces the default **ILP** scheduler with a **first-fit-decreasing** heuristic — faster scheduling on workflows with thousands of jobs (ILP can stall on the DAG-search step).
 
 ```bash
@@ -559,18 +563,12 @@ pip install snakemake-scheduler-plugin-firstfit
 snakemake --scheduler firstfit --jobs 5000
 ```
 
-::: {style="font-size: 0.78em; color: #7f8c8d; margin-top: 0.4em;"}
-[plugins/scheduler/firstfit](https://snakemake.github.io/snakemake-plugin-catalog/plugins/scheduler/firstfit.html)
-:::
+::: {style="margin-top: 0.6em; padding: 0.55em 0.9em; background: #f4ecf7; border-left: 4px solid #8E44AD; border-radius: 4px; font-size: 0.82em;"}
+<i class="mdi mdi-information"></i>&nbsp; Trade-off: faster scheduling decisions, **less globally optimal** packing than ILP. Worth it once the ILP overhead dominates the actual job runtime.
 :::
 
-::: {.column width="58%"}
-<div class="screenshot-placeholder">
-<i class="mdi mdi-chart-timeline-variant"></i>
-<div class="screenshot-label">scheduler latency comparison</div>
-<div class="screenshot-hint">drop a screenshot here — `docs/images/firstfit-vs-ilp.png`</div>
-</div>
-:::
+::: {style="font-size: 0.78em; color: #7f8c8d; margin-top: 0.4em;"}
+[plugins/scheduler/firstfit](https://snakemake.github.io/snakemake-plugin-catalog/plugins/scheduler/firstfit.html)
 :::
 
 ## Plugin catalog · report — RO-Crate / nanopub
@@ -587,6 +585,10 @@ Emits a **Workflow-Run RO-Crate** (Leo et al. PLOS ONE 2024) — a JSON-LD bundl
 snakemake --report-plugin rocrate \
           --report run.crate.zip
 ```
+
+::: {style="font-size: 0.7em; color: #7f8c8d; margin-top: 0.3em;"}
+<i class="mdi mdi-help-circle"></i>&nbsp; *I haven't actually run this — repo: [snakemake/snakemake-report-plugin-rocrate](https://github.com/snakemake/snakemake-report-plugin-rocrate). Worth a try-and-show in a follow-up.*
+:::
 :::
 :::
 
@@ -611,8 +613,6 @@ snakemake --report-plugin nanopub \
 
 ## Plugin catalog · logger — `stomp` (event bus)
 
-::: {.columns}
-::: {.column width="55%"}
 **What.** A `logger` plugin that **publishes Snakemake events** to a STOMP message broker (RabbitMQ, ActiveMQ…). Useful for piping a fleet of Snakemake runs into one observability stack.
 
 ```bash
@@ -621,15 +621,9 @@ snakemake --logger stomp \
   --logger-stomp-host broker.embl.de \
   --logger-stomp-destination "/queue/snakemake"
 ```
-:::
 
-::: {.column width="45%"}
-<div class="screenshot-placeholder">
-<i class="mdi mdi-broadcast"></i>
-<div class="screenshot-label">event bus</div>
-<div class="screenshot-hint">drop a screenshot here — `docs/images/stomp.png`</div>
-</div>
-:::
+::: {style="margin-top: 0.6em; padding: 0.55em 0.9em; background: #f4ecf7; border-left: 4px solid #8E44AD; border-radius: 4px; font-size: 0.82em;"}
+<i class="mdi mdi-information"></i>&nbsp; Pair with a Grafana / Loki stack to get a fleet-wide view of every Snakemake run across the cluster.
 :::
 
 ::: {style="font-size: 0.78em; color: #7f8c8d; margin-top: 0.4em;"}

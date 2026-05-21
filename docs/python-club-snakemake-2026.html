@@ -499,8 +499,11 @@ understand analysis
 <p>Adapted from J. Köster · <em>Snakemake intro · updates 2026</em> · Mölder et al., F1000Research v3 (2025)</p>
 </div>
 </section>
-<section id="a-rule-four-ideas-in-one-block" class="slide level2">
-<h2>A rule — four ideas in one block</h2>
+<section id="a-rule-the-unit-of-work" class="slide level2">
+<h2>A rule — the unit of work</h2>
+<div style="font-size: 0.95em; margin-bottom: 0.4em;">
+<p>A <strong>pipeline is organised as a list of rules</strong>. Each rule is <strong>one step</strong> — <em>e.g.</em> align FASTQs, call variants, build a plot — declared by its inputs, outputs and how to produce one from the other.</p>
+</div>
 <div class="four-ideas">
 <div class="columns">
 <div class="column" style="width:25%;">
@@ -613,11 +616,11 @@ Job stats · 3 samples
 <p><img src="https://nbis-reproducible-research.readthedocs.io/en/course_2104/images/rulegraph_mrsa.svg" style="width: 100%; max-height: 580px; background: white; padding: 8px; border-radius: 6px;" alt="Snakemake rulegraph example"></p>
 </div></div>
 </section>
-<section id="checkpoints-prune-the-dag-at-runtime" class="slide level2">
-<h2>Checkpoints — prune the DAG at runtime</h2>
+<section id="conditional-execution-checkpoints" class="slide level2">
+<h2>Conditional execution — checkpoints</h2>
 <div class="columns">
 <div class="column" style="width:46%;">
-<p><strong>Pattern.</strong> Step 1 produces an <strong>actionable verdict</strong> (a table, a list of pass/fail cells). Step 2 should <strong>only process the survivors</strong> — the DAG must drop the discarded branches.</p>
+<p><strong>Pattern.</strong> Step 1 produces an <strong>actionable verdict</strong> (a table, a pass/fail list). Step 2 must <strong>only run on the survivors</strong> — the DAG branches that should never execute are pruned at runtime.</p>
 <div class="sourceCode" id="cb3" style="font-size: 0.74em;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1 — runs all cells, decides who passes</span></span>
 <span id="cb3-2"><a href="" aria-hidden="true" tabindex="-1"></a>checkpoint filter_cells:</span>
 <span id="cb3-3"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>:  expand(<span class="st">"counts/</span><span class="sc">{cell}</span><span class="st">.tsv"</span>, cell<span class="op">=</span>ALL_CELLS)</span>
@@ -648,24 +651,24 @@ Job stats · 3 samples
   C4["count cell_4"] --&gt; CP
   C5["count cell_5"] --&gt; CP
   CP["checkpoint&lt;br/&gt;filter_cells"]
-  CP --&gt; SV1["sv calls&lt;br/&gt;cell_1 ✓"]
-  CP -.-x X2["cell_2 ✗ skipped"]
-  CP --&gt; SV3["sv calls&lt;br/&gt;cell_3 ✓"]
-  CP -.-x X4["cell_4 ✗ skipped"]
-  CP --&gt; SV5["sv calls&lt;br/&gt;cell_5 ✓"]
-  SV1 --&gt; ALL["rule all"]
-  SV3 --&gt; ALL
-  SV5 --&gt; ALL
+  CP --&gt; SV1["sv calls cell_1 ✓"]
+  CP -. skipped .-&gt; X2["cell_2 ✗"]
+  CP --&gt; SV3["sv calls cell_3 ✓"]
+  CP -. skipped .-&gt; X4["cell_4 ✗"]
+  CP --&gt; SV5["sv calls cell_5 ✓"]
+  SV1 --&gt; RA["rule all"]
+  SV3 --&gt; RA
+  SV5 --&gt; RA
   classDef cp fill:#fef5e7,stroke:#E67E22,color:#6e3906,stroke-width:2px;
   classDef pass fill:#e8f5f0,stroke:#208F6E,color:#0f3a30;
   classDef fail fill:#fdecea,stroke:#C0392B,color:#922b21,stroke-dasharray: 4 3;
   classDef src fill:#eef3f7,stroke:#7f8c8d,color:#34495E;
-  classDef end fill:#f4ecf7,stroke:#8E44AD,color:#4a235a;
+  classDef goal fill:#f4ecf7,stroke:#8E44AD,color:#4a235a;
   class CP cp
   class SV1,SV3,SV5 pass
   class X2,X4 fail
   class C1,C2,C3,C4,C5 src
-  class ALL end
+  class RA goal
 </pre>
 </div>
 <p></p></figure><p></p>
@@ -945,46 +948,31 @@ conda recipes lag · CI envs break on plugin updates
 <h2>Plugin catalog · logger — <code>snkmt</code></h2>
 <div class="columns">
 <div class="column" style="width:42%;">
-<p><strong>What.</strong> A <code>logger</code> plugin that streams Snakemake events into a <strong>SQLite database</strong> and serves a TUI/web dashboard — like <code>snakemake-watch</code> but persistent.</p>
+<p><strong>What.</strong> A <code>logger</code> plugin that streams Snakemake events into a <strong>SQLite database</strong> and serves a TUI dashboard — persistent, multi-run.</p>
 <div class="sourceCode" id="cb14"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install snakemake-logger-plugin-snkmt</span>
 <span id="cb14-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">--logger</span> snkmt <span class="at">--jobs</span> 100 ...</span>
 <span id="cb14-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">snkmt</span>   <span class="co"># opens TUI on the DB</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div style="font-size: 0.78em; color: #7f8c8d; margin-top: 0.4em;">
-<p><a href="https://snakemake.github.io/snakemake-plugin-catalog/plugins/logger/snkmt.html">plugins/logger/snkmt</a></p>
+<p><a href="https://snakemake.github.io/snakemake-plugin-catalog/plugins/logger/snkmt.html">plugins/logger/snkmt</a> · <a href="https://github.com/cademirch/snkmt">github.com/cademirch/snkmt</a></p>
 </div>
 </div><div class="column" style="width:58%;">
-<div class="screenshot-placeholder">
-<i class="mdi mdi-monitor-screenshot"></i>
-<div class="screenshot-label">
-snkmt TUI
-</div>
-<div class="screenshot-hint">
-drop a screenshot here — <code>docs/images/snkmt.png</code>
-</div>
+<p><img src="https://github.com/cademirch/snkmt/blob/main/docs/screenshots/dashboard.png?raw=true" style="width: 100%; max-height: 480px; border-radius: 6px; box-shadow: 0 2px 10px rgba(0,0,0,0.18);" alt="snkmt dashboard"></p>
+<div style="font-size: 0.65em; color: #7f8c8d; text-align: center; margin-top: 0.2em;">
+<p>snkmt dashboard — source: cademirch/snkmt</p>
 </div>
 </div></div>
 </section>
 <section id="plugin-catalog-scheduler-firstfit" class="slide level2">
 <h2>Plugin catalog · scheduler — <code>firstfit</code></h2>
-<div class="columns">
-<div class="column" style="width:42%;">
 <p><strong>What.</strong> Replaces the default <strong>ILP</strong> scheduler with a <strong>first-fit-decreasing</strong> heuristic — faster scheduling on workflows with thousands of jobs (ILP can stall on the DAG-search step).</p>
 <div class="sourceCode" id="cb15"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb15-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install snakemake-scheduler-plugin-firstfit</span>
 <span id="cb15-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">--scheduler</span> firstfit <span class="at">--jobs</span> 5000</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div style="margin-top: 0.6em; padding: 0.55em 0.9em; background: #f4ecf7; border-left: 4px solid #8E44AD; border-radius: 4px; font-size: 0.82em;">
+<p><i class="mdi mdi-information"></i>&nbsp; Trade-off: faster scheduling decisions, <strong>less globally optimal</strong> packing than ILP. Worth it once the ILP overhead dominates the actual job runtime.</p>
+</div>
 <div style="font-size: 0.78em; color: #7f8c8d; margin-top: 0.4em;">
 <p><a href="https://snakemake.github.io/snakemake-plugin-catalog/plugins/scheduler/firstfit.html">plugins/scheduler/firstfit</a></p>
 </div>
-</div><div class="column" style="width:58%;">
-<div class="screenshot-placeholder">
-<i class="mdi mdi-chart-timeline-variant"></i>
-<div class="screenshot-label">
-scheduler latency comparison
-</div>
-<div class="screenshot-hint">
-drop a screenshot here — <code>docs/images/firstfit-vs-ilp.png</code>
-</div>
-</div>
-</div></div>
 </section>
 <section id="plugin-catalog-report-ro-crate-nanopub" class="slide level2">
 <h2>Plugin catalog · report — RO-Crate / nanopub</h2>
@@ -998,6 +986,9 @@ drop a screenshot here — <code>docs/images/firstfit-vs-ilp.png</code>
 <p>Emits a <strong>Workflow-Run RO-Crate</strong> (Leo et al.&nbsp;PLOS ONE 2024) — a JSON-LD bundle with the workflow, every input/output file, software versions, run metadata.</p>
 <div class="sourceCode" id="cb16"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb16-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">--report-plugin</span> rocrate <span class="dt">\</span></span>
 <span id="cb16-2"><a href="" aria-hidden="true" tabindex="-1"></a>          <span class="at">--report</span> run.crate.zip</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div style="font-size: 0.7em; color: #7f8c8d; margin-top: 0.3em;">
+<p><i class="mdi mdi-help-circle"></i>&nbsp; <em>I haven’t actually run this — repo: <a href="https://github.com/snakemake/snakemake-report-plugin-rocrate">snakemake/snakemake-report-plugin-rocrate</a>. Worth a try-and-show in a follow-up.</em></p>
+</div>
 </div>
 </div><div class="column" style="width:50%;">
 <div class="v9-card">
@@ -1016,24 +1007,14 @@ drop a screenshot here — <code>docs/images/firstfit-vs-ilp.png</code>
 </section>
 <section id="plugin-catalog-logger-stomp-event-bus" class="slide level2">
 <h2>Plugin catalog · logger — <code>stomp</code> (event bus)</h2>
-<div class="columns">
-<div class="column" style="width:55%;">
 <p><strong>What.</strong> A <code>logger</code> plugin that <strong>publishes Snakemake events</strong> to a STOMP message broker (RabbitMQ, ActiveMQ…). Useful for piping a fleet of Snakemake runs into one observability stack.</p>
 <div class="sourceCode" id="cb18"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb18-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install snakemake-logger-plugin-stomp</span>
 <span id="cb18-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">--logger</span> stomp <span class="dt">\</span></span>
 <span id="cb18-3"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="at">--logger-stomp-host</span> broker.embl.de <span class="dt">\</span></span>
 <span id="cb18-4"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="at">--logger-stomp-destination</span> <span class="st">"/queue/snakemake"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div><div class="column" style="width:45%;">
-<div class="screenshot-placeholder">
-<i class="mdi mdi-broadcast"></i>
-<div class="screenshot-label">
-event bus
+<div style="margin-top: 0.6em; padding: 0.55em 0.9em; background: #f4ecf7; border-left: 4px solid #8E44AD; border-radius: 4px; font-size: 0.82em;">
+<p><i class="mdi mdi-information"></i>&nbsp; Pair with a Grafana / Loki stack to get a fleet-wide view of every Snakemake run across the cluster.</p>
 </div>
-<div class="screenshot-hint">
-drop a screenshot here — <code>docs/images/stomp.png</code>
-</div>
-</div>
-</div></div>
 <div style="font-size: 0.78em; color: #7f8c8d; margin-top: 0.4em;">
 <p><a href="https://snakemake.github.io/snakemake-plugin-catalog/plugins/logger/stomp.html">plugins/logger/stomp</a></p>
 </div>

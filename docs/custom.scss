@@ -512,36 +512,38 @@ $code-block-font-size: 0.78em;
 /* Job stats panel */
 .reveal .jobstats {
   background: #e8f5f0;
-  border-left: 4px solid #208F6E;
-  border-radius: 6px;
-  padding: 0.6em 0.9em;
-  margin-top: 0.6em;
+  border-left: 3px solid #208F6E;
+  border-radius: 5px;
+  padding: 0.35em 0.6em;
+  margin-top: 0.5em;
   font-family: "JetBrains Mono", monospace;
-  font-size: 0.72em;
+  font-size: 0.52em;
+  line-height: 1.25;
 }
 .reveal .jobstats .jobstats-title {
   font-family: $font-family-sans-serif;
   font-weight: 700;
   color: #0f3a30;
-  margin-bottom: 0.3em;
-  font-size: 1.05em;
+  margin-bottom: 0.2em;
+  font-size: 0.95em;
 }
 .reveal .jobstats .jobstats-row {
   display: flex;
   justify-content: space-between;
-  padding: 0.15em 0.2em;
-  border-bottom: 1px dotted rgba(32,143,110,0.25);
+  padding: 0.08em 0.15em;
+  border-bottom: 1px dotted rgba(32,143,110,0.2);
 }
 .reveal .jobstats .jobstats-row:last-child { border-bottom: none; }
 .reveal .jobstats .jobstats-row code {
   background: transparent;
   color: #0f3a30;
   padding: 0;
+  font-size: 1em;
 }
 .reveal .jobstats .jobstats-total {
-  margin-top: 0.2em;
-  padding-top: 0.3em;
-  border-top: 2px solid #208F6E;
+  margin-top: 0.15em;
+  padding-top: 0.2em;
+  border-top: 1.5px solid #208F6E;
   border-bottom: none;
   font-weight: 700;
 }
