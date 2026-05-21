@@ -70,12 +70,30 @@ $code-block-font-size: 0.78em;
 }
 
 /* Title slide */
-.reveal .title-slide h1 {
+.reveal .title-slide {
+  text-align: center;
+  padding-top: 22vh;
+}
+.reveal .title-slide h1.title {
   color: #ffffff;
   border-bottom: none;
   font-weight: 800;
-  font-size: 2.6em;
+  font-size: 2.4em;
   letter-spacing: -0.025em;
+  margin-top: 0;
+}
+.reveal .title-slide p.subtitle {
+  color: #a3e4d7;
+  font-size: 0.9em;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  margin-top: 0.4em;
+}
+.reveal .title-slide .quarto-title-author-name,
+.reveal .title-slide .quarto-title-author,
+.reveal .title-slide .date {
+  color: #d6eee7;
+  font-size: 0.6em;
 }
 
 /* Tables - dense + branded */
@@ -483,6 +501,13 @@ $code-block-font-size: 0.78em;
   font-size: 1.05em;
   color: #a3e4d7;
 }
+.reveal .agenda-wide .agenda-date {
+  color: #a3e4d7;
+  font-size: 0.7em;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  margin-left: 0.4em;
+}
 
 /* Job stats panel */
 .reveal .jobstats {
@@ -774,6 +799,64 @@ $code-block-font-size: 0.78em;
   font-size: 0.72em;
   color: #b9620a;
   letter-spacing: -0.01em;
+}
+
+/* 3-step horizontal flow strip */
+.reveal .threestep {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.4em;
+  padding: 0.7em 0.8em;
+  background: #e8f1f8;
+  border: 1.5px solid #2980B9;
+  border-radius: 10px;
+}
+.reveal .threestep-box {
+  background: #fff;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.78em;
+  color: #1F3A5F;
+  padding: 0.3em 0.6em;
+  border-radius: 5px;
+  border: 1px solid #c5d4e3;
+}
+.reveal .threestep-arrow {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.78em;
+  color: #2980B9;
+  font-weight: 600;
+}
+
+/* Screenshot placeholder card */
+.reveal .screenshot-placeholder {
+  background:
+    repeating-linear-gradient(45deg,
+      #fafafa 0 10px, #f0f0f0 10px 20px);
+  border: 2px dashed #b0b0b0;
+  border-radius: 10px;
+  height: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4em;
+  color: #7f8c8d;
+}
+.reveal .screenshot-placeholder .mdi {
+  font-size: 3.2em;
+  color: #b0b0b0;
+}
+.reveal .screenshot-placeholder .screenshot-label {
+  font-weight: 700;
+  font-size: 0.95em;
+  color: #34495E;
+}
+.reveal .screenshot-placeholder .screenshot-hint {
+  font-size: 0.7em;
+  font-family: "JetBrains Mono", monospace;
+  color: #7f8c8d;
 }
 
 /* Footer */

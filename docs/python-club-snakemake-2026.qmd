@@ -1,5 +1,6 @@
 ---
 title: "Snakemake in 2026"
+subtitle: "updates &amp; tips"
 author: "Python Club"
 date: today
 format:
@@ -17,26 +18,21 @@ format:
     chalkboard: true
     menu: true
     footer: "Python Club · Snakemake · 2026"
+    title-slide-attributes:
+      data-background-color: "#0f3a30"
+      data-background-image: "https://avatars.githubusercontent.com/u/33450111?s=300&v=4"
+      data-background-size: "120px"
+      data-background-position: "center 18%"
     include-in-header:
       text: |
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css">
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    title-slide-attributes:
-      data-background-color: "#0f3a30"
 execute:
   echo: true
   eval: false
 ---
-
-# {.title-slide background-color="#0f3a30"}
-
-::: {style="text-align: center; padding-top: 2em;"}
-<img src="https://avatars.githubusercontent.com/u/33450111?s=200&v=4" style="height: 160px; border-radius: 20px;" alt="Snakemake"/>
-
-<h1 style="color: #fff; margin-top: 0.6em; font-size: 2.8em;">Snakemake in 2026</h1>
-:::
 
 ## Where workflow managers fit { background-color="#34495E" }
 
@@ -54,8 +50,8 @@ Wratten, Wilm, Göke — *Nat. Methods* 2021 · [10.1038/s41592-021-01254-9](htt
 
 ::: {.agenda-wide}
 - <i class="mdi mdi-rocket-launch"></i>&nbsp;**Snakemake refresher**
-- <i class="mdi mdi-puzzle"></i>&nbsp;**v7 → v9**
-- <i class="mdi mdi-scale-balance"></i>&nbsp;**vs Nextflow**
+- <i class="mdi mdi-puzzle"></i>&nbsp;**v7 → v9** &nbsp;<span class="agenda-date">2022 → 2026</span>
+- <i class="mdi mdi-scale-balance"></i>&nbsp;**vs Nextflow** &nbsp;<span class="agenda-date">options comparison</span>
 - <i class="mdi mdi-server-network"></i>&nbsp;**EMBL HPC**
 :::
 
@@ -108,69 +104,33 @@ Wratten, Wilm, Göke — *Nat. Methods* 2021 · [10.1038/s41592-021-01254-9](htt
 Adapted from J. Köster · <em>Snakemake intro · updates 2026</em> · Mölder et al., F1000Research v3 (2025)
 :::
 
-## Define workflows in terms of rules
-
-::: {.columns}
-::: {.column width="55%"}
-```{.python}
-rule mytask:
-    input:
-        "data/{sample}.txt"
-    output:
-        "result/{sample}.txt"
-    log:
-        "logs/{sample}.log"
-    params:
-        threshold = 0.05
-    resources:
-        mem_mb = 2_000,
-        runtime = 30
-    shell:
-        "some-tool --threshold {params.threshold} "
-        "{input} > {output} 2> {log}"
-```
-:::
-
-::: {.column width="45%"}
-<div class="koester-props">
-<div class="koester-row"><i class="mdi mdi-pencil"></i><span><b>rule name</b><br/><em>how to create output from input</em></span></div>
-<div class="koester-spacer">defines</div>
-<div class="koester-row"><i class="mdi mdi-arrow-down-bold"></i><span><code>input</code> · <code>output</code></span></div>
-<div class="koester-row"><i class="mdi mdi-text-box"></i><span><code>log</code> files</span></div>
-<div class="koester-row"><i class="mdi mdi-tune"></i><span><code>params</code></span></div>
-<div class="koester-row"><i class="mdi mdi-cpu-64-bit"></i><span><code>resources</code></span></div>
-<div class="koester-row"><i class="mdi mdi-console"></i><span><code>shell</code> · <code>script</code> · <code>run</code> · <code>notebook</code><br/><em>what to actually execute</em></span></div>
-</div>
-:::
-:::
-
-## One rule, four ideas
+## A rule — four ideas in one block
 
 ::: {.four-ideas}
 ::: {.columns}
 ::: {.column width="25%"}
-::: {.idea-card .fragment .fade-in-then-semi-out fragment-index=2}
-<i class="mdi mdi-puzzle-outline idea-icon"></i>
-<div class="big-label">Rule</div>
-<div class="sub-label">a unit of work</div>
-:::
-:::
-::: {.column width="25%"}
-::: {.idea-card .fragment .fade-in-then-semi-out fragment-index=3}
+::: {.idea-card}
 <i class="mdi mdi-asterisk idea-icon"></i>
 <div class="big-label">Wildcards</div>
 <div class="sub-label">inferred from targets</div>
 :::
 :::
 ::: {.column width="25%"}
-::: {.idea-card .fragment .fade-in-then-semi-out fragment-index=4}
+::: {.idea-card}
+<i class="mdi mdi-tune idea-icon"></i>
+<div class="big-label">Params</div>
+<div class="sub-label">non-file config</div>
+:::
+:::
+::: {.column width="25%"}
+::: {.idea-card}
 <i class="mdi mdi-cpu-64-bit idea-icon"></i>
 <div class="big-label">Resources</div>
 <div class="sub-label">cpu · mem · runtime</div>
 :::
 :::
 ::: {.column width="25%"}
-::: {.idea-card .fragment .fade-in-then-semi-out fragment-index=5}
+::: {.idea-card}
 <i class="mdi mdi-package-variant idea-icon"></i>
 <div class="big-label">Env per rule</div>
 <div class="sub-label">conda · container</div>
@@ -179,14 +139,19 @@ rule mytask:
 :::
 :::
 
-```{.python code-line-numbers="1|2-3|4-5|6"}
+```{.python}
 rule align:
-    input:  "fastq/{sample}.fq.gz"
-    output: "bam/{sample}.bam"
+    input:   "fastq/{sample}.fq.gz"          # wildcards: {sample}
+    output:  "bam/{sample}.bam"
+    log:     "logs/{sample}.log"
+    params:  min_mapq = 30                   # → {params.min_mapq}
     threads: 8
-    resources: mem_mb=16_000, runtime=120
-    conda:  "envs/bwa.yaml"
-    shell:  "bwa mem -t {threads} ref {input} | samtools sort -o {output}"
+    resources: mem_mb=16_000, runtime=120    # SLURM-aware
+    conda:   "envs/bwa.yaml"                 # or container: / envmodules:
+    shell:
+        "bwa mem -t {threads} ref {input} | "
+        "samtools view -q {params.min_mapq} -b - | "
+        "samtools sort -o {output} 2> {log}"
 ```
 
 ## Wildcards → DAG → dry-run
@@ -201,11 +166,19 @@ snakemake --rulegraph | dot -Tsvg > rules.svg
 ```
 
 <div class="jobstats">
-<div class="jobstats-title">Job stats</div>
-<div class="jobstats-row"><code>align</code><span>96</span></div>
-<div class="jobstats-row"><code>call_snvs</code><span>96</span></div>
-<div class="jobstats-row"><code>merge_vcfs</code><span>1</span></div>
-<div class="jobstats-row jobstats-total"><b>total</b><span>193</span></div>
+<div class="jobstats-title">Job stats · 3 samples</div>
+<div class="jobstats-row"><code>get_genome_fasta</code><span>1</span></div>
+<div class="jobstats-row"><code>get_genome_gff3</code><span>1</span></div>
+<div class="jobstats-row"><code>index_genome</code><span>1</span></div>
+<div class="jobstats-row"><code>get_SRA_by_accession</code><span>3</span></div>
+<div class="jobstats-row"><code>fastqc</code><span>3</span></div>
+<div class="jobstats-row"><code>align_to_genome</code><span>3</span></div>
+<div class="jobstats-row"><code>sort_bam</code><span>3</span></div>
+<div class="jobstats-row"><code>generate_count_table</code><span>1</span></div>
+<div class="jobstats-row"><code>multiqc</code><span>1</span></div>
+<div class="jobstats-row"><code>generate_rulegraph</code><span>1</span></div>
+<div class="jobstats-row"><code>all</code><span>1</span></div>
+<div class="jobstats-row jobstats-total"><b>total</b><span>19</span></div>
 </div>
 
 ::: {style="margin-top: 0.5em; font-size: 0.7em; color: #7f8c8d;"}
@@ -220,31 +193,31 @@ DAG image: NBIS reproducible-research course · MRSA tutorial rulegraph
 :::
 :::
 
-## Static DAG breaks down → checkpoints
+## Checkpoints — prune the DAG at runtime
 
 ::: {.columns}
 ::: {.column width="46%"}
-**Problem.** When a step's outputs are only knowable **at runtime** — *e.g.* "split a multi-sample VCF into one file per detected sample" — the static DAG can't list them up-front.
+**Pattern.** Step 1 produces an **actionable verdict** (a table, a list of pass/fail cells). Step 2 should **only process the survivors** — the DAG must drop the discarded branches.
 
-**`checkpoint`** lets Snakemake **pause, re-evaluate the DAG**, and continue with the outputs that just appeared.
+```{.python style="font-size: 0.74em;"}
+# Step 1 — runs all cells, decides who passes
+checkpoint filter_cells:
+    input:  expand("counts/{cell}.tsv", cell=ALL_CELLS)
+    output: "qc/passing_cells.tsv"
+    script: "scripts/qc_filter.py"
 
-```{.python style="font-size: 0.78em;"}
-checkpoint split_vcf:
-    input:  "cohort.vcf"
-    output: directory("per_sample/")
-    shell:  "bcftools +split {input} -Oz -o {output}"
+def passing(wildcards):
+    f = checkpoints.filter_cells.get().output[0]
+    keep = pd.read_table(f).query("pass").cell.tolist()
+    return expand("sv/{cell}.calls.tsv", cell=keep)
 
-def aggregate(wildcards):
-    d = checkpoints.split_vcf.get().output[0]
-    samples = glob_wildcards(f"{d}/{{s}}.vcf.gz").s
-    return expand(f"{d}/{{s}}.stats", s=samples)
-
+# Step 2 — only the passing cells get expanded
 rule all:
-    input: aggregate
+    input: passing
 ```
 
-::: {style="font-size: 0.78em; color: #7f8c8d; margin-top: 0.3em;"}
-<i class="mdi mdi-alert" style="color: #E67E22;"></i>&nbsp; Replaces the legacy `dynamic()` — removed in v8.
+::: {style="font-size: 0.74em; color: #7f8c8d; margin-top: 0.3em;"}
+<i class="mdi mdi-alert" style="color: #E67E22;"></i>&nbsp; Replaces legacy `dynamic()` — removed in v8.
 :::
 :::
 
@@ -254,24 +227,34 @@ rule all:
 %%| echo: false
 %%| fig-align: center
 flowchart TD
-  A["rule all"] --> AGG["aggregate (input fn)"]
-  AGG -. re-evaluates DAG .-> CP["checkpoint split_vcf"]
-  CP --> S1["sample_A.stats"]
-  CP --> S2["sample_B.stats"]
-  CP --> S3["sample_…N.stats"]
-  S1 --> AGG
-  S2 --> AGG
-  S3 --> AGG
+  C1["count cell_1"] --> CP
+  C2["count cell_2"] --> CP
+  C3["count cell_3"] --> CP
+  C4["count cell_4"] --> CP
+  C5["count cell_5"] --> CP
+  CP["checkpoint<br/>filter_cells"]
+  CP --> SV1["sv calls<br/>cell_1 ✓"]
+  CP -.-x X2["cell_2 ✗ skipped"]
+  CP --> SV3["sv calls<br/>cell_3 ✓"]
+  CP -.-x X4["cell_4 ✗ skipped"]
+  CP --> SV5["sv calls<br/>cell_5 ✓"]
+  SV1 --> ALL["rule all"]
+  SV3 --> ALL
+  SV5 --> ALL
   classDef cp fill:#fef5e7,stroke:#E67E22,color:#6e3906,stroke-width:2px;
-  classDef leaf fill:#e8f5f0,stroke:#208F6E,color:#0f3a30;
-  classDef agg fill:#f4ecf7,stroke:#8E44AD,color:#4a235a,stroke-dasharray: 4 3;
+  classDef pass fill:#e8f5f0,stroke:#208F6E,color:#0f3a30;
+  classDef fail fill:#fdecea,stroke:#C0392B,color:#922b21,stroke-dasharray: 4 3;
+  classDef src fill:#eef3f7,stroke:#7f8c8d,color:#34495E;
+  classDef end fill:#f4ecf7,stroke:#8E44AD,color:#4a235a;
   class CP cp
-  class S1,S2,S3 leaf
-  class AGG,A agg
+  class SV1,SV3,SV5 pass
+  class X2,X4 fail
+  class C1,C2,C3,C4,C5 src
+  class ALL end
 ```
 
 ::: {style="font-size: 0.72em; color: #7f8c8d; text-align: center; margin-top: 0.2em;"}
-DAG is re-resolved after the checkpoint completes — fan-out is discovered, not declared.
+Step 1 emits the verdict · Step 2's edges are **pruned**, not declared up-front.
 :::
 :::
 :::
@@ -316,16 +299,6 @@ rule plot_qc:
 `--report-after-run` (v9.1, Mar 2025) — no manual second run.
 :::
 :::
-:::
-
-::: {style="margin-top: 0.8em; padding: 0.7em 1em; background: #e8f5f0; border-left: 4px solid #208F6E; border-radius: 6px; font-size: 0.78em;"}
-<i class="mdi mdi-flask-outline" style="color: #208F6E;"></i>&nbsp; **Report / logger / scheduler plugins** — early ecosystem · *small fraction of nf-core's `nf-prov` reach*
-
-- **report** — `rocrate` (RO-Crate, Leo et al. PLOS ONE 2024) · `nanopub` *(both still WIP, not on PyPI as of Q2 2026)*
-- **logger** — [`snkmt`](https://snakemake.github.io/snakemake-plugin-catalog/plugins/logger/snkmt.html) (SQLite TUI dashboard) · [`stomp`](https://snakemake.github.io/snakemake-plugin-catalog/plugins/logger/stomp.html) (STOMP message bus)
-- **scheduler** — [`firstfit`](https://snakemake.github.io/snakemake-plugin-catalog/plugins/scheduler/firstfit.html) (first-fit-decreasing alternative to ILP)
-
-<i class="mdi mdi-information"></i>&nbsp; Honest take: most plugins are 1-author, < 100 stars. Compared to nf-core's `nf-prov`, the provenance story is **promising but still early**.
 :::
 
 # {.section-divider background-color="#8E44AD"}
@@ -523,50 +496,14 @@ rule align:
 
 ::: {.v9-grid}
 ::: {.columns}
-::: {.column width="33%"}
-::: {.v9-card}
-<i class="mdi mdi-puzzle v9-icon"></i>
-<div class="v9-title">Plugins</div>
-<ul>
-<li>5 categories: exec, storage, **logger**, **report**, **scheduler**</li>
-<li>plugins without settings <em>auto-deploy</em></li>
-</ul>
-:::
-:::
-
-::: {.column width="33%"}
+::: {.column width="50%"}
 ::: {.v9-card}
 <i class="mdi mdi-cached v9-icon"></i>
 <div class="v9-title">Performance &amp; cache</div>
 <ul>
-<li>storage-plugin **checksums** → cross-workflow caching is correctness-safe</li>
+<li>storage-plugin **checksums** → safe cross-workflow caching</li>
 <li>**named multi-output** caching</li>
 <li>auto-detected network FS type</li>
-</ul>
-:::
-:::
-
-::: {.column width="33%"}
-::: {.v9-card}
-<i class="mdi mdi-shield-check v9-icon"></i>
-<div class="v9-title">Provenance</div>
-<ul>
-<li>**`--report-after-run`** (9.1) auto-generates the HTML</li>
-<li>**RO-Crate** &amp; **nanopub** report plugins *(WIP)*</li>
-</ul>
-:::
-:::
-:::
-
-::: {.columns style="margin-top: 1em;"}
-::: {.column width="50%"}
-::: {.v9-card .v9-card-wide}
-<i class="mdi mdi-tools v9-icon"></i>
-<div class="v9-title">Developer UX</div>
-<ul>
-<li>`profile.yaml` is the new default filename · pass a YAML file directly</li>
-<li>`subpath(with_suffix=...)` helper</li>
-<li>**pluggable metadata persistence** — `.snakemake/` to files *or* DB</li>
 </ul>
 :::
 :::
@@ -576,19 +513,133 @@ rule align:
 <i class="mdi mdi-package-variant-closed-remove v9-icon"></i>
 <div class="v9-title">The plugin tax</div>
 <ul>
-<li>each workflow now ships a list of `pip install snakemake-{executor,storage,logger,report}-plugin-*`</li>
-<li>plugin versions are **independent** from core → pin all of them, or `snakemake --version` doesn't tell you anything</li>
-<li>conda recipes lag · CI envs must be rebuilt when any plugin breaks</li>
+<li>workflows now ship a list of `pip install snakemake-*-plugin-*`</li>
+<li>plugin versions independent from core → pin everything</li>
+<li>conda recipes lag · CI envs break on plugin updates</li>
 </ul>
 :::
 :::
 :::
 :::
 
-## Backward-compatibility is the real footgun
+## Plugin catalog · logger — `snkmt`
+
+::: {.columns}
+::: {.column width="42%"}
+**What.** A `logger` plugin that streams Snakemake events into a **SQLite database** and serves a TUI/web dashboard — like `snakemake-watch` but persistent.
+
+```bash
+pip install snakemake-logger-plugin-snkmt
+snakemake --logger snkmt --jobs 100 ...
+snkmt   # opens TUI on the DB
+```
+
+::: {style="font-size: 0.78em; color: #7f8c8d; margin-top: 0.4em;"}
+[plugins/logger/snkmt](https://snakemake.github.io/snakemake-plugin-catalog/plugins/logger/snkmt.html)
+:::
+:::
+
+::: {.column width="58%"}
+<div class="screenshot-placeholder">
+<i class="mdi mdi-monitor-screenshot"></i>
+<div class="screenshot-label">snkmt TUI</div>
+<div class="screenshot-hint">drop a screenshot here — `docs/images/snkmt.png`</div>
+</div>
+:::
+:::
+
+## Plugin catalog · scheduler — `firstfit`
+
+::: {.columns}
+::: {.column width="42%"}
+**What.** Replaces the default **ILP** scheduler with a **first-fit-decreasing** heuristic — faster scheduling on workflows with thousands of jobs (ILP can stall on the DAG-search step).
+
+```bash
+pip install snakemake-scheduler-plugin-firstfit
+snakemake --scheduler firstfit --jobs 5000
+```
+
+::: {style="font-size: 0.78em; color: #7f8c8d; margin-top: 0.4em;"}
+[plugins/scheduler/firstfit](https://snakemake.github.io/snakemake-plugin-catalog/plugins/scheduler/firstfit.html)
+:::
+:::
+
+::: {.column width="58%"}
+<div class="screenshot-placeholder">
+<i class="mdi mdi-chart-timeline-variant"></i>
+<div class="screenshot-label">scheduler latency comparison</div>
+<div class="screenshot-hint">drop a screenshot here — `docs/images/firstfit-vs-ilp.png`</div>
+</div>
+:::
+:::
+
+## Plugin catalog · report — RO-Crate / nanopub
+
+::: {.columns}
+::: {.column width="50%"}
+::: {.v9-card}
+<i class="mdi mdi-package-check v9-icon"></i>
+<div class="v9-title">`rocrate` — Provenance Run Crate</div>
+
+Emits a **Workflow-Run RO-Crate** (Leo et al. PLOS ONE 2024) — a JSON-LD bundle with the workflow, every input/output file, software versions, run metadata.
+
+```bash
+snakemake --report-plugin rocrate \
+          --report run.crate.zip
+```
+:::
+:::
+
+::: {.column width="50%"}
+::: {.v9-card}
+<i class="mdi mdi-link-variant v9-icon"></i>
+<div class="v9-title">`nanopub`</div>
+
+Publishes **machine-readable nanopublications** (FAIR semantic statements) tied to the workflow run — for cite-able data-analysis claims.
+
+```bash
+snakemake --report-plugin nanopub \
+          --report run.np.trig
+```
+:::
+:::
+:::
+
+::: {style="margin-top: 0.7em; padding: 0.55em 0.9em; background: #f4ecf7; border-left: 4px solid #8E44AD; border-radius: 4px; font-size: 0.78em;"}
+<i class="mdi mdi-information"></i>&nbsp; **Status (Q2 2026).** Both report plugins WIP, not on PyPI yet. Compared to nf-core's `nf-prov`, the Snakemake provenance story is **promising but still early** — most plugins are 1-author, &lt; 100 stars.
+:::
+
+## Plugin catalog · logger — `stomp` (event bus)
+
+::: {.columns}
+::: {.column width="55%"}
+**What.** A `logger` plugin that **publishes Snakemake events** to a STOMP message broker (RabbitMQ, ActiveMQ…). Useful for piping a fleet of Snakemake runs into one observability stack.
+
+```bash
+pip install snakemake-logger-plugin-stomp
+snakemake --logger stomp \
+  --logger-stomp-host broker.embl.de \
+  --logger-stomp-destination "/queue/snakemake"
+```
+:::
+
+::: {.column width="45%"}
+<div class="screenshot-placeholder">
+<i class="mdi mdi-broadcast"></i>
+<div class="screenshot-label">event bus</div>
+<div class="screenshot-hint">drop a screenshot here — `docs/images/stomp.png`</div>
+</div>
+:::
+:::
+
+::: {style="font-size: 0.78em; color: #7f8c8d; margin-top: 0.4em;"}
+[plugins/logger/stomp](https://snakemake.github.io/snakemake-plugin-catalog/plugins/logger/stomp.html)
+:::
+
+## Stability & backward-compatibility — issues to watch
 
 ::: {style="font-size: 0.92em; margin-bottom: 0.5em;"}
-The API moves faster than user pipelines. Same Snakefile, different minor → different behaviour.
+The engine moves faster than user pipelines. Same Snakefile, different minor → sometimes different behaviour.
 :::
 
 ::: {.columns}
@@ -643,49 +694,69 @@ The API moves faster than user pipelines. Same Snakefile, different minor → di
 ## The deepest difference — dataflow
 
 ::: {.columns}
-::: {.column width="50%"}
+::: {.column width="40%"}
+<h4 style="margin: 0 0 0.3em; color: #1F3A5F;"><i class="mdi mdi-folder-outline"></i>&nbsp; Starting state on disk</h4>
 
-<h3 style="color: #1F3A5F; margin-top: 0;"><i class="mdi mdi-arrow-up-bold-circle"></i>&nbsp; Snakemake — **pull**</h3>
+```bash
+fq/
+├── A_1.fq.gz   A_2.fq.gz
+├── B_1.fq.gz   B_2.fq.gz
+└── C_1.fq.gz   C_2.fq.gz
+# nothing else exists yet
+```
+:::
+
+::: {.column width="60%"}
+<div class="threestep">
+<span class="threestep-box">fq/*.fq.gz</span>
+<span class="threestep-arrow">→ align →</span>
+<span class="threestep-box">bam/*.bam</span>
+<span class="threestep-arrow">→ call →</span>
+<span class="threestep-box">vcf/cohort.vcf</span>
+</div>
+:::
+:::
+
+::: {.columns style="margin-top: 0.5em;"}
+::: {.column width="50%"}
+<h3 style="color: #1F3A5F; margin: 0;"><i class="mdi mdi-arrow-up-bold-circle"></i>&nbsp; Snakemake — **pull**</h3>
 
 > Reason **from the end**.
 
-```{.python style="font-size: 0.78em;"}
+```{.python style="font-size: 0.74em;"}
 rule all:
-    input: "vcf/cohort.vcf"  # ◀ the target
+    input: "vcf/cohort.vcf"   # ◀ the target
 
 rule call:
     input:  "bam/{s}.bam"
     output: "vcf/{s}.vcf"
 
 rule align:
-    input:  "fq/{s}.fq.gz"   # ◀ leaf
+    input:  "fq/{s}.fq.gz"    # ◀ leaf
     output: "bam/{s}.bam"
 ```
 *"To produce `cohort.vcf` I need `bam/*.bam`, which needs `fq/*.fq.gz`."* Static DAG.
 :::
 
 ::: {.column width="50%"}
-
-<h3 style="color: #1F3A5F; margin-top: 0;"><i class="mdi mdi-arrow-down-bold-circle"></i>&nbsp; Nextflow — **push**</h3>
+<h3 style="color: #1F3A5F; margin: 0;"><i class="mdi mdi-arrow-down-bold-circle"></i>&nbsp; Nextflow — **push**</h3>
 
 > Reason **from the start**.
 
-```{.groovy style="font-size: 0.78em;"}
+```{.groovy style="font-size: 0.74em;"}
 workflow {
   reads_ch = Channel.fromFilePairs(
-    'fq/*_{1,2}.fq.gz'          // ◀ the source
+    'fq/*_{1,2}.fq.gz'         // ◀ the source
   )
   bam_ch = ALIGN(reads_ch)
   vcf_ch = CALL(bam_ch)
   vcf_ch.view()
 }
 
-process ALIGN { input: tuple val(id), path(reads)
-                output: tuple val(id), path("${id}.bam")
-                script: "bwa mem ref ${reads} | samtools sort -o ${id}.bam" }
+process ALIGN { /* fq → bam */ }
 process CALL  { /* bam → vcf */ }
 ```
-*"FASTQ pairs emit into a channel → ALIGN consumes them → CALL consumes ALIGN's output…"* Dynamic DAG.
+*Channels emit → processes consume → next channel emits.* Dynamic DAG.
 :::
 :::
 
@@ -708,8 +779,12 @@ process CALL  { /* bam → vcf */ }
 | `software-env` hash | ✅ |
 | `code` of rule | ✅ |
 
-::: {style="font-size: 0.78em; margin-top: 0.4em;"}
-Override per run: `--rerun-triggers mtime params input` &nbsp;·&nbsp; opt-out individually.
+::: {style="font-size: 0.74em; margin-top: 0.3em;"}
+Override: `--rerun-triggers mtime params input` &nbsp;·&nbsp; opt-out individually.
+:::
+
+::: {style="font-size: 0.72em; margin-top: 0.4em; padding: 0.4em 0.6em; background: #fdecea; border-left: 3px solid #C0392B; border-radius: 4px;"}
+<i class="mdi mdi-alert" style="color: #C0392B;"></i>&nbsp; **Sensitive in dev.** Touching a rule's *code* or *params* during iteration triggers a full rerun of every downstream job — easy to lose hours. Pin with `--rerun-triggers mtime` while iterating.
 :::
 :::
 :::
@@ -737,12 +812,13 @@ The popular *"content-hashed by default"* claim is **partially false** — conte
 <i class="mdi mdi-information"></i>&nbsp; **Bottom line.** Both tools default to **metadata-based** invalidation. Snakemake's surface area is wider (`code`, `params`, `software-env`); Nextflow's `cache 'deep'` is the only way to get true content hashes.
 :::
 
-## Software & containers
+## Distribution layer
 
 | <i class="mdi mdi-format-list-checks" style="color: #1F3A5F;"></i>&nbsp; Capability | <i class="mdi mdi-snake" style="color: #208F6E;"></i> Snakemake | <img src="https://raw.githubusercontent.com/nf-core/logos/master/nf-core-logos/nf-core-logo-square.svg" style="height: 18px; vertical-align: middle;"/>&nbsp; Nextflow / nf-core |
 |---|---|---|
-| <i class="mdi mdi-tag-multiple"></i>&nbsp; Per-rule env | `conda:` + `container:` + `envmodules:` | `conda` + `container` directive |
-| <i class="mdi mdi-layers-triple"></i>&nbsp; Compose | `--sdm conda apptainer` | engine + conda |
+| <i class="mdi mdi-tag-multiple"></i>&nbsp; Per-rule env | `conda:` + `container:` + **`envmodules:`** | `conda` + `container` directive |
+| <i class="mdi mdi-layers-triple"></i>&nbsp; Compose | `--sdm conda apptainer env-modules` | engine + conda |
+| <i class="mdi mdi-cpu-64-bit"></i>&nbsp; HPC env-modules / EESSI | **native** via `envmodules:` | via `module load` in script |
 | <i class="mdi mdi-warehouse"></i>&nbsp; Curated registry | snakemake-wrappers | BioContainers · mulled · **Seqera Containers** |
 | <i class="mdi mdi-hammer-wrench"></i>&nbsp; Build on demand | — | **Wave** |
 | <i class="mdi mdi-folder-network"></i>&nbsp; POSIX over object storage | — | **Fusion** |
@@ -833,55 +909,66 @@ Computed indexes (BWA, STAR, ref dicts) reused across users → minutes saved pe
 :::
 
 ::: {.column width="50%"}
-<h4 style="color: #E67E22;"><i class="mdi mdi-docker"></i>&nbsp; Container & conda cache</h4>
+<h4 style="color: #E67E22;"><i class="mdi mdi-cube-outline"></i>&nbsp; Container cache</h4>
 
 ```yaml
 # profile
-conda-prefix:     /g/<group>/shared/conda
 apptainer-prefix: /g/<group>/shared/apptainer
 ```
 
-<i class="mdi mdi-folder-lock" style="color: #E67E22;"></i>&nbsp; Group-writable, `chmod 2775` (setgid) → no per-user re-solves.
+<i class="mdi mdi-folder-lock" style="color: #E67E22;"></i>&nbsp; Group-writable, `chmod 2775` (setgid) → image pulled **once** for the whole group.
 
-<i class="mdi mdi-rocket" style="color: #E67E22;"></i>&nbsp; Pre-warm: `snakemake --conda-create-envs-only`
+<i class="mdi mdi-rocket" style="color: #E67E22;"></i>&nbsp; Pre-warm: `snakemake --containerize-only`
+
+<div style="margin-top: 0.6em; padding: 0.5em 0.8em; background: #fdebd0; border-left: 4px solid #E67E22; border-radius: 4px; font-size: 0.78em;">
+<i class="mdi mdi-package-variant" style="color: #E67E22;"></i>&nbsp; **Skip the cache entirely** when **EESSI** covers the tool — `envmodules:` loads a CernVM-FS module, no image pull, no conda solve.
+</div>
 :::
 :::
 
-## 2 · Storage — staging via `fs` plugin
+## 2 · Storage — what the `fs` plugin actually does
 
-::: {.columns}
+::: {style="font-size: 0.86em; margin-bottom: 0.5em;"}
+The `fs` storage plugin treats **a local filesystem path as a "remote" storage backend**. Snakemake **stages inputs in** to a fast per-job location before the job runs, then **stages outputs back** when it finishes — same code path as S3/GCS storage plugins, but the "remote" is just another POSIX mount.
+:::
+
+::: {.threestep}
+<span class="threestep-box">shared FS<br/>(slow, big)</span>
+<span class="threestep-arrow">→ stage-in →</span>
+<span class="threestep-box">local scratch<br/>(fast, small)</span>
+<span class="threestep-arrow">→ run job →</span>
+<span class="threestep-box">stage-out</span>
+<span class="threestep-arrow">→</span>
+<span class="threestep-box">shared FS</span>
+:::
+
+::: {.columns style="margin-top: 0.5em;"}
 ::: {.column width="55%"}
 ```{.yaml filename="profile/config.yaml"}
 executor: slurm
-default-storage-provider: fs              # local FS-as-storage
-local-storage-prefix: /scratch/$USER/wf   # where staged copies land
+default-storage-provider: fs              # use fs as backend
+local-storage-prefix: /scratch/$USER/wf   # per-job staging dir
 remote-job-local-storage-prefix: /tmp/$USER/wf
 
-# What stays on shared FS vs. gets staged
-shared-fs-usage:
+shared-fs-usage:           # what stays on shared FS, not staged
   - persistence            # .snakemake/ metadata
   - software-deployment    # conda/apptainer
   - sources                # the Snakefile itself
-  # NOT input-output → staged via fs plugin
-
-# fs-plugin specific
-storage-fs-default-osfs: false   # use OSFS not MemoryFS
+  # input-output absent → staged through fs plugin
 ```
 :::
 
 ::: {.column width="45%"}
-<h4 style="color: #E67E22; margin-top: 0;"><i class="mdi mdi-file"></i>&nbsp; Tier each data class</h4>
+::: {style="font-size: 0.82em;"}
+**Why bother**
 
-| Data | Tier | Why |
-|---|---|---|
-| Reference & indexes | Cached parallel FS | Read 100× |
-| BAM / CRAM intermediates | Parallel FS | Sequential writes |
-| Conda · containers | Parallel FS (shared) | Multi-user reuse |
-| Sorting · temp buffers | **Local scratch** | Per-job, ultra-fast |
+- Compute nodes hammer **local NVMe**, not the shared parallel FS — no metadata storms.
+- Same plugin contract as `s3` / `gcs` → swap backends without changing rules.
+- Inputs are **copied**, not symlinked → safe with `temp()` cleanup.
 
 ::: {style="font-size: 0.7em; margin-top: 0.4em; color: #7f8c8d;"}
-CLI ref: `--default-storage-provider` · `--local-storage-prefix` · `--remote-job-local-storage-prefix` · `--shared-fs-usage`<br/>
-Plugin ref: [`storage/fs`](https://snakemake.github.io/snakemake-plugin-catalog/plugins/storage/fs.html)
+CLI: `--default-storage-provider` · `--local-storage-prefix` · `--shared-fs-usage` · [`plugins/storage/fs`](https://snakemake.github.io/snakemake-plugin-catalog/plugins/storage/fs.html)
+:::
 :::
 :::
 :::
@@ -977,10 +1064,16 @@ JOBID         NAME       NCPUS  ST
 </div>
 
 ::: {style="margin-top: 0.6em; font-size: 0.76em;"}
-<i class="mdi mdi-lightbulb-on" style="color: #E67E22;"></i>&nbsp; Big win for **many short single-CPU jobs** (per-cell QC, per-chrom split) — one scheduler decision instead of N.
-
-<i class="mdi mdi-alert" style="color: #E67E22;"></i>&nbsp; Heterogeneous resources → don't mix into one array.
+<i class="mdi mdi-lightbulb-on" style="color: #E67E22;"></i>&nbsp; *In theory:* big win for **many short 1-CPU jobs** (per-cell QC, per-chrom split) — one scheduler decision instead of N.
 :::
+
+<div style="margin-top: 0.4em; padding: 0.5em 0.8em; background: #fdecea; border-left: 4px solid #C0392B; border-radius: 4px; font-size: 0.78em;">
+<i class="mdi mdi-alert-octagon" style="color: #C0392B;"></i>&nbsp; **In practice (on our setup): parallelism is lost.** The 10 tasks inside the group ran **sequentially** in the same allocation — same wallclock as N separate jobs, no speed-up. Likely a `group-components` × `slurm-array-jobs` interaction. Test on your cluster before relying on this for throughput.
+</div>
+
+<div style="margin-top: 0.3em; font-size: 0.74em; color: #7f8c8d;">
+<i class="mdi mdi-alert" style="color: #E67E22;"></i>&nbsp; Heterogeneous resources → don't mix into one array.
+</div>
 :::
 :::
 
@@ -988,45 +1081,40 @@ JOBID         NAME       NCPUS  ST
 
 ::: {.columns}
 ::: {.column width="55%"}
-**EESSI** = European Environment for Scientific Software Installations — a CernVM-FS stream of pre-built scientific software, **EasyBuild-compiled per microarchitecture** and mountable on any HPC.
+**EESSI** = CernVM-FS stream of **EasyBuild-compiled** scientific software, dispatched per microarchitecture (`zen3`, `icelake`, `haswell` …).
 
-```bash
-source /cvmfs/software.eessi.io/versions/2023.06/init/bash
-module load BWA SAMtools STAR
-```
-
-Per rule:
 ```python
 rule align:
     envmodules: "BWA/0.7.17", "SAMtools/1.18"
     shell: "bwa mem ... | samtools sort ..."
 ```
-Invoke with `--sdm env-modules`.
+```bash
+snakemake --sdm env-modules ...
+```
 :::
 
 ::: {.column width="45%"}
-<i class="mdi mdi-rocket-launch" style="color: #E67E22;"></i>&nbsp; **No conda solve · no image pull** — first job starts immediately
+::: {style="font-size: 0.85em;"}
+<i class="mdi mdi-rocket-launch" style="color: #E67E22;"></i>&nbsp; No conda solve · no image pull<br/>
+<i class="mdi mdi-chip" style="color: #E67E22;"></i>&nbsp; CPU-tuned binaries → wallclock wins on AVX<br/>
+<i class="mdi mdi-earth" style="color: #E67E22;"></i>&nbsp; Same versions on any HPC mounting `/cvmfs`<br/>
+<i class="mdi mdi-cash-multiple" style="color: #E67E22;"></i>&nbsp; No per-user env duplication → quota saved
+:::
 
-<i class="mdi mdi-chip" style="color: #E67E22;"></i>&nbsp; **CPU-tuned builds** — `zen3`, `icelake`, `haswell` … binaries dispatched per node → measurable wallclock wins on AVX-heavy tools
-
-<i class="mdi mdi-earth" style="color: #E67E22;"></i>&nbsp; **Identical tool versions across sites** (any HPC mounting `/cvmfs`)
-
-<i class="mdi mdi-shield-check" style="color: #E67E22;"></i>&nbsp; Reproducibility comparable to containers, without the I/O overhead
-
-<i class="mdi mdi-cash-multiple" style="color: #E67E22;"></i>&nbsp; Zero per-user env duplication on `/g/<group>/shared/conda` → saves quota
-
+::: {style="font-size: 0.72em; margin-top: 0.4em; color: #7f8c8d;"}
 [eessi.io](https://www.eessi.io)
+:::
 :::
 :::
 
 ## Bonus · dependency cooldowns
 
-::: {style="font-size: 0.88em; margin-bottom: 0.6em;"}
-<i class="mdi mdi-shield-lock" style="color: #E67E22;"></i>&nbsp; **Why now:** supply-chain attacks on PyPI / npm have **accelerated** since coding agents started auto-resolving dependencies — a single `pip install` invoked by an LLM-driven CI run can pull a maliciously-published patch version minutes after it hits the index. Malicious releases are usually **yanked within hours to days**; cooldowns make compromised versions disappear before your build sees them.
+::: {style="font-size: 0.88em; margin-bottom: 0.5em;"}
+<i class="mdi mdi-shield-lock" style="color: #E67E22;"></i>&nbsp; Coding-agent CI loops now `pip install` dozens of packages per push — a malicious patch version, **live for hours** before yanking, gets pulled. Tell the resolver to **ignore anything newer than N days**.
 :::
 
-::: {style="font-size: 0.78em; margin-bottom: 0.6em; color: #6e3906; background: #fdebd0; padding: 0.4em 0.7em; border-left: 3px solid #E67E22; border-radius: 4px;"}
-Recent incidents: `ultralytics` (Dec 2024), `xz-utils` backdoor (2024), `lottie-player` npm (Oct 2024), `chalk`/`debug` (Sep 2025), repeated typosquats. **All** would have been blocked by a 7-day cooldown.
+::: {style="font-size: 0.78em; margin-bottom: 0.5em; color: #6e3906; background: #fdebd0; padding: 0.4em 0.7em; border-left: 3px solid #E67E22; border-radius: 4px;"}
+**TeamPCP / "Mini Shai-Hulud" wave (Apr–May 2026):** PyTorch-Lightning (PyPI, ~42 min live), `mistralai`, `guardrails-ai`, TanStack (42 pkgs / 84 versions, **CVE-2026-45321**), SAP npm, `intercom-client`, `xinference`, `elementary-data`. Worm self-propagates via stolen npm/PyPI tokens, exfiltrates over Session messenger + GitHub dead-drops. **All blocked by a 7-day cooldown.**
 :::
 
 ::: {.columns style="margin-top: 0.4em;"}
