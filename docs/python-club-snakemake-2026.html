@@ -11,7 +11,7 @@
   <meta name="generator" content="quarto-1.5.57">
 
   <meta name="author" content="Python Club">
-  <meta name="dcterms.date" content="2026-05-21">
+  <meta name="dcterms.date" content="2026-05-22">
   <title>Snakemake in 2026</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -412,7 +412,7 @@ Python Club
 </div>
 </div>
 
-  <p class="date">2026-05-21</p>
+  <p class="date">2026-05-22</p>
 </section>
 <section id="where-workflow-managers-fit" class="slide level2" data-background-color="#34495E">
 <h2>Where workflow managers fit</h2>
@@ -499,8 +499,58 @@ understand analysis
 <p>Adapted from J. Köster · <em>Snakemake intro · updates 2026</em> · Mölder et al., F1000Research v3 (2025)</p>
 </div>
 </section>
-<section id="a-rule-the-unit-of-work" class="slide level2">
-<h2>A rule — the unit of work</h2>
+<section id="from-a-script-to-a-snakefile" class="slide level2">
+<h2>From a script to a Snakefile</h2>
+<div style="font-size: 0.9em; margin-bottom: 0.4em;">
+<p>Same intent — <em>align each FASTQ, call variants per sample, merge into a cohort VCF</em>. The script hard-codes the loop; the Snakefile <strong>declares the dependencies</strong> and lets Snakemake build the DAG.</p>
+</div>
+<div class="columns">
+<div class="column" style="width:50%;">
+<h4 style="color: #7f8c8d; margin: 0 0 0.3em;">
+<i class="mdi mdi-script-text-outline"></i>&nbsp; Bash-style pseudo-script
+</h4>
+<div class="sourceCode" id="cb1" style="font-size: 0.7em;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> S <span class="kw">in</span> A B C<span class="kw">;</span> <span class="cf">do</span></span>
+<span id="cb1-2"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="ex">bwa</span> mem ref fq/<span class="va">$S</span>.fq.gz <span class="dt">\</span></span>
+<span id="cb1-3"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="kw">|</span> <span class="ex">samtools</span> sort <span class="at">-o</span> bam/<span class="va">$S</span>.bam</span>
+<span id="cb1-4"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="ex">gatk</span> HaplotypeCaller <span class="at">-I</span> bam/<span class="va">$S</span>.bam <span class="dt">\</span></span>
+<span id="cb1-5"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="at">-O</span> vcf/<span class="va">$S</span>.vcf</span>
+<span id="cb1-6"><a href="" aria-hidden="true" tabindex="-1"></a><span class="cf">done</span></span>
+<span id="cb1-7"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">bcftools</span> merge vcf/A.vcf vcf/B.vcf vcf/C.vcf <span class="dt">\</span></span>
+<span id="cb1-9"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="op">&gt;</span> vcf/cohort.vcf</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div style="font-size: 0.74em; color: #7f8c8d; margin-top: 0.3em;">
+<p>Linear · no parallelism · re-runs everything · no provenance · breaks on partial failure.</p>
+</div>
+</div><div class="column" style="width:50%;">
+<h4 style="color: #208F6E; margin: 0 0 0.3em;">
+<i class="mdi mdi-snake"></i>&nbsp; Snakefile
+</h4>
+<div class="sourceCode" id="cb2" style="font-size: 0.68em;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="" aria-hidden="true" tabindex="-1"></a>SAMPLES <span class="op">=</span> [<span class="st">"A"</span>, <span class="st">"B"</span>, <span class="st">"C"</span>]</span>
+<span id="cb2-2"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="" aria-hidden="true" tabindex="-1"></a>rule <span class="bu">all</span>:</span>
+<span id="cb2-4"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>: <span class="st">"vcf/cohort.vcf"</span></span>
+<span id="cb2-5"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="" aria-hidden="true" tabindex="-1"></a>rule align:</span>
+<span id="cb2-7"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>:  <span class="st">"fq/</span><span class="sc">{s}</span><span class="st">.fq.gz"</span></span>
+<span id="cb2-8"><a href="" aria-hidden="true" tabindex="-1"></a>    output: <span class="st">"bam/</span><span class="sc">{s}</span><span class="st">.bam"</span></span>
+<span id="cb2-9"><a href="" aria-hidden="true" tabindex="-1"></a>    shell:  <span class="st">"bwa mem ref </span><span class="sc">{input}</span><span class="st"> | samtools sort -o </span><span class="sc">{output}</span><span class="st">"</span></span>
+<span id="cb2-10"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="" aria-hidden="true" tabindex="-1"></a>rule call:</span>
+<span id="cb2-12"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>:  <span class="st">"bam/</span><span class="sc">{s}</span><span class="st">.bam"</span></span>
+<span id="cb2-13"><a href="" aria-hidden="true" tabindex="-1"></a>    output: <span class="st">"vcf/</span><span class="sc">{s}</span><span class="st">.vcf"</span></span>
+<span id="cb2-14"><a href="" aria-hidden="true" tabindex="-1"></a>    shell:  <span class="st">"gatk HaplotypeCaller -I </span><span class="sc">{input}</span><span class="st"> -O </span><span class="sc">{output}</span><span class="st">"</span></span>
+<span id="cb2-15"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-16"><a href="" aria-hidden="true" tabindex="-1"></a>rule merge:</span>
+<span id="cb2-17"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>:  expand(<span class="st">"vcf/</span><span class="sc">{s}</span><span class="st">.vcf"</span>, s<span class="op">=</span>SAMPLES)</span>
+<span id="cb2-18"><a href="" aria-hidden="true" tabindex="-1"></a>    output: <span class="st">"vcf/cohort.vcf"</span></span>
+<span id="cb2-19"><a href="" aria-hidden="true" tabindex="-1"></a>    shell:  <span class="st">"bcftools merge </span><span class="sc">{input}</span><span class="st"> &gt; </span><span class="sc">{output}</span><span class="st">"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div style="font-size: 0.74em; color: #208F6E; margin-top: 0.3em;">
+<p>Parallel by default · resumable · per-rule env · DAG known up-front.</p>
+</div>
+</div></div>
+</section>
+<section id="a-rule-zoom-in" class="slide level2">
+<h2>A rule — zoom in</h2>
 <div style="font-size: 0.95em; margin-bottom: 0.4em;">
 <p>A <strong>pipeline is organised as a list of rules</strong>. Each rule is <strong>one step</strong> — <em>e.g.</em> align FASTQs, call variants, build a plot — declared by its inputs, outputs and how to produce one from the other.</p>
 </div>
@@ -548,26 +598,26 @@ conda · container
 </div>
 </div></div>
 </div>
-<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="" aria-hidden="true" tabindex="-1"></a>rule align:</span>
-<span id="cb1-2"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>:   <span class="st">"fastq/</span><span class="sc">{sample}</span><span class="st">.fq.gz"</span>          <span class="co"># wildcards: {sample}</span></span>
-<span id="cb1-3"><a href="" aria-hidden="true" tabindex="-1"></a>    output:  <span class="st">"bam/</span><span class="sc">{sample}</span><span class="st">.bam"</span></span>
-<span id="cb1-4"><a href="" aria-hidden="true" tabindex="-1"></a>    log:     <span class="st">"logs/</span><span class="sc">{sample}</span><span class="st">.log"</span></span>
-<span id="cb1-5"><a href="" aria-hidden="true" tabindex="-1"></a>    params:  min_mapq <span class="op">=</span> <span class="dv">30</span>                   <span class="co"># → {params.min_mapq}</span></span>
-<span id="cb1-6"><a href="" aria-hidden="true" tabindex="-1"></a>    threads: <span class="dv">8</span></span>
-<span id="cb1-7"><a href="" aria-hidden="true" tabindex="-1"></a>    resources: mem_mb<span class="op">=</span><span class="dv">16_000</span>, runtime<span class="op">=</span><span class="dv">120</span>    <span class="co"># SLURM-aware</span></span>
-<span id="cb1-8"><a href="" aria-hidden="true" tabindex="-1"></a>    conda:   <span class="st">"envs/bwa.yaml"</span>                 <span class="co"># or container: / envmodules:</span></span>
-<span id="cb1-9"><a href="" aria-hidden="true" tabindex="-1"></a>    shell:</span>
-<span id="cb1-10"><a href="" aria-hidden="true" tabindex="-1"></a>        <span class="co">"bwa mem -t {threads} ref {input} | "</span></span>
-<span id="cb1-11"><a href="" aria-hidden="true" tabindex="-1"></a>        <span class="co">"samtools view -q {params.min_mapq} -b - | "</span></span>
-<span id="cb1-12"><a href="" aria-hidden="true" tabindex="-1"></a>        <span class="co">"samtools sort -o {output} 2&gt; {log}"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="" aria-hidden="true" tabindex="-1"></a>rule align:</span>
+<span id="cb3-2"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>:   <span class="st">"fastq/</span><span class="sc">{sample}</span><span class="st">.fq.gz"</span>          <span class="co"># wildcards: {sample}</span></span>
+<span id="cb3-3"><a href="" aria-hidden="true" tabindex="-1"></a>    output:  <span class="st">"bam/</span><span class="sc">{sample}</span><span class="st">.bam"</span></span>
+<span id="cb3-4"><a href="" aria-hidden="true" tabindex="-1"></a>    log:     <span class="st">"logs/</span><span class="sc">{sample}</span><span class="st">.log"</span></span>
+<span id="cb3-5"><a href="" aria-hidden="true" tabindex="-1"></a>    params:  min_mapq <span class="op">=</span> <span class="dv">30</span>                   <span class="co"># → {params.min_mapq}</span></span>
+<span id="cb3-6"><a href="" aria-hidden="true" tabindex="-1"></a>    threads: <span class="dv">8</span></span>
+<span id="cb3-7"><a href="" aria-hidden="true" tabindex="-1"></a>    resources: mem_mb<span class="op">=</span><span class="dv">16_000</span>, runtime<span class="op">=</span><span class="dv">120</span>    <span class="co"># SLURM-aware</span></span>
+<span id="cb3-8"><a href="" aria-hidden="true" tabindex="-1"></a>    conda:   <span class="st">"envs/bwa.yaml"</span>                 <span class="co"># or container: / envmodules:</span></span>
+<span id="cb3-9"><a href="" aria-hidden="true" tabindex="-1"></a>    shell:</span>
+<span id="cb3-10"><a href="" aria-hidden="true" tabindex="-1"></a>        <span class="co">"bwa mem -t {threads} ref {input} | "</span></span>
+<span id="cb3-11"><a href="" aria-hidden="true" tabindex="-1"></a>        <span class="co">"samtools view -q {params.min_mapq} -b - | "</span></span>
+<span id="cb3-12"><a href="" aria-hidden="true" tabindex="-1"></a>        <span class="co">"samtools sort -o {output} 2&gt; {log}"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="wildcards-dag-dry-run" class="slide level2">
 <h2>Wildcards → DAG → dry-run</h2>
 <div class="columns">
 <div class="column" style="width:42%;">
 <p>You request <strong>an output file</strong> → Snakemake recurses back through rules until it hits files that exist. The DAG is built <strong>statically</strong>.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> results.txt <span class="at">--dry-run</span></span>
-<span id="cb2-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">--rulegraph</span> <span class="kw">|</span> <span class="ex">dot</span> <span class="at">-Tsvg</span> <span class="op">&gt;</span> rules.svg</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> results.txt <span class="at">--dry-run</span></span>
+<span id="cb4-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">--rulegraph</span> <span class="kw">|</span> <span class="ex">dot</span> <span class="at">-Tsvg</span> <span class="op">&gt;</span> rules.svg</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="jobstats">
 <div class="jobstats-title">
 Job stats · 3 samples
@@ -621,20 +671,20 @@ Job stats · 3 samples
 <div class="columns">
 <div class="column" style="width:46%;">
 <p><strong>Pattern.</strong> Step 1 produces an <strong>actionable verdict</strong> (a table, a pass/fail list). Step 2 must <strong>only run on the survivors</strong> — the DAG branches that should never execute are pruned at runtime.</p>
-<div class="sourceCode" id="cb3" style="font-size: 0.74em;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1 — runs all cells, decides who passes</span></span>
-<span id="cb3-2"><a href="" aria-hidden="true" tabindex="-1"></a>checkpoint filter_cells:</span>
-<span id="cb3-3"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>:  expand(<span class="st">"counts/</span><span class="sc">{cell}</span><span class="st">.tsv"</span>, cell<span class="op">=</span>ALL_CELLS)</span>
-<span id="cb3-4"><a href="" aria-hidden="true" tabindex="-1"></a>    output: <span class="st">"qc/passing_cells.tsv"</span></span>
-<span id="cb3-5"><a href="" aria-hidden="true" tabindex="-1"></a>    script: <span class="st">"scripts/qc_filter.py"</span></span>
-<span id="cb3-6"><a href="" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-7"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> passing(wildcards):</span>
-<span id="cb3-8"><a href="" aria-hidden="true" tabindex="-1"></a>    f <span class="op">=</span> checkpoints.filter_cells.get().output[<span class="dv">0</span>]</span>
-<span id="cb3-9"><a href="" aria-hidden="true" tabindex="-1"></a>    keep <span class="op">=</span> pd.read_table(f).query(<span class="st">"pass"</span>).cell.tolist()</span>
-<span id="cb3-10"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> expand(<span class="st">"sv/</span><span class="sc">{cell}</span><span class="st">.calls.tsv"</span>, cell<span class="op">=</span>keep)</span>
-<span id="cb3-11"><a href="" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-12"><a href="" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 2 — only the passing cells get expanded</span></span>
-<span id="cb3-13"><a href="" aria-hidden="true" tabindex="-1"></a>rule <span class="bu">all</span>:</span>
-<span id="cb3-14"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>: passing</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb5" style="font-size: 0.74em;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1 — runs all cells, decides who passes</span></span>
+<span id="cb5-2"><a href="" aria-hidden="true" tabindex="-1"></a>checkpoint filter_cells:</span>
+<span id="cb5-3"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>:  expand(<span class="st">"counts/</span><span class="sc">{cell}</span><span class="st">.tsv"</span>, cell<span class="op">=</span>ALL_CELLS)</span>
+<span id="cb5-4"><a href="" aria-hidden="true" tabindex="-1"></a>    output: <span class="st">"qc/passing_cells.tsv"</span></span>
+<span id="cb5-5"><a href="" aria-hidden="true" tabindex="-1"></a>    script: <span class="st">"scripts/qc_filter.py"</span></span>
+<span id="cb5-6"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> passing(wildcards):</span>
+<span id="cb5-8"><a href="" aria-hidden="true" tabindex="-1"></a>    f <span class="op">=</span> checkpoints.filter_cells.get().output[<span class="dv">0</span>]</span>
+<span id="cb5-9"><a href="" aria-hidden="true" tabindex="-1"></a>    keep <span class="op">=</span> pd.read_table(f).query(<span class="st">"pass"</span>).cell.tolist()</span>
+<span id="cb5-10"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> expand(<span class="st">"sv/</span><span class="sc">{cell}</span><span class="st">.calls.tsv"</span>, cell<span class="op">=</span>keep)</span>
+<span id="cb5-11"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-12"><a href="" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 2 — only the passing cells get expanded</span></span>
+<span id="cb5-13"><a href="" aria-hidden="true" tabindex="-1"></a>rule <span class="bu">all</span>:</span>
+<span id="cb5-14"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>: passing</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div style="font-size: 0.74em; color: #7f8c8d; margin-top: 0.3em;">
 <p><i class="mdi mdi-alert" style="color: #E67E22;"></i>&nbsp; Replaces legacy <code>dynamic()</code> — removed in v8.</p>
 </div>
@@ -687,26 +737,26 @@ Job stats · 3 samples
 <h4 style="color: #208F6E;">
 <i class="mdi mdi-anvil"></i>&nbsp; Per-rule software · 3 options
 </h4>
-<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="" aria-hidden="true" tabindex="-1"></a>rule call_snvs:</span>
-<span id="cb4-2"><a href="" aria-hidden="true" tabindex="-1"></a>    conda:      <span class="st">"envs/gatk.yaml"</span></span>
-<span id="cb4-3"><a href="" aria-hidden="true" tabindex="-1"></a>    container:  <span class="st">"docker://broadinstitute/gatk:4.5"</span></span>
-<span id="cb4-4"><a href="" aria-hidden="true" tabindex="-1"></a>    envmodules: <span class="st">"GATK/4.5"</span></span>
-<span id="cb4-5"><a href="" aria-hidden="true" tabindex="-1"></a>    shell: <span class="st">"gatk HaplotypeCaller ..."</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="" aria-hidden="true" tabindex="-1"></a>rule call_snvs:</span>
+<span id="cb6-2"><a href="" aria-hidden="true" tabindex="-1"></a>    conda:      <span class="st">"envs/gatk.yaml"</span></span>
+<span id="cb6-3"><a href="" aria-hidden="true" tabindex="-1"></a>    container:  <span class="st">"docker://broadinstitute/gatk:4.5"</span></span>
+<span id="cb6-4"><a href="" aria-hidden="true" tabindex="-1"></a>    envmodules: <span class="st">"GATK/4.5"</span></span>
+<span id="cb6-5"><a href="" aria-hidden="true" tabindex="-1"></a>    shell: <span class="st">"gatk HaplotypeCaller ..."</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Pick one or compose (<code>--sdm conda apptainer</code>).</p>
 </div><div class="column" style="width:50%;">
 <h4 style="color: #208F6E;">
 <i class="mdi mdi-file-document"></i>&nbsp; Reports — auto since 9.1
 </h4>
-<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">--report</span> report.html <span class="at">--report-after-run</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="sourceCode" id="cb6" style="font-size: 0.7em;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="" aria-hidden="true" tabindex="-1"></a>rule plot_qc:</span>
-<span id="cb6-2"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>:  <span class="st">"qc/</span><span class="sc">{s}</span><span class="st">.tsv"</span></span>
-<span id="cb6-3"><a href="" aria-hidden="true" tabindex="-1"></a>    output: report(</span>
-<span id="cb6-4"><a href="" aria-hidden="true" tabindex="-1"></a>        <span class="st">"plots/</span><span class="sc">{s}</span><span class="st">.svg"</span>,</span>
-<span id="cb6-5"><a href="" aria-hidden="true" tabindex="-1"></a>        caption<span class="op">=</span><span class="st">"report/qc.rst"</span>,</span>
-<span id="cb6-6"><a href="" aria-hidden="true" tabindex="-1"></a>        category<span class="op">=</span><span class="st">"QC"</span>,</span>
-<span id="cb6-7"><a href="" aria-hidden="true" tabindex="-1"></a>        labels<span class="op">=</span>{<span class="st">"sample"</span>: <span class="st">"</span><span class="sc">{s}</span><span class="st">"</span>},</span>
-<span id="cb6-8"><a href="" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb6-9"><a href="" aria-hidden="true" tabindex="-1"></a>    script: <span class="st">"scripts/plot_qc.py"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">--report</span> report.html <span class="at">--report-after-run</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb8" style="font-size: 0.7em;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="" aria-hidden="true" tabindex="-1"></a>rule plot_qc:</span>
+<span id="cb8-2"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>:  <span class="st">"qc/</span><span class="sc">{s}</span><span class="st">.tsv"</span></span>
+<span id="cb8-3"><a href="" aria-hidden="true" tabindex="-1"></a>    output: report(</span>
+<span id="cb8-4"><a href="" aria-hidden="true" tabindex="-1"></a>        <span class="st">"plots/</span><span class="sc">{s}</span><span class="st">.svg"</span>,</span>
+<span id="cb8-5"><a href="" aria-hidden="true" tabindex="-1"></a>        caption<span class="op">=</span><span class="st">"report/qc.rst"</span>,</span>
+<span id="cb8-6"><a href="" aria-hidden="true" tabindex="-1"></a>        category<span class="op">=</span><span class="st">"QC"</span>,</span>
+<span id="cb8-7"><a href="" aria-hidden="true" tabindex="-1"></a>        labels<span class="op">=</span>{<span class="st">"sample"</span>: <span class="st">"</span><span class="sc">{s}</span><span class="st">"</span>},</span>
+<span id="cb8-8"><a href="" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb8-9"><a href="" aria-hidden="true" tabindex="-1"></a>    script: <span class="st">"scripts/plot_qc.py"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div style="font-size: 0.7em; color: #7f8c8d; margin-top: 0.2em;">
 <p><code>--report-after-run</code> (v9.1, Mar 2025) — no second run.</p>
 </div>
@@ -740,9 +790,9 @@ v7 → v9
 <i class="mdi mdi-package-variant-closed"></i>&nbsp; v7 (monolith)
 </h3>
 <p>All executors, all remote-storage backends, all software-deployment options shipped in <strong>one package</strong>.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">--use-conda</span> <span class="dt">\</span></span>
-<span id="cb7-2"><a href="" aria-hidden="true" tabindex="-1"></a>          <span class="at">--use-singularity</span> <span class="dt">\</span></span>
-<span id="cb7-3"><a href="" aria-hidden="true" tabindex="-1"></a>          <span class="at">--cluster</span> <span class="st">"sbatch ..."</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">--use-conda</span> <span class="dt">\</span></span>
+<span id="cb9-2"><a href="" aria-hidden="true" tabindex="-1"></a>          <span class="at">--use-singularity</span> <span class="dt">\</span></span>
+<span id="cb9-3"><a href="" aria-hidden="true" tabindex="-1"></a>          <span class="at">--cluster</span> <span class="st">"sbatch ..."</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div><div class="column" style="width:50%;">
 <h3 style="color: #8E44AD;">
 <i class="mdi mdi-puzzle"></i>&nbsp; v8 / v9 (plugins)
@@ -759,9 +809,9 @@ v7 → v9
 </section>
 <section id="executor-in-practice" class="slide level2">
 <h2>Executor — in practice</h2>
-<div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install snakemake-executor-plugin-slurm</span>
-<span id="cb8-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">--executor</span> slurm <span class="at">--jobs</span> 100 <span class="dt">\</span></span>
-<span id="cb8-3"><a href="" aria-hidden="true" tabindex="-1"></a>          <span class="at">--default-resources</span> runtime=120 mem_mb=8000</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install snakemake-executor-plugin-slurm</span>
+<span id="cb10-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">--executor</span> slurm <span class="at">--jobs</span> 100 <span class="dt">\</span></span>
+<span id="cb10-3"><a href="" aria-hidden="true" tabindex="-1"></a>          <span class="at">--default-resources</span> runtime=120 mem_mb=8000</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="exec-grid" style="margin-top: 1em;">
 <div class="columns">
 <div class="column" style="width:20%;">
@@ -810,33 +860,55 @@ Azure Batch
 <p><i class="mdi mdi-link" style="color: #8E44AD;"></i>&nbsp; <a href="https://snakemake.github.io/snakemake-plugin-catalog/">snakemake.github.io/snakemake-plugin-catalog</a> — also <code>flux</code> · <code>cluster-generic</code></p>
 </div>
 </section>
-<section id="storage-compose-from-anywhere" class="slide level2">
-<h2>Storage — compose from anywhere</h2>
-<div style="font-size: 0.9em; margin-bottom: 0.4em;">
-<p>A single rule can pull inputs <strong>from S3, Zenodo and a local FS at once</strong>, write to GCS, and stage everything through a fast scratch tier — each backend is just another storage plugin.</p>
+<section id="compose-storage-and-compute" class="slide level2">
+<h2>Compose storage <em>and</em> compute</h2>
+<div style="font-size: 0.88em; margin-bottom: 0.4em;">
+<p>One workflow, <strong>many backends</strong> — each rule’s inputs/outputs can sit on a different storage, and each rule can run on a different executor.</p>
 </div>
-<div class="sourceCode" id="cb9" style="font-size: 0.72em;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="" aria-hidden="true" tabindex="-1"></a>storage s3_aws:    provider<span class="op">=</span><span class="st">"s3"</span>,     endpoint_url<span class="op">=</span><span class="st">"https://s3.eu-central-1.amazonaws.com"</span></span>
-<span id="cb9-2"><a href="" aria-hidden="true" tabindex="-1"></a>storage refs_zen:  provider<span class="op">=</span><span class="st">"zenodo"</span>, doi<span class="op">=</span><span class="st">"10.5281/zenodo.1234567"</span></span>
-<span id="cb9-3"><a href="" aria-hidden="true" tabindex="-1"></a>storage out_gcs:   provider<span class="op">=</span><span class="st">"gcs"</span>,    project<span class="op">=</span><span class="st">"korbel-out"</span></span>
-<span id="cb9-4"><a href="" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-5"><a href="" aria-hidden="true" tabindex="-1"></a>rule align:</span>
-<span id="cb9-6"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>:</span>
-<span id="cb9-7"><a href="" aria-hidden="true" tabindex="-1"></a>        reads <span class="op">=</span> storage.s3_aws(<span class="st">"s3://run42/</span><span class="sc">{sample}</span><span class="st">.fq.gz"</span>),         <span class="co"># ◀ raw data on S3</span></span>
-<span id="cb9-8"><a href="" aria-hidden="true" tabindex="-1"></a>        ref   <span class="op">=</span> storage.refs_zen(<span class="st">"hg38.fa"</span>),                          <span class="co"># ◀ versioned reference on Zenodo</span></span>
-<span id="cb9-9"><a href="" aria-hidden="true" tabindex="-1"></a>        bed   <span class="op">=</span> <span class="st">"panels/exome.bed"</span>,                                   <span class="co"># ◀ local file (default fs)</span></span>
-<span id="cb9-10"><a href="" aria-hidden="true" tabindex="-1"></a>    output:</span>
-<span id="cb9-11"><a href="" aria-hidden="true" tabindex="-1"></a>        storage.out_gcs(<span class="st">"gs://korbel-out/run42/</span><span class="sc">{sample}</span><span class="st">.bam"</span>),        <span class="co"># ◀ outputs straight to GCS</span></span>
-<span id="cb9-12"><a href="" aria-hidden="true" tabindex="-1"></a>    threads: <span class="dv">8</span></span>
-<span id="cb9-13"><a href="" aria-hidden="true" tabindex="-1"></a>    conda: <span class="st">"envs/bwa.yaml"</span></span>
-<span id="cb9-14"><a href="" aria-hidden="true" tabindex="-1"></a>    shell: <span class="st">"bwa mem -t </span><span class="sc">{threads}</span><span class="st"> </span><span class="sc">{input.ref}</span><span class="st"> </span><span class="sc">{input.reads}</span><span class="st"> | samtools sort -o </span><span class="sc">{output}</span><span class="st">"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="columns" style="margin-top: 0.5em;">
+<div class="columns">
 <div class="column" style="width:50%;">
-<div style="padding: 0.5em 0.8em; background: #f4ecf7; border-left: 4px solid #8E44AD; border-radius: 4px; font-size: 0.78em;">
-<p><i class="mdi mdi-database"></i>&nbsp; <strong>Storage plugins</strong>: <code>fs</code> · <code>s3</code> · <code>gcs</code> · <code>azure</code> · <code>http</code> · <code>ftp</code> · <code>zenodo</code> · <code>xrootd</code> …</p>
+<h4 style="color: #8E44AD; margin: 0 0 0.3em;">
+<i class="mdi mdi-database"></i>&nbsp; Storage — S3 + Zenodo + local + GCS
+</h4>
+<div class="sourceCode" id="cb11" style="font-size: 0.62em;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="" aria-hidden="true" tabindex="-1"></a>storage s3_aws:   provider<span class="op">=</span><span class="st">"s3"</span>,     endpoint_url<span class="op">=</span><span class="st">"https://s3.eu-central-1.amazonaws.com"</span></span>
+<span id="cb11-2"><a href="" aria-hidden="true" tabindex="-1"></a>storage refs_zen: provider<span class="op">=</span><span class="st">"zenodo"</span>, doi<span class="op">=</span><span class="st">"10.5281/zenodo.1234567"</span></span>
+<span id="cb11-3"><a href="" aria-hidden="true" tabindex="-1"></a>storage out_gcs:  provider<span class="op">=</span><span class="st">"gcs"</span>,    project<span class="op">=</span><span class="st">"korbel-out"</span></span>
+<span id="cb11-4"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="" aria-hidden="true" tabindex="-1"></a>rule align:</span>
+<span id="cb11-6"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>:</span>
+<span id="cb11-7"><a href="" aria-hidden="true" tabindex="-1"></a>        reads <span class="op">=</span> storage.s3_aws(<span class="st">"s3://run42/</span><span class="sc">{s}</span><span class="st">.fq.gz"</span>),    <span class="co"># raw on S3</span></span>
+<span id="cb11-8"><a href="" aria-hidden="true" tabindex="-1"></a>        ref   <span class="op">=</span> storage.refs_zen(<span class="st">"hg38.fa"</span>),                <span class="co"># versioned on Zenodo</span></span>
+<span id="cb11-9"><a href="" aria-hidden="true" tabindex="-1"></a>        bed   <span class="op">=</span> <span class="st">"panels/exome.bed"</span>,                         <span class="co"># local (default fs)</span></span>
+<span id="cb11-10"><a href="" aria-hidden="true" tabindex="-1"></a>    output:</span>
+<span id="cb11-11"><a href="" aria-hidden="true" tabindex="-1"></a>        storage.out_gcs(<span class="st">"gs://korbel-out/</span><span class="sc">{s}</span><span class="st">.bam"</span>),         <span class="co"># output to GCS</span></span>
+<span id="cb11-12"><a href="" aria-hidden="true" tabindex="-1"></a>    shell:</span>
+<span id="cb11-13"><a href="" aria-hidden="true" tabindex="-1"></a>        <span class="co">"bwa mem {input.ref} {input.reads} | samtools sort -o {output}"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div style="font-size: 0.74em; color: #7f8c8d; margin-top: 0.3em;">
+<p>Plugins: <code>fs</code> · <code>s3</code> · <code>gcs</code> · <code>azure</code> · <code>http</code> · <code>ftp</code> · <code>zenodo</code> · <code>xrootd</code> …</p>
 </div>
 </div><div class="column" style="width:50%;">
-<div style="padding: 0.5em 0.8em; background: #e8f5f0; border-left: 4px solid #208F6E; border-radius: 4px; font-size: 0.78em;">
-<p><i class="mdi mdi-server-network"></i>&nbsp; <strong>And the same for compute</strong> — different rules can target different executors (SLURM, K8s, local) in one run via <code>set-resources</code>.</p>
+<h4 style="color: #8E44AD; margin: 0 0 0.3em;">
+<i class="mdi mdi-server-network"></i>&nbsp; Compute — SLURM + K8s + local
+</h4>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>profile/config.yaml</strong></pre>
+</div>
+<div class="sourceCode" id="cb12" data-filename="profile/config.yaml" style="font-size: 0.62em;"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb12-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="co"># default: HPC</span></span>
+<span id="cb12-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">executor</span><span class="kw">:</span><span class="at"> slurm</span></span>
+<span id="cb12-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">jobs</span><span class="kw">:</span><span class="at"> </span><span class="dv">200</span></span>
+<span id="cb12-4"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="" aria-hidden="true" tabindex="-1"></a><span class="co"># per-rule overrides</span></span>
+<span id="cb12-6"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">set-resources</span><span class="kw">:</span></span>
+<span id="cb12-7"><a href="" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">bwa_align</span><span class="kw">:</span><span class="at">           </span><span class="kw">{</span><span class="at"> </span><span class="fu">executor</span><span class="kw">:</span><span class="at"> slurm</span><span class="kw">,</span><span class="at">      </span><span class="fu">mem_mb</span><span class="kw">:</span><span class="at"> </span><span class="dv">16000</span><span class="at"> </span><span class="kw">}</span></span>
+<span id="cb12-8"><a href="" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">call_variants</span><span class="kw">:</span><span class="at">       </span><span class="kw">{</span><span class="at"> </span><span class="fu">executor</span><span class="kw">:</span><span class="at"> slurm</span><span class="kw">,</span><span class="at">      </span><span class="fu">mem_mb</span><span class="kw">:</span><span class="at"> </span><span class="dv">32000</span><span class="at"> </span><span class="kw">}</span></span>
+<span id="cb12-9"><a href="" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">run_deepvariant</span><span class="kw">:</span><span class="at">     </span><span class="kw">{</span><span class="at"> </span><span class="fu">executor</span><span class="kw">:</span><span class="at"> kubernetes</span><span class="kw">,</span><span class="at"> </span><span class="fu">_cores</span><span class="kw">:</span><span class="at"> </span><span class="dv">16</span><span class="at">    </span><span class="kw">}</span><span class="co">   # GPU pool</span></span>
+<span id="cb12-10"><a href="" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">build_summary_html</span><span class="kw">:</span><span class="at">  </span><span class="kw">{</span><span class="at"> </span><span class="fu">executor</span><span class="kw">:</span><span class="at"> local       </span><span class="kw">}</span><span class="co">                  # head node</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="sourceCode" id="cb13" style="font-size: 0.62em;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb13-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install snakemake-executor-plugin-slurm <span class="dt">\</span></span>
+<span id="cb13-2"><a href="" aria-hidden="true" tabindex="-1"></a>            snakemake-executor-plugin-kubernetes</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div style="font-size: 0.74em; color: #7f8c8d; margin-top: 0.3em;">
+<p>Executors: <code>slurm</code> · <code>kubernetes</code> · <code>googlebatch</code> · <code>azure-batch</code> · <code>lsf</code> · <code>htcondor</code> · <code>flux</code> · <code>local</code> …</p>
 </div>
 </div></div>
 </section>
@@ -847,27 +919,27 @@ Azure Batch
 <h4 style="color: #8E44AD; margin-top: 0;">
 v7 — many flags
 </h4>
-<div class="sourceCode" id="cb10"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">--use-conda</span></span>
-<span id="cb10-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">--use-singularity</span></span>
-<span id="cb10-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">--use-envmodules</span></span>
-<span id="cb10-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">--conda-frontend</span> mamba</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">--use-conda</span></span>
+<span id="cb14-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">--use-singularity</span></span>
+<span id="cb14-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">--use-envmodules</span></span>
+<span id="cb14-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">--conda-frontend</span> mamba</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div><div class="column" style="width:52%;">
 <h4 style="color: #8E44AD; margin-top: 0;">
 v8 / v9 — one flag
 </h4>
-<div class="sourceCode" id="cb11"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">--sdm</span> conda         <span class="co"># conda env per rule</span></span>
-<span id="cb11-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">--sdm</span> apptainer     <span class="co"># Apptainer/Singularity</span></span>
-<span id="cb11-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">--sdm</span> env-modules   <span class="co"># HPC env-modules (EESSI…)</span></span>
-<span id="cb11-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">--sdm</span> conda apptainer    <span class="co"># compose</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb15-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">--sdm</span> conda         <span class="co"># conda env per rule</span></span>
+<span id="cb15-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">--sdm</span> apptainer     <span class="co"># Apptainer/Singularity</span></span>
+<span id="cb15-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">--sdm</span> env-modules   <span class="co"># HPC env-modules (EESSI…)</span></span>
+<span id="cb15-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">--sdm</span> conda apptainer    <span class="co"># compose</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></div>
 <div style="margin-top: 1em;">
 <p><strong>Per-rule directives — all three are supported simultaneously:</strong></p>
 </div>
-<div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="" aria-hidden="true" tabindex="-1"></a>rule align:</span>
-<span id="cb12-2"><a href="" aria-hidden="true" tabindex="-1"></a>    conda:      <span class="st">"envs/bwa.yaml"</span>                  <span class="co"># ◀ conda</span></span>
-<span id="cb12-3"><a href="" aria-hidden="true" tabindex="-1"></a>    container:  <span class="st">"docker://biocontainers/bwa:0.7.17"</span>  <span class="co"># ◀ container</span></span>
-<span id="cb12-4"><a href="" aria-hidden="true" tabindex="-1"></a>    envmodules: <span class="st">"BWA/0.7.17"</span>, <span class="st">"SAMtools/1.18"</span>    <span class="co"># ◀ env-modules</span></span>
-<span id="cb12-5"><a href="" aria-hidden="true" tabindex="-1"></a>    shell: <span class="st">"bwa mem ..."</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="" aria-hidden="true" tabindex="-1"></a>rule align:</span>
+<span id="cb16-2"><a href="" aria-hidden="true" tabindex="-1"></a>    conda:      <span class="st">"envs/bwa.yaml"</span>                  <span class="co"># ◀ conda</span></span>
+<span id="cb16-3"><a href="" aria-hidden="true" tabindex="-1"></a>    container:  <span class="st">"docker://biocontainers/bwa:0.7.17"</span>  <span class="co"># ◀ container</span></span>
+<span id="cb16-4"><a href="" aria-hidden="true" tabindex="-1"></a>    envmodules: <span class="st">"BWA/0.7.17"</span>, <span class="st">"SAMtools/1.18"</span>    <span class="co"># ◀ env-modules</span></span>
+<span id="cb16-5"><a href="" aria-hidden="true" tabindex="-1"></a>    shell: <span class="st">"bwa mem ..."</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div style="margin-top: 0.6em; font-size: 0.82em;">
 <p><i class="mdi mdi-information" style="color: #8E44AD;"></i>&nbsp; <code>--conda-frontend mamba</code> <strong>removed</strong> (<a href="https://github.com/snakemake/snakemake/pull/3121">PR #3121</a>) — <code>libmamba</code> is the default solver since Conda 23.10 · Pixi backend on the roadmap.</p>
 </div>
@@ -1008,9 +1080,9 @@ conda-forge recipes lag · CI envs break on plugin updates
 <div class="columns">
 <div class="column" style="width:42%;">
 <p><strong>What.</strong> A <code>logger</code> plugin that streams Snakemake events into a <strong>SQLite database</strong> and serves a TUI dashboard — persistent, multi-run.</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb13-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install snakemake-logger-plugin-snkmt</span>
-<span id="cb13-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">--logger</span> snkmt <span class="at">--jobs</span> 100 ...</span>
-<span id="cb13-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">snkmt</span>   <span class="co"># opens TUI on the DB</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb17-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install snakemake-logger-plugin-snkmt</span>
+<span id="cb17-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">--logger</span> snkmt <span class="at">--jobs</span> 100 ...</span>
+<span id="cb17-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">snkmt</span>   <span class="co"># opens TUI on the DB</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div style="font-size: 0.78em; color: #7f8c8d; margin-top: 0.4em;">
 <p><a href="https://snakemake.github.io/snakemake-plugin-catalog/plugins/logger/snkmt.html">plugins/logger/snkmt</a> · <a href="https://github.com/cademirch/snkmt">github.com/cademirch/snkmt</a></p>
 </div>
@@ -1024,8 +1096,8 @@ conda-forge recipes lag · CI envs break on plugin updates
 <section id="plugin-catalog-scheduler-firstfit" class="slide level2">
 <h2>Plugin catalog · scheduler — <code>firstfit</code></h2>
 <p><strong>What.</strong> Replaces the default <strong>ILP</strong> scheduler with a <strong>first-fit-decreasing</strong> heuristic — faster scheduling on workflows with thousands of jobs (ILP can stall on the DAG-search step).</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install snakemake-scheduler-plugin-firstfit</span>
-<span id="cb14-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">--scheduler</span> firstfit <span class="at">--jobs</span> 5000</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb18-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install snakemake-scheduler-plugin-firstfit</span>
+<span id="cb18-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">--scheduler</span> firstfit <span class="at">--jobs</span> 5000</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div style="margin-top: 0.6em; padding: 0.55em 0.9em; background: #f4ecf7; border-left: 4px solid #8E44AD; border-radius: 4px; font-size: 0.82em;">
 <p><i class="mdi mdi-information"></i>&nbsp; Trade-off: faster scheduling decisions, <strong>less globally optimal</strong> packing than ILP. Worth it once the ILP overhead dominates the actual job runtime.</p>
 </div>
@@ -1038,8 +1110,8 @@ conda-forge recipes lag · CI envs break on plugin updates
 <div style="font-size: 0.85em; margin-bottom: 0.5em;">
 <p>Report plugins <strong>auto-activate when installed</strong> — there is <strong>no <code>--report-plugin</code> flag</strong>. The standard <code>--report</code> invocation triggers whatever report plugins are on the Python path.</p>
 </div>
-<div class="sourceCode" id="cb15"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb15-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install snakemake-report-plugin-rocrate snakemake-report-plugin-nanopub</span>
-<span id="cb15-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">--report</span> report.html         <span class="co"># the installed plugins extend the output</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb19-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install snakemake-report-plugin-rocrate snakemake-report-plugin-nanopub</span>
+<span id="cb19-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">--report</span> report.html         <span class="co"># the installed plugins extend the output</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="columns">
 <div class="column" style="width:50%;">
 <div class="v9-card">
@@ -1077,12 +1149,17 @@ conda-forge recipes lag · CI envs break on plugin updates
 <div class="v9-title">
 <code>stomp</code> — message bus
 </div>
-<p>Publishes Snakemake events over a <strong>STOMP</strong> broker (RabbitMQ, ActiveMQ…).</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb16-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install snakemake-logger-plugin-stomp</span>
-<span id="cb16-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">--logger</span> stomp <span class="dt">\</span></span>
-<span id="cb16-3"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="at">--logger-stomp-host</span> broker.embl.de <span class="dt">\</span></span>
-<span id="cb16-4"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="at">--logger-stomp-destination</span> <span class="st">"/queue/snakemake"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div style="font-size: 0.72em; color: #7f8c8d; margin-top: 0.3em;">
+<div class="sourceCode" id="cb20" style="font-size: 0.66em;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb20-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install snakemake-logger-plugin-stomp</span>
+<span id="cb20-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">--logger</span> stomp <span class="dt">\</span></span>
+<span id="cb20-3"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="at">--logger-stomp-host</span> broker.embl.de <span class="dt">\</span></span>
+<span id="cb20-4"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="at">--logger-stomp-destination</span> /queue/snakemake</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>One message per event</strong> (JSON, ≈100 B):</p>
+<div class="sourceCode" id="cb21" style="font-size: 0.6em;"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb21-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">"event"</span><span class="fu">:</span><span class="st">"job_finished"</span><span class="fu">,</span><span class="dt">"rule"</span><span class="fu">:</span><span class="st">"bwa_align"</span><span class="fu">,</span></span>
+<span id="cb21-2"><a href="" aria-hidden="true" tabindex="-1"></a> <span class="dt">"wildcards"</span><span class="fu">:{</span><span class="dt">"s"</span><span class="fu">:</span><span class="st">"HG002"</span><span class="fu">},</span><span class="dt">"wallclock_s"</span><span class="fu">:</span><span class="dv">312</span><span class="fu">,</span></span>
+<span id="cb21-3"><a href="" aria-hidden="true" tabindex="-1"></a> <span class="dt">"exit_status"</span><span class="fu">:</span><span class="dv">0</span><span class="fu">,</span><span class="dt">"cluster_jobid"</span><span class="fu">:</span><span class="st">"12345_3"</span><span class="fu">,</span></span>
+<span id="cb21-4"><a href="" aria-hidden="true" tabindex="-1"></a> <span class="dt">"workflow"</span><span class="fu">:</span><span class="st">"mosaicatcher"</span><span class="fu">,</span><span class="dt">"host"</span><span class="fu">:</span><span class="st">"node12"</span><span class="fu">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Drop into RabbitMQ → Logstash → ES / Grafana Loki.</p>
+<div style="font-size: 0.7em; color: #7f8c8d; margin-top: 0.3em;">
 <p><a href="https://snakemake.github.io/snakemake-plugin-catalog/plugins/logger/stomp.html">plugins/logger/stomp</a></p>
 </div>
 </div>
@@ -1092,18 +1169,22 @@ conda-forge recipes lag · CI envs break on plugin updates
 <div class="v9-title">
 <code>prometheus</code> — metrics endpoint
 </div>
-<p>Exposes job state, duration, success counts as a <strong>Prometheus</strong> scrape target — drop into your existing Grafana dashboards.</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb17-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install snakemake-logger-plugin-prometheus</span>
-<span id="cb17-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">--logger</span> prometheus <span class="dt">\</span></span>
-<span id="cb17-3"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="at">--logger-prometheus-port</span> 9101</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div style="font-size: 0.72em; color: #7f8c8d; margin-top: 0.3em;">
+<div class="sourceCode" id="cb22" style="font-size: 0.66em;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb22-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install snakemake-logger-plugin-prometheus</span>
+<span id="cb22-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">--logger</span> prometheus <span class="dt">\</span></span>
+<span id="cb22-3"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="at">--logger-prometheus-port</span> 9101</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Scrape <code>:9101/metrics</code></strong> — labelled counters &amp; histograms:</p>
+<pre class="text" style="font-size: 0.6em;"><code># HELP snakemake_jobs_total Jobs by status
+# TYPE snakemake_jobs_total counter
+snakemake_jobs_total{rule="bwa_align",status="success"} 96
+snakemake_jobs_total{rule="bwa_align",status="failed"}  0
+snakemake_job_duration_seconds_bucket{rule="bwa_align",le="60"}  12
+snakemake_job_duration_seconds_bucket{rule="bwa_align",le="300"} 78</code></pre>
+<p>Grafana PromQL: <code>rate(snakemake_jobs_total{status="failed"}[5m])</code>.</p>
+<div style="font-size: 0.7em; color: #7f8c8d; margin-top: 0.3em;">
 <p><a href="https://snakemake.github.io/snakemake-plugin-catalog/plugins/logger/prometheus.html">plugins/logger/prometheus</a></p>
 </div>
 </div>
 </div></div>
-<div style="margin-top: 0.6em; padding: 0.55em 0.9em; background: #f4ecf7; border-left: 4px solid #8E44AD; border-radius: 4px; font-size: 0.82em;">
-<p><i class="mdi mdi-information"></i>&nbsp; Both let you stop tailing log files and start querying a fleet of Snakemake runs across the cluster from one dashboard.</p>
-</div>
 </section>
 <section id="stability-backward-compatibility-issues-to-watch" class="slide level2">
 <h2>Stability &amp; backward-compatibility — issues to watch</h2>
@@ -1165,11 +1246,11 @@ vs Nextflow
 <h4 style="margin: 0 0 0.3em; color: #1F3A5F;">
 <i class="mdi mdi-folder-outline"></i>&nbsp; Starting state on disk
 </h4>
-<div class="sourceCode" id="cb18"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb18-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">fq/</span></span>
-<span id="cb18-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> A_1.fq.gz   A_2.fq.gz</span>
-<span id="cb18-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> B_1.fq.gz   B_2.fq.gz</span>
-<span id="cb18-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">└──</span> C_1.fq.gz   C_2.fq.gz</span>
-<span id="cb18-5"><a href="" aria-hidden="true" tabindex="-1"></a><span class="co"># nothing else exists yet</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb24"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb24-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">fq/</span></span>
+<span id="cb24-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> A_1.fq.gz   A_2.fq.gz</span>
+<span id="cb24-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> B_1.fq.gz   B_2.fq.gz</span>
+<span id="cb24-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">└──</span> C_1.fq.gz   C_2.fq.gz</span>
+<span id="cb24-5"><a href="" aria-hidden="true" tabindex="-1"></a><span class="co"># nothing else exists yet</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div><div class="column" style="width:60%;">
 <div class="threestep">
 <p><span class="threestep-box">fq/<em>.fq.gz</em></span><em> <span class="threestep-arrow">→ align →</span> <span class="threestep-box">bam/</span></em>.bam <span class="threestep-arrow">→ call →</span> <span class="threestep-box">vcf/cohort.vcf</span></p>
@@ -1183,16 +1264,16 @@ vs Nextflow
 <blockquote>
 <p>Reason <strong>from the end</strong>.</p>
 </blockquote>
-<div class="sourceCode" id="cb19" style="font-size: 0.74em;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="" aria-hidden="true" tabindex="-1"></a>rule <span class="bu">all</span>:</span>
-<span id="cb19-2"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>: <span class="st">"vcf/cohort.vcf"</span>   <span class="co"># ◀ the target</span></span>
-<span id="cb19-3"><a href="" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-4"><a href="" aria-hidden="true" tabindex="-1"></a>rule call:</span>
-<span id="cb19-5"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>:  <span class="st">"bam/</span><span class="sc">{s}</span><span class="st">.bam"</span></span>
-<span id="cb19-6"><a href="" aria-hidden="true" tabindex="-1"></a>    output: <span class="st">"vcf/</span><span class="sc">{s}</span><span class="st">.vcf"</span></span>
-<span id="cb19-7"><a href="" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-8"><a href="" aria-hidden="true" tabindex="-1"></a>rule align:</span>
-<span id="cb19-9"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>:  <span class="st">"fq/</span><span class="sc">{s}</span><span class="st">.fq.gz"</span>    <span class="co"># ◀ leaf</span></span>
-<span id="cb19-10"><a href="" aria-hidden="true" tabindex="-1"></a>    output: <span class="st">"bam/</span><span class="sc">{s}</span><span class="st">.bam"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb25" style="font-size: 0.74em;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="" aria-hidden="true" tabindex="-1"></a>rule <span class="bu">all</span>:</span>
+<span id="cb25-2"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>: <span class="st">"vcf/cohort.vcf"</span>   <span class="co"># ◀ the target</span></span>
+<span id="cb25-3"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-4"><a href="" aria-hidden="true" tabindex="-1"></a>rule call:</span>
+<span id="cb25-5"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>:  <span class="st">"bam/</span><span class="sc">{s}</span><span class="st">.bam"</span></span>
+<span id="cb25-6"><a href="" aria-hidden="true" tabindex="-1"></a>    output: <span class="st">"vcf/</span><span class="sc">{s}</span><span class="st">.vcf"</span></span>
+<span id="cb25-7"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-8"><a href="" aria-hidden="true" tabindex="-1"></a>rule align:</span>
+<span id="cb25-9"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>:  <span class="st">"fq/</span><span class="sc">{s}</span><span class="st">.fq.gz"</span>    <span class="co"># ◀ leaf</span></span>
+<span id="cb25-10"><a href="" aria-hidden="true" tabindex="-1"></a>    output: <span class="st">"bam/</span><span class="sc">{s}</span><span class="st">.bam"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p><em>“To produce <code>cohort.vcf</code> I need <code>bam/*.bam</code>, which needs <code>fq/*.fq.gz</code>.”</em> Static DAG.</p>
 </div><div class="column" style="width:50%;">
 <h3 style="color: #1F3A5F; margin: 0;">
@@ -1201,17 +1282,17 @@ vs Nextflow
 <blockquote>
 <p>Reason <strong>from the start</strong>.</p>
 </blockquote>
-<div class="sourceCode" id="cb20" style="font-size: 0.74em;"><pre class="sourceCode groovy code-with-copy"><code class="sourceCode groovy"><span id="cb20-1"><a href="" aria-hidden="true" tabindex="-1"></a>workflow <span class="op">{</span></span>
-<span id="cb20-2"><a href="" aria-hidden="true" tabindex="-1"></a>  reads_ch <span class="op">=</span> <span class="bu">Channel</span><span class="op">.</span><span class="fu">fromFilePairs</span><span class="op">(</span></span>
-<span id="cb20-3"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="st">'fq/*_{1,2}.fq.gz'</span>         <span class="co">// ◀ the source</span></span>
-<span id="cb20-4"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="op">)</span></span>
-<span id="cb20-5"><a href="" aria-hidden="true" tabindex="-1"></a>  bam_ch <span class="op">=</span> <span class="fu">ALIGN</span><span class="op">(</span>reads_ch<span class="op">)</span></span>
-<span id="cb20-6"><a href="" aria-hidden="true" tabindex="-1"></a>  vcf_ch <span class="op">=</span> <span class="fu">CALL</span><span class="op">(</span>bam_ch<span class="op">)</span></span>
-<span id="cb20-7"><a href="" aria-hidden="true" tabindex="-1"></a>  vcf_ch<span class="op">.</span><span class="fu">view</span><span class="op">()</span></span>
-<span id="cb20-8"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
-<span id="cb20-9"><a href="" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-10"><a href="" aria-hidden="true" tabindex="-1"></a>process ALIGN <span class="op">{</span> <span class="st">/* fq → bam */</span> <span class="op">}</span></span>
-<span id="cb20-11"><a href="" aria-hidden="true" tabindex="-1"></a>process CALL  <span class="op">{</span> <span class="st">/* bam → vcf */</span> <span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb26" style="font-size: 0.74em;"><pre class="sourceCode groovy code-with-copy"><code class="sourceCode groovy"><span id="cb26-1"><a href="" aria-hidden="true" tabindex="-1"></a>workflow <span class="op">{</span></span>
+<span id="cb26-2"><a href="" aria-hidden="true" tabindex="-1"></a>  reads_ch <span class="op">=</span> <span class="bu">Channel</span><span class="op">.</span><span class="fu">fromFilePairs</span><span class="op">(</span></span>
+<span id="cb26-3"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="st">'fq/*_{1,2}.fq.gz'</span>         <span class="co">// ◀ the source</span></span>
+<span id="cb26-4"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="op">)</span></span>
+<span id="cb26-5"><a href="" aria-hidden="true" tabindex="-1"></a>  bam_ch <span class="op">=</span> <span class="fu">ALIGN</span><span class="op">(</span>reads_ch<span class="op">)</span></span>
+<span id="cb26-6"><a href="" aria-hidden="true" tabindex="-1"></a>  vcf_ch <span class="op">=</span> <span class="fu">CALL</span><span class="op">(</span>bam_ch<span class="op">)</span></span>
+<span id="cb26-7"><a href="" aria-hidden="true" tabindex="-1"></a>  vcf_ch<span class="op">.</span><span class="fu">view</span><span class="op">()</span></span>
+<span id="cb26-8"><a href="" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb26-9"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-10"><a href="" aria-hidden="true" tabindex="-1"></a>process ALIGN <span class="op">{</span> <span class="st">/* fq → bam */</span> <span class="op">}</span></span>
+<span id="cb26-11"><a href="" aria-hidden="true" tabindex="-1"></a>process CALL  <span class="op">{</span> <span class="st">/* bam → vcf */</span> <span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p><em>Channels emit → processes consume → next channel emits.</em> Dynamic DAG.</p>
 </div></div>
 </section>
@@ -1269,11 +1350,6 @@ vs Nextflow
 <i class="mdi mdi-source-branch"></i>&nbsp; Nextflow <code>-resume</code>
 </h4>
 <table class="caption-top">
-<colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
-</colgroup>
 <thead>
 <tr class="header">
 <th>Signal</th>
@@ -1283,39 +1359,41 @@ vs Nextflow
 </thead>
 <tbody>
 <tr class="odd">
-<td>file <strong>path</strong> + <strong>size</strong> + <strong>mtime</strong></td>
+<td>path + size + mtime</td>
 <td>✅</td>
 <td>path+size</td>
 </tr>
 <tr class="even">
-<td>file <strong>SHA-256</strong></td>
+<td>file SHA-256</td>
 <td>—</td>
 <td>✅</td>
 </tr>
 <tr class="odd">
-<td><strong><code>script:</code></strong> body (interpolated)</td>
+<td><code>script:</code> body</td>
 <td>✅</td>
 <td>✅</td>
 </tr>
 <tr class="even">
-<td><strong><code>container:</code></strong> directive (image ID)</td>
+<td><code>container:</code> ID</td>
 <td>✅</td>
 <td>✅</td>
 </tr>
 <tr class="odd">
-<td><code>ext</code> directive (≥ 23.09)</td>
+<td><code>ext</code> directive</td>
 <td>✅</td>
 <td>✅</td>
 </tr>
 <tr class="even">
-<td>other directives (cpus, memory…)</td>
-<td>❌ unless used in <code>script:</code></td>
-<td>same</td>
+<td>other directives</td>
+<td>❌ *</td>
+<td>❌ *</td>
 </tr>
 </tbody>
 </table>
 <div style="font-size: 0.72em; margin-top: 0.3em;">
-<p>NF does hash code, container &amp; ext. The <em>“all content-hashed”</em> claim is still false — file content needs <code>cache 'deep'</code>.</p>
+<ul>
+<li>unless referenced in <code>script:</code> body via <code>${task.…}</code>. NF hashes code, container &amp; ext; <em>“all content-hashed”</em> still false — file content needs <code>cache 'deep'</code>.</li>
+</ul>
 </div>
 </div>
 </div></div>
@@ -1467,12 +1545,12 @@ EESSI / env-mods
 <h4 style="color: #E67E22;">
 <i class="mdi mdi-cached"></i>&nbsp; Workflow output cache
 </h4>
-<div class="sourceCode" id="cb21"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb21-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">SNAKEMAKE_OUTPUT_CACHE</span><span class="op">=</span><span class="dt">\</span></span>
-<span id="cb21-2"><a href="" aria-hidden="true" tabindex="-1"></a>  /scratch_cached/<span class="op">&lt;</span>group<span class="op">&gt;</span>/snakemake_cache</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb27"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb27-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">SNAKEMAKE_OUTPUT_CACHE</span><span class="op">=</span><span class="dt">\</span></span>
+<span id="cb27-2"><a href="" aria-hidden="true" tabindex="-1"></a>  /scratch_cached/<span class="op">&lt;</span>group<span class="op">&gt;</span>/snakemake_cache</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Per rule:</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="" aria-hidden="true" tabindex="-1"></a>rule index_ref:</span>
-<span id="cb22-2"><a href="" aria-hidden="true" tabindex="-1"></a>    output: <span class="st">"ref.fa.bwt"</span></span>
-<span id="cb22-3"><a href="" aria-hidden="true" tabindex="-1"></a>    cache: <span class="va">True</span>   <span class="co"># → goes into $SNAKEMAKE_OUTPUT_CACHE</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="" aria-hidden="true" tabindex="-1"></a>rule index_ref:</span>
+<span id="cb28-2"><a href="" aria-hidden="true" tabindex="-1"></a>    output: <span class="st">"ref.fa.bwt"</span></span>
+<span id="cb28-3"><a href="" aria-hidden="true" tabindex="-1"></a>    cache: <span class="va">True</span>   <span class="co"># → goes into $SNAKEMAKE_OUTPUT_CACHE</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div style="font-size: 0.82em;">
 <p>The hash key includes <strong>input file content, rule code, params, software-env, version</strong>. As long as the recipe is identical, <strong>user B reuses what user A built</strong> — even from a different working tree.</p>
 </div>
@@ -1483,8 +1561,8 @@ EESSI / env-mods
 <h4 style="color: #E67E22;">
 <i class="mdi mdi-cube-outline"></i>&nbsp; Container cache
 </h4>
-<div class="sourceCode" id="cb23"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb23-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="co"># profile</span></span>
-<span id="cb23-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">apptainer-prefix</span><span class="kw">:</span><span class="at"> /scratch_cached/&lt;group&gt;/apptainer</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb29"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb29-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="co"># profile</span></span>
+<span id="cb29-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">apptainer-prefix</span><span class="kw">:</span><span class="at"> /scratch_cached/&lt;group&gt;/apptainer</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p><i class="mdi mdi-folder-lock" style="color: #E67E22;"></i>&nbsp; On <code>/scratch_cached</code> (same fast tier as the workflow cache) → image pulled <strong>once</strong> for the whole group.</p>
 <p><i class="mdi mdi-rocket" style="color: #E67E22;"></i>&nbsp; Pre-pull manually: <code>apptainer pull --dir $APPTAINER_CACHEDIR docker://...</code> (no Snakemake “container-prewarm” flag exists — first job pulls).</p>
 <div style="margin-top: 0.5em; padding: 0.5em 0.8em; background: #fdebd0; border-left: 4px solid #E67E22; border-radius: 4px; font-size: 0.78em;">
@@ -1506,16 +1584,16 @@ EESSI / env-mods
 <div class="code-with-filename-file">
 <pre><strong>profile/config.yaml</strong></pre>
 </div>
-<div class="sourceCode" id="cb24" data-filename="profile/config.yaml"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb24-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">executor</span><span class="kw">:</span><span class="at"> slurm</span></span>
-<span id="cb24-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">default-storage-provider</span><span class="kw">:</span><span class="at"> fs</span><span class="co">              # use fs as backend</span></span>
-<span id="cb24-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">local-storage-prefix</span><span class="kw">:</span><span class="at"> /scratch/$USER/wf</span><span class="co">   # per-job staging dir</span></span>
-<span id="cb24-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">remote-job-local-storage-prefix</span><span class="kw">:</span><span class="at"> /tmp/$USER/wf</span></span>
-<span id="cb24-5"><a href="" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-6"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">shared-fs-usage</span><span class="kw">:</span><span class="co">           # what stays on shared FS, not staged</span></span>
-<span id="cb24-7"><a href="" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> persistence</span><span class="co">            # .snakemake/ metadata</span></span>
-<span id="cb24-8"><a href="" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> software-deployment</span><span class="co">    # conda/apptainer</span></span>
-<span id="cb24-9"><a href="" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> sources</span><span class="co">                # the Snakefile itself</span></span>
-<span id="cb24-10"><a href="" aria-hidden="true" tabindex="-1"></a><span class="co">  # input-output absent → staged through fs plugin</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb30" data-filename="profile/config.yaml"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb30-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">executor</span><span class="kw">:</span><span class="at"> slurm</span></span>
+<span id="cb30-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">default-storage-provider</span><span class="kw">:</span><span class="at"> fs</span><span class="co">              # use fs as backend</span></span>
+<span id="cb30-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">local-storage-prefix</span><span class="kw">:</span><span class="at"> /scratch/$USER/wf</span><span class="co">   # per-job staging dir</span></span>
+<span id="cb30-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">remote-job-local-storage-prefix</span><span class="kw">:</span><span class="at"> /tmp/$USER/wf</span></span>
+<span id="cb30-5"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-6"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">shared-fs-usage</span><span class="kw">:</span><span class="co">           # what stays on shared FS, not staged</span></span>
+<span id="cb30-7"><a href="" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> persistence</span><span class="co">            # .snakemake/ metadata</span></span>
+<span id="cb30-8"><a href="" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> software-deployment</span><span class="co">    # conda/apptainer</span></span>
+<span id="cb30-9"><a href="" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> sources</span><span class="co">                # the Snakefile itself</span></span>
+<span id="cb30-10"><a href="" aria-hidden="true" tabindex="-1"></a><span class="co">  # input-output absent → staged through fs plugin</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div><div class="column" style="width:45%;">
 <div style="font-size: 0.82em;">
@@ -1535,25 +1613,25 @@ EESSI / env-mods
 <h2>3 · Job grouping — map · sort · dedup · index → one job</h2>
 <div class="columns">
 <div class="column" style="width:55%;">
-<div class="sourceCode" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="" aria-hidden="true" tabindex="-1"></a>rule bwa:</span>
-<span id="cb25-2"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>:  <span class="st">"fq/</span><span class="sc">{s}</span><span class="st">.fq.gz"</span></span>
-<span id="cb25-3"><a href="" aria-hidden="true" tabindex="-1"></a>    output: temp(<span class="st">"bam/</span><span class="sc">{s}</span><span class="st">.sort.bam"</span>)</span>
-<span id="cb25-4"><a href="" aria-hidden="true" tabindex="-1"></a>    group:  <span class="st">"alignment_per_cell"</span></span>
-<span id="cb25-5"><a href="" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-6"><a href="" aria-hidden="true" tabindex="-1"></a>rule sort:</span>
-<span id="cb25-7"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>:  <span class="st">"bam/</span><span class="sc">{s}</span><span class="st">.sort.bam"</span></span>
-<span id="cb25-8"><a href="" aria-hidden="true" tabindex="-1"></a>    output: temp(<span class="st">"bam/</span><span class="sc">{s}</span><span class="st">.sorted.bam"</span>)</span>
-<span id="cb25-9"><a href="" aria-hidden="true" tabindex="-1"></a>    group:  <span class="st">"alignment_per_cell"</span></span>
-<span id="cb25-10"><a href="" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-11"><a href="" aria-hidden="true" tabindex="-1"></a>rule dedup:</span>
-<span id="cb25-12"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>:  <span class="st">"bam/</span><span class="sc">{s}</span><span class="st">.sorted.bam"</span></span>
-<span id="cb25-13"><a href="" aria-hidden="true" tabindex="-1"></a>    output: temp(<span class="st">"bam/</span><span class="sc">{s}</span><span class="st">.dedup.bam"</span>)</span>
-<span id="cb25-14"><a href="" aria-hidden="true" tabindex="-1"></a>    group:  <span class="st">"alignment_per_cell"</span></span>
-<span id="cb25-15"><a href="" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-16"><a href="" aria-hidden="true" tabindex="-1"></a>rule index:</span>
-<span id="cb25-17"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>:  <span class="st">"bam/</span><span class="sc">{s}</span><span class="st">.dedup.bam"</span></span>
-<span id="cb25-18"><a href="" aria-hidden="true" tabindex="-1"></a>    output: <span class="st">"bam/</span><span class="sc">{s}</span><span class="st">.bam.bai"</span></span>
-<span id="cb25-19"><a href="" aria-hidden="true" tabindex="-1"></a>    group:  <span class="st">"alignment_per_cell"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="" aria-hidden="true" tabindex="-1"></a>rule bwa:</span>
+<span id="cb31-2"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>:  <span class="st">"fq/</span><span class="sc">{s}</span><span class="st">.fq.gz"</span></span>
+<span id="cb31-3"><a href="" aria-hidden="true" tabindex="-1"></a>    output: temp(<span class="st">"bam/</span><span class="sc">{s}</span><span class="st">.sort.bam"</span>)</span>
+<span id="cb31-4"><a href="" aria-hidden="true" tabindex="-1"></a>    group:  <span class="st">"alignment_per_cell"</span></span>
+<span id="cb31-5"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-6"><a href="" aria-hidden="true" tabindex="-1"></a>rule sort:</span>
+<span id="cb31-7"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>:  <span class="st">"bam/</span><span class="sc">{s}</span><span class="st">.sort.bam"</span></span>
+<span id="cb31-8"><a href="" aria-hidden="true" tabindex="-1"></a>    output: temp(<span class="st">"bam/</span><span class="sc">{s}</span><span class="st">.sorted.bam"</span>)</span>
+<span id="cb31-9"><a href="" aria-hidden="true" tabindex="-1"></a>    group:  <span class="st">"alignment_per_cell"</span></span>
+<span id="cb31-10"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-11"><a href="" aria-hidden="true" tabindex="-1"></a>rule dedup:</span>
+<span id="cb31-12"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>:  <span class="st">"bam/</span><span class="sc">{s}</span><span class="st">.sorted.bam"</span></span>
+<span id="cb31-13"><a href="" aria-hidden="true" tabindex="-1"></a>    output: temp(<span class="st">"bam/</span><span class="sc">{s}</span><span class="st">.dedup.bam"</span>)</span>
+<span id="cb31-14"><a href="" aria-hidden="true" tabindex="-1"></a>    group:  <span class="st">"alignment_per_cell"</span></span>
+<span id="cb31-15"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-16"><a href="" aria-hidden="true" tabindex="-1"></a>rule index:</span>
+<span id="cb31-17"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>:  <span class="st">"bam/</span><span class="sc">{s}</span><span class="st">.dedup.bam"</span></span>
+<span id="cb31-18"><a href="" aria-hidden="true" tabindex="-1"></a>    output: <span class="st">"bam/</span><span class="sc">{s}</span><span class="st">.bam.bai"</span></span>
+<span id="cb31-19"><a href="" aria-hidden="true" tabindex="-1"></a>    group:  <span class="st">"alignment_per_cell"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div><div class="column" style="width:45%;">
 <div class="slurm-viz">
 <div class="slurm-header">
@@ -1589,53 +1667,104 @@ samtools index
 </div>
 </div></div>
 </section>
-<section id="job-arrays-packed-1-cpu-tasks" class="slide level2">
-<h2>4 · Job arrays — packed 1-CPU tasks</h2>
+<section id="job-arrays-pack-1-cpu-tasks-into-one-slurm-submission" class="slide level2">
+<h2>4 · Job arrays — pack 1-CPU tasks into one SLURM submission</h2>
 <div class="columns">
 <div class="column" style="width:50%;">
 <div class="code-with-filename">
 <div class="code-with-filename-file">
 <pre><strong>profile/config.yaml</strong></pre>
 </div>
-<div class="sourceCode" id="cb26" data-filename="profile/config.yaml"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb26-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">executor</span><span class="kw">:</span><span class="at"> slurm</span></span>
-<span id="cb26-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">slurm-array-jobs</span><span class="kw">:</span><span class="at"> all</span></span>
-<span id="cb26-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">slurm-array-limit</span><span class="kw">:</span><span class="at"> </span><span class="dv">1000</span></span>
-<span id="cb26-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">group-components</span><span class="kw">:</span></span>
-<span id="cb26-5"><a href="" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> count_cell=10</span><span class="co">     # 10 cells / array</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb32" data-filename="profile/config.yaml"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb32-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">executor</span><span class="kw">:</span><span class="at"> slurm</span></span>
+<span id="cb32-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">slurm-array-jobs</span><span class="kw">:</span><span class="at"> all</span><span class="co">       # all eligible rules</span></span>
+<span id="cb32-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">slurm-array-limit</span><span class="kw">:</span><span class="at"> </span><span class="dv">1000</span><span class="co">     # tasks / array</span></span>
+<span id="cb32-4"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-5"><a href="" aria-hidden="true" tabindex="-1"></a><span class="co"># pack 10 single-CPU jobs into one array</span></span>
+<span id="cb32-6"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">group-components</span><span class="kw">:</span></span>
+<span id="cb32-7"><a href="" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> count_cell=10</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="sourceCode" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="" aria-hidden="true" tabindex="-1"></a>rule count_cell:</span>
-<span id="cb27-2"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>:  <span class="st">"bam/</span><span class="sc">{cell}</span><span class="st">.bam"</span></span>
-<span id="cb27-3"><a href="" aria-hidden="true" tabindex="-1"></a>    output: <span class="st">"counts/</span><span class="sc">{cell}</span><span class="st">.tsv"</span></span>
-<span id="cb27-4"><a href="" aria-hidden="true" tabindex="-1"></a>    threads: <span class="dv">1</span></span>
-<span id="cb27-5"><a href="" aria-hidden="true" tabindex="-1"></a>    group:   <span class="st">"count_cell"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>For a per-cell rule that needs <strong>1 CPU each</strong>:</p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="" aria-hidden="true" tabindex="-1"></a>rule count_cell:</span>
+<span id="cb33-2"><a href="" aria-hidden="true" tabindex="-1"></a>    <span class="bu">input</span>:  <span class="st">"bam/</span><span class="sc">{cell}</span><span class="st">.bam"</span></span>
+<span id="cb33-3"><a href="" aria-hidden="true" tabindex="-1"></a>    output: <span class="st">"counts/</span><span class="sc">{cell}</span><span class="st">.tsv"</span></span>
+<span id="cb33-4"><a href="" aria-hidden="true" tabindex="-1"></a>    threads: <span class="dv">1</span></span>
+<span id="cb33-5"><a href="" aria-hidden="true" tabindex="-1"></a>    group:   <span class="st">"count_cell"</span>     <span class="co"># ← the array</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>What lands on SLURM:</p>
+<div class="sourceCode" id="cb34"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb34-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> squeue <span class="at">-u</span> <span class="va">$USER</span></span>
+<span id="cb34-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">JOBID</span>         NAME       NCPUS  ST</span>
+<span id="cb34-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">12345_[1-10]</span>  count_cell    1   PD</span>
+<span id="cb34-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="co"># 1 sbatch · 10 tasks · 1 cpu each</span></span>
+<span id="cb34-5"><a href="" aria-hidden="true" tabindex="-1"></a><span class="co"># SLURM sees a 10-cpu allocation</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div><div class="column" style="width:50%;">
 <div class="slurm-viz">
 <div class="slurm-header">
-<i class="mdi mdi-server-network"></i>&nbsp; <b>1 sbatch · 10 tasks · 10 cpus</b>
+<i class="mdi mdi-server-network"></i>&nbsp; <b>1 sbatch · 10 array tasks · 10 cpus total</b>
 </div>
 <div class="array-row">
-<span class="array-tag">1–10</span><span class="array-step">1 cpu · cell A…J</span>
+<span class="array-tag">task 1</span><span class="array-step">1 cpu · cell A</span>
+</div>
+<div class="array-row">
+<span class="array-tag">task 2</span><span class="array-step">1 cpu · cell B</span>
+</div>
+<div class="array-row">
+<span class="array-tag">task 3</span><span class="array-step">1 cpu · cell C</span>
+</div>
+<div class="array-row">
+<span class="array-tag">…</span><span class="array-step">…</span>
+</div>
+<div class="array-row">
+<span class="array-tag">task 10</span><span class="array-step">1 cpu · cell J</span>
 </div>
 </div>
-<div style="margin-top: 0.4em; padding: 0.45em 0.7em; background: #fdecea; border-left: 4px solid #C0392B; border-radius: 4px; font-size: 0.76em;">
-<p><i class="mdi mdi-alert-octagon" style="color: #C0392B;"></i>&nbsp; <strong>Caveat:</strong> on our setup the tasks ran <strong>sequentially</strong> inside the allocation — no speed-up. Test before relying on it.</p>
+<div style="margin-top: 0.6em; font-size: 0.76em;">
+<p><i class="mdi mdi-lightbulb-on" style="color: #E67E22;"></i>&nbsp; <em>In theory:</em> big win for <strong>many short 1-CPU jobs</strong> (per-cell QC, per-chrom split) — one scheduler decision instead of N.</p>
+</div>
+<div style="margin-top: 0.4em; padding: 0.5em 0.8em; background: #fdecea; border-left: 4px solid #C0392B; border-radius: 4px; font-size: 0.76em;">
+<p><i class="mdi mdi-alert-octagon" style="color: #C0392B;"></i>&nbsp; <strong>In practice (our setup): parallelism is lost.</strong> The 10 tasks inside the group ran <strong>sequentially</strong> in the same allocation — same wallclock as N separate jobs, no speed-up. Test on your cluster.</p>
+</div>
+<div style="margin-top: 0.3em; font-size: 0.74em; color: #7f8c8d;">
+<p><i class="mdi mdi-alert" style="color: #E67E22;"></i>&nbsp; Heterogeneous resources → don’t mix into one array.</p>
 </div>
 </div></div>
 </section>
 <section id="eessi-env-modules-with-native-optimisation" class="slide level2">
 <h2>5 · EESSI — env-modules with native optimisation</h2>
+<div style="font-size: 0.9em; text-align: center; margin-bottom: 0.5em;">
+<p><strong>EESSI</strong> = European Environment for Scientific Software Installations — a <strong>CernVM-FS</strong> stream of EasyBuild-compiled scientific software, <strong>dispatched per microarchitecture</strong> (<code>zen3</code>, <code>icelake</code>, <code>haswell</code> …), mountable on any HPC.</p>
+</div>
 <div class="columns">
 <div class="column" style="width:55%;">
-<p><strong>EESSI</strong> = CernVM-FS stream of <strong>EasyBuild-compiled</strong> scientific software, dispatched per microarchitecture (<code>zen3</code>, <code>icelake</code>, <code>haswell</code> …).</p>
-<div class="sourceCode" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="" aria-hidden="true" tabindex="-1"></a>rule align:</span>
-<span id="cb28-2"><a href="" aria-hidden="true" tabindex="-1"></a>    envmodules: <span class="st">"BWA/0.7.17"</span>, <span class="st">"SAMtools/1.18"</span></span>
-<span id="cb28-3"><a href="" aria-hidden="true" tabindex="-1"></a>    shell: <span class="st">"bwa mem ... | samtools sort ..."</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="sourceCode" id="cb29"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb29-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">--sdm</span> env-modules ...</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<h4 style="color: #E67E22; margin: 0 0 0.3em; text-align: center;">
+Bootstrap once
+</h4>
+<div class="sourceCode" id="cb35"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb35-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="bu">source</span> /cvmfs/software.eessi.io/versions/2023.06/init/bash</span>
+<span id="cb35-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">module</span> load BWA SAMtools STAR</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<h4 style="color: #E67E22; margin: 0.8em 0 0.3em; text-align: center;">
+Use per rule
+</h4>
+<div class="sourceCode" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="" aria-hidden="true" tabindex="-1"></a>rule align:</span>
+<span id="cb36-2"><a href="" aria-hidden="true" tabindex="-1"></a>    envmodules: <span class="st">"BWA/0.7.17"</span>, <span class="st">"SAMtools/1.18"</span></span>
+<span id="cb36-3"><a href="" aria-hidden="true" tabindex="-1"></a>    shell: <span class="st">"bwa mem ... | samtools sort ..."</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb37"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb37-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">--sdm</span> env-modules ...</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div><div class="column" style="width:45%;">
-<div style="font-size: 0.85em;">
-<p><i class="mdi mdi-rocket-launch" style="color: #E67E22;"></i>&nbsp; No conda solve · no image pull<br> <i class="mdi mdi-chip" style="color: #E67E22;"></i>&nbsp; CPU-tuned binaries → wallclock wins on AVX<br> <i class="mdi mdi-earth" style="color: #E67E22;"></i>&nbsp; Same versions on any HPC mounting <code>/cvmfs</code><br> <i class="mdi mdi-cash-multiple" style="color: #E67E22;"></i>&nbsp; No per-user env duplication → quota saved</p>
+<div style="background: linear-gradient(180deg, #fdebd0 0%, #fef5e7 100%); border: 1.5px solid #E67E22; border-radius: 10px; padding: 0.9em 1em;">
+<div style="font-size: 0.85em; margin: 0.2em 0;">
+<i class="mdi mdi-rocket-launch" style="color: #b9620a;"></i>&nbsp; <b>Fast</b> — no conda solve, no image pull · first job runs immediately
 </div>
-<div style="font-size: 0.72em; margin-top: 0.4em; color: #7f8c8d;">
+<div style="font-size: 0.85em; margin: 0.45em 0;">
+<i class="mdi mdi-chip" style="color: #b9620a;"></i>&nbsp; <b>Optimised</b> — CPU-tuned binaries → wallclock wins on AVX-heavy tools
+</div>
+<div style="font-size: 0.85em; margin: 0.45em 0;">
+<i class="mdi mdi-earth" style="color: #b9620a;"></i>&nbsp; <b>Portable</b> — identical versions across any HPC mounting <code>/cvmfs</code>
+</div>
+<div style="font-size: 0.85em; margin: 0.45em 0;">
+<i class="mdi mdi-shield-check" style="color: #b9620a;"></i>&nbsp; <b>Reproducible</b> — comparable to containers, no I/O overhead
+</div>
+<div style="font-size: 0.85em; margin: 0.45em 0 0.2em;">
+<i class="mdi mdi-cash-multiple" style="color: #b9620a;"></i>&nbsp; <b>Cheap</b> — zero per-user env duplication → group quota saved
+</div>
+</div>
+<div style="font-size: 0.72em; margin-top: 0.4em; color: #7f8c8d; text-align: center;">
 <p><a href="https://www.eessi.io">eessi.io</a></p>
 </div>
 </div></div>
@@ -1653,9 +1782,9 @@ samtools index
 <h4 style="color: #E67E22; margin: 0 0 0.4em;">
 <i class="mdi mdi-language-python"></i>&nbsp; pip 26.1 <em>(Apr 2026)</em>
 </h4>
-<div class="sourceCode" id="cb30"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb30-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install <span class="dt">\</span></span>
-<span id="cb30-2"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="at">--uploaded-prior-to</span><span class="op">=</span>P7D <span class="dt">\</span></span>
-<span id="cb30-3"><a href="" aria-hidden="true" tabindex="-1"></a>  requests</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb38"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb38-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install <span class="dt">\</span></span>
+<span id="cb38-2"><a href="" aria-hidden="true" tabindex="-1"></a>  <span class="at">--uploaded-prior-to</span><span class="op">=</span>P7D <span class="dt">\</span></span>
+<span id="cb38-3"><a href="" aria-hidden="true" tabindex="-1"></a>  requests</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div style="font-size: 0.78em; margin-top: 0.4em;">
 <ul>
 <li>26.0 → absolute date · 26.1 → relative</li>
@@ -1667,11 +1796,11 @@ samtools index
 <h4 style="color: #E67E22; margin: 0 0 0.4em;">
 <i class="mdi mdi-package-variant"></i>&nbsp; Pixi · <code>exclude-newer</code>
 </h4>
-<div class="sourceCode" id="cb31"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb31-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">[workspace]</span></span>
-<span id="cb31-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="dt">exclude-newer</span> <span class="op">=</span> <span class="st">"14d"</span></span>
-<span id="cb31-3"><a href="" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">[exclude-newer]</span></span>
-<span id="cb31-5"><a href="" aria-hidden="true" tabindex="-1"></a><span class="dt">openssl</span> <span class="op">=</span> <span class="st">"0d"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb39"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb39-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">[workspace]</span></span>
+<span id="cb39-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="dt">exclude-newer</span> <span class="op">=</span> <span class="st">"14d"</span></span>
+<span id="cb39-3"><a href="" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-4"><a href="" aria-hidden="true" tabindex="-1"></a><span class="kw">[exclude-newer]</span></span>
+<span id="cb39-5"><a href="" aria-hidden="true" tabindex="-1"></a><span class="dt">openssl</span> <span class="op">=</span> <span class="st">"0d"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div style="font-size: 0.78em; margin-top: 0.4em;">
 <ul>
 <li>Per-channel &amp; per-package overrides</li>
@@ -1698,9 +1827,9 @@ Closing the loop
 <div class="columns">
 <div class="column" style="width:48%;">
 <p>The SLURM executor can emit a <strong>per-job CPU &amp; memory utilisation report</strong> at the end of every run:</p>
-<div class="sourceCode" id="cb32"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb32-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">slurm-efficiency-report</span><span class="kw">:</span><span class="at">       </span><span class="ch">true</span></span>
-<span id="cb32-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">slurm-efficiency-report-path</span><span class="kw">:</span><span class="at">  efficiency.txt</span></span>
-<span id="cb32-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">slurm-efficiency-threshold</span><span class="kw">:</span><span class="at">    </span><span class="fl">0.8</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb40"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb40-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">slurm-efficiency-report</span><span class="kw">:</span><span class="at">       </span><span class="ch">true</span></span>
+<span id="cb40-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">slurm-efficiency-report-path</span><span class="kw">:</span><span class="at">  efficiency.txt</span></span>
+<span id="cb40-3"><a href="" aria-hidden="true" tabindex="-1"></a><span class="fu">slurm-efficiency-threshold</span><span class="kw">:</span><span class="at">    </span><span class="fl">0.8</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>The idea, in one loop:</p>
 <div class="threestep" style="margin-top: 0.4em;">
 <p><span class="threestep-box">run</span> <span class="threestep-arrow">→</span> <span class="threestep-box">efficiency report</span> <span class="threestep-arrow">→</span> <span class="threestep-box">notebook</span> <span class="threestep-arrow">→</span> <span class="threestep-box">updated set-resources</span></p>

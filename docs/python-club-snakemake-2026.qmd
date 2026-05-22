@@ -104,7 +104,65 @@ Wratten, Wilm, Göke — *Nat. Methods* 2021 · [10.1038/s41592-021-01254-9](htt
 Adapted from J. Köster · <em>Snakemake intro · updates 2026</em> · Mölder et al., F1000Research v3 (2025)
 :::
 
-## A rule — the unit of work
+## From a script to a Snakefile
+
+::: {style="font-size: 0.9em; margin-bottom: 0.4em;"}
+Same intent — *align each FASTQ, call variants per sample, merge into a cohort VCF*. The script hard-codes the loop; the Snakefile **declares the dependencies** and lets Snakemake build the DAG.
+:::
+
+::: {.columns}
+::: {.column width="50%"}
+<h4 style="color: #7f8c8d; margin: 0 0 0.3em;"><i class="mdi mdi-script-text-outline"></i>&nbsp; Bash-style pseudo-script</h4>
+
+```{.bash style="font-size: 0.7em;"}
+for S in A B C; do
+  bwa mem ref fq/$S.fq.gz \
+    | samtools sort -o bam/$S.bam
+  gatk HaplotypeCaller -I bam/$S.bam \
+    -O vcf/$S.vcf
+done
+
+bcftools merge vcf/A.vcf vcf/B.vcf vcf/C.vcf \
+  > vcf/cohort.vcf
+```
+
+::: {style="font-size: 0.74em; color: #7f8c8d; margin-top: 0.3em;"}
+Linear · no parallelism · re-runs everything · no provenance · breaks on partial failure.
+:::
+:::
+
+::: {.column width="50%"}
+<h4 style="color: #208F6E; margin: 0 0 0.3em;"><i class="mdi mdi-snake"></i>&nbsp; Snakefile</h4>
+
+```{.python style="font-size: 0.68em;"}
+SAMPLES = ["A", "B", "C"]
+
+rule all:
+    input: "vcf/cohort.vcf"
+
+rule align:
+    input:  "fq/{s}.fq.gz"
+    output: "bam/{s}.bam"
+    shell:  "bwa mem ref {input} | samtools sort -o {output}"
+
+rule call:
+    input:  "bam/{s}.bam"
+    output: "vcf/{s}.vcf"
+    shell:  "gatk HaplotypeCaller -I {input} -O {output}"
+
+rule merge:
+    input:  expand("vcf/{s}.vcf", s=SAMPLES)
+    output: "vcf/cohort.vcf"
+    shell:  "bcftools merge {input} > {output}"
+```
+
+::: {style="font-size: 0.74em; color: #208F6E; margin-top: 0.3em;"}
+Parallel by default · resumable · per-rule env · DAG known up-front.
+:::
+:::
+:::
+
+## A rule — zoom in
 
 ::: {style="font-size: 0.95em; margin-bottom: 0.4em;"}
 A **pipeline is organised as a list of rules**. Each rule is **one step** — *e.g.* align FASTQs, call variants, build a plot — declared by its inputs, outputs and how to produce one from the other.
@@ -406,39 +464,61 @@ snakemake --executor slurm --jobs 100 \
 <i class="mdi mdi-link" style="color: #8E44AD;"></i>&nbsp; [snakemake.github.io/snakemake-plugin-catalog](https://snakemake.github.io/snakemake-plugin-catalog/) — also `flux` · `cluster-generic`
 :::
 
-## Storage — compose from anywhere
+## Compose storage *and* compute
 
-::: {style="font-size: 0.9em; margin-bottom: 0.4em;"}
-A single rule can pull inputs **from S3, Zenodo and a local FS at once**, write to GCS, and stage everything through a fast scratch tier — each backend is just another storage plugin.
+::: {style="font-size: 0.88em; margin-bottom: 0.4em;"}
+One workflow, **many backends** — each rule's inputs/outputs can sit on a different storage, and each rule can run on a different executor.
 :::
 
-```{.python style="font-size: 0.72em;"}
-storage s3_aws:    provider="s3",     endpoint_url="https://s3.eu-central-1.amazonaws.com"
-storage refs_zen:  provider="zenodo", doi="10.5281/zenodo.1234567"
-storage out_gcs:   provider="gcs",    project="korbel-out"
+::: {.columns}
+::: {.column width="50%"}
+<h4 style="color: #8E44AD; margin: 0 0 0.3em;"><i class="mdi mdi-database"></i>&nbsp; Storage — S3 + Zenodo + local + GCS</h4>
+
+```{.python style="font-size: 0.62em;"}
+storage s3_aws:   provider="s3",     endpoint_url="https://s3.eu-central-1.amazonaws.com"
+storage refs_zen: provider="zenodo", doi="10.5281/zenodo.1234567"
+storage out_gcs:  provider="gcs",    project="korbel-out"
 
 rule align:
     input:
-        reads = storage.s3_aws("s3://run42/{sample}.fq.gz"),         # ◀ raw data on S3
-        ref   = storage.refs_zen("hg38.fa"),                          # ◀ versioned reference on Zenodo
-        bed   = "panels/exome.bed",                                   # ◀ local file (default fs)
+        reads = storage.s3_aws("s3://run42/{s}.fq.gz"),    # raw on S3
+        ref   = storage.refs_zen("hg38.fa"),                # versioned on Zenodo
+        bed   = "panels/exome.bed",                         # local (default fs)
     output:
-        storage.out_gcs("gs://korbel-out/run42/{sample}.bam"),        # ◀ outputs straight to GCS
-    threads: 8
-    conda: "envs/bwa.yaml"
-    shell: "bwa mem -t {threads} {input.ref} {input.reads} | samtools sort -o {output}"
+        storage.out_gcs("gs://korbel-out/{s}.bam"),         # output to GCS
+    shell:
+        "bwa mem {input.ref} {input.reads} | samtools sort -o {output}"
 ```
 
-::: {.columns style="margin-top: 0.5em;"}
-::: {.column width="50%"}
-<div style="padding: 0.5em 0.8em; background: #f4ecf7; border-left: 4px solid #8E44AD; border-radius: 4px; font-size: 0.78em;">
-<i class="mdi mdi-database"></i>&nbsp; **Storage plugins**: `fs` · `s3` · `gcs` · `azure` · `http` · `ftp` · `zenodo` · `xrootd` …
-</div>
+::: {style="font-size: 0.74em; color: #7f8c8d; margin-top: 0.3em;"}
+Plugins: `fs` · `s3` · `gcs` · `azure` · `http` · `ftp` · `zenodo` · `xrootd` …
 :::
+:::
+
 ::: {.column width="50%"}
-<div style="padding: 0.5em 0.8em; background: #e8f5f0; border-left: 4px solid #208F6E; border-radius: 4px; font-size: 0.78em;">
-<i class="mdi mdi-server-network"></i>&nbsp; **And the same for compute** — different rules can target different executors (SLURM, K8s, local) in one run via `set-resources`.
-</div>
+<h4 style="color: #8E44AD; margin: 0 0 0.3em;"><i class="mdi mdi-server-network"></i>&nbsp; Compute — SLURM + K8s + local</h4>
+
+```{.yaml filename="profile/config.yaml" style="font-size: 0.62em;"}
+# default: HPC
+executor: slurm
+jobs: 200
+
+# per-rule overrides
+set-resources:
+  bwa_align:           { executor: slurm,      mem_mb: 16000 }
+  call_variants:       { executor: slurm,      mem_mb: 32000 }
+  run_deepvariant:     { executor: kubernetes, _cores: 16    }   # GPU pool
+  build_summary_html:  { executor: local       }                  # head node
+```
+
+```{.bash style="font-size: 0.62em;"}
+pip install snakemake-executor-plugin-slurm \
+            snakemake-executor-plugin-kubernetes
+```
+
+::: {style="font-size: 0.74em; color: #7f8c8d; margin-top: 0.3em;"}
+Executors: `slurm` · `kubernetes` · `googlebatch` · `azure-batch` · `lsf` · `htcondor` · `flux` · `local` …
+:::
 :::
 :::
 
@@ -665,16 +745,25 @@ Helper: `plot-nanopub-knowledge-graph` ([repo](https://github.com/snakemake/snak
 <i class="mdi mdi-broadcast v9-icon"></i>
 <div class="v9-title">`stomp` — message bus</div>
 
-Publishes Snakemake events over a **STOMP** broker (RabbitMQ, ActiveMQ…).
-
-```bash
+```{.bash style="font-size: 0.66em;"}
 pip install snakemake-logger-plugin-stomp
 snakemake --logger stomp \
   --logger-stomp-host broker.embl.de \
-  --logger-stomp-destination "/queue/snakemake"
+  --logger-stomp-destination /queue/snakemake
 ```
 
-::: {style="font-size: 0.72em; color: #7f8c8d; margin-top: 0.3em;"}
+**One message per event** (JSON, ≈100 B):
+
+```{.json style="font-size: 0.6em;"}
+{"event":"job_finished","rule":"bwa_align",
+ "wildcards":{"s":"HG002"},"wallclock_s":312,
+ "exit_status":0,"cluster_jobid":"12345_3",
+ "workflow":"mosaicatcher","host":"node12"}
+```
+
+Drop into RabbitMQ → Logstash → ES / Grafana Loki.
+
+::: {style="font-size: 0.7em; color: #7f8c8d; margin-top: 0.3em;"}
 [plugins/logger/stomp](https://snakemake.github.io/snakemake-plugin-catalog/plugins/logger/stomp.html)
 :::
 :::
@@ -685,23 +774,30 @@ snakemake --logger stomp \
 <i class="mdi mdi-chart-line v9-icon"></i>
 <div class="v9-title">`prometheus` — metrics endpoint</div>
 
-Exposes job state, duration, success counts as a **Prometheus** scrape target — drop into your existing Grafana dashboards.
-
-```bash
+```{.bash style="font-size: 0.66em;"}
 pip install snakemake-logger-plugin-prometheus
 snakemake --logger prometheus \
   --logger-prometheus-port 9101
 ```
 
-::: {style="font-size: 0.72em; color: #7f8c8d; margin-top: 0.3em;"}
+**Scrape `:9101/metrics`** — labelled counters & histograms:
+
+```{.text style="font-size: 0.6em;"}
+# HELP snakemake_jobs_total Jobs by status
+# TYPE snakemake_jobs_total counter
+snakemake_jobs_total{rule="bwa_align",status="success"} 96
+snakemake_jobs_total{rule="bwa_align",status="failed"}  0
+snakemake_job_duration_seconds_bucket{rule="bwa_align",le="60"}  12
+snakemake_job_duration_seconds_bucket{rule="bwa_align",le="300"} 78
+```
+
+Grafana PromQL: `rate(snakemake_jobs_total{status="failed"}[5m])`.
+
+::: {style="font-size: 0.7em; color: #7f8c8d; margin-top: 0.3em;"}
 [plugins/logger/prometheus](https://snakemake.github.io/snakemake-plugin-catalog/plugins/logger/prometheus.html)
 :::
 :::
 :::
-:::
-
-::: {style="margin-top: 0.6em; padding: 0.55em 0.9em; background: #f4ecf7; border-left: 4px solid #8E44AD; border-radius: 4px; font-size: 0.82em;"}
-<i class="mdi mdi-information"></i>&nbsp; Both let you stop tailing log files and start querying a fleet of Snakemake runs across the cluster from one dashboard.
 :::
 
 ## Stability & backward-compatibility — issues to watch
@@ -863,15 +959,15 @@ Each trigger is **named & opt-out-able**: `--rerun-triggers mtime params input`.
 
 | Signal | Default | `cache 'deep'` |
 |---|---|---|
-| file **path** + **size** + **mtime** | ✅ | path+size |
-| file **SHA-256** | — | ✅ |
-| **`script:`** body (interpolated) | ✅ | ✅ |
-| **`container:`** directive (image ID) | ✅ | ✅ |
-| `ext` directive (≥ 23.09) | ✅ | ✅ |
-| other directives (cpus, memory…) | ❌ unless used in `script:` | same |
+| path + size + mtime | ✅ | path+size |
+| file SHA-256 | — | ✅ |
+| `script:` body | ✅ | ✅ |
+| `container:` ID | ✅ | ✅ |
+| `ext` directive | ✅ | ✅ |
+| other directives | ❌ * | ❌ * |
 
 ::: {style="font-size: 0.72em; margin-top: 0.3em;"}
-NF does hash code, container & ext. The *"all content-hashed"* claim is still false — file content needs `cache 'deep'`.
+* unless referenced in `script:` body via `${task.…}`. NF hashes code, container & ext; *"all content-hashed"* still false — file content needs `cache 'deep'`.
 :::
 :::
 :::
@@ -1097,64 +1193,109 @@ rule index:
 :::
 :::
 
-## 4 · Job arrays — packed 1-CPU tasks
+## 4 · Job arrays — pack 1-CPU tasks into one SLURM submission
 
 ::: {.columns}
 ::: {.column width="50%"}
 ```{.yaml filename="profile/config.yaml"}
 executor: slurm
-slurm-array-jobs: all
-slurm-array-limit: 1000
+slurm-array-jobs: all       # all eligible rules
+slurm-array-limit: 1000     # tasks / array
+
+# pack 10 single-CPU jobs into one array
 group-components:
-  - count_cell=10     # 10 cells / array
+  - count_cell=10
 ```
+
+For a per-cell rule that needs **1 CPU each**:
 
 ```python
 rule count_cell:
     input:  "bam/{cell}.bam"
     output: "counts/{cell}.tsv"
     threads: 1
-    group:   "count_cell"
+    group:   "count_cell"     # ← the array
+```
+
+What lands on SLURM:
+
+```bash
+$ squeue -u $USER
+JOBID         NAME       NCPUS  ST
+12345_[1-10]  count_cell    1   PD
+# 1 sbatch · 10 tasks · 1 cpu each
+# SLURM sees a 10-cpu allocation
 ```
 :::
 
 ::: {.column width="50%"}
 <div class="slurm-viz">
-<div class="slurm-header"><i class="mdi mdi-server-network"></i>&nbsp; <b>1 sbatch · 10 tasks · 10 cpus</b></div>
-<div class="array-row"><span class="array-tag">1–10</span><span class="array-step">1 cpu · cell A…J</span></div>
+<div class="slurm-header"><i class="mdi mdi-server-network"></i>&nbsp; <b>1 sbatch · 10 array tasks · 10 cpus total</b></div>
+<div class="array-row"><span class="array-tag">task 1</span><span class="array-step">1 cpu · cell A</span></div>
+<div class="array-row"><span class="array-tag">task 2</span><span class="array-step">1 cpu · cell B</span></div>
+<div class="array-row"><span class="array-tag">task 3</span><span class="array-step">1 cpu · cell C</span></div>
+<div class="array-row"><span class="array-tag">…</span><span class="array-step">…</span></div>
+<div class="array-row"><span class="array-tag">task 10</span><span class="array-step">1 cpu · cell J</span></div>
 </div>
 
-<div style="margin-top: 0.4em; padding: 0.45em 0.7em; background: #fdecea; border-left: 4px solid #C0392B; border-radius: 4px; font-size: 0.76em;">
-<i class="mdi mdi-alert-octagon" style="color: #C0392B;"></i>&nbsp; **Caveat:** on our setup the tasks ran **sequentially** inside the allocation — no speed-up. Test before relying on it.
+::: {style="margin-top: 0.6em; font-size: 0.76em;"}
+<i class="mdi mdi-lightbulb-on" style="color: #E67E22;"></i>&nbsp; *In theory:* big win for **many short 1-CPU jobs** (per-cell QC, per-chrom split) — one scheduler decision instead of N.
+:::
+
+<div style="margin-top: 0.4em; padding: 0.5em 0.8em; background: #fdecea; border-left: 4px solid #C0392B; border-radius: 4px; font-size: 0.76em;">
+<i class="mdi mdi-alert-octagon" style="color: #C0392B;"></i>&nbsp; **In practice (our setup): parallelism is lost.** The 10 tasks inside the group ran **sequentially** in the same allocation — same wallclock as N separate jobs, no speed-up. Test on your cluster.
+</div>
+
+<div style="margin-top: 0.3em; font-size: 0.74em; color: #7f8c8d;">
+<i class="mdi mdi-alert" style="color: #E67E22;"></i>&nbsp; Heterogeneous resources → don't mix into one array.
 </div>
 :::
 :::
 
 ## 5 · EESSI — env-modules with native optimisation
 
+::: {style="font-size: 0.9em; text-align: center; margin-bottom: 0.5em;"}
+**EESSI** = European Environment for Scientific Software Installations — a **CernVM-FS** stream of EasyBuild-compiled scientific software, **dispatched per microarchitecture** (`zen3`, `icelake`, `haswell` …), mountable on any HPC.
+:::
+
 ::: {.columns}
 ::: {.column width="55%"}
-**EESSI** = CernVM-FS stream of **EasyBuild-compiled** scientific software, dispatched per microarchitecture (`zen3`, `icelake`, `haswell` …).
+<h4 style="color: #E67E22; margin: 0 0 0.3em; text-align: center;">Bootstrap once</h4>
+
+```bash
+source /cvmfs/software.eessi.io/versions/2023.06/init/bash
+module load BWA SAMtools STAR
+```
+
+<h4 style="color: #E67E22; margin: 0.8em 0 0.3em; text-align: center;">Use per rule</h4>
 
 ```python
 rule align:
     envmodules: "BWA/0.7.17", "SAMtools/1.18"
     shell: "bwa mem ... | samtools sort ..."
 ```
+
 ```bash
 snakemake --sdm env-modules ...
 ```
 :::
 
 ::: {.column width="45%"}
-::: {style="font-size: 0.85em;"}
-<i class="mdi mdi-rocket-launch" style="color: #E67E22;"></i>&nbsp; No conda solve · no image pull<br/>
-<i class="mdi mdi-chip" style="color: #E67E22;"></i>&nbsp; CPU-tuned binaries → wallclock wins on AVX<br/>
-<i class="mdi mdi-earth" style="color: #E67E22;"></i>&nbsp; Same versions on any HPC mounting `/cvmfs`<br/>
-<i class="mdi mdi-cash-multiple" style="color: #E67E22;"></i>&nbsp; No per-user env duplication → quota saved
-:::
+<div style="background: linear-gradient(180deg, #fdebd0 0%, #fef5e7 100%); border: 1.5px solid #E67E22; border-radius: 10px; padding: 0.9em 1em;">
 
-::: {style="font-size: 0.72em; margin-top: 0.4em; color: #7f8c8d;"}
+<div style="font-size: 0.85em; margin: 0.2em 0;"><i class="mdi mdi-rocket-launch" style="color: #b9620a;"></i>&nbsp; <b>Fast</b> — no conda solve, no image pull · first job runs immediately</div>
+
+<div style="font-size: 0.85em; margin: 0.45em 0;"><i class="mdi mdi-chip" style="color: #b9620a;"></i>&nbsp; <b>Optimised</b> — CPU-tuned binaries → wallclock wins on AVX-heavy tools</div>
+
+<div style="font-size: 0.85em; margin: 0.45em 0;"><i class="mdi mdi-earth" style="color: #b9620a;"></i>&nbsp; <b>Portable</b> — identical versions across any HPC mounting `/cvmfs`</div>
+
+<div style="font-size: 0.85em; margin: 0.45em 0;"><i class="mdi mdi-shield-check" style="color: #b9620a;"></i>&nbsp; <b>Reproducible</b> — comparable to containers, no I/O overhead</div>
+
+<div style="font-size: 0.85em; margin: 0.45em 0 0.2em;"><i class="mdi mdi-cash-multiple" style="color: #b9620a;"></i>&nbsp; <b>Cheap</b> — zero per-user env duplication → group quota saved</div>
+
+</div>
+
+::: {style="font-size: 0.72em; margin-top: 0.4em; color: #7f8c8d; text-align: center;"}
 [eessi.io](https://www.eessi.io)
 :::
 :::
