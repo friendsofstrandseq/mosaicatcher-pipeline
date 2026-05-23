@@ -53,11 +53,11 @@ $code-block-font-size: 0.78em;
   margin-bottom: 0.5em;
 }
 
-/* Section dividers (slides with .section-divider class) */
-.reveal .slides > section.section-divider,
-.reveal .slides > section > section.section-divider {
+/* Section dividers — vertically center only the visible slide.
+   Scope to .present so hidden dividers keep reveal's display:none. */
+.reveal .slides > section.section-divider.present,
+.reveal .slides > section > section.section-divider.present {
   height: 100%;
-  min-height: 100%;
   top: 0 !important;
   display: flex !important;
   flex-direction: column;

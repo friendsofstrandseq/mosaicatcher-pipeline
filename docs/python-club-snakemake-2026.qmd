@@ -53,7 +53,7 @@ Wratten, Wilm, Göke — *Nat. Methods* 2021 · [10.1038/s41592-021-01254-9](htt
 ::: {.agenda-wide}
 - <i class="mdi mdi-rocket-launch"></i>&nbsp;**Snakemake refresher**
 - <i class="mdi mdi-puzzle"></i>&nbsp;**v7 → v9** &nbsp;<span class="agenda-date">2022 → 2026</span>
-- <i class="mdi mdi-scale-balance"></i>&nbsp;**vs Nextflow** &nbsp;<span class="agenda-date">options comparison</span>
+- <i class="mdi mdi-scale-balance"></i>&nbsp;**vs Nextflow**
 - <i class="mdi mdi-server-network"></i>&nbsp;**EMBL HPC**
 :::
 
@@ -264,37 +264,45 @@ DAG image: NBIS reproducible-research course · MRSA tutorial rulegraph
 ::: {.column width="46%"}
 **Pattern.** Step 1 produces an **actionable verdict** (a table, a pass/fail list). Step 2 must **only run on the survivors** — the DAG branches that should never execute are pruned at runtime.
 
-```{.snakemake style="font-size: 0.72em;"}
-# Step 1 — score every cell, write a verdict table
+```{.snakemake style="font-size: 0.66em;"}
+# upstream — produce per-cell counts
+rule count_cell:
+    input:  "bam/{cell}.bam"
+    output: "counts/{cell}.tsv"
+
+# checkpoint — score every cell, write a verdict table
 checkpoint filter_cells:
     input:  expand("counts/{cell}.tsv", cell=ALL_CELLS)
     output: "qc/verdict.tsv"           # columns: cell, keep(bool)
     script: "scripts/qc_filter.py"
 
-# Step 2 — per surviving cell (normal rule)
+# per surviving cell (normal rule)
 rule call_sv:
     input:  "counts/{cell}.tsv"
     output: "sv/{cell}.calls.tsv"
-    shell:  "call-sv {input} > {output}"
 
-# Aggregation: .get() blocks until the checkpoint is done,
-# then the DAG is re-evaluated with the cells we keep
+# input function — .get() blocks on the checkpoint, then
+# the DAG is re-evaluated with only the cells we keep
 def passing(wildcards):
     verdict = checkpoints.filter_cells.get().output[0]
-    df = pd.read_table(verdict)
-    kept = df.loc[df["keep"], "cell"]
+    kept = pd.read_table(verdict).query("keep").cell
     return expand("sv/{cell}.calls.tsv", cell=kept)
 
-rule all:
-    input: passing
+rule collect:                          # ◀ consumes the function
+    input:  passing
+    output: "sv/all_calls.tsv"
 ```
 
-::: {style="font-size: 0.74em; color: #7f8c8d; margin-top: 0.3em;"}
+::: {style="font-size: 0.72em; color: #7f8c8d; margin-top: 0.3em;"}
 <i class="mdi mdi-alert" style="color: #E67E22;"></i>&nbsp; Replaces legacy `dynamic()` — removed in v8.
 :::
 :::
 
 ::: {.column width="54%"}
+::: {style="font-size: 0.74em; color: #34495E; text-align: center; margin: 0 0 0.4em; line-height: 1.4;"}
+The checkpoint emits the verdict; the input function then **prunes** the per-cell edges — they are discovered at runtime, not declared up-front.
+:::
+
 ```{mermaid}
 %%| eval: true
 %%| echo: false
@@ -306,12 +314,12 @@ flowchart TD
   C4["count cell_4"] --> CP
   C5["count cell_5"] --> CP
   CP["checkpoint<br/>filter_cells"]
-  CP --> SV1["sv calls cell_1 ✓"]
+  CP --> SV1["call_sv cell_1 ✓"]
   CP -. skipped .-> X2["cell_2 ✗"]
-  CP --> SV3["sv calls cell_3 ✓"]
+  CP --> SV3["call_sv cell_3 ✓"]
   CP -. skipped .-> X4["cell_4 ✗"]
-  CP --> SV5["sv calls cell_5 ✓"]
-  SV1 --> RA["rule all"]
+  CP --> SV5["call_sv cell_5 ✓"]
+  SV1 --> RA["collect"]
   SV3 --> RA
   SV5 --> RA
   classDef cp fill:#fef5e7,stroke:#E67E22,color:#6e3906,stroke-width:2px;
@@ -325,11 +333,6 @@ flowchart TD
   class C1,C2,C3,C4,C5 src
   class RA goal
 ```
-
-::: {style="font-size: 0.72em; color: #7f8c8d; text-align: center; margin-top: 0.2em; line-height: 1.4;"}
-Step 1 emits the verdict.<br/>
-Step 2's edges are **pruned**, not declared up-front.
-:::
 :::
 :::
 
@@ -386,32 +389,20 @@ rule plot_qc:
 Real MosaiCatcher run — workflow, statistics, configuration, results & captions, in one self-contained HTML.
 :::
 
-## Reuse & combine environments
+## Conda + container — two ways to combine
 
 ::: {.columns}
 ::: {.column width="50%"}
-<h4 style="color: #208F6E; margin-top: 0;"><i class="mdi mdi-recycle"></i>&nbsp; Reuse an existing conda env</h4>
+<h4 style="color: #208F6E; margin-top: 0;"><i class="mdi mdi-layers-triple"></i>&nbsp; Ad hoc — conda *inside* a global container</h4>
 
-Point a rule at an env that's **already on disk** — no solve, no YAML:
+A **global** `container:` statement (top of the Snakefile) + per-rule `conda:` → Snakemake enters the container, **then builds the env inside it**:
 
-```{.snakemake style="font-size: 0.74em;"}
+```{.snakemake style="font-size: 0.7em;"}
+# top of the Snakefile (global, not per-rule)
+container: "docker://condaforge/miniforge3"
+
 rule call_snvs:
-    conda: "/g/shared/envs/gatk4"   # prefix path
-    shell: "gatk HaplotypeCaller ..."
-```
-
-::: {style="font-size: 0.78em; color: #7f8c8d; margin-top: 0.3em;"}
-A path (not a `.yaml`) is treated as a **named/prefix env** — handy for big shared envs you don't want Snakemake to rebuild.
-:::
-:::
-
-::: {.column width="50%"}
-<h4 style="color: #208F6E; margin-top: 0;"><i class="mdi mdi-layers-triple"></i>&nbsp; Ad hoc conda *inside* a container</h4>
-
-```{.snakemake style="font-size: 0.74em;"}
-rule call_snvs:
-    container: "docker://condaforge/miniforge3"
-    conda:     "envs/gatk.yaml"
+    conda: "envs/gatk.yaml"
     shell: "gatk HaplotypeCaller ..."
 ```
 
@@ -419,45 +410,33 @@ rule call_snvs:
 snakemake --sdm conda apptainer
 ```
 
-::: {style="font-size: 0.78em; color: #7f8c8d; margin-top: 0.3em;"}
-Snakemake builds the conda env **inside** the container at runtime — pinned base image + pinned packages, fully reproducible.
-:::
+::: {style="font-size: 0.74em; color: #7f8c8d; margin-top: 0.3em;"}
+Pinned OS **and** pinned packages, no bespoke image to build. Env hash includes the image URL.
 :::
 :::
 
-## `--containerize` — freeze all envs into one image
-
-::: {.columns}
-::: {.column width="52%"}
-Turn every `conda:` directive in the workflow into a **single Dockerfile**:
+::: {.column width="50%"}
+<h4 style="color: #208F6E; margin-top: 0;"><i class="mdi mdi-cube-send"></i>&nbsp; Bake — `--containerize` all envs into one image</h4>
 
 ```bash
 snakemake --containerize > Dockerfile
-docker build -t myorg/mc-pipeline:2.5.0 .
+docker build -t myorg/mc:2.5.0 .
 ```
 
-Then pin the whole workflow to that one image:
+Then pin the workflow to that prebuilt image:
 
-```{.snakemake style="font-size: 0.74em;"}
-containerized: "docker://myorg/mc-pipeline:2.5.0"
+```{.snakemake style="font-size: 0.7em;"}
+# top of the Snakefile
+containerized: "docker://myorg/mc:2.5.0"
 
 rule call_snvs:
-    conda: "envs/gatk.yaml"   # baked into the image
+    conda: "envs/gatk.yaml"   # baked in
     shell: "gatk HaplotypeCaller ..."
 ```
+
+::: {style="font-size: 0.74em; color: #7f8c8d; margin-top: 0.3em;"}
+One image holds **all** envs → no per-node solves; ship to CI / air-gapped HPC; reproducible to the byte.
 :::
-
-::: {.column width="48%"}
-<div style="background: #e8f5f0; border-left: 4px solid #208F6E; border-radius: 8px; padding: 0.9em 1em; font-size: 0.84em;">
-<i class="mdi mdi-cube-send" style="color: #208F6E; font-size: 1.3em;"></i>
-
-**Why**
-
-- one image holds **all** rule envs → no per-node conda solves
-- ship it to collaborators / CI / an air-gapped HPC
-- `containerized:` makes Snakemake pull it instead of re-solving
-- reproducible to the byte, archivable alongside the paper
-</div>
 :::
 :::
 
@@ -465,7 +444,7 @@ rule call_snvs:
 
 ::: {.columns}
 ::: {.column width="55%"}
-Since v8 the engine is importable — no `subprocess`, no CLI string. A **watcher** can detect new data and launch a run **on the fly**:
+Since v8 the engine is **importable** — no `subprocess`, no CLI string. Snakemake becomes a **library you embed in a larger stack** (a service, a watcher, a Nextflow-style orchestrator, a notebook):
 
 ```{.python style="font-size: 0.6em;"}
 from snakemake.api import (
@@ -495,23 +474,19 @@ with SnakemakeApi(OutputSettings(dryrun=False)) as api:
 
 ::: {.column width="45%"}
 <div style="background: #e8f5f0; border-left: 4px solid #208F6E; border-radius: 8px; padding: 0.9em 1em; font-size: 0.84em;">
-<i class="mdi mdi-robot-outline" style="color: #208F6E; font-size: 1.3em;"></i>
+<i class="mdi mdi-engine-outline" style="color: #208F6E; font-size: 1.3em;"></i>
 
-**A watcher service**
+**Snakemake as an engine**
 
-1. polls for a new sequencing run landing on disk
-2. builds the `config` dict in Python
-3. calls the API → submits the SLURM DAG
-4. no human, no shell — fully automated
+- **watcher** — auto-launch on new data landing
+- **web service / REST** — run pipelines on request
+- **orchestrator step** — a node inside a bigger DAG
+- **notebook** — drive runs interactively, inspect the DAG
 
 ::: {style="font-size: 0.82em; margin-top: 0.5em; color: #34495E;"}
-The whole CLI is just a thin wrapper over these `*Settings` objects — anything the CLI does, you can do programmatically.
+The CLI is just a thin wrapper over these `*Settings` objects — anything the CLI does, you can do programmatically.
 :::
 </div>
-
-::: {style="font-size: 0.68em; color: #7f8c8d; margin-top: 0.4em;"}
-Real example: `workflow/scripts/toolbox/watcher/` in this repo.
-:::
 :::
 :::
 
@@ -812,48 +787,40 @@ Helper: `plot-nanopub-knowledge-graph` ([repo](https://github.com/snakemake/snak
 ## Logger plugins — pluggable monitoring (v9)
 
 ::: {style="font-size: 0.88em; margin-bottom: 0.5em;"}
-Since v9, **`--logger <name>`** swaps out how Snakemake emits log events. A plugin is a package `snakemake-logger-plugin-<name>` exposing a `LogHandler`; it receives every `LogRecord` (with a typed `event`: `job_info`, `job_finished`, `run_info`, …).
+**`--logger <name>`** swaps out how Snakemake emits events — a plugin just consumes the event stream (`job_info`, `job_finished`, `run_info`, …) and routes it somewhere.
 :::
 
 ::: {.columns}
 ::: {.column width="50%"}
 ::: {.v9-card}
 <i class="mdi mdi-monitor-dashboard v9-icon"></i>
-<div class="v9-title">Confirmed on PyPI</div>
-<ul>
-<li>`snkmt` — SQLite + TUI dashboard <span style="color:#7f8c8d">(cademirch)</span></li>
-<li>`rich` — pretty terminal progress bars</li>
-<li>`flowo` — flow-style live view</li>
-</ul>
+<div class="v9-title">Dashboards</div>
+
+Live progress & history beyond the scrolling log:
 
 ```bash
 pip install snakemake-logger-plugin-snkmt
 snakemake --logger snkmt --jobs 100
 ```
+
+<span style="font-size: 0.82em; color: #7f8c8d;">On PyPI today: `snkmt` (SQLite + TUI), `rich`, `flowo`.</span>
 :::
 :::
 
 ::: {.column width="50%"}
 ::: {.v9-card}
-<i class="mdi mdi-tools v9-icon"></i>
-<div class="v9-title">The interface (build your own)</div>
+<i class="mdi mdi-broadcast v9-icon"></i>
+<div class="v9-title">Fleet observability</div>
 
-```{.python style="font-size: 0.62em;"}
-# snakemake_logger_plugin_<name>/__init__.py
-class LogHandler(logging.Handler):
-    def emit(self, record):
-        ev = getattr(record, "event", None)
-        if ev == LogEvent.JOB_FINISHED:
-            push_metric(record.rule, record....)
-```
+Route events into your monitoring stack — a **message bus** (STOMP/AMQP) or a **metrics endpoint** (Prometheus / Grafana) — to watch many runs across the cluster from one place.
 
-Any sink fits this: a STOMP/AMQP bus, a Prometheus push-gateway, OpenTelemetry…
+<span style="font-size: 0.82em; color: #7f8c8d;">The interface makes these easy; check the catalog for what's released.</span>
 :::
 :::
 :::
 
-::: {style="margin-top: 0.6em; padding: 0.5em 0.9em; background: #fef5e7; border-left: 4px solid #E67E22; border-radius: 4px; font-size: 0.78em;"}
-<i class="mdi mdi-alert" style="color: #E67E22;"></i>&nbsp; **Honest caveat.** I haven't verified a published `stomp` / `prometheus` logger plugin — the **interface** makes them trivial, but check the [catalog](https://snakemake.github.io/snakemake-plugin-catalog/) for what's actually released before quoting one.
+::: {style="margin-top: 0.6em; font-size: 0.78em; text-align: center; color: #7f8c8d;"}
+<i class="mdi mdi-link" style="color: #8E44AD;"></i>&nbsp; [snakemake-plugin-catalog · logger](https://snakemake.github.io/snakemake-plugin-catalog/)
 :::
 
 ## Stability & backward-compatibility — issues to watch
@@ -905,7 +872,7 @@ The engine moves faster than user pipelines. Same Snakefile, different minor →
 <h1 style="color: #fff;">EMBL HPC</h1>
 :::
 
-## Five pillars
+## What we tune on the cluster
 
 <div class="pillars-table">
 <div class="pillar-row"><i class="mdi mdi-cached pillar-cell-icon"></i><div class="pillar-cell-name">Workflow caching</div><code class="pillar-cell-code">SNAKEMAKE_OUTPUT_CACHE</code></div>
@@ -913,6 +880,7 @@ The engine moves faster than user pipelines. Same Snakefile, different minor →
 <div class="pillar-row"><i class="mdi mdi-database pillar-cell-icon"></i><div class="pillar-cell-name">Storage staging</div><code class="pillar-cell-code">fs plugin · scratch</code></div>
 <div class="pillar-row"><i class="mdi mdi-group pillar-cell-icon"></i><div class="pillar-cell-name">Grouping &amp; arrays</div><code class="pillar-cell-code">group · slurm-array-jobs</code></div>
 <div class="pillar-row"><i class="mdi mdi-package-variant pillar-cell-icon"></i><div class="pillar-cell-name">EESSI / env-mods</div><code class="pillar-cell-code">--sdm env-modules</code></div>
+<div class="pillar-row"><i class="mdi mdi-chart-line pillar-cell-icon"></i><div class="pillar-cell-name">Job optimisation</div><code class="pillar-cell-code">slurm-efficiency-report</code></div>
 </div>
 
 ## 1 · Caching — workflow + containers
@@ -1164,6 +1132,31 @@ snakemake --sdm env-modules ...
 :::
 :::
 
+## 6 · Job optimisation — efficiency report
+
+::: {style="font-size: 0.92em; margin-bottom: 0.5em;"}
+The SLURM executor emits a **per-rule CPU & memory utilisation report** at the end of each run — read it to right-size `set-resources:` (rules that ask for 32 GB but use 2 GB, or run at 20% CPU).
+:::
+
+```{.yaml filename="profile/config.yaml"}
+slurm-efficiency-report:       true
+slurm-efficiency-report-path:  efficiency.txt
+slurm-efficiency-threshold:    0.8        # flag rules below 80%
+```
+
+::: {style="text-align: center; margin-top: 0.6em;"}
+<span class="flow-strip">
+<span class="flow-box">run</span>
+<span class="flow-arrow">→</span>
+<span class="flow-box">efficiency report</span>
+<span class="flow-arrow">→</span>
+<span class="flow-box">tune set-resources</span>
+<span class="flow-arrow">→</span>
+<span class="flow-box">cheaper next run</span>
+</span>
+:::
+
+
 ## Bonus · dependency cooldowns
 
 ::: {style="font-size: 0.9em; margin-bottom: 0.5em;"}
@@ -1211,30 +1204,6 @@ openssl = "0d"
 
 ::: {style="font-size: 0.7em; margin-top: 0.6em; color: #7f8c8d; text-align: center;"}
 7 days is the commonly cited default · [Richard Si — *What's new in pip 26.1*](https://ichard26.github.io/blog/2026/04/whats-new-in-pip-26.1/)
-:::
-
-## 6 · Job optimisation — efficiency report
-
-::: {style="font-size: 0.92em; margin-bottom: 0.5em;"}
-The SLURM executor emits a **per-rule CPU & memory utilisation report** at the end of each run — read it to right-size `set-resources:` (rules that ask for 32 GB but use 2 GB, or run at 20% CPU).
-:::
-
-```{.yaml filename="profile/config.yaml"}
-slurm-efficiency-report:       true
-slurm-efficiency-report-path:  efficiency.txt
-slurm-efficiency-threshold:    0.8        # flag rules below 80%
-```
-
-::: {style="text-align: center; margin-top: 0.6em;"}
-<span class="flow-strip">
-<span class="flow-box">run</span>
-<span class="flow-arrow">→</span>
-<span class="flow-box">efficiency report</span>
-<span class="flow-arrow">→</span>
-<span class="flow-box">tune set-resources</span>
-<span class="flow-arrow">→</span>
-<span class="flow-box">cheaper next run</span>
-</span>
 :::
 
 ## Further reading { background-color="#0f3a30"}
