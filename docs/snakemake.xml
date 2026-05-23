@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE language SYSTEM "language.dtd">
+<language name="Snakemake" section="Scientific"
+          extensions="*.smk;Snakefile"
+          mimetype="text/x-snakemake"
+          version="2" kateversion="5.0"
+          author="Python Club" license="MIT" style="python">
+  <highlighting>
+    <list name="blocks">
+      <item>rule</item>
+      <item>checkpoint</item>
+      <item>module</item>
+      <item>subworkflow</item>
+      <item>scattergather</item>
+    </list>
+    <list name="directives">
+      <item>input</item>
+      <item>output</item>
+      <item>params</item>
+      <item>log</item>
+      <item>shell</item>
+      <item>run</item>
+      <item>script</item>
+      <item>notebook</item>
+      <item>wrapper</item>
+      <item>cwl</item>
+      <item>threads</item>
+      <item>resources</item>
+      <item>conda</item>
+      <item>container</item>
+      <item>containerized</item>
+      <item>envmodules</item>
+      <item>benchmark</item>
+      <item>priority</item>
+      <item>group</item>
+      <item>cache</item>
+      <item>retries</item>
+      <item>wildcard_constraints</item>
+      <item>message</item>
+      <item>shadow</item>
+      <item>default_target</item>
+      <item>localrule</item>
+      <item>handover</item>
+      <item>template_engine</item>
+    </list>
+    <list name="functions">
+      <item>expand</item>
+      <item>glob_wildcards</item>
+      <item>multiext</item>
+      <item>temp</item>
+      <item>protected</item>
+      <item>directory</item>
+      <item>touch</item>
+      <item>ancient</item>
+      <item>pipe</item>
+      <item>report</item>
+      <item>ensure</item>
+      <item>unpack</item>
+      <item>storage</item>
+      <item>config</item>
+      <item>checkpoints</item>
+      <item>workflow</item>
+      <item>subpath</item>
+    </list>
+    <list name="keywords">
+      <item>and</item>
+      <item>assert</item>
+      <item>break</item>
+      <item>class</item>
+      <item>continue</item>
+      <item>def</item>
+      <item>del</item>
+      <item>elif</item>
+      <item>else</item>
+      <item>except</item>
+      <item>finally</item>
+      <item>for</item>
+      <item>from</item>
+      <item>global</item>
+      <item>if</item>
+      <item>import</item>
+      <item>in</item>
+      <item>is</item>
+      <item>lambda</item>
+      <item>nonlocal</item>
+      <item>not</item>
+      <item>or</item>
+      <item>pass</item>
+      <item>raise</item>
+      <item>return</item>
+      <item>try</item>
+      <item>while</item>
+      <item>with</item>
+      <item>yield</item>
+      <item>True</item>
+      <item>False</item>
+      <item>None</item>
+    </list>
+    <contexts>
+      <context name="Normal" attribute="Normal Text" lineEndContext="#stay">
+        <keyword attribute="Block" String="blocks"/>
+        <keyword attribute="Directive" String="directives"/>
+        <keyword attribute="Function" String="functions"/>
+        <keyword attribute="Keyword" String="keywords"/>
+        <DetectChar attribute="Comment" context="Comment" char="#"/>
+        <Detect2Chars attribute="String" context="TripleString" char="&quot;" char1="&quot;" beginRegion="TripleString"/>
+        <DetectChar attribute="String" context="String" char="&quot;"/>
+        <DetectChar attribute="String" context="StringSQ" char="'"/>
+        <Float attribute="Float"/>
+        <Int attribute="Number"/>
+      </context>
+      <context name="Comment" attribute="Comment" lineEndContext="#pop"/>
+      <context name="TripleString" attribute="String" lineEndContext="#stay">
+        <Detect2Chars attribute="String" context="#pop" char="&quot;" char1="&quot;" endRegion="TripleString"/>
+      </context>
+      <context name="String" attribute="String" lineEndContext="#pop">
+        <DetectChar attribute="String" context="#pop" char="&quot;"/>
+      </context>
+      <context name="StringSQ" attribute="String" lineEndContext="#pop">
+        <DetectChar attribute="String" context="#pop" char="'"/>
+      </context>
+    </contexts>
+    <itemDatas>
+      <itemData name="Normal Text" defStyleNum="dsNormal"/>
+      <itemData name="Block"     defStyleNum="dsKeyword" bold="1"/>
+      <itemData name="Directive" defStyleNum="dsAttribute" bold="1"/>
+      <itemData name="Function"  defStyleNum="dsBuiltIn"/>
+      <itemData name="Keyword"   defStyleNum="dsKeyword"/>
+      <itemData name="Comment"   defStyleNum="dsComment"/>
+      <itemData name="String"    defStyleNum="dsString"/>
+      <itemData name="Number"    defStyleNum="dsDecVal"/>
+      <itemData name="Float"     defStyleNum="dsFloat"/>
+    </itemDatas>
+  </highlighting>
+  <general>
+    <comments>
+      <comment name="singleLine" start="#"/>
+    </comments>
+    <keywords casesensitive="1"/>
+  </general>
+</language>

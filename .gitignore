@@ -74,6 +74,7 @@ workflow/test.txt
 !docs/python-club-snakemake-2026.html
 !docs/python-club-snakemake-2026_files/
 !docs/python-club-snakemake-2026_files/**
+!docs/mosaicatcher-report-example.html
 !docs/mermaid-revealjs-fix.html
 !workflow/data/segdups/segDups_hg38_UCSCtrack.bed.gz
 !workflow/data/segdups/segDups_hg19_UCSCtrack.bed.gz

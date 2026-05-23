@@ -54,13 +54,15 @@ $code-block-font-size: 0.78em;
 }
 
 /* Section dividers (slides with .section-divider class) */
-.reveal section.section-divider {
+.reveal .slides > section.section-divider,
+.reveal .slides > section > section.section-divider {
+  height: 100%;
+  min-height: 100%;
+  top: 0 !important;
   display: flex !important;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100%;
-  min-height: 100vh;
   text-align: center;
 }
 .reveal section.section-divider > div,
@@ -865,6 +867,33 @@ $code-block-font-size: 0.78em;
   font-weight: 600;
   white-space: nowrap;
   flex-shrink: 0;
+}
+
+/* Single-row dataflow strip (homogeneous monospace, one line) */
+.reveal .flow-strip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.5em 1em;
+  background: #e8f1f8;
+  border: 1.5px solid #2980B9;
+  border-radius: 10px;
+  font-family: "JetBrains Mono", monospace;
+  white-space: nowrap;
+}
+.reveal .flow-strip .flow-box {
+  background: #fff;
+  color: #1F3A5F;
+  font-size: 0.7em;
+  font-weight: 600;
+  padding: 0.3em 0.7em;
+  border-radius: 5px;
+  border: 1px solid #c5d4e3;
+}
+.reveal .flow-strip .flow-arrow {
+  color: #2980B9;
+  font-size: 0.7em;
+  font-weight: 600;
 }
 
 /* Screenshot placeholder card */

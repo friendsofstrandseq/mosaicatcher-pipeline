@@ -32,6 +32,8 @@ format:
 execute:
   echo: true
   eval: false
+syntax-definitions:
+  - snakemake.xml
 ---
 
 ## Where workflow managers fit { background-color="#34495E" }
@@ -114,27 +116,28 @@ Same intent — *align each FASTQ, call variants per sample, merge into a cohort
 ::: {.column width="50%"}
 <h4 style="color: #7f8c8d; margin: 0 0 0.3em;"><i class="mdi mdi-script-text-outline"></i>&nbsp; Bash-style pseudo-script</h4>
 
-```{.bash style="font-size: 0.7em;"}
+```{.bash style="font-size: 0.82em;"}
 for S in A B C; do
   bwa mem ref fq/$S.fq.gz \
     | samtools sort -o bam/$S.bam
-  gatk HaplotypeCaller -I bam/$S.bam \
-    -O vcf/$S.vcf
+  gatk HaplotypeCaller \
+    -I bam/$S.bam -O vcf/$S.vcf
 done
 
-bcftools merge vcf/A.vcf vcf/B.vcf vcf/C.vcf \
+bcftools merge \
+  vcf/A.vcf vcf/B.vcf vcf/C.vcf \
   > vcf/cohort.vcf
 ```
 
-::: {style="font-size: 0.74em; color: #7f8c8d; margin-top: 0.3em;"}
-Linear · no parallelism · re-runs everything · no provenance · breaks on partial failure.
+::: {style="font-size: 0.78em; color: #7f8c8d; margin-top: 0.3em;"}
+Linear · no parallelism · re-runs everything · no provenance.
 :::
 :::
 
 ::: {.column width="50%"}
 <h4 style="color: #208F6E; margin: 0 0 0.3em;"><i class="mdi mdi-snake"></i>&nbsp; Snakefile</h4>
 
-```{.python style="font-size: 0.68em;"}
+```{.snakemake style="font-size: 0.8em;"}
 SAMPLES = ["A", "B", "C"]
 
 rule all:
@@ -156,8 +159,8 @@ rule merge:
     shell:  "bcftools merge {input} > {output}"
 ```
 
-::: {style="font-size: 0.74em; color: #208F6E; margin-top: 0.3em;"}
-Parallel by default · resumable · per-rule env · DAG known up-front.
+::: {style="font-size: 0.78em; color: #208F6E; margin-top: 0.3em;"}
+Parallel by default · resumable · per-rule env · DAG up-front.
 :::
 :::
 :::
@@ -195,13 +198,13 @@ A **pipeline is organised as a list of rules**. Each rule is **one step** — *e
 ::: {.idea-card}
 <i class="mdi mdi-package-variant idea-icon"></i>
 <div class="big-label">Env per rule</div>
-<div class="sub-label">conda · container</div>
+<div class="sub-label">conda · container · module</div>
 :::
 :::
 :::
 :::
 
-```{.python}
+```{.snakemake}
 rule align:
     input:   "fastq/{sample}.fq.gz"          # wildcards: {sample}
     output:  "bam/{sample}.bam"
@@ -261,19 +264,27 @@ DAG image: NBIS reproducible-research course · MRSA tutorial rulegraph
 ::: {.column width="46%"}
 **Pattern.** Step 1 produces an **actionable verdict** (a table, a pass/fail list). Step 2 must **only run on the survivors** — the DAG branches that should never execute are pruned at runtime.
 
-```{.python style="font-size: 0.74em;"}
-# Step 1 — runs all cells, decides who passes
+```{.snakemake style="font-size: 0.72em;"}
+# Step 1 — score every cell, write a verdict table
 checkpoint filter_cells:
     input:  expand("counts/{cell}.tsv", cell=ALL_CELLS)
-    output: "qc/passing_cells.tsv"
+    output: "qc/verdict.tsv"           # columns: cell, keep(bool)
     script: "scripts/qc_filter.py"
 
-def passing(wildcards):
-    f = checkpoints.filter_cells.get().output[0]
-    keep = pd.read_table(f).query("pass").cell.tolist()
-    return expand("sv/{cell}.calls.tsv", cell=keep)
+# Step 2 — per surviving cell (normal rule)
+rule call_sv:
+    input:  "counts/{cell}.tsv"
+    output: "sv/{cell}.calls.tsv"
+    shell:  "call-sv {input} > {output}"
 
-# Step 2 — only the passing cells get expanded
+# Aggregation: .get() blocks until the checkpoint is done,
+# then the DAG is re-evaluated with the cells we keep
+def passing(wildcards):
+    verdict = checkpoints.filter_cells.get().output[0]
+    df = pd.read_table(verdict)
+    kept = df.loc[df["keep"], "cell"]
+    return expand("sv/{cell}.calls.tsv", cell=kept)
+
 rule all:
     input: passing
 ```
@@ -315,8 +326,9 @@ flowchart TD
   class RA goal
 ```
 
-::: {style="font-size: 0.72em; color: #7f8c8d; text-align: center; margin-top: 0.2em;"}
-Step 1 emits the verdict · Step 2's edges are **pruned**, not declared up-front.
+::: {style="font-size: 0.72em; color: #7f8c8d; text-align: center; margin-top: 0.2em; line-height: 1.4;"}
+Step 1 emits the verdict.<br/>
+Step 2's edges are **pruned**, not declared up-front.
 :::
 :::
 :::
@@ -327,37 +339,37 @@ Step 1 emits the verdict · Step 2's edges are **pruned**, not declared up-front
 ::: {.column width="50%"}
 <h4 style="color: #208F6E;"><i class="mdi mdi-anvil"></i>&nbsp; Per-rule software · 3 options</h4>
 
-```python
+```{.snakemake style="font-size: 0.78em;"}
 rule call_snvs:
     conda:      "envs/gatk.yaml"
-    container:  "docker://broadinstitute/gatk:4.5"
+    container:  "docker://.../gatk:4.5"
     envmodules: "GATK/4.5"
     shell: "gatk HaplotypeCaller ..."
 ```
-Pick one or compose (`--sdm conda apptainer`).
+
+::: {style="white-space: nowrap; font-size: 0.92em;"}
+Pick one, or compose: `--sdm conda apptainer`
+:::
 :::
 
 ::: {.column width="50%"}
 <h4 style="color: #208F6E;"><i class="mdi mdi-file-document"></i>&nbsp; Reports — auto since 9.1</h4>
 
-```bash
-snakemake --report report.html --report-after-run
-```
-
-```{.python style="font-size: 0.7em;"}
+```{.snakemake style="font-size: 0.68em;"}
 rule plot_qc:
-    input:  "qc/{s}.tsv"
     output: report(
         "plots/{s}.svg",
-        caption="report/qc.rst",
-        category="QC",
-        labels={"sample": "{s}"},
+        caption="report/qc.rst",     # ◀ method text
+        category="QC",               # ◀ top-level tab
+        subcategory="Per cell",      # ◀ nested group
+        labels={"sample": "{s}"},    # ◀ searchable table
+        patterns=["{name}.svg"],     # ◀ dir → many files
     )
     script: "scripts/plot_qc.py"
 ```
 
-::: {style="font-size: 0.7em; color: #7f8c8d; margin-top: 0.2em;"}
-`--report-after-run` (v9.1, Mar 2025) — no second run.
+::: {style="font-size: 0.68em; color: #7f8c8d; margin-top: 0.2em;"}
+`snakemake --report report.html --report-after-run` (v9.1) — auto, no second run.
 :::
 :::
 :::
@@ -365,13 +377,142 @@ rule plot_qc:
 ## What a Snakemake report looks like
 
 ::: {style="text-align: center;"}
-<iframe src="https://snakemake.github.io/resources/report.html"
+<iframe src="mosaicatcher-report-example.html"
         style="width: 100%; height: 600px; border: 1px solid #208F6E; border-radius: 8px; box-shadow: 0 4px 14px rgba(0,0,0,0.2); background: white;"
         loading="lazy"></iframe>
 :::
 
 ::: {style="text-align: center; font-size: 0.65em; color: #7f8c8d; margin-top: 0.3em;"}
-Live example · <a href="https://snakemake.github.io/resources/report.html">snakemake.github.io/resources/report.html</a> — workflow, statistics, configuration, results & their captions, in one self-contained HTML.
+Real MosaiCatcher run — workflow, statistics, configuration, results & captions, in one self-contained HTML.
+:::
+
+## Reuse & combine environments
+
+::: {.columns}
+::: {.column width="50%"}
+<h4 style="color: #208F6E; margin-top: 0;"><i class="mdi mdi-recycle"></i>&nbsp; Reuse an existing conda env</h4>
+
+Point a rule at an env that's **already on disk** — no solve, no YAML:
+
+```{.snakemake style="font-size: 0.74em;"}
+rule call_snvs:
+    conda: "/g/shared/envs/gatk4"   # prefix path
+    shell: "gatk HaplotypeCaller ..."
+```
+
+::: {style="font-size: 0.78em; color: #7f8c8d; margin-top: 0.3em;"}
+A path (not a `.yaml`) is treated as a **named/prefix env** — handy for big shared envs you don't want Snakemake to rebuild.
+:::
+:::
+
+::: {.column width="50%"}
+<h4 style="color: #208F6E; margin-top: 0;"><i class="mdi mdi-layers-triple"></i>&nbsp; Ad hoc conda *inside* a container</h4>
+
+```{.snakemake style="font-size: 0.74em;"}
+rule call_snvs:
+    container: "docker://condaforge/miniforge3"
+    conda:     "envs/gatk.yaml"
+    shell: "gatk HaplotypeCaller ..."
+```
+
+```bash
+snakemake --sdm conda apptainer
+```
+
+::: {style="font-size: 0.78em; color: #7f8c8d; margin-top: 0.3em;"}
+Snakemake builds the conda env **inside** the container at runtime — pinned base image + pinned packages, fully reproducible.
+:::
+:::
+:::
+
+## `--containerize` — freeze all envs into one image
+
+::: {.columns}
+::: {.column width="52%"}
+Turn every `conda:` directive in the workflow into a **single Dockerfile**:
+
+```bash
+snakemake --containerize > Dockerfile
+docker build -t myorg/mc-pipeline:2.5.0 .
+```
+
+Then pin the whole workflow to that one image:
+
+```{.snakemake style="font-size: 0.74em;"}
+containerized: "docker://myorg/mc-pipeline:2.5.0"
+
+rule call_snvs:
+    conda: "envs/gatk.yaml"   # baked into the image
+    shell: "gatk HaplotypeCaller ..."
+```
+:::
+
+::: {.column width="48%"}
+<div style="background: #e8f5f0; border-left: 4px solid #208F6E; border-radius: 8px; padding: 0.9em 1em; font-size: 0.84em;">
+<i class="mdi mdi-cube-send" style="color: #208F6E; font-size: 1.3em;"></i>
+
+**Why**
+
+- one image holds **all** rule envs → no per-node conda solves
+- ship it to collaborators / CI / an air-gapped HPC
+- `containerized:` makes Snakemake pull it instead of re-solving
+- reproducible to the byte, archivable alongside the paper
+</div>
+:::
+:::
+
+## Driving Snakemake from Python — the API
+
+::: {.columns}
+::: {.column width="55%"}
+Since v8 the engine is importable — no `subprocess`, no CLI string. A **watcher** can detect new data and launch a run **on the fly**:
+
+```{.python style="font-size: 0.6em;"}
+from snakemake.api import (
+    SnakemakeApi, OutputSettings, ResourceSettings,
+    ConfigSettings, DeploymentSettings, DeploymentMethod,
+    DefaultResources, DAGSettings, ExecutionSettings,
+)
+
+with SnakemakeApi(OutputSettings(dryrun=False)) as api:
+    wf = api.workflow(
+        resource_settings=ResourceSettings(
+            nodes=150,
+            default_resources=DefaultResources(["mem_mb=500"]),
+        ),
+        config_settings=ConfigSettings(config={"samples": new_run}),
+        deployment_settings=DeploymentSettings(
+            deployment_method={DeploymentMethod.CONDA,
+                               DeploymentMethod.APPTAINER},
+        ),
+        snakefile=PIPELINE / "workflow" / "Snakefile",
+        workdir=PIPELINE,
+    )
+    dag = wf.dag(dag_settings=DAGSettings(force_incomplete=True))
+    dag.execute_workflow(executor="slurm", ...)   # SLURM settings
+```
+:::
+
+::: {.column width="45%"}
+<div style="background: #e8f5f0; border-left: 4px solid #208F6E; border-radius: 8px; padding: 0.9em 1em; font-size: 0.84em;">
+<i class="mdi mdi-robot-outline" style="color: #208F6E; font-size: 1.3em;"></i>
+
+**A watcher service**
+
+1. polls for a new sequencing run landing on disk
+2. builds the `config` dict in Python
+3. calls the API → submits the SLURM DAG
+4. no human, no shell — fully automated
+
+::: {style="font-size: 0.82em; margin-top: 0.5em; color: #34495E;"}
+The whole CLI is just a thin wrapper over these `*Settings` objects — anything the CLI does, you can do programmatically.
+:::
+</div>
+
+::: {style="font-size: 0.68em; color: #7f8c8d; margin-top: 0.4em;"}
+Real example: `workflow/scripts/toolbox/watcher/` in this repo.
+:::
+:::
 :::
 
 # {.section-divider background-color="#8E44AD"}
@@ -474,20 +615,21 @@ One workflow, **many backends** — each rule's inputs/outputs can sit on a diff
 ::: {.column width="50%"}
 <h4 style="color: #8E44AD; margin: 0 0 0.3em;"><i class="mdi mdi-database"></i>&nbsp; Storage — S3 + Zenodo + local + GCS</h4>
 
-```{.python style="font-size: 0.62em;"}
-storage s3_aws:   provider="s3",     endpoint_url="https://s3.eu-central-1.amazonaws.com"
+```{.snakemake style="font-size: 0.72em;"}
+storage s3_aws:   provider="s3"
 storage refs_zen: provider="zenodo", doi="10.5281/zenodo.1234567"
 storage out_gcs:  provider="gcs",    project="korbel-out"
 
 rule align:
     input:
-        reads = storage.s3_aws("s3://run42/{s}.fq.gz"),    # raw on S3
-        ref   = storage.refs_zen("hg38.fa"),                # versioned on Zenodo
-        bed   = "panels/exome.bed",                         # local (default fs)
+        reads = storage.s3_aws("s3://run42/{s}.fq.gz"),  # S3
+        ref   = storage.refs_zen("hg38.fa"),              # Zenodo
+        bed   = "panels/exome.bed",                       # local fs
     output:
-        storage.out_gcs("gs://korbel-out/{s}.bam"),         # output to GCS
+        storage.out_gcs("gs://korbel-out/{s}.bam"),       # GCS
     shell:
-        "bwa mem {input.ref} {input.reads} | samtools sort -o {output}"
+        "bwa mem {input.ref} {input.reads} "
+        "| samtools sort -o {output}"
 ```
 
 ::: {style="font-size: 0.74em; color: #7f8c8d; margin-top: 0.3em;"}
@@ -498,20 +640,18 @@ Plugins: `fs` · `s3` · `gcs` · `azure` · `http` · `ftp` · `zenodo` · `xro
 ::: {.column width="50%"}
 <h4 style="color: #8E44AD; margin: 0 0 0.3em;"><i class="mdi mdi-server-network"></i>&nbsp; Compute — SLURM + K8s + local</h4>
 
-```{.yaml filename="profile/config.yaml" style="font-size: 0.62em;"}
-# default: HPC
-executor: slurm
+```{.yaml filename="profile/config.yaml" style="font-size: 0.72em;"}
+executor: slurm        # default: HPC
 jobs: 200
 
-# per-rule overrides
-set-resources:
-  bwa_align:           { executor: slurm,      mem_mb: 16000 }
-  call_variants:       { executor: slurm,      mem_mb: 32000 }
-  run_deepvariant:     { executor: kubernetes, _cores: 16    }   # GPU pool
-  build_summary_html:  { executor: local       }                  # head node
+set-resources:         # per-rule overrides
+  bwa_align:      { executor: slurm,      mem_mb: 16000 }
+  call_variants:  { executor: slurm,      mem_mb: 32000 }
+  run_deepvar:    { executor: kubernetes }   # GPU pool
+  summary_html:   { executor: local      }   # head node
 ```
 
-```{.bash style="font-size: 0.62em;"}
+```{.bash style="font-size: 0.72em;"}
 pip install snakemake-executor-plugin-slurm \
             snakemake-executor-plugin-kubernetes
 ```
@@ -549,7 +689,7 @@ Executors: `slurm` · `kubernetes` · `googlebatch` · `azure-batch` · `lsf` ·
 **Per-rule directives — all three are supported simultaneously:**
 :::
 
-```{.python}
+```{.snakemake}
 rule align:
     conda:      "envs/bwa.yaml"                  # ◀ conda
     container:  "docker://biocontainers/bwa:0.7.17"  # ◀ container
@@ -575,78 +715,6 @@ rule align:
 
 ::: {style="margin-top: 0.8em; font-size: 0.78em; text-align: center; color: #7f8c8d;"}
 <i class="mdi mdi-information" style="color: #8E44AD;"></i>&nbsp; Profile schema is versioned too · place `config.v8+.yaml` next to the legacy `config.yaml`
-:::
-
-## What actually matters in v9.x
-
-::: {style="font-size: 0.92em; margin-bottom: 0.4em;"}
-v8 (Jan 2024) was the **architectural** rewrite — engine + plugins. v9 (Feb 2025 →) is mostly **incremental polish on that architecture**. Worth pulling out:
-:::
-
-::: {.v9-grid}
-::: {.columns}
-::: {.column width="33%"}
-::: {.v9-card}
-<i class="mdi mdi-cached v9-icon"></i>
-<div class="v9-title">Performance &amp; cache</div>
-<ul>
-<li>storage-plugin **checksums** → safe cross-workflow caching</li>
-<li>**named multi-output** caching</li>
-<li>auto-detected network FS type → fewer NFS surprises</li>
-</ul>
-:::
-:::
-
-::: {.column width="33%"}
-::: {.v9-card}
-<i class="mdi mdi-file-document v9-icon"></i>
-<div class="v9-title">Reports &amp; provenance</div>
-<ul>
-<li>**`--report-after-run`** (9.1) — auto HTML at the end of every run</li>
-<li>report plugins: `rocrate`, `nanopub` *(WIP)*</li>
-<li>per-output `report(...)` labels & categories</li>
-</ul>
-:::
-:::
-
-::: {.column width="33%"}
-::: {.v9-card}
-<i class="mdi mdi-tools v9-icon"></i>
-<div class="v9-title">Developer UX</div>
-<ul>
-<li>`profile.yaml` as default filename · pass a YAML file directly</li>
-<li>`subpath(with_suffix=…)` helper</li>
-<li>**pluggable metadata persistence** — `.snakemake/` to files *or* DB</li>
-</ul>
-:::
-:::
-:::
-:::
-
-::: {.columns style="margin-top: 0.8em;"}
-::: {.column width="50%"}
-::: {.v9-card}
-<i class="mdi mdi-puzzle v9-icon"></i>
-<div class="v9-title">Plugin ecosystem</div>
-<ul>
-<li>**5 categories** — executor · storage · logger · report · scheduler</li>
-<li>plugins **without settings auto-deploy** at run time</li>
-<li>fresh entries: `snkmt`, `firstfit`, `stomp`, `prometheus`, `rocrate`</li>
-</ul>
-:::
-:::
-
-::: {.column width="50%"}
-::: {.v9-card .v9-card-warn}
-<i class="mdi mdi-package-variant-closed-remove v9-icon"></i>
-<div class="v9-title">The plugin tax</div>
-<ul>
-<li>workflows ship a list of `pip install snakemake-*-plugin-*`</li>
-<li>plugin versions **independent** of core → pin everything</li>
-<li>conda-forge recipes lag · CI envs break on plugin updates</li>
-</ul>
-:::
-:::
 :::
 
 ## Plugin catalog · logger — `snkmt`
@@ -700,6 +768,10 @@ snakemake --scheduler firstfit --jobs 5000
 Report plugins **auto-activate when installed** — there is **no `--report-plugin` flag**. The standard `--report` invocation triggers whatever report plugins are on the Python path.
 :::
 
+::: {style="font-size: 0.8em; margin-bottom: 0.4em; padding: 0.4em 0.7em; background: #fef5e7; border-left: 4px solid #E67E22; border-radius: 4px;"}
+<i class="mdi mdi-flag" style="color: #E67E22;"></i>&nbsp; *Bonus / may-skip slide — depends on time.*
+:::
+
 ```bash
 pip install snakemake-report-plugin-rocrate snakemake-report-plugin-nanopub
 snakemake --report report.html         # the installed plugins extend the output
@@ -737,67 +809,51 @@ Helper: `plot-nanopub-knowledge-graph` ([repo](https://github.com/snakemake/snak
 <i class="mdi mdi-information"></i>&nbsp; **Status (Q2 2026).** Both still **WIP, not on PyPI yet** — install from GitHub. Compared to nf-core's `nf-prov`, the Snakemake provenance story is **promising but early**.
 :::
 
-## Plugin catalog · logger — fleet observability
+## Logger plugins — pluggable monitoring (v9)
+
+::: {style="font-size: 0.88em; margin-bottom: 0.5em;"}
+Since v9, **`--logger <name>`** swaps out how Snakemake emits log events. A plugin is a package `snakemake-logger-plugin-<name>` exposing a `LogHandler`; it receives every `LogRecord` (with a typed `event`: `job_info`, `job_finished`, `run_info`, …).
+:::
 
 ::: {.columns}
 ::: {.column width="50%"}
 ::: {.v9-card}
-<i class="mdi mdi-broadcast v9-icon"></i>
-<div class="v9-title">`stomp` — message bus</div>
+<i class="mdi mdi-monitor-dashboard v9-icon"></i>
+<div class="v9-title">Confirmed on PyPI</div>
+<ul>
+<li>`snkmt` — SQLite + TUI dashboard <span style="color:#7f8c8d">(cademirch)</span></li>
+<li>`rich` — pretty terminal progress bars</li>
+<li>`flowo` — flow-style live view</li>
+</ul>
 
-```{.bash style="font-size: 0.66em;"}
-pip install snakemake-logger-plugin-stomp
-snakemake --logger stomp \
-  --logger-stomp-host broker.embl.de \
-  --logger-stomp-destination /queue/snakemake
+```bash
+pip install snakemake-logger-plugin-snkmt
+snakemake --logger snkmt --jobs 100
 ```
-
-**One message per event** (JSON, ≈100 B):
-
-```{.json style="font-size: 0.6em;"}
-{"event":"job_finished","rule":"bwa_align",
- "wildcards":{"s":"HG002"},"wallclock_s":312,
- "exit_status":0,"cluster_jobid":"12345_3",
- "workflow":"mosaicatcher","host":"node12"}
-```
-
-Drop into RabbitMQ → Logstash → ES / Grafana Loki.
-
-::: {style="font-size: 0.7em; color: #7f8c8d; margin-top: 0.3em;"}
-[plugins/logger/stomp](https://snakemake.github.io/snakemake-plugin-catalog/plugins/logger/stomp.html)
-:::
 :::
 :::
 
 ::: {.column width="50%"}
 ::: {.v9-card}
-<i class="mdi mdi-chart-line v9-icon"></i>
-<div class="v9-title">`prometheus` — metrics endpoint</div>
+<i class="mdi mdi-tools v9-icon"></i>
+<div class="v9-title">The interface (build your own)</div>
 
-```{.bash style="font-size: 0.66em;"}
-pip install snakemake-logger-plugin-prometheus
-snakemake --logger prometheus \
-  --logger-prometheus-port 9101
+```{.python style="font-size: 0.62em;"}
+# snakemake_logger_plugin_<name>/__init__.py
+class LogHandler(logging.Handler):
+    def emit(self, record):
+        ev = getattr(record, "event", None)
+        if ev == LogEvent.JOB_FINISHED:
+            push_metric(record.rule, record....)
 ```
 
-**Scrape `:9101/metrics`** — labelled counters & histograms:
-
-```{.text style="font-size: 0.6em;"}
-# HELP snakemake_jobs_total Jobs by status
-# TYPE snakemake_jobs_total counter
-snakemake_jobs_total{rule="bwa_align",status="success"} 96
-snakemake_jobs_total{rule="bwa_align",status="failed"}  0
-snakemake_job_duration_seconds_bucket{rule="bwa_align",le="60"}  12
-snakemake_job_duration_seconds_bucket{rule="bwa_align",le="300"} 78
-```
-
-Grafana PromQL: `rate(snakemake_jobs_total{status="failed"}[5m])`.
-
-::: {style="font-size: 0.7em; color: #7f8c8d; margin-top: 0.3em;"}
-[plugins/logger/prometheus](https://snakemake.github.io/snakemake-plugin-catalog/plugins/logger/prometheus.html)
+Any sink fits this: a STOMP/AMQP bus, a Prometheus push-gateway, OpenTelemetry…
 :::
 :::
 :::
+
+::: {style="margin-top: 0.6em; padding: 0.5em 0.9em; background: #fef5e7; border-left: 4px solid #E67E22; border-radius: 4px; font-size: 0.78em;"}
+<i class="mdi mdi-alert" style="color: #E67E22;"></i>&nbsp; **Honest caveat.** I haven't verified a published `stomp` / `prometheus` logger plugin — the **interface** makes them trivial, but check the [catalog](https://snakemake.github.io/snakemake-plugin-catalog/) for what's actually released before quoting one.
 :::
 
 ## Stability & backward-compatibility — issues to watch
@@ -841,199 +897,6 @@ The engine moves faster than user pipelines. Same Snakefile, different minor →
 :::
 :::
 
-# {.section-divider background-color="#1F3A5F"}
-
-::: {style="text-align: center; padding-top: 1em;"}
-<div style="background: white; display: inline-block; padding: 14px 22px; border-radius: 18px; vertical-align: middle;">
-  <img src="https://avatars.githubusercontent.com/u/33450111?s=120&v=4" style="height: 80px; border-radius: 10px;" alt="Snakemake"/>
-</div>
-<span style="font-size: 2.6em; color: #fff; margin: 0 0.6em; vertical-align: middle; font-weight: 700;">vs</span>
-<div style="background: white; display: inline-block; padding: 14px 22px; border-radius: 18px; vertical-align: middle;">
-  <img src="https://avatars.githubusercontent.com/u/6698688?s=120&v=4" style="height: 80px; border-radius: 10px;" alt="Nextflow"/>
-</div>
-
-<h1 style="color: #fff; margin-top: 0.8em;">vs Nextflow</h1>
-:::
-
-## The deepest difference — dataflow
-
-::: {.columns}
-::: {.column width="40%"}
-<h4 style="margin: 0 0 0.3em; color: #1F3A5F;"><i class="mdi mdi-folder-outline"></i>&nbsp; Starting state on disk</h4>
-
-```bash
-fq/
-├── A_1.fq.gz   A_2.fq.gz
-├── B_1.fq.gz   B_2.fq.gz
-└── C_1.fq.gz   C_2.fq.gz
-# nothing else exists yet
-```
-:::
-
-::: {.column width="60%"}
-<div class="threestep">
-<span class="threestep-box">fq/*.fq.gz</span>
-<span class="threestep-arrow">→ align →</span>
-<span class="threestep-box">bam/*.bam</span>
-<span class="threestep-arrow">→ call →</span>
-<span class="threestep-box">vcf/cohort.vcf</span>
-</div>
-:::
-:::
-
-::: {.columns style="margin-top: 0.5em;"}
-::: {.column width="50%"}
-<h3 style="color: #1F3A5F; margin: 0;"><i class="mdi mdi-arrow-up-bold-circle"></i>&nbsp; Snakemake — **pull**</h3>
-
-> Reason **from the end**.
-
-```{.python style="font-size: 0.74em;"}
-rule all:
-    input: "vcf/cohort.vcf"   # ◀ the target
-
-rule call:
-    input:  "bam/{s}.bam"
-    output: "vcf/{s}.vcf"
-
-rule align:
-    input:  "fq/{s}.fq.gz"    # ◀ leaf
-    output: "bam/{s}.bam"
-```
-*"To produce `cohort.vcf` I need `bam/*.bam`, which needs `fq/*.fq.gz`."* Static DAG.
-:::
-
-::: {.column width="50%"}
-<h3 style="color: #1F3A5F; margin: 0;"><i class="mdi mdi-arrow-down-bold-circle"></i>&nbsp; Nextflow — **push**</h3>
-
-> Reason **from the start**.
-
-```{.groovy style="font-size: 0.74em;"}
-workflow {
-  reads_ch = Channel.fromFilePairs(
-    'fq/*_{1,2}.fq.gz'         // ◀ the source
-  )
-  bam_ch = ALIGN(reads_ch)
-  vcf_ch = CALL(bam_ch)
-  vcf_ch.view()
-}
-
-process ALIGN { /* fq → bam */ }
-process CALL  { /* bam → vcf */ }
-```
-*Channels emit → processes consume → next channel emits.* Dynamic DAG.
-:::
-:::
-
-## Resume / cache — what actually invalidates
-
-::: {style="text-align: center; font-size: 0.95em; color: #1F3A5F; margin-bottom: 0.5em; font-weight: 500;"}
-<i class="mdi mdi-help-circle" style="color: #E67E22;"></i>&nbsp; *"My input / code / container changed. Will the job rerun?"*
-:::
-
-::: {.columns}
-::: {.column width="50%"}
-::: {.rerun-card .rerun-smk}
-<h4><i class="mdi mdi-snake"></i>&nbsp; Snakemake — `--rerun-triggers`</h4>
-
-| Signal | Default |
-|---|---|
-| `mtime` of inputs | ✅ |
-| `input` set (paths) | ✅ |
-| `params` value | ✅ |
-| `code` of rule body | ✅ |
-| `software-env` hash | ✅ |
-
-::: {style="font-size: 0.74em; margin-top: 0.3em;"}
-Each trigger is **named & opt-out-able**: `--rerun-triggers mtime params input`.
-:::
-
-::: {style="font-size: 0.72em; margin-top: 0.4em; padding: 0.4em 0.6em; background: #fdecea; border-left: 3px solid #C0392B; border-radius: 4px;"}
-<i class="mdi mdi-alert" style="color: #C0392B;"></i>&nbsp; **Sensitive in dev.** Touching `code` / `params` during iteration reruns every downstream job — pin `--rerun-triggers mtime` while iterating.
-:::
-:::
-:::
-
-::: {.column width="50%"}
-::: {.rerun-card .rerun-nf}
-<h4><i class="mdi mdi-source-branch"></i>&nbsp; Nextflow `-resume`</h4>
-
-| Signal | Default | `cache 'deep'` |
-|---|---|---|
-| path + size + mtime | ✅ | path+size |
-| file SHA-256 | — | ✅ |
-| `script:` body | ✅ | ✅ |
-| `container:` ID | ✅ | ✅ |
-| `ext` directive | ✅ | ✅ |
-| other directives | ❌ * | ❌ * |
-
-::: {style="font-size: 0.72em; margin-top: 0.3em;"}
-* unless referenced in `script:` body via `${task.…}`. NF hashes code, container & ext; *"all content-hashed"* still false — file content needs `cache 'deep'`.
-:::
-:::
-:::
-:::
-
-::: {style="margin-top: 0.5em; padding: 0.45em 0.9em; background: #fef5e7; border-left: 4px solid #E67E22; border-radius: 4px; font-size: 0.78em;"}
-<i class="mdi mdi-information"></i>&nbsp; **Bottom line.** Default invalidation surfaces are comparable. Differences: Snakemake exposes each trigger by **name** for opt-out; Nextflow re-hashes if any *referenced* directive value moves; **file content** needs `cache 'deep'` (NF) or explicit `--rerun-triggers mtime` opt-out (SMK).
-:::
-
-## Distribution layer
-
-| <i class="mdi mdi-format-list-checks" style="color: #1F3A5F;"></i>&nbsp; Capability | <i class="mdi mdi-snake" style="color: #208F6E;"></i> Snakemake | <img src="https://raw.githubusercontent.com/nf-core/logos/master/nf-core-logos/nf-core-logo-square.svg" style="height: 18px; vertical-align: middle;"/>&nbsp; Nextflow / nf-core |
-|---|---|---|
-| <i class="mdi mdi-tag-multiple"></i>&nbsp; Per-rule env | `conda:` + `container:` + **`envmodules:`** | `conda` + `container` directive |
-| <i class="mdi mdi-layers-triple"></i>&nbsp; Compose | `--sdm conda apptainer env-modules` | engine + conda |
-| <i class="mdi mdi-cpu-64-bit"></i>&nbsp; HPC env-modules / EESSI | native via `envmodules:` | native via `module:` directive |
-| <i class="mdi mdi-warehouse"></i>&nbsp; Curated registry | snakemake-wrappers | BioContainers · mulled · **Seqera Containers** |
-| <i class="mdi mdi-hammer-wrench"></i>&nbsp; Build on demand | — | **Wave** |
-| <i class="mdi mdi-folder-network"></i>&nbsp; POSIX over object storage | — | **Fusion** |
-
-::: {.columns style="margin-top: 0.4em;"}
-::: {.column width="50%"}
-<div style="padding: 0.55em 0.8em; background: #e8f1f8; border-left: 4px solid #2980B9; border-radius: 4px; font-size: 0.78em;">
-<b>Wave</b> — Seqera's container-provisioning service. Takes a conda spec attached to a process, **builds an OCI container on demand** with that environment, caches it in a registry. Supports `amd64` + `arm64`. **Apache-2.0, open source.**
-</div>
-:::
-::: {.column width="50%"}
-<div style="padding: 0.55em 0.8em; background: #fef5e7; border-left: 4px solid #E67E22; border-radius: 4px; font-size: 0.78em;">
-<b>Fusion</b> — a virtual **POSIX layer** that lets processes read/write S3, GCS or Azure Blob as if they were a mounted directory. Avoids stage-in/stage-out copies on cloud. **Commercial**, part of Seqera Platform.
-</div>
-:::
-:::
-
-## Ecosystem & community
-
-::: {.columns}
-::: {.column width="50%"}
-
-<img src="https://raw.githubusercontent.com/nf-core/logos/master/nf-core-logos/nf-core-logo-square.svg" style="height: 54px;" alt="nf-core"/>
-
-### nf-core
-- **124** pipelines · **~1,500** modules · ~**72** subworkflows
-- **>2,600** contributors · **>10,000** Slack
-- Strict template · **`nf-test`** standard
-
-::: {style="font-size: 0.6em; color: #7f8c8d; margin-top: 0.3em;"}
-Langer et al., *Genome Biology* 26:228 (2025) · Feb 2025 figures
-:::
-:::
-
-::: {.column width="50%"}
-
-<img src="https://avatars.githubusercontent.com/u/33450111?s=80&v=4" style="height: 54px; border-radius: 10px;" alt="Snakemake"/>
-
-### Snakemake
-- **Workflow Catalog** (auto-indexed from GitHub)
-- **snakemake-workflows** org: ~28 pipelines
-- **snakemake-wrappers**: hundreds of versioned per-tool wrappers
-- More federated, less curated
-:::
-:::
-
-::: {style="margin-top: 0.6em; font-size: 0.75em;"}
-<i class="mdi mdi-information" style="color: #1F3A5F;"></i>&nbsp; nf-core sets a higher pipeline-standardization bar; Snakemake is broader at the wrapper level.
-:::
-
 # {.section-divider background-color="#E67E22"}
 
 ::: {style="text-align: center;"}
@@ -1064,7 +927,7 @@ export SNAKEMAKE_OUTPUT_CACHE=\
 ```
 
 Per rule:
-```python
+```{.snakemake}
 rule index_ref:
     output: "ref.fa.bwt"
     cache: True   # → goes into $SNAKEMAKE_OUTPUT_CACHE
@@ -1148,7 +1011,7 @@ CLI: `--default-storage-provider` · `--local-storage-prefix` · `--shared-fs-us
 
 ::: {.columns}
 ::: {.column width="55%"}
-```{.python}
+```{.snakemake}
 rule bwa:
     input:  "fq/{s}.fq.gz"
     output: temp("bam/{s}.sort.bam")
@@ -1209,7 +1072,7 @@ group-components:
 
 For a per-cell rule that needs **1 CPU each**:
 
-```python
+```{.snakemake}
 rule count_cell:
     input:  "bam/{cell}.bam"
     output: "counts/{cell}.tsv"
@@ -1269,7 +1132,7 @@ module load BWA SAMtools STAR
 
 <h4 style="color: #E67E22; margin: 0.8em 0 0.3em; text-align: center;">Use per rule</h4>
 
-```python
+```{.snakemake}
 rule align:
     envmodules: "BWA/0.7.17", "SAMtools/1.18"
     shell: "bwa mem ... | samtools sort ..."
@@ -1350,50 +1213,28 @@ openssl = "0d"
 7 days is the commonly cited default · [Richard Si — *What's new in pip 26.1*](https://ichard26.github.io/blog/2026/04/whats-new-in-pip-26.1/)
 :::
 
-# {.section-divider background-color="#16A085"}
+## 6 · Job optimisation — efficiency report
 
-::: {style="text-align: center;"}
-<i class="mdi mdi-chart-line" style="font-size: 4em; color: #fff;"></i>
-
-<h1 style="color: #fff;">Closing the loop</h1>
+::: {style="font-size: 0.92em; margin-bottom: 0.5em;"}
+The SLURM executor emits a **per-rule CPU & memory utilisation report** at the end of each run — read it to right-size `set-resources:` (rules that ask for 32 GB but use 2 GB, or run at 20% CPU).
 :::
 
-## Job optimisation from the efficiency report
-
-::: {.columns}
-::: {.column width="48%"}
-The SLURM executor can emit a **per-job CPU & memory utilisation report** at the end of every run:
-
-```{.yaml}
+```{.yaml filename="profile/config.yaml"}
 slurm-efficiency-report:       true
 slurm-efficiency-report-path:  efficiency.txt
-slurm-efficiency-threshold:    0.8
+slurm-efficiency-threshold:    0.8        # flag rules below 80%
 ```
 
-The idea, in one loop:
-
-::: {.threestep style="margin-top: 0.4em;"}
-<span class="threestep-box">run</span>
-<span class="threestep-arrow">→</span>
-<span class="threestep-box">efficiency report</span>
-<span class="threestep-arrow">→</span>
-<span class="threestep-box">notebook</span>
-<span class="threestep-arrow">→</span>
-<span class="threestep-box">updated set-resources</span>
-:::
-
-::: {style="font-size: 0.78em; margin-top: 0.4em; color: #7f8c8d;"}
-Notebook: `workflow/scripts/toolbox/slurm_efficiency_analysis.ipynb` — plots CPU & RAM efficiency per rule, flags under-utilised rules, proposes overrides.
-:::
-:::
-
-::: {.column width="52%"}
-<div class="screenshot-placeholder">
-<i class="mdi mdi-chart-box"></i>
-<div class="screenshot-label">efficiency-per-rule plot</div>
-<div class="screenshot-hint">drop a screenshot here — `docs/images/efficiency_per_rule.png`</div>
-</div>
-:::
+::: {style="text-align: center; margin-top: 0.6em;"}
+<span class="flow-strip">
+<span class="flow-box">run</span>
+<span class="flow-arrow">→</span>
+<span class="flow-box">efficiency report</span>
+<span class="flow-arrow">→</span>
+<span class="flow-box">tune set-resources</span>
+<span class="flow-arrow">→</span>
+<span class="flow-box">cheaper next run</span>
+</span>
 :::
 
 ## Further reading { background-color="#0f3a30"}
@@ -1429,6 +1270,192 @@ In this repo: <code style="color: #fff;">docs/hpc-pipeline-optimization_ongoing.
 
 <h1 style="color: #fff;">Backup slides</h1>
 :::
+
+# {.section-divider background-color="#1F3A5F"}
+
+::: {style="text-align: center; padding-top: 1em;"}
+<div style="background: white; display: inline-block; padding: 14px 22px; border-radius: 18px; vertical-align: middle;">
+  <img src="https://avatars.githubusercontent.com/u/33450111?s=120&v=4" style="height: 80px; border-radius: 10px;" alt="Snakemake"/>
+</div>
+<span style="font-size: 2.6em; color: #fff; margin: 0 0.6em; vertical-align: middle; font-weight: 700;">vs</span>
+<div style="background: white; display: inline-block; padding: 14px 22px; border-radius: 18px; vertical-align: middle;">
+  <img src="https://avatars.githubusercontent.com/u/6698688?s=120&v=4" style="height: 80px; border-radius: 10px;" alt="Nextflow"/>
+</div>
+
+<h1 style="color: #fff; margin-top: 0.8em;">vs Nextflow</h1>
+:::
+
+## Dataflow paradigm — pull vs push {visibility="uncounted"}
+
+::: {style="text-align: center; margin-bottom: 0.5em;"}
+<span class="flow-strip">
+<span class="flow-box">fq/{s}.fq.gz</span>
+<span class="flow-arrow">— align →</span>
+<span class="flow-box">bam/{s}.bam</span>
+<span class="flow-arrow">— call →</span>
+<span class="flow-box">vcf/cohort.vcf</span>
+</span>
+:::
+
+::: {.columns}
+::: {.column width="50%"}
+<h3 style="color: #1F3A5F; margin: 0;"><i class="mdi mdi-arrow-up-bold-circle"></i>&nbsp; Snakemake — **pull**</h3>
+
+> Start from the **target file**, walk back to inputs.
+
+```{.snakemake style="font-size: 0.72em;"}
+rule all:
+    input: "vcf/cohort.vcf"   # ◀ the target
+
+rule call:
+    input:  "bam/{s}.bam"
+    output: "vcf/{s}.vcf"
+
+rule align:
+    input:  "fq/{s}.fq.gz"    # ◀ leaf
+    output: "bam/{s}.bam"
+```
+
+```bash
+snakemake vcf/cohort.vcf --cores 8
+```
+Static DAG, resolved before anything runs.
+:::
+
+::: {.column width="50%"}
+<h3 style="color: #1F3A5F; margin: 0;"><i class="mdi mdi-arrow-down-bold-circle"></i>&nbsp; Nextflow — **push**</h3>
+
+> Start from the **source channel**, flow forward.
+
+```{.groovy style="font-size: 0.72em;"}
+workflow {
+  reads = Channel.fromFilePairs(
+    'fq/*_{1,2}.fq.gz'        // ◀ the source
+  )
+  ALIGN(reads) | CALL | view
+}
+
+process ALIGN { /* fq → bam */ }
+process CALL  { /* bam → vcf */ }
+```
+
+```bash
+nextflow run main.nf -resume
+```
+Dynamic DAG, materialised as channels emit.
+:::
+:::
+
+## Resume / cache — what actually invalidates {visibility="uncounted"}
+
+::: {style="text-align: center; font-size: 0.95em; color: #1F3A5F; margin-bottom: 0.5em; font-weight: 500;"}
+<i class="mdi mdi-help-circle" style="color: #E67E22;"></i>&nbsp; *"My input / code / container changed. Will the job rerun?"*
+:::
+
+::: {.columns}
+::: {.column width="50%"}
+::: {.rerun-card .rerun-smk}
+<h4><i class="mdi mdi-snake"></i>&nbsp; Snakemake — `--rerun-triggers`</h4>
+
+| Signal | Default |
+|---|---|
+| `mtime` of inputs | ✅ |
+| `input` set (paths) | ✅ |
+| `params` value | ✅ |
+| `code` of rule body | ✅ |
+| `software-env` hash | ✅ |
+
+::: {style="font-size: 0.74em; margin-top: 0.3em;"}
+Each trigger is **named & opt-out-able**: `--rerun-triggers mtime params input`.
+:::
+
+::: {style="font-size: 0.72em; margin-top: 0.4em; padding: 0.4em 0.6em; background: #fdecea; border-left: 3px solid #C0392B; border-radius: 4px;"}
+<i class="mdi mdi-alert" style="color: #C0392B;"></i>&nbsp; **Sensitive in dev.** Touching `code` / `params` during iteration reruns every downstream job — pin `--rerun-triggers mtime` while iterating.
+:::
+:::
+:::
+
+::: {.column width="50%"}
+::: {.rerun-card .rerun-nf}
+<h4><i class="mdi mdi-source-branch"></i>&nbsp; Nextflow `-resume`</h4>
+
+| Signal | Default | `cache 'deep'` |
+|---|---|---|
+| path + size + mtime | ✅ | path+size |
+| file SHA-256 | — | ✅ |
+| `script:` body | ✅ | ✅ |
+| `container:` ID | ✅ | ✅ |
+| `ext` directive | ✅ | ✅ |
+| other directives | ❌ * | ❌ * |
+
+::: {style="font-size: 0.72em; margin-top: 0.3em;"}
+* unless referenced in `script:` body via `${task.…}`. NF hashes code, container & ext; *"all content-hashed"* still false — file content needs `cache 'deep'`.
+:::
+:::
+:::
+:::
+
+::: {style="margin-top: 0.5em; padding: 0.45em 0.9em; background: #fef5e7; border-left: 4px solid #E67E22; border-radius: 4px; font-size: 0.78em;"}
+<i class="mdi mdi-information"></i>&nbsp; **Bottom line.** Default invalidation surfaces are comparable. Differences: Snakemake exposes each trigger by **name** for opt-out; Nextflow re-hashes if any *referenced* directive value moves; **file content** needs `cache 'deep'` (NF) or explicit `--rerun-triggers mtime` opt-out (SMK).
+:::
+
+## Distribution layer {visibility="uncounted"}
+
+| <i class="mdi mdi-format-list-checks" style="color: #1F3A5F;"></i>&nbsp; Capability | <i class="mdi mdi-snake" style="color: #208F6E;"></i> Snakemake | <img src="https://raw.githubusercontent.com/nf-core/logos/master/nf-core-logos/nf-core-logo-square.svg" style="height: 18px; vertical-align: middle;"/>&nbsp; Nextflow / nf-core |
+|---|---|---|
+| <i class="mdi mdi-tag-multiple"></i>&nbsp; Per-rule env | `conda:` + `container:` + **`envmodules:`** | `conda` + `container` directive |
+| <i class="mdi mdi-layers-triple"></i>&nbsp; Compose | `--sdm conda apptainer env-modules` | engine + conda |
+| <i class="mdi mdi-cpu-64-bit"></i>&nbsp; HPC env-modules / EESSI | native via `envmodules:` | native via `module:` directive |
+| <i class="mdi mdi-warehouse"></i>&nbsp; Curated registry | snakemake-wrappers | BioContainers · mulled · **Seqera Containers** |
+| <i class="mdi mdi-hammer-wrench"></i>&nbsp; Build on demand | — | **Wave** |
+| <i class="mdi mdi-folder-network"></i>&nbsp; POSIX over object storage | — | **Fusion** |
+
+::: {.columns style="margin-top: 0.4em;"}
+::: {.column width="50%"}
+<div style="padding: 0.55em 0.8em; background: #e8f1f8; border-left: 4px solid #2980B9; border-radius: 4px; font-size: 0.78em;">
+<b>Wave</b> — Seqera's container-provisioning service. Takes a conda spec attached to a process, **builds an OCI container on demand** with that environment, caches it in a registry. Supports `amd64` + `arm64`. **Apache-2.0, open source.**
+</div>
+:::
+::: {.column width="50%"}
+<div style="padding: 0.55em 0.8em; background: #fef5e7; border-left: 4px solid #E67E22; border-radius: 4px; font-size: 0.78em;">
+<b>Fusion</b> — a virtual **POSIX layer** that lets processes read/write S3, GCS or Azure Blob as if they were a mounted directory. Avoids stage-in/stage-out copies on cloud. **Commercial**, part of Seqera Platform.
+</div>
+:::
+:::
+
+## Ecosystem & community {visibility="uncounted"}
+
+::: {.columns}
+::: {.column width="50%"}
+
+<img src="https://raw.githubusercontent.com/nf-core/logos/master/nf-core-logos/nf-core-logo-square.svg" style="height: 54px;" alt="nf-core"/>
+
+### nf-core
+- **124** pipelines · **~1,500** modules · ~**72** subworkflows
+- **>2,600** contributors · **>10,000** Slack
+- Strict template · **`nf-test`** standard
+
+::: {style="font-size: 0.6em; color: #7f8c8d; margin-top: 0.3em;"}
+Langer et al., *Genome Biology* 26:228 (2025) · Feb 2025 figures
+:::
+:::
+
+::: {.column width="50%"}
+
+<img src="https://avatars.githubusercontent.com/u/33450111?s=80&v=4" style="height: 54px; border-radius: 10px;" alt="Snakemake"/>
+
+### Snakemake
+- **Workflow Catalog** (auto-indexed from GitHub)
+- **snakemake-workflows** org: ~28 pipelines
+- **snakemake-wrappers**: hundreds of versioned per-tool wrappers
+- More federated, less curated
+:::
+:::
+
+::: {style="margin-top: 0.6em; font-size: 0.75em;"}
+<i class="mdi mdi-information" style="color: #1F3A5F;"></i>&nbsp; nf-core sets a higher pipeline-standardization bar; Snakemake is broader at the wrapper level.
+:::
+
 
 ## When does each fit? {visibility="uncounted"}
 
