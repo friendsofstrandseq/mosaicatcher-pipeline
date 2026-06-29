@@ -251,7 +251,7 @@ jobs:
           echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
 
       - name: Cache Apptainer SIF
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.apptainer/cache
           key: apptainer-sif-hg38-${{ steps.version.outputs.VERSION }}

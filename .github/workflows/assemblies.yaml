@@ -93,7 +93,7 @@ jobs:
 
       - name: Restore Conda environments cache
         id: cache-conda-restore
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: .snakemake/conda
           key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
@@ -106,7 +106,7 @@ jobs:
       - name: Restore ${{ matrix.genome }} BWA indexes only
         if: matrix.igenomes_base == ''
         id: cache-bwa-restore
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: |
             workflow/data/ref_genomes/${{ matrix.genome }}.fa.amb
@@ -170,7 +170,7 @@ jobs:
       # Save cache only for mm39 (BWA index building takes ~15-20 min)
       - name: Save ${{ matrix.genome }} BWA index cache (after build)
         if: matrix.genome == 'mm39' && steps.cache-bwa-restore.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         with:
           path: |
             workflow/data/ref_genomes/${{ matrix.genome }}.fa.amb
@@ -196,7 +196,7 @@ jobs:
       - name: Save Conda environments cache
         # Only save from hg38 job to prevent race condition (all jobs produce identical conda envs)
         if: always() && matrix.genome == 'hg38'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         with:
           path: .snakemake/conda
           key: conda-envs-${{ hashFiles('workflow/envs/*.yaml') }}
