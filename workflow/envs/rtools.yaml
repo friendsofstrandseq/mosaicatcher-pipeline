@@ -1,7 +1,7 @@
 name: rtools
 channels:
-  - bioconda
   - conda-forge
+  - bioconda
 dependencies:
   - bioconductor-biocparallel=1.36.0
   - bioconductor-breakpointr=1.20.0
