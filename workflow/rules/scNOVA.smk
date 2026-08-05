@@ -1,3 +1,51 @@
+# Rules relying on an environment of workflow/envs/scNOVA/ are declared with
+# `container: None`: these environments are not shipped in the pre-built
+# container image and are always created locally through conda. The other rules
+# below use mc_base / mc_bioinfo_tools, which are pre-built in the image.
+
+
+rule save_conda_versions_scNOVA_DL:
+    localrule: True
+    output:
+        "{folder}/{sample}/config/conda_export/scNOVA_DL.yaml",
+    log:
+        "{folder}/log/save_conda_versions/{sample}/scNOVA_DL.log",
+    conda:
+        "../envs/scNOVA/scNOVA_DL.yaml"
+    container:
+        None
+    shell:
+        "conda env export > {output}"
+
+
+rule save_conda_versions_scNOVA_R:
+    localrule: True
+    output:
+        "{folder}/{sample}/config/conda_export/scNOVA_R.yaml",
+    log:
+        "{folder}/log/save_conda_versions/{sample}/scNOVA_R.log",
+    conda:
+        "../envs/scNOVA/scNOVA_R.yaml"
+    container:
+        None
+    shell:
+        "conda env export > {output}"
+
+
+rule save_conda_versions_scNOVA_bioinfo_tools:
+    localrule: True
+    output:
+        "{folder}/{sample}/config/conda_export/scNOVA_bioinfo_tools.yaml",
+    log:
+        "{folder}/log/save_conda_versions/{sample}/scNOVA_bioinfo_tools.log",
+    conda:
+        "../envs/scNOVA/scNOVA_bioinfo_tools.yaml"
+    container:
+        None
+    shell:
+        "conda env export > {output}"
+
+
 rule assert_list_of_cells:
     input:
         labels="{folder}/{sample}/cell_selection/labels.tsv",

@@ -245,52 +245,9 @@ rule save_conda_versions_rtools:
         "conda env export > {output}"
 
 
-# scNOVA environments are not shipped in the pre-built container image
-# (see workflow/rules/scNOVA.smk), they are built locally: container: None
-
-
-rule save_conda_versions_scNOVA_DL:
-    localrule: True
-    output:
-        "{folder}/{sample}/config/conda_export/scNOVA_DL.yaml",
-    log:
-        "{folder}/log/save_conda_versions/{sample}/scNOVA_DL.log",
-    conda:
-        "../envs/scNOVA/scNOVA_DL.yaml"
-    container:
-        None
-    shell:
-        "conda env export > {output}"
-
-
-rule save_conda_versions_scNOVA_R:
-    localrule: True
-    output:
-        "{folder}/{sample}/config/conda_export/scNOVA_R.yaml",
-    log:
-        "{folder}/log/save_conda_versions/{sample}/scNOVA_R.log",
-    conda:
-        "../envs/scNOVA/scNOVA_R.yaml"
-    container:
-        None
-    shell:
-        "conda env export > {output}"
-
-
-rule save_conda_versions_scNOVA_bioinfo_tools:
-    localrule: True
-    output:
-        "{folder}/{sample}/config/conda_export/scNOVA_bioinfo_tools.yaml",
-    log:
-        "{folder}/log/save_conda_versions/{sample}/scNOVA_bioinfo_tools.log",
-    conda:
-        "../envs/scNOVA/scNOVA_bioinfo_tools.yaml"
-    container:
-        None
-    shell:
-        "conda env export > {output}"
-
-
+# The scNOVA counterparts of these rules live in workflow/rules/scNOVA.smk,
+# which is only included when config["scNOVA"] is True, so that the scNOVA
+# conda environments stay out of the containerized image.
 # PUBLISHDIR
 # if config["publishdir"] != "":
 #     rule publishdir_outputs_mc:

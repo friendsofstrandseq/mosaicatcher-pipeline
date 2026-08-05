@@ -516,10 +516,12 @@ snakemake \
 **ℹ️ Note**
 
 scNOVA-specific environments (`workflow/envs/scNOVA/*.yaml`) are **not** part of the pre-built
-container image: the corresponding rules are declared with `container: None` and are therefore
-always executed through a locally built conda environment, even when a singularity/apptainer
-profile is used. Every other rule (including the scNOVA rules relying on `mc_base` /
-`mc_bioinfo_tools`) keeps using the pre-built environments shipped in the container.
+container image. Two mechanisms guarantee this: `workflow/rules/scNOVA.smk` is only included
+when `scNOVA=True` (so `snakemake --containerize`, which collects the environments of every
+declared rule, never sees them), and the rules using those environments are declared with
+`container: None` so they are executed through a locally built conda environment even when a
+singularity/apptainer profile is used. Every other rule (including the scNOVA rules relying on
+`mc_base` / `mc_bioinfo_tools`) keeps using the pre-built environments shipped in the container.
 
 Consequence: `--sdm conda` (or `--use-conda`) must always be enabled when `scNOVA=True`, and the
 three environments `scNOVA_R`, `scNOVA_DL` and `scNOVA_bioinfo_tools` will be created on first
