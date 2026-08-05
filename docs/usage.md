@@ -515,7 +515,16 @@ snakemake \
 
 **ℹ️ Note**
 
-scNOVA related snakemake rules and scripts only support conda execution at the moment
+scNOVA-specific environments (`workflow/envs/scNOVA/*.yaml`) are **not** part of the pre-built
+container image: the corresponding rules are declared with `container: None` and are therefore
+always executed through a locally built conda environment, even when a singularity/apptainer
+profile is used. Every other rule (including the scNOVA rules relying on `mc_base` /
+`mc_bioinfo_tools`) keeps using the pre-built environments shipped in the container.
+
+Consequence: `--sdm conda` (or `--use-conda`) must always be enabled when `scNOVA=True`, and the
+three environments `scNOVA_R`, `scNOVA_DL` and `scNOVA_bioinfo_tools` will be created on first
+execution. `scNOVA_DL` (TensorFlow 1.15 / Python 3.7) still pulls packages from the `anaconda`
+channel, which may be restricted by the Anaconda Terms of Service at some institutions.
 
 ---
 

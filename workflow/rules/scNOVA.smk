@@ -56,6 +56,8 @@ rule generate_CN_for_CNN:
         "{folder}/{sample}/log/{clone}/generate_CN_for_CNN.log",
     conda:
         "../envs/scNOVA/scNOVA_R.yaml"
+    container:
+        None
     resources:
         mem_mb=get_mem_mb_heavy,
         runtime=180,
@@ -81,6 +83,8 @@ rule generate_CN_for_chromVAR:
         "{folder}/{sample}/log/generate_CN_for_chromVAR.log",
     conda:
         "../envs/scNOVA/scNOVA_R.yaml"
+    container:
+        None
     resources:
         mem_mb=get_mem_mb_heavy,
         runtime=180,
@@ -154,7 +158,9 @@ rule remove_dup:
         bam_uniq="{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono_sort_for_mark_uniq.bam",
         bam_metrix="{folder}/{sample}/scNOVA_bam_modified/{cell}.sc_pre_mono.metrix_dup.txt",
     conda:
-        "../envs/mc_bioinfo_tools.yaml"
+        "../envs/scNOVA/scNOVA_bioinfo_tools.yaml"
+    container:
+        None
     resources:
         mem_mb=get_mem_mb,
     shell:
@@ -250,6 +256,8 @@ rule count_sort_annotate_geneid:
         ],
     conda:
         "../envs/scNOVA/scNOVA_R.yaml"
+    container:
+        None
     resources:
         mem_mb=get_mem_mb,
     shell:
@@ -497,6 +505,8 @@ rule count_reads_for_DNN_sort_lab:
         count_sort_label=config["scNOVA_scripts"]["count_sort_label"],
     conda:
         "../envs/scNOVA/scNOVA_R.yaml"
+    container:
+        None
     resources:
         mem_mb=get_mem_mb_heavy,
         runtime=180,
@@ -541,6 +551,8 @@ rule count_reads_for_DNN_normalization:
         count_norm=config["scNOVA_scripts"]["count_norm"],
     conda:
         "../envs/scNOVA/scNOVA_R.yaml"
+    container:
+        None
     resources:
         mem_mb=get_mem_mb_heavy,
         runtime=180,
@@ -577,6 +589,8 @@ rule count_reads_for_DNN_sc_sort_lab:
         count_sort_label=config["scNOVA_scripts"]["count_sort_label"],
     conda:
         "../envs/scNOVA/scNOVA_R.yaml"
+    container:
+        None
     resources:
         mem_mb=get_mem_mb_heavy,
         runtime=180,
@@ -621,6 +635,8 @@ rule generate_feature_sc_var:
         "{folder}/{sample}/log/generate_feature_sc_var_{clone}.log",
     conda:
         "../envs/scNOVA/scNOVA_R.yaml"
+    container:
+        None
     resources:
         mem_mb=get_mem_mb_heavy,
         runtime=180,
@@ -652,6 +668,8 @@ rule combine_features:
         "{folder}/{sample}/log/combine_features_{clone}.log",
     conda:
         "../envs/scNOVA/scNOVA_R.yaml"
+    container:
+        None
     resources:
         mem_mb=get_mem_mb_heavy,
         runtime=180,
@@ -671,6 +689,8 @@ rule infer_expressed_genes_split:
         train="{folder}/{sample}/scNOVA_result_CNN/{chrom}/DNN_train{i}_output_ypred_{clone}.csv",
     conda:
         "../envs/scNOVA/scNOVA_DL.yaml"
+    container:
+        None
     resources:
         mem_mb=get_mem_mb,
     script:
@@ -733,6 +753,8 @@ rule annot_expressed_genes:
         "{folder}/{sample}/log/annot_expressed_genes_{clone}.log",
     conda:
         "../envs/scNOVA/scNOVA_R.yaml"
+    container:
+        None
     resources:
         mem_mb=get_mem_mb,
     shell:
@@ -763,6 +785,8 @@ rule infer_differential_gene_expression:
         "{folder}/{sample}/log/infer_diff_gene_expression.log",
     conda:
         "../envs/scNOVA/scNOVA_R.yaml"
+    container:
+        None
     resources:
         mem_mb=get_mem_mb_heavy,
         runtime=180,
@@ -795,6 +819,8 @@ rule infer_differential_gene_expression_alt:
         "{folder}/{sample}/log/infer_diff_gene_expression_alt.log",
     conda:
         "../envs/scNOVA/scNOVA_R.yaml"
+    container:
+        None
     resources:
         mem_mb=get_mem_mb_heavy,
         runtime=180,
@@ -877,6 +903,8 @@ rule count_sort_annotate_chrid_CREs:
         "{folder}/{sample}/log/count_sort_annotate_chrid_CREs.log",
     conda:
         "../envs/scNOVA/scNOVA_R.yaml"
+    container:
+        None
     resources:
         mem_mb=get_mem_mb,
     shell:
