@@ -18,7 +18,12 @@ if config["arbigent"] is True:
         log:
             "{folder}/log/run_regenotypeR_samplewise_bulk/{sample}.log",
         resources:
-            mem_mb=get_mem_mb,
+            runtime=180,
+            # regenotype.R memory scales with the probabilities table size (≈ cell count):
+            # high-cell samples (330+ cells -> ~600 MB table) expand to >64 GB in RAM.
+            # get_mem_mb_regenotype sizes memory dynamically from the actual input so they
+            # get enough on the first attempt (see resources.smk).
+            mem_mb=get_mem_mb_regenotype,
         conda:
             "../envs/rtools.yaml"
         shell:
@@ -42,6 +47,7 @@ if config["arbigent"] is True:
         log:
             "{folder}/log/regenotyper_allsamples_bulk/{sample}.log",
         resources:
+            runtime=180,
             mem_mb=get_mem_mb,
         conda:
             "../envs/mc_base.yaml"
@@ -61,6 +67,7 @@ if config["arbigent"] is True:
         log:
             "{folder}/log/rephase_all_txt/{sample}.log",
         resources:
+            runtime=180,
             mem_mb=get_mem_mb,
         conda:
             "../envs/mc_base.yaml"
@@ -88,6 +95,7 @@ if config["arbigent"] is True:
         log:
             "{folder}/log/make_output_vcfs/{sample}.log",
         resources:
+            runtime=180,
             mem_mb=get_mem_mb,
         conda:
             "../envs/rtools.yaml"
@@ -112,6 +120,7 @@ if config["arbigent"] is True:
         params:
             names_gm_to_na=1,
         resources:
+            runtime=180,
             mem_mb=get_mem_mb,
         conda:
             "../envs/rtools.yaml"
@@ -136,6 +145,7 @@ if config["arbigent"] is True:
         conda:
             "../envs/rtools.yaml"
         resources:
+            runtime=180,
             mem_mb=get_mem_mb,
         shell:
             """
