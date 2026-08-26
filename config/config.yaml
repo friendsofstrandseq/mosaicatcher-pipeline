@@ -93,9 +93,9 @@ genecore_regex_element: "PE20"
 reference: "hg38"
 
 # Base directory for reference genomes
-# Default: "workflow/data/ref_genomes" (local to each user's checkout)
-# Multi-user HPC: "/scratch_cached/korbel/references" (shared on fast storage)
-reference_base_dir: "workflow/data/ref_genomes"
+# Leave unset to use workflow/data/ref_genomes (default fallback in external_data.smk)
+# Multi-user HPC: set to "/scratch_cached/korbel/references" via profile or --config reference_base_dir=...
+# reference_base_dir: ""
 
 # Download pre-built BWA indexes from iGenomes (if available) instead of building locally
 # True: Try to download pre-built indexes from AWS iGenomes (faster, requires internet)
@@ -602,8 +602,8 @@ arbigent_bed_file: "workflow/data/arbigent/manual_segmentation.bed"
 
 # Arbigent Data
 arbigent_data:
-  arbigent_mapability_track: workflow/data/arbigent/mapping_counts_allchrs_hg38.txt
-  arbigent_mapability_track_h5: workflow/data/arbigent/mapping_counts_allchrs_hg38.h5
+  arbigent_mapability_track: workflow/data/arbigent/mapping_counts_allchrs_T2T.txt
+  arbigent_mapability_track_h5: workflow/data/arbigent/mapping_counts_allchrs_T2T.h5
 
 # --------------------------------------------------------
 # Downstream modules configuration - scNOVA

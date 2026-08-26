@@ -104,7 +104,7 @@ def get_mem_mb_single_cell_group(wildcards, attempt):
 
     Segmentation dominates memory requirement.
     """
-    base_mb = 2000
+    base_mb = 1000
     multipliers = [1.0, 1.5, 2.0, 3.0, 5.0]
     result = int(base_mb * multipliers[min(attempt - 1, 4)])
 
@@ -156,6 +156,31 @@ def get_mem_mb_heavy(wildcards, attempt):
     return mem_avail[min(attempt - 1, 4)] * 1000
 
 
+def get_mem_mb_regenotype(wildcards, input, attempt):
+    """
+    Dynamic memory for run_regenotypeR_samplewise_bulk (arbigent regenotype.R).
+
+    regenotype.R loads the per-sample probabilities table into RAM; its size scales with
+    the number of cells (empirically ~40 cells -> 63 MB, ~360 cells -> 650 MB table), and
+    peak memory is roughly proportional to that table size (~600 MB tables OOM'd against a
+    64 GB cap). Instead of a fixed ladder, scale memory to the actual input size so
+    high-cell samples get enough on the first attempt:
+
+        mem = (20 GB base + 0.2 GB per MB of probabilities.Rdata) * attempt
+
+    e.g. 63 MB -> ~33 GB, 288 MB -> ~78 GB, 650 MB -> ~150 GB. Capped at the 256 GB
+    partition limit; attempt-based growth covers any under-estimate on retry.
+    """
+    try:
+        size_mb = os.path.getsize(input.probabilities_table) / 1e6
+    except Exception:
+        size_mb = (
+            300.0  # safe fallback if the input cannot be stat'd at scheduling time
+        )
+    est_mb = int((20 + size_mb * 0.2) * 1000)
+    return min(est_mb * attempt, 256000)
+
+
 def get_mem_mb_call_snvs(wildcards, attempt):
     """
     Memory for call_SNVs_bcftools_chrom.
@@ -186,10 +211,14 @@ def get_mem_mb_strandphaser(wildcards, attempt):
     """
     Memory for run_strandphaser_per_chrom.
 
-    Empirical data (297 jobs): p95=2,798 MB, max=5,500 MB.
-    Previous 8GB base was 2.8x over-provisioned.
+    Empirical data (297 jobs): p95=2,798 MB, max=5,500 MB. However, large
+    chromosomes (chr1) with many cells OOM at a 4 GB attempt-1 base (observed
+    MaxRSS 4.3 GB, killed) — and the empirical max (5.5 GB) already exceeds
+    4 GB, so attempt 1 was doomed to fail for the heaviest jobs. Base raised to
+    8 GB so attempt 1 covers the worst observed case with margin; retries scale
+    to 16/32/64 GB.
     """
-    base_mb = 4000
-    multipliers = [1.0, 2.0, 4.0, 8.0, 16.0]
-    result = int(base_mb * multipliers[min(attempt - 1, 4)])
+    base_mb = 8000
+    multipliers = [1.0, 2.0, 4.0, 8.0]
+    result = int(base_mb * multipliers[min(attempt - 1, 3)])
     return min(result, 64000)

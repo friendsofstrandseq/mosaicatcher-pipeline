@@ -133,8 +133,8 @@ rule copy_labels:
 
 
 rule symlink_selected_bam:
-    group:
-        "symlink_operations"
+    # # group:
+    #     "symlink_operations"
     input:
         bam="{folder}/{sample}/bam/{cell}.sort.mdup.bam",
         bai="{folder}/{sample}/bam/{cell}.sort.mdup.bam.bai",
@@ -145,6 +145,8 @@ rule symlink_selected_bam:
         "{folder}/log/symlink_selected_bam/{sample}/{cell}.log",
     conda:
         "../envs/mc_base.yaml"
+    container:
+        None
     script:
         "../scripts/utils/symlink_selected_bam.py"
 
@@ -241,8 +243,8 @@ if config["blacklist_regions"] is True:
 
     rule correct_norm_for_blacklisting:
         localrule: True
-        group:
-            "text_processing_operations"
+        # group:
+        # "text_processing_operations"
         input:
             "{folder}/{sample}/normalizations/{reference}/HGSVC.{window}.merged.tsv",
         output:
@@ -315,6 +317,7 @@ rule sort_counts:
 
 
 rule extract_single_cell_counts:
+    localrule: True
     input:
         info="{folder}/{sample}/counts/{sample}.info",
         counts="{folder}/{sample}/counts/{sample}.txt.gz",
@@ -322,12 +325,15 @@ rule extract_single_cell_counts:
         "{folder}/{sample}/counts/counts-per-cell/{cell}.txt.percell.gz",
     log:
         "{folder}/log/counts/{sample}/counts-per-cell/{cell}.log",
-    group:
-        "single_cell_analysis"
+    # group:
+    # "single_cell_analysis"
     conda:
         "../envs/mc_base.yaml"
     resources:
         mem_mb=get_mem_mb_single_cell_group,
+        runtime=lambda wc, attempt: 5 * attempt,
+    container:
+        None
     shell:
         """
         zcat {input.counts} | awk -v name={wildcards.cell} '(NR==1) || $5 == name' | gzip > {output}

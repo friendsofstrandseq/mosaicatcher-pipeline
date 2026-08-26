@@ -37,8 +37,8 @@ rule index_haplotag_bam:
         "{folder}/{sample}/haplotag/bam/{cell}.bam.htg.bai",
     log:
         "{folder}/log/index_haplotag_bam/{sample}/{cell}.log",
-    group:
-        "haplotagging_per_cell"
+    # group:
+    # "haplotagging_per_cell"
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     envmodules:
@@ -50,8 +50,8 @@ rule index_haplotag_bam:
 
 
 rule compress_indiv_freebayes_vcf:
-    group:
-        "compression_indexing_operations"
+    # group:
+    # "compression_indexing_operations"
     input:
         vcf="{folder}/{sample}/snv_genotyping/{chrom}.vcf",
     output:
@@ -69,8 +69,8 @@ rule compress_indiv_freebayes_vcf:
 
 
 rule index_indiv_freebayes_vcf:
-    group:
-        "compression_indexing_operations"
+    # group:
+    # "compression_indexing_operations"
     input:
         vcf="{folder}/{sample}/snv_genotyping/{chrom}.vcf.gz",
     output:
@@ -88,8 +88,8 @@ rule index_indiv_freebayes_vcf:
 
 
 rule compress_indiv_strandphaser_vcf:
-    group:
-        "compression_indexing_operations"
+    # group:
+    # "compression_indexing_operations"
     input:
         vcf="{folder}/{sample}/strandphaser/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf",
     output:
@@ -107,8 +107,8 @@ rule compress_indiv_strandphaser_vcf:
 
 
 rule index_indiv_strandphaser_vcf:
-    group:
-        "compression_indexing_operations"
+    # group:
+    # "compression_indexing_operations"
     input:
         vcf="{folder}/{sample}/strandphaser/StrandPhaseR_analysis.{chrom}/VCFfiles/{chrom}_phased.vcf.gz",
     output:
@@ -126,8 +126,8 @@ rule index_indiv_strandphaser_vcf:
 
 
 rule index_merged_strandphaser_vcf:
-    group:
-        "compression_indexing_operations"
+    # group:
+    # "compression_indexing_operations"
     input:
         vcf="{folder}/{sample}/strandphaser/phased-snvs/{sample}.vcf.gz",
     output:
@@ -151,8 +151,8 @@ rule index_input_bam:
         "{folder}/{sample}/bam/{cell}.sort.mdup.bam.bai",
     log:
         "{folder}/log/index_input_bam/{sample}/{cell}.log",
-    group:
-        "alignment_per_cell"
+    # group:
+    # "alignment_per_cell"
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     envmodules:

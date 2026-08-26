@@ -14,6 +14,9 @@ if config["arbigent"] is True:
             "workflow/data/arbigent/log/create_hdf_file.log",
         conda:
             "../envs/mc_base.yaml"
+        resources:
+            runtime=180,
+            mem_mb=get_mem_mb,
         script:
             "../scripts/arbigent_utils/create_hdf.py"
 
@@ -56,6 +59,9 @@ if config["arbigent"] is True:
                 if len(config["chromosomes"]) == 24
                 else ",".join(config["chromosomes"])
             ),
+        resources:
+            runtime=180,
+            mem_mb=get_mem_mb,
         threads: 12
         script:
             "../scripts/arbigent_utils/watson_crick.py"
