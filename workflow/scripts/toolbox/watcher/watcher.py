@@ -34,6 +34,35 @@ from config import PipelineConfig
 
 logger = logging.getLogger("aviti_watcher")
 
+# AVITI bcl-convert places these folders alongside the technician folder under
+# Samples/. They contain QC reports and unassigned reads, not sample data.
+_NON_SAMPLE_SUBDIRS = {"Genecore_QC", "Unassigned"}
+
+# Heartbeat file touched on every watcher loop iteration. An external monitor
+# (heartbeat_monitor.py) reads its mtime to detect a dead watcher.
+HEARTBEAT_FILENAME = "heartbeat"
+
+
+def _coerce_config_value(raw: str):
+    """Coerce CLI override strings to Python types so `is True`/`is False` checks pass."""
+    s = raw.strip()
+    low = s.lower()
+    if low == "true":
+        return True
+    if low == "false":
+        return False
+    if low in ("none", "null"):
+        return None
+    try:
+        return int(s)
+    except ValueError:
+        pass
+    try:
+        return float(s)
+    except ValueError:
+        pass
+    return s
+
 
 # ---------------------------------------------------------------------------
 # RunInfo
@@ -62,11 +91,14 @@ class RunInfo:
 
     @property
     def samples_dir(self) -> Path:
-        """Auto-detect technician subfolder under Samples/."""
+        """Auto-detect technician subfolder under Samples/, ignoring AVITI metadata folders."""
         samples_root = self.source_path / "Samples"
         if not samples_root.exists():
             return samples_root
-        subdirs = [d for d in samples_root.iterdir() if d.is_dir()]
+        subdirs = [
+            d for d in samples_root.iterdir()
+            if d.is_dir() and d.name not in _NON_SAMPLE_SUBDIRS
+        ]
         if len(subdirs) == 1:
             return subdirs[0]
         return samples_root
@@ -77,6 +109,8 @@ class RunInfo:
 # ---------------------------------------------------------------------------
 class AvitiWatcher:
     """Watches for new AVITI sequencing runs and launches the pipeline."""
+
+    MAX_RETRIES = 3
 
     def __init__(self, config: PipelineConfig):
         self.config = config
@@ -158,6 +192,15 @@ class AvitiWatcher:
         rows = self._conn.execute("SELECT run_id FROM runs").fetchall()
         return {r["run_id"] for r in rows}
 
+    # --- Heartbeat ----------------------------------------------------------
+
+    def _touch_heartbeat(self):
+        """Update mtime of the heartbeat file. Read by the external monitor."""
+        hb = self.config.state_db.parent / HEARTBEAT_FILENAME
+        hb.parent.mkdir(parents=True, exist_ok=True)
+        hb.touch(exist_ok=True)
+        os.utime(hb, None)
+
     # --- Snapshot helpers ---------------------------------------------------
 
     @staticmethod
@@ -196,19 +239,6 @@ class AvitiWatcher:
                 continue
             target = sample_dir / "plots" / "final_results" / f"{sample_dir.name}.txt"
             if target.exists():
-                return True
-        return False
-
-    def _dest_has_fastqs(self, run_id: str) -> bool:
-        """Check if a run's destination directory has reorganised FASTQs."""
-        dest = self.config.dest_base / run_id
-        if not dest.exists():
-            return False
-        for sample_dir in dest.iterdir():
-            if not sample_dir.is_dir():
-                continue
-            fastq_dir = sample_dir / "fastq"
-            if fastq_dir.exists() and any(fastq_dir.glob("*.fastq.gz")):
                 return True
         return False
 
@@ -415,17 +445,15 @@ class AvitiWatcher:
 
         self._set_status(info.run_id, "stable")
 
-        # Reorganise (skip if dest already has FASTQs)
-        dest = self.config.dest_base / info.run_id
-        if self._dest_has_fastqs(info.run_id):
-            logger.info("Run %s: FASTQs already present, skipping reorganisation", info.run_id)
-        else:
-            try:
-                dest = self.reorganise_run(info)
-            except Exception as e:
-                logger.exception("Reorganisation failed for %s", info.run_id)
-                self._set_status(info.run_id, "failed", error=f"reorganise: {e}")
-                return
+        # Always reorganise — symlink creation is idempotent (force=True). Skipping when
+        # dest has *any* FASTQs hides incomplete prior runs (e.g. some samples missed by
+        # an earlier reorganise bug).
+        try:
+            dest = self.reorganise_run(info)
+        except Exception as e:
+            logger.exception("Reorganisation failed for %s", info.run_id)
+            self._set_status(info.run_id, "failed", error=f"reorganise: {e}")
+            return
 
         self._set_status(info.run_id, "reorganized", dest_path=str(dest))
 
@@ -444,17 +472,23 @@ class AvitiWatcher:
 
         while True:
             try:
-                # Re-process runs recovered from crash (reset to 'detected' by _recover_stale_runs)
+                # Re-process runs that need retry: crashes (reset to 'detected' by
+                # _recover_stale_runs) and failed runs that are still under the retry cap.
                 recovered = self._conn.execute(
-                    "SELECT run_id, folder_name, source_path FROM runs "
-                    "WHERE status = 'detected'",
+                    "SELECT run_id, folder_name, source_path, status, retry_count FROM runs "
+                    "WHERE status = 'detected' "
+                    "   OR (status = 'failed' AND retry_count < ?)",
+                    (self.MAX_RETRIES,),
                 ).fetchall()
                 for row in recovered:
                     info = RunInfo(
                         folder_name=row["folder_name"],
                         source_path=Path(row["source_path"]),
                     )
-                    logger.info("Processing recovered run: %s", info.run_id)
+                    logger.info(
+                        "Processing %s run: %s (retry_count=%d)",
+                        row["status"], info.run_id, row["retry_count"],
+                    )
                     self.process_run(info, dry_run=dry_run)
 
                 # Scan for new runs from the watch directory
@@ -468,8 +502,16 @@ class AvitiWatcher:
                 if not recovered and not new_runs and not stable_runs:
                     logger.info("No new or retryable runs found. Waiting.")
 
+                self._touch_heartbeat()
+
             except Exception:
                 logger.exception("Error in watcher loop")
+                # Heartbeat anyway: the loop is alive, just hit a transient error.
+                # An external monitor catches "watcher is dead", not "watcher hit a bug".
+                try:
+                    self._touch_heartbeat()
+                except Exception:
+                    logger.exception("Failed to write heartbeat")
 
             if once:
                 break
@@ -576,7 +618,7 @@ def watch(
             if not value and not _:
                 typer.echo(f"Invalid --config format: {item!r} (expected KEY=VALUE)", err=True)
                 raise typer.Exit(1)
-            pipeline_config.config_overrides[key] = value
+            pipeline_config.config_overrides[key] = _coerce_config_value(value)
 
     setup_logging(pipeline_config.state_db.parent, verbose=verbose)
 
@@ -626,7 +668,7 @@ def rerun(
             if not value and not _:
                 typer.echo(f"Invalid --config format: {item!r} (expected KEY=VALUE)", err=True)
                 raise typer.Exit(1)
-            pipeline_config.config_overrides[key] = value
+            pipeline_config.config_overrides[key] = _coerce_config_value(value)
 
     if samples and exclude_samples:
         typer.echo("Cannot use --samples and --exclude-samples together.", err=True)
