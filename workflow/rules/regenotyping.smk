@@ -11,8 +11,8 @@ rule mergeBams:
         temp("{folder}/{sample}/merged_bam/merged.raw.bam"),
     log:
         "{folder}/log/mergeBams/{sample}.log",
-    group:
-        "merge_bams_per_sample"
+    # group:
+    # "merge_bams_per_sample"
     resources:
         mem_mb=get_mem_mb_merge_group,
         runtime=300,
@@ -35,8 +35,8 @@ rule mergeSortBams:
         temp("{folder}/{sample}/merged_bam/merged.bam"),
     log:
         "{folder}/log/mergeBams/{sample}.log",
-    group:
-        "merge_bams_per_sample"
+    # group:
+    # "merge_bams_per_sample"
     resources:
         mem_mb=get_mem_mb_merge_group,
         runtime=300,
@@ -59,14 +59,15 @@ rule index_merged_bam:
         temp("{folder}/{sample}/merged_bam/merged.bam.bai"),
     log:
         "{folder}/log/merged_bam/{sample}/merged.log",
-    group:
-        "merge_bams_per_sample"
+    # group:
+    # "merge_bams_per_sample"
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     envmodules:
         "SAMtools/1.21-GCC-13.3.0",
     resources:
         mem_mb=get_mem_mb_merge_group,
+        runtime=180,
     shell:
         "samtools index {input} > {log} 2>&1"
 
@@ -130,7 +131,7 @@ rule call_SNVs_bcftools_chrom:
         "BCFtools/1.21-GCC-13.3.0",
     resources:
         mem_mb=get_mem_mb_call_snvs,
-        runtime=30,
+        runtime=lambda wc, attempt: 60 * attempt,
     shell:
         """
         bcftools mpileup -r {wildcards.chrom} -f {input.fasta} {input.bam} \
