@@ -240,6 +240,15 @@ jobs:
         run: |
           apptainer --version
 
+      # ubuntu-24.04 runners set kernel.apparmor_restrict_unprivileged_userns=1, which
+      # blocks the user namespace apptainer needs: "Could not write info to setgroups:
+      # Permission denied". Without this, every apptainer exec below fails.
+      - name: Disable apparmor namespace restrictions for apptainer
+        run: |
+          sudo sh -c 'echo kernel.apparmor_restrict_unprivileged_userns=0 \
+          >/etc/sysctl.d/90-disable-userns-restrictions.conf'
+          sudo sysctl -p /etc/sysctl.d/90-disable-userns-restrictions.conf
+
       - name: Set version
         id: version
         run: |

@@ -40,13 +40,29 @@ jobs:
         run: |
           apptainer --version
 
+      # ubuntu-24.04 runners set kernel.apparmor_restrict_unprivileged_userns=1, which
+      # blocks the user namespace apptainer needs: "Could not write info to setgroups:
+      # Permission denied". Without this, the exec step below fails.
+      - name: Disable apparmor namespace restrictions for apptainer
+        run: |
+          sudo sh -c 'echo kernel.apparmor_restrict_unprivileged_userns=0 \
+          >/etc/sysctl.d/90-disable-userns-restrictions.conf'
+          sudo sysctl -p /etc/sysctl.d/90-disable-userns-restrictions.conf
+
+      # Track the repo's current version instead of a pinned tag, so this actually
+      # exercises the release being built.
+      - name: Set version
+        id: version
+        run: |
+          echo "TAG=v$(cat VERSION)" >> $GITHUB_OUTPUT
+
       - name: Cache Apptainer SIF
         uses: actions/cache@v6
         with:
           path: |
-            mosaicatcher-pipeline_hg38-v2.4.0-beta.2.sif
+            mosaicatcher-pipeline_hg38-${{ steps.version.outputs.TAG }}.sif
             ~/.apptainer/cache
-          key: apptainer-sif-action-v2.4.0-beta.2
+          key: apptainer-sif-action-${{ steps.version.outputs.TAG }}
           restore-keys: |
             apptainer-sif-action-
 
@@ -60,11 +76,11 @@ jobs:
           APPTAINER_DOCKER_USERNAME: ${{ github.actor }}
           APPTAINER_DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          apptainer pull docker://ghcr.io/friendsofstrandseq/mosaicatcher-pipeline:hg38-v2.4.0-beta.2
+          apptainer pull docker://ghcr.io/friendsofstrandseq/mosaicatcher-pipeline:hg38-${{ steps.version.outputs.TAG }}
 
       - name: Test container with simple command
         run: |
-          apptainer exec mosaicatcher-pipeline_hg38-v2.4.0-beta.2.sif conda info --json
+          apptainer exec mosaicatcher-pipeline_hg38-${{ steps.version.outputs.TAG }}.sif conda info --json
 
       - name: Run save_conda_versions rules with apptainer
         run: |
