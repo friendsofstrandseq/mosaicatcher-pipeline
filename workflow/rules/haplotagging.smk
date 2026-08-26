@@ -4,7 +4,7 @@ rule prepare_haplotag_input_bam:
     Materialise the BAM consumed by haplotag_bams with an @RG SM tag matching the
     sample. whatshap matches VCF sample name <-> BAM SM tag; pooled libraries carry
     the pool name (e.g. embl_9i) instead of the donor (e.g. HG01412).
-      SM correct                     -> hardlink (no disk cost, keeps mtime -> no rerun)
+      SM correct                     -> hardlink (no disk cost)
       SM wrong + fix_sm_tag: True    -> samtools reheader rewrites SM to {sample}
       SM wrong + fix_sm_tag: False   -> fail loudly, naming both values
     """
@@ -43,11 +43,10 @@ rule prepare_haplotag_input_bam:
             if cp -l {input.bam} {output.bam} 2>/dev/null && cp -l {input.bai} {output.bai} 2>/dev/null; then
                 echo "SM matches sample -> hardlink"
             else
-                echo "SM matches sample -> cross-device, symlink with source mtime"
+                echo "SM matches sample -> cross-device, symlink"
                 rm -f {output.bam} {output.bai}
-                src_bam=$(readlink -f {input.bam}); src_bai=$(readlink -f {input.bai})
-                ln -s "$src_bam" {output.bam} && touch -h -r "$src_bam" {output.bam}
-                ln -s "$src_bai" {output.bai} && touch -h -r "$src_bai" {output.bai}
+                ln -s "$(readlink -f {input.bam})" {output.bam}
+                ln -s "$(readlink -f {input.bai})" {output.bai}
             fi
         elif [ "{params.fix}" = "True" ]; then
             echo "SM mismatch -> reheader SM:$sm to SM:{wildcards.sample}"
@@ -59,6 +58,12 @@ rule prepare_haplotag_input_bam:
             echo "       Set fix_sm_tag: True (or --config fix_sm_tag=True) to rewrite the tag."
             exit 1
         fi
+
+        # A hardlink shares its inode with the input and a symlink resolves to it, so the
+        # output inherits the input .bam's mtime - which is older than the .bai written a
+        # moment later, and snakemake fails any output older than an input. Stamping every
+        # path in ONE touch call gives them all the same mtime, so none is ever older.
+        touch {output.bam} {output.bai}
         """
 
 
