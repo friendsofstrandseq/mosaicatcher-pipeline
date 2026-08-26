@@ -97,5 +97,25 @@ python watcher.py status
 
 - DB: `~/.mosaicatcher-watcher/watcher.db`
 - Logs: `~/.mosaicatcher-watcher/watcher.log` (rotating, 10MB x 5)
+- Heartbeat: `~/.mosaicatcher-watcher/heartbeat` (mtime updated every poll cycle)
 - Run statuses: `detected` → `stable` → `reorganized` → `running` → `completed` | `failed`
 - Crash recovery: stale `running` runs are retried on restart
+
+## Heartbeat Alerts
+
+`heartbeat_monitor.py` is a standalone script (stdlib-only) that emails `thomas.weber@embl.de` with `[MosaiCatcher Watcher]` in the subject if the watcher's heartbeat file is older than 3h. A single state file (`~/.mosaicatcher-watcher/last_alert_date`) caps it to one email per day.
+
+**Cron entry** (run every 15 min):
+
+```cron
+*/15 * * * * /usr/bin/python3 /g/korbel2/weber/workspace/StrandSeq_workspace/DEV/mosaicatcher-pipeline-friendsofstrandseq/workflow/scripts/toolbox/watcher/heartbeat_monitor.py >> $HOME/.mosaicatcher-watcher/heartbeat_monitor.cron.log 2>&1
+```
+
+**Test without sending mail** (forces the stale path):
+
+```bash
+python heartbeat_monitor.py --dry-run --threshold-hours 0
+# Check ~/.mosaicatcher-watcher/heartbeat_monitor.log for the "DRY-RUN would_send" line
+```
+
+**Options:** `--state-dir`, `--threshold-hours`, `--recipient`, `--dry-run`. Email is sent via the system `mail` command — same mechanism used by the pipeline's `onsuccess`/`onerror` hooks.
