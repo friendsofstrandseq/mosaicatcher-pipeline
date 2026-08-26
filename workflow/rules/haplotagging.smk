@@ -9,13 +9,16 @@ rule prepare_haplotag_input_bam:
       SM wrong + fix_sm_tag: False   -> fail loudly, naming both values
     """
     input:
-        bam=lambda wc: expand(
-            "{input_folder}/{{sample}}/selected/{{cell}}.sort.mdup.bam",
-            input_folder=config["data_location"],
+        # ancient(): the outputs are hardlinks of these inputs, so comparing their mtimes
+        # is meaningless here. selected/ holds symlinks that symlink_selected_bam writes
+        # ~1 ms apart (.bam then .bai), and snakemake reads a symlink's own mtime, so the
+        # .bai routinely looked newer than the output and failed the job for ~3% of cells.
+        # No output-side touch can fix a timestamp that lives on the input symlink.
+        bam=ancient(
+            f"{config['data_location']}/{{sample}}/selected/{{cell}}.sort.mdup.bam"
         ),
-        bai=lambda wc: expand(
-            "{input_folder}/{{sample}}/selected/{{cell}}.sort.mdup.bam.bai",
-            input_folder=config["data_location"],
+        bai=ancient(
+            f"{config['data_location']}/{{sample}}/selected/{{cell}}.sort.mdup.bam.bai"
         ),
     output:
         bam=temp("{folder}/{sample}/haplotag/input/{cell}.bam"),
@@ -59,12 +62,9 @@ rule prepare_haplotag_input_bam:
             exit 1
         fi
 
-        # A hardlink shares its inode with the input and a symlink resolves to it, so the
-        # output inherits the input .bam's mtime - older than the .bai written a moment
-        # later - and snakemake fails any output older than an input. Stamp every path
-        # from a single reference file: `touch a b` issues one UTIME_NOW per file and
-        # drifts by ~1 ms often enough to fail intermittently (~3% of cells), whereas
-        # `touch -r` copies one exact timestamp to all of them.
+        # A hardlink inherits the source mtime, so give both outputs one fresh, identical
+        # stamp for the benefit of downstream rules. `touch a b` issues a separate
+        # UTIME_NOW per file and drifts by ~1 ms, so copy one reference instead.
         ref=$(mktemp)
         touch "$ref"
         touch -r "$ref" {output.bam} {output.bai}
