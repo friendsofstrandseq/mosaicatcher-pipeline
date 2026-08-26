@@ -190,6 +190,18 @@ tab <- load_tab(alltxt_file)
 # Load CN file. It will be used to include 'valid bins' information, which is good to have in the output files.
 CNmerge <- load_and_prep_CN(msc_file)
 
+# Robustness guard (does NOT affect well-formed samples):
+# The regenotyper can rarely emit a non-numeric value (e.g. a genotype string like
+# "0|1") in this numeric confidence column for a degenerate segment. A single such
+# value makes the WHOLE column character, which would silently turn the downstream
+# numeric comparisons into string comparisons (wrong genotypes for the entire sample)
+# and crash round()/[<- on the resulting NA. Coerce to numeric once, here, before
+# bias_factor is derived: for clean samples every value converts exactly (identical
+# result, no NAs introduced), so output is unchanged; only a genuinely malformed cell
+# becomes NA, which we neutralise to 0 so it cannot corrupt the rest of the sample.
+suppressWarnings(tab$confidence_hard_over_second <- as.numeric(tab$confidence_hard_over_second))
+tab$confidence_hard_over_second[is.na(tab$confidence_hard_over_second)] <- 0
+
 # TODO: WHAT IS THIS LINE DOING?
 bias_factor <- tab$confidence_hard_over_second # This is the first criterion: double
 
