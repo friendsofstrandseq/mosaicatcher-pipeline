@@ -1,8 +1,14 @@
 
-rule haplotag_bams:
+rule prepare_haplotag_input_bam:
+    """
+    Materialise the BAM consumed by haplotag_bams with an @RG SM tag matching the
+    sample. whatshap matches VCF sample name <-> BAM SM tag; pooled libraries carry
+    the pool name (e.g. embl_9i) instead of the donor (e.g. HG01412).
+      SM correct                     -> hardlink (no disk cost, keeps mtime -> no rerun)
+      SM wrong + fix_sm_tag: True    -> samtools reheader rewrites SM to {sample}
+      SM wrong + fix_sm_tag: False   -> fail loudly, naming both values
+    """
     input:
-        vcf="{folder}/{sample}/strandphaser/phased-snvs/{sample}.vcf.gz",
-        tbi="{folder}/{sample}/strandphaser/phased-snvs/{sample}.vcf.gz.tbi",
         bam=lambda wc: expand(
             "{input_folder}/{{sample}}/selected/{{cell}}.sort.mdup.bam",
             input_folder=config["data_location"],
@@ -11,6 +17,57 @@ rule haplotag_bams:
             "{input_folder}/{{sample}}/selected/{{cell}}.sort.mdup.bam.bai",
             input_folder=config["data_location"],
         ),
+    output:
+        bam=temp("{folder}/{sample}/haplotag/input/{cell}.bam"),
+        bai=temp("{folder}/{sample}/haplotag/input/{cell}.bam.bai"),
+    log:
+        "{folder}/log/prepare_haplotag_input_bam/{sample}/{cell}.log",
+    container:
+        None
+    conda:
+        "../envs/mc_bioinfo_tools.yaml"
+    envmodules:
+        "SAMtools/1.21-GCC-13.3.0",
+    threads: 1
+    resources:
+        mem_mb=2000,
+    params:
+        fix=config.get("fix_sm_tag", False),
+    shell:
+        r"""
+        exec > {log} 2>&1
+        set -o pipefail
+        sm=$(samtools view -H {input.bam} | grep -m1 '^@RG' | tr '\t' '\n' | sed -n 's/^SM://p' | head -1)
+        echo "cell={wildcards.cell} sample={wildcards.sample} SM=$sm fix={params.fix}"
+        if [ "$sm" = "{wildcards.sample}" ]; then
+            if cp -l {input.bam} {output.bam} 2>/dev/null && cp -l {input.bai} {output.bai} 2>/dev/null; then
+                echo "SM matches sample -> hardlink"
+            else
+                echo "SM matches sample -> cross-device, symlink with source mtime"
+                rm -f {output.bam} {output.bai}
+                src_bam=$(readlink -f {input.bam}); src_bai=$(readlink -f {input.bai})
+                ln -s "$src_bam" {output.bam} && touch -h -r "$src_bam" {output.bam}
+                ln -s "$src_bai" {output.bai} && touch -h -r "$src_bai" {output.bai}
+            fi
+        elif [ "{params.fix}" = "True" ]; then
+            echo "SM mismatch -> reheader SM:$sm to SM:{wildcards.sample}"
+            samtools reheader -c "sed 's/\tSM:[^\t]*/\tSM:{wildcards.sample}/'" {input.bam} > {output.bam}
+            samtools index {output.bam}
+        else
+            echo "ERROR: BAM carries SM:$sm but sample is {wildcards.sample}."
+            echo "       whatshap would fail with 'No common samples between VCF and BAM'."
+            echo "       Set fix_sm_tag: True (or --config fix_sm_tag=True) to rewrite the tag."
+            exit 1
+        fi
+        """
+
+
+rule haplotag_bams:
+    input:
+        vcf="{folder}/{sample}/strandphaser/phased-snvs/{sample}.vcf.gz",
+        tbi="{folder}/{sample}/strandphaser/phased-snvs/{sample}.vcf.gz.tbi",
+        bam="{folder}/{sample}/haplotag/input/{cell}.bam",
+        bai="{folder}/{sample}/haplotag/input/{cell}.bam.bai",
         # check="{folder}/{sample}/config/remove_unselected_bam.ok",
         # check=remove_unselected_fct,
         # bam=selected_input_bam,

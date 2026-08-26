@@ -43,6 +43,10 @@ MultiQC: False
 
 # Enable or disable ashleys-qc automatic classification
 bypass_ashleys: False
+# Rewrite @RG SM tag to the sample name when it mismatches (pooled libraries).
+# False = fail loudly on mismatch instead of fixing it.
+fix_sm_tag: False
+
 
 # Keep ashleys predictions for later use
 keep_ashleys_predictions: True
