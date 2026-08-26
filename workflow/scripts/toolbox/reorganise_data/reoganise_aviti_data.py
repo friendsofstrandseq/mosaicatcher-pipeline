@@ -11,6 +11,24 @@ logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
+# Index appears as the suffix of a cell folder name. PE\d{3,} excludes the "PE1"
+# embedded in sample names like "...RPE1p53ko..." while still matching PE301 / PE20477.
+_INDEX_REGEX = re.compile(r"iTRU\d+|PE\d{3,}", re.IGNORECASE)
+
+
+def _split_sample_and_index(name):
+    """Return (sample_name, index_substring) using the last index match in the name.
+
+    Last-match avoids false hits on substrings like "PE1" inside "RPE1...". Returns
+    (None, None) if no index pattern is present.
+    """
+    last = None
+    for m in _INDEX_REGEX.finditer(name):
+        last = m
+    if last is None:
+        return None, None
+    return name[: last.start()], last.group(0)
+
 
 def process_sample_folder(
     source_sample_path, dest_base_path, dry_run=False, force=False, bypass_prefix=False
@@ -28,21 +46,10 @@ def process_sample_folder(
     logging.info(f"Bypass prefix: {bypass_prefix}")
 
     if not bypass_prefix:
-
-        # Extract index (PE20 or iTRU)
-        regex = re.compile(r"iTRU\d+|PE20\d+", re.IGNORECASE)
-        match = regex.search(original_sample_name)
-        index = None
-
-        if match:
-            index = match.group(0)
-            print(f"Extracted index: {index}")
-        else:
-            print("No matching index found.")
-        if not index:
+        sample_name, index = _split_sample_and_index(original_sample_name)
+        if index is None:
             raise ValueError(f"Could not extract index from {original_sample_name}")
-        sample_name = original_sample_name.split(index)[0]
-
+        print(f"Extracted index: {index}")
     else:
         sample_name = original_sample_name
 
@@ -113,26 +120,15 @@ def main(
         for entry in os.listdir(source_base):
             if not os.path.isdir(os.path.join(source_base, entry)):
                 continue
-            # extract sample names from the source directory by excluding the index and the rest of the name
-            index_regex = re.compile(r"iTRU\d+|PE20\d+", re.IGNORECASE)
-            match = index_regex.search(entry)
             logging.info(f"Processing sample folder: {entry}")
 
             if not bypass_prefix:
-                if match:
-                    index = match.group(0)
-                    print(f"Extracted index: {index}")
-                else:
-                    print("No matching index found.")
-                    index = None
-
-                if not index:
+                sample_name, index = _split_sample_and_index(entry)
+                if index is None:
                     logging.warning(f"Could not extract index from {entry}")
                     continue
-
-                else:
-                    sample_name = entry.split(index)[0]
-                    samples_path_mapping[entry] = sample_name
+                print(f"Extracted index: {index}")
+                samples_path_mapping[entry] = sample_name
             else:
                 sample_name = entry
                 samples_path_mapping[entry] = sample_name
