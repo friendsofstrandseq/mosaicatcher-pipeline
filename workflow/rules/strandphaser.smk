@@ -79,6 +79,7 @@ rule merge_strandphaser_vcfs:
     input:
         vcfs=aggregate_vcf_gz,
         tbis=aggregate_vcf_gz_tbi,
+        fasta_index=f"{get_reference_fasta()}.fai",
     output:
         vcfgz="{folder}/{sample}/strandphaser/phased-snvs/{sample}.vcf.gz",
     log:
@@ -92,7 +93,37 @@ rule merge_strandphaser_vcfs:
         runtime=30,
     shell:
         """
-        (bcftools concat -a {input.vcfs} | bcftools view -o {output.vcfgz} -O z --genotype het --types snps - ) > {log} 2>&1
+        (
+        # Samples with too few WC cells yield either no eligible chromosome at all
+        # or per-chrom VCFs that StrandPhaseR wrote with a header but no record.
+        # `bcftools concat -a` then emits nothing and the downstream `bcftools view -`
+        # aborts with "unknown file type", killing the whole run.
+        VCFS=({input.vcfs})
+        NONEMPTY=()
+        for v in "${{VCFS[@]}}"; do
+            if [ -n "$(bcftools view -H "$v" 2>/dev/null | head -c 1)" ]; then
+                NONEMPTY+=("$v")
+            fi
+        done
+
+        if [ ${{#NONEMPTY[@]}} -gt 0 ]; then
+            bcftools concat -a "${{NONEMPTY[@]}}" \
+                | bcftools view -o {output.vcfgz} -O z --genotype het --types snps -
+        else
+            # Nothing phased: emit a header-only VCF. The contig lines must come from
+            # the reference index and not from a per-chrom VCF, because
+            # `whatshap haplotag --skip-missing-contigs` drops every read mapped to a
+            # contig the VCF does not declare - with an incomplete header the
+            # haplotagged BAM comes out empty and create_haplotag_table then dies on
+            # "arguments imply differing number of rows".
+            echo "WARNING: StrandPhaseR phased no variant for {wildcards.sample} - writing header-only VCF" >&2
+            {{
+                echo '##fileformat=VCFv4.2'
+                awk 'BEGIN{{OFS=""}} {{print "##contig=<ID=",$1,",length=",$2,">"}}' {input.fasta_index}
+                printf '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t{wildcards.sample}\n'
+            }} | bcftools view -O z -o {output.vcfgz} -
+        fi
+        ) > {log} 2>&1
         """
 
 

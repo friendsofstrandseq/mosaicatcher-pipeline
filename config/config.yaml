@@ -65,6 +65,13 @@ ploidy: True
 # Chromosomes with fewer variants in their SNV VCF are skipped.
 min_snps_for_phasing: 5
 
+# Allow samples that have NO phaseable chromosome (every chromosome below
+# min_snps_for_phasing — typically very low cell count) to proceed with EMPTY phasing
+# instead of failing. When True, such samples skip phasing but still run arbigent
+# (which genotypes predefined segments and does not require phasing). When False
+# (default) they fail with a clear message and are effectively excluded.
+allow_empty_phasing: False
+
 # --------------------------------------------------------
 # GENECORE Configuration
 # --------------------------------------------------------
