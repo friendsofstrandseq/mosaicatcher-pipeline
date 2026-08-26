@@ -1147,60 +1147,61 @@ def get_all_plots(wildcards):
     #     ]
     # )
 
-    l_outputs.extend(
-        [
-            sub_e
-            for e in [
-                expand(
-                    "{folder}/{sample}/plots/sv_clustering/{method}-filter{filter}-{plottype}.pdf",
-                    folder=config["data_location"],
-                    sample=wildcards.sample,
-                    method=method,
-                    plottype=config["plottype_clustering"],
-                    filter=config["methods"][method]["filter"],
-                )
-                for method in config["methods"]
+    if config["arbigent"] is False:
+        l_outputs.extend(
+            [
+                sub_e
+                for e in [
+                    expand(
+                        "{folder}/{sample}/plots/sv_clustering/{method}-filter{filter}-{plottype}.pdf",
+                        folder=config["data_location"],
+                        sample=wildcards.sample,
+                        method=method,
+                        plottype=config["plottype_clustering"],
+                        filter=config["methods"][method]["filter"],
+                    )
+                    for method in config["methods"]
+                ]
+                for sub_e in e
             ]
-            for sub_e in e
-        ]
-    )
+        )
 
-    l_outputs.extend(
-        [
-            sub_e
-            for e in [
-                expand(
-                    "{folder}/{sample}/plots/sv_calls/{method}_filter{filter}/{chrom}.pdf",
-                    folder=config["data_location"],
-                    sample=wildcards.sample,
-                    method=method,
-                    chrom=config["chromosomes"],
-                    filter=config["methods"][method]["filter"],
-                )
-                for method in config["methods"]
+        l_outputs.extend(
+            [
+                sub_e
+                for e in [
+                    expand(
+                        "{folder}/{sample}/plots/sv_calls/{method}_filter{filter}/{chrom}.pdf",
+                        folder=config["data_location"],
+                        sample=wildcards.sample,
+                        method=method,
+                        chrom=config["chromosomes"],
+                        filter=config["methods"][method]["filter"],
+                    )
+                    for method in config["methods"]
+                ]
+                for sub_e in e
             ]
-            for sub_e in e
-        ]
-    )
+        )
 
-    # Complex section
+        # Complex section
 
-    l_outputs.extend(
-        [
-            sub_e
-            for e in [
-                expand(
-                    "{folder}/{sample}/mosaiclassifier/complex/{method}_filter{filter}.tsv",
-                    folder=config["data_location"],
-                    sample=wildcards.sample,
-                    method=method,
-                    filter=config["methods"][method]["filter"],
-                )
-                for method in config["methods"]
+        l_outputs.extend(
+            [
+                sub_e
+                for e in [
+                    expand(
+                        "{folder}/{sample}/mosaiclassifier/complex/{method}_filter{filter}.tsv",
+                        folder=config["data_location"],
+                        sample=wildcards.sample,
+                        method=method,
+                        filter=config["methods"][method]["filter"],
+                    )
+                    for method in config["methods"]
+                ]
+                for sub_e in e
             ]
-            for sub_e in e
-        ]
-    ),
+        )
 
     # scTRIP multiplot
 
@@ -1245,13 +1246,14 @@ def get_all_plots(wildcards):
 
     # Stats section
 
-    l_outputs.extend(
-        expand(
-            "{folder}/{sample}/stats/stats-merged.html",
-            folder=config["data_location"],
-            sample=wildcards.sample,
-        ),
-    )
+    if config["arbigent"] is False:
+        l_outputs.extend(
+            expand(
+                "{folder}/{sample}/stats/stats-merged.html",
+                folder=config["data_location"],
+                sample=wildcards.sample,
+            ),
+        )
 
     # Config section
 
