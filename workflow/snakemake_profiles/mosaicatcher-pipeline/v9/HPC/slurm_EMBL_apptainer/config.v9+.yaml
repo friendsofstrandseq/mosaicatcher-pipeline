@@ -61,7 +61,7 @@ local-storage-prefix: /tmp/snakemake/local-storage
 # remote-job-local-storage-prefix: /scratch/$USER/$JOBID
 
 # Core and job handling
-local-cores: 32 # Number of cores to use for local rules
+local-cores: 128 # Number of cores to use for local rules
 latency-wait: 60 # Time in seconds to wait for filesystems to catch up (important for NFS)
 jobs: 150 # Maximum number of concurrent jobs (increased for better throughput)
 
