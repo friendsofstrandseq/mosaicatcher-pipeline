@@ -602,8 +602,8 @@ arbigent_bed_file: "workflow/data/arbigent/manual_segmentation.bed"
 
 # Arbigent Data
 arbigent_data:
-  arbigent_mapability_track: workflow/data/arbigent/mapping_counts_allchrs_hg38.txt
-  arbigent_mapability_track_h5: workflow/data/arbigent/mapping_counts_allchrs_hg38.h5
+  arbigent_mapability_track: workflow/data/arbigent/mapping_counts_allchrs_T2T.txt
+  arbigent_mapability_track_h5: workflow/data/arbigent/mapping_counts_allchrs_T2T.h5
 
 # --------------------------------------------------------
 # Downstream modules configuration - scNOVA
