@@ -5,12 +5,17 @@ rule check_sm_tag:
         "{folder}/{sample}/checks/{cell}.sm_check.ok",
     log:
         "{folder}/log/{sample}/checks/{cell}.sm_check.log",
+    container:
+        None
+    threads: 1
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     envmodules:
         "SAMtools/1.21-GCC-13.3.0",
     resources:
         mem_mb=get_mem_mb_check_sm_tag,
+    # group:
+    # "check_sm_tag"
     shell:
         r"""
         sample_name="{wildcards.sample}"
