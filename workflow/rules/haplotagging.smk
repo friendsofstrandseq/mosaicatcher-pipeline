@@ -60,10 +60,15 @@ rule prepare_haplotag_input_bam:
         fi
 
         # A hardlink shares its inode with the input and a symlink resolves to it, so the
-        # output inherits the input .bam's mtime - which is older than the .bai written a
-        # moment later, and snakemake fails any output older than an input. Stamping every
-        # path in ONE touch call gives them all the same mtime, so none is ever older.
-        touch {output.bam} {output.bai}
+        # output inherits the input .bam's mtime - older than the .bai written a moment
+        # later - and snakemake fails any output older than an input. Stamp every path
+        # from a single reference file: `touch a b` issues one UTIME_NOW per file and
+        # drifts by ~1 ms often enough to fail intermittently (~3% of cells), whereas
+        # `touch -r` copies one exact timestamp to all of them.
+        ref=$(mktemp)
+        touch "$ref"
+        touch -r "$ref" {output.bam} {output.bai}
+        rm -f "$ref"
         """
 
 
