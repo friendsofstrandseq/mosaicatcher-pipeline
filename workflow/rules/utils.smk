@@ -245,24 +245,9 @@ rule save_conda_versions_rtools:
         "conda env export > {output}"
 
 
-# rule save_conda_versions_scNOVA_DL:
-#     output:
-#         "{folder}/{sample}/config/conda_export/scNOVA_DL.yaml",
-#     log:
-#         "{folder}/log/save_conda_versions/{sample}/scNOVA_DL.log",
-#     conda:
-#         "../envs/scNOVA/scNOVA_DL.yaml"
-#     shell:
-#         "conda env export > {output}"
-# rule save_conda_versions_scNOVA_R:
-#     output:
-#         "{folder}/{sample}/config/conda_export/scNOVA_R.yaml",
-#     log:
-#         "{folder}/log/save_conda_versions/{sample}/scNOVA_R.log",
-#     conda:
-#         "../envs/scNOVA/scNOVA_R.yaml"
-#     shell:
-#         "conda env export > {output}"
+# The scNOVA counterparts of these rules live in workflow/rules/scNOVA.smk,
+# which is only included when config["scNOVA"] is True, so that the scNOVA
+# conda environments stay out of the containerized image.
 # PUBLISHDIR
 # if config["publishdir"] != "":
 #     rule publishdir_outputs_mc:
