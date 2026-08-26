@@ -27,6 +27,7 @@ rule check_single_paired_end:
 
 
 rule prepare_strandphaser_config_per_chrom:
+    localrule: True
     input:
         seg_initial_str_state="{folder}/{sample}/segmentation/Selection_initial_strand_state",
         single_paired_end_detect="{folder}/{sample}/config/single_paired_end_detection.txt",
@@ -162,8 +163,8 @@ rule convert_strandphaser_output:
 
 rule keep_canonical_strandphaser_output:
     localrule: True
-    group:
-        "text_processing_operations"
+    # group:
+    # "text_processing_operations"
     input:
         "{folder}/{sample}/strandphaser/StrandPhaseR_final_output.txt.raw",
     output:

@@ -86,8 +86,8 @@ rule haplotag_bams:
         "{folder}/{sample}/haplotag/bam/{cell}.bam.htg",
     log:
         "{folder}/log/haplotag_bams/{sample}/{cell}.log",
-    group:
-        "haplotagging_per_cell"
+    # group:
+    # "haplotagging_per_cell"
     params:
         ref=config["reference"],
     resources:
@@ -100,8 +100,8 @@ rule haplotag_bams:
 
 rule create_haplotag_segment_bed:
     localrule: True
-    group:
-        "text_processing_operations"
+    # group:
+    # "text_processing_operations"
     input:
         segments="{folder}/{sample}/segmentation/Selection_jointseg.txt",
     output:
