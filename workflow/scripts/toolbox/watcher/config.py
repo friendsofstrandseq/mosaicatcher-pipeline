@@ -63,18 +63,22 @@ class PipelineConfig:
     def profile_path(self) -> Path:
         return self.pipeline_dir / self.profile
 
-    # Pipeline config overrides (merged on top of profile's config section)
+    # Pipeline config overrides (merged on top of profile's config section).
+    # Booleans must be real bool values: the pipeline uses `is True` / `is False`
+    # identity checks (see workflow/Snakefile and common.smk), which the strings
+    # "True" / "False" silently fail.
     config_overrides: dict = field(
         default_factory=lambda: {
             "reference": "hg38",
-            "multistep_normalisation": "True",
-            "MultiQC": "False",
-            "genome_browsing_files_generation": "False",
-            "ashleys_pipeline": "True",
-            "ashleys_pipeline_only": "False",
-            "hgsvc_based_normalized_counts": "False",
-            "bypass_ashleys": "False",
-            "breakpointR": "False",
+            "reference_base_dir": "/scratch/korbel/shared/references",
+            "multistep_normalisation": True,
+            "MultiQC": False,
+            "genome_browsing_files_generation": False,
+            "ashleys_pipeline": True,
+            "ashleys_pipeline_only": False,
+            "hgsvc_based_normalized_counts": False,
+            "bypass_ashleys": False,
+            "breakpointR": False,
             "email": "thomas.weber@embl.de",
         }
     )
@@ -189,7 +193,8 @@ class PipelineConfig:
 
             dag_api = workflow_api.dag(
                 dag_settings=DAGSettings(
-                    force_incomplete=prof.get("rerun-incomplete", True)
+                    targets=frozenset({"all"}),
+                    force_incomplete=prof.get("rerun-incomplete", True),
                 )
             )
 
