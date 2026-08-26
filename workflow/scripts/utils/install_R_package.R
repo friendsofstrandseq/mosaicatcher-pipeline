@@ -2,8 +2,12 @@
 args <- commandArgs(TRUE)
 package <- args[1]
 
-# Check if the package is already available
-is_package_available <- require(package, character.only = TRUE)
+# Check if the package is already available.
+# `package` may be a tarball PATH (e.g. ".../BSgenome.T2T.CHM13.V2_1.0.0.tar.gz") or a plain
+# package name. Using the tarball path directly with require() never matches an installed
+# package, so derive the real package name first (strip dir + "_<version>.tar.gz").
+pkg_name <- if (grepl("\\.tar\\.gz$", package)) sub("_[0-9].*$", "", basename(package)) else package
+is_package_available <- requireNamespace(pkg_name, quietly = TRUE)
 
 if (!isTRUE(is_package_available)) {
     # Ensure BiocManager is available since it will be needed regardless of the condition
