@@ -32,7 +32,7 @@ jobs:
           locked: false
 
       - name: Setup Apptainer with official action
-        uses: eWaterCycle/setup-apptainer@v2
+        uses: eWaterCycle/setup-apptainer@v3
         with:
           apptainer-version: 1.3.0
 
