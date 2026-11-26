@@ -33,7 +33,9 @@ if config["genecore"] is True and config["genecore_date_folder"]:
     ruleorder: ashleys_genecore_symlink > ashleys_bwa_strandseq_to_reference_alignment
 
 
-if not config["download_prebuilt_indexes"]:
+if not config["download_prebuilt_indexes"] and reference_missing(
+    *[f"{get_reference_fasta()}.{ext}" for ext in ("amb", "ann", "bwt", "pac", "sa")]
+):
 
     rule ashleys_bwa_index:
         input:

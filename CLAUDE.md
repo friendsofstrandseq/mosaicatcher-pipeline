@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 MosaiCatcher-pipeline is a Snakemake workflow for structural variant (SV) calling from single-cell Strand-seq sequencing data. The pipeline processes BAM files through binning, strand state detection, segmentation, haplotype resolution, and SV classification.
 
-**Current Version:** **Current Version:** 2.5.1
+**Current Version:** 2.5.1
 **Documentation:** https://friendsofstrandseq.github.io/mosaicatcher-docs/
 
 ## Version Management
@@ -19,8 +19,9 @@ The project uses a centralized version management system with support for stable
   - Beta: `pixi run bump-beta` (increment beta), `pixi run bump-release` (toggle beta/stable)
 - **Config file**: `.bumpversion.cfg` (defines which files to update)
 - **Container tags**: Assembly-specific with version
-  - Stable: `ghcr.io/.../mosaicatcher-pipeline:hg38-2.3.5`
-  - Beta: `ghcr.io/.../mosaicatcher-pipeline:hg38-2.3.6-beta.1`
+  - Stable: `ghcr.io/.../mosaicatcher-pipeline:hg38-v2.3.5`
+  - Beta: `ghcr.io/.../mosaicatcher-pipeline:hg38-v2.3.6-beta.1`
+  - Note the `v` prefix — the tag is built as `{assembly}-v{version}` in `workflow/Snakefile`
 
 When you bump version:
 
