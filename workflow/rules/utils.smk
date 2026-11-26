@@ -179,13 +179,15 @@ rule gunzip_fasta:
         "gunzip -cd {input} > {output}"
 
 
-if not config["download_prebuilt_indexes"]:
+if not config["download_prebuilt_indexes"] and reference_missing(
+    f"{get_reference_fasta()}.fai"
+):
 
     rule samtools_faindex:
         input:
             ancient("{file}.fa"),
         output:
-            "{file}.fa.fai",
+            protected("{file}.fa.fai"),
         log:
             "{file}.log",
         conda:
