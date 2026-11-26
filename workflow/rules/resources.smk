@@ -343,5 +343,7 @@ mem_populate_counts = cells_mem_mb(2000, 10, 64000)
 mem_mosaic_count = cells_mem_mb(10000, 10, 256000)
 # ashleys_generate_features: MaxRSS 16.4 GB at the 16 GB limit (96 cells, 12
 # threads; memory follows the threads more than the cells)
-#                                                     -> 24 GB + 10 MB/cell: 25 / 28 / 34
-mem_ashleys_features = cells_mem_mb(24000, 10, 256000, (1, 2, 4, 8, 10))
+#                                                     -> 20 GB + 10 MB/cell: 21 / 24 / 30
+# Retries grow x1.5 (21 -> 31 -> 47 -> 71 -> 105 GB at 96 cells) instead of
+# doubling, to keep requests moderate.
+mem_ashleys_features = cells_mem_mb(20000, 10, 256000, (1, 1.5, 2.25, 3.4, 5))
