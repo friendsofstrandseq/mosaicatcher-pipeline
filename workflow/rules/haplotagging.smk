@@ -24,7 +24,7 @@ rule prepare_haplotag_input_bam:
         "SAMtools/1.21-GCC-13.3.0",
     threads: 1
     resources:
-        mem_mb=2000,
+        mem_mb=get_mem_mb_prepare_haplotag,
     params:
         fix=config.get("fix_sm_tag", False),
     shell:

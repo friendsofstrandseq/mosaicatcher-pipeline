@@ -29,9 +29,11 @@ def get_mem_mb_alignment_group(wildcards, attempt):
     Snakemake takes MAX for sequential jobs.
     BWA and MarkDup are both heavy, so use their requirement.
     """
-    # Base: 8GB for typical cell (20-50GB FASTQ → 5-10GB BAM)
+    # Measured (run 2026-11-19_AV233002, 576 cells): bwa peak MaxRSS 8,270 MB,
+    # mean 7,140 MB; sort/markdup/index stay below 5 GB. 8 GB was slightly
+    # under the bwa peak, so attempt 1 starts at 9 GB.
     # Scale with attempt for OOM retry
-    base_mb = 8000
+    base_mb = 9000
     multipliers = [1.0, 1.5, 2.0, 3.0, 4.0]
     result = int(base_mb * multipliers[min(attempt - 1, 4)])
 
@@ -54,9 +56,10 @@ def get_mem_mb_merge_group(wildcards, attempt):
     # Each cell contributes ~50-100MB to merged BAM
     # For 100 cells: ~5-10GB merged BAM needs ~15-30GB to merge/sort
 
-    # Conservative base: 16GB (good for ~100 cells)
-    # Scale up for retries
-    base_mb = 16000
+    # Measured (run 2026-11-19_AV233002): mergeBams peak MaxRSS 16,776 MB and
+    # mergeSortBams 16,776 MB, i.e. above the former 16 GB request.
+    # Base raised to 20 GB; scale up for retries
+    base_mb = 20000
     multipliers = [1.0, 1.5, 2.0, 3.0, 4.0]
     result = int(base_mb * multipliers[min(attempt - 1, 4)])
 
@@ -72,9 +75,13 @@ def get_mem_mb_haplotag_group(wildcards, attempt):
     - index_haplotag_bam (light, <1GB)
 
     Haplotag dominates memory requirement.
+
+    Measured (run 2026-11-19_AV233002, 273 jobs): haplotag_bams peak MaxRSS
+    1,898 MB (mean 1,103 MB); index_haplotag_bam peak 1,049 MB. The former 4 GB
+    base was ~2x over-provisioned; retries double the request on OOM.
     """
-    base_mb = 4000
-    multipliers = [1.0, 1.5, 2.0, 3.0, 5.0]
+    base_mb = 2500
+    multipliers = [1.0, 2.0, 4.0, 8.0, 16.0]
     result = int(base_mb * multipliers[min(attempt - 1, 4)])
 
     return min(result, 256000)
@@ -85,11 +92,12 @@ def get_mem_mb_create_haplotag_table(wildcards, attempt):
     Memory for create_haplotag_table (standalone R script).
 
     Empirical data (456 jobs): p95=9,719 MB, max=17,401 MB.
-    The 8GB default causes active OOM failures.
-    Start at 12GB, scale aggressively for retries.
+    Run 2026-11-19_AV233002 (70 jobs): peak MaxRSS 5,086 MB (mean 3,446 MB).
+    The 8GB default causes active OOM failures; 12 GB was oversized for most
+    runs. Start at 10 GB (covers the historical p95), then 17.5/30/50/60 GB.
     """
-    base_mb = 12000
-    multipliers = [1.0, 1.5, 2.5, 4.0, 5.0]
+    base_mb = 10000
+    multipliers = [1.0, 1.75, 3.0, 5.0, 6.0]
     result = int(base_mb * multipliers[min(attempt - 1, 4)])
     return min(result, 60000)
 
@@ -145,8 +153,14 @@ def get_mem_mb_check_sm_tag(wildcards, input, attempt):
 
 
 def get_mem_mb(wildcards, attempt):
-    """Original function - preserved for ungrouped rules."""
-    mem_avail = [2, 4, 8, 16, 64]
+    """Default ladder for ungrouped MosaiCatcher rules (GB per attempt).
+
+    Light rules (e.g. compress/index_indiv_strandphaser_vcf) peak at ~0.45 GB
+    (run 2026-11-19_AV233002), so attempt 1 starts at 1 GB and OOM retries climb
+    1 -> 2 -> 4 -> 16 -> 64 GB. Note: ashleys rules are included before this file
+    and keep their own get_mem_mb from rules/ashleys/common.smk.
+    """
+    mem_avail = [1, 2, 4, 16, 64]
     return mem_avail[min(attempt - 1, 4)] * 1000
 
 
@@ -179,6 +193,19 @@ def get_mem_mb_regenotype(wildcards, input, attempt):
         )
     est_mb = int((20 + size_mb * 0.2) * 1000)
     return min(est_mb * attempt, 256000)
+
+
+def get_mem_mb_prepare_haplotag(wildcards, attempt):
+    """
+    Memory for prepare_haplotag_input_bam (hardlink/copy or samtools reheader).
+
+    Measured (run 2026-11-19_AV233002, 375 jobs): peak MaxRSS 448 MB (mean
+    315 MB). Previously a fixed 2,000 MB with no retry growth.
+    """
+    base_mb = 1000
+    multipliers = [1.0, 2.0, 4.0, 8.0, 16.0]
+    result = int(base_mb * multipliers[min(attempt - 1, 4)])
+    return min(result, 16000)
 
 
 def get_mem_mb_call_snvs(wildcards, attempt):
