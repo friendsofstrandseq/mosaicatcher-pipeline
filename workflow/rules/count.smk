@@ -1,3 +1,5 @@
+import re
+
 
 rule generate_exclude_file_for_mosaic_count:
     input:
@@ -98,25 +100,36 @@ if not config["ashleys_pipeline"]:
                 "../scripts/utils/handle_input_old_behavior.py"
 
     else:
+        # touch_labels writes a header-only labels.tsv ("no cell selection: keep
+        # every cell that passes mosaic count"). It must never replace an existing
+        # labels.tsv, e.g. the selection made by an earlier ashleys-qc run (#119):
+        # Snakemake would rerun it because the file was produced by another rule
+        # ("Code has changed since last execution"). So the rule only exists for
+        # samples that have no labels.tsv yet. Delete the file to regenerate it.
+        samples_without_labels = [
+            s
+            for s in samples
+            if not os.path.exists(
+                f"{config['data_location']}/{s}/cell_selection/labels.tsv"
+            )
+        ]
 
-        rule touch_labels:
-            # input:
-            #     info_raw="{folder}/{sample}/counts/{sample}.info_raw",
-            output:
-                "{folder}/{sample}/cell_selection/labels.tsv",
-            log:
-                "{folder}/log/{sample}/touch_labels/labels.log",
-            conda:
-                "../envs/mc_base.yaml"
-            shell:
-                """
-                # Create the output file
-                echo 'cell\tprobability\tprediction' > {output}
-                # # Process table and append to the output
-                # tail -n+15 {{input.info_raw}} | \
-                # awk '{{print $2".sort.mdup.bam\t"$10"\t"$10}}' >> {output}
-                # cat {output}
-                """
+        if samples_without_labels:
+
+            rule touch_labels:
+                localrule: True
+                wildcard_constraints:
+                    sample="|".join(re.escape(s) for s in samples_without_labels),
+                output:
+                    "{folder}/{sample}/cell_selection/labels.tsv",
+                log:
+                    "{folder}/log/{sample}/touch_labels/labels.log",
+                conda:
+                    "../envs/mc_base.yaml"
+                shell:
+                    """
+                    echo 'cell\tprobability\tprediction' > {output}
+                    """
 
 
 rule copy_labels:
