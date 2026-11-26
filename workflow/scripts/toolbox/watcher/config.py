@@ -90,7 +90,9 @@ class PipelineConfig:
         """Override in subclass to connect to LIMS/API for per-run config."""
         return {}
 
-    def execute_pipeline(self, data_location: str, dry_run: bool = False) -> bool:
+    def execute_pipeline(
+        self, data_location: str, dry_run: bool = False, nolock: bool = False
+    ) -> bool:
         """Run pipeline via Snakemake v9 Python API.
 
         All execution settings are read from the profile YAML.
@@ -204,6 +206,9 @@ class PipelineConfig:
                     retries=prof.get("retries", 4),
                     latency_wait=prof.get("latency-wait", 60),
                     keep_going=prof.get("keep-going", True),
+                    # --nolock: skip Snakemake's working-directory lock, e.g. to resume
+                    # after the previous run was killed and left a stale lock.
+                    lock=not nolock,
                 ),
                 scheduling_settings=SchedulingSettings(
                     max_jobs_per_second=prof.get("max-jobs-per-second", 10),

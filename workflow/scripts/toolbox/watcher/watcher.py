@@ -638,6 +638,7 @@ def rerun(
     samples: Annotated[Optional[list[str]], typer.Option(help="Samples to process (repeatable).")] = None,
     exclude_samples: Annotated[Optional[list[str]], typer.Option(help="Samples to exclude (repeatable).")] = None,
     config: Annotated[Optional[list[str]], typer.Option(help="Pipeline config override KEY=VALUE (repeatable).")] = None,
+    nolock: Annotated[bool, typer.Option("--nolock", help="Do not lock the working directory (resume after a killed run left a stale lock). Make sure no other Snakemake run writes the same files.")] = False,
 ):
     """Re-run the pipeline for a specific data_location with custom config.
 
@@ -654,6 +655,9 @@ def rerun(
         # Ashleys-only with dry-run:
         python watcher.py rerun /g/.../2026-02-09_AV233002
             --config ashleys_pipeline_only=True --dry-run
+
+        # Resume after a killed run left a stale lock:
+        python watcher.py rerun /g/.../2026-02-09_AV233002 --nolock
     """
     pipeline_config = PipelineConfig(
         pipeline_dir=pipeline_dir,
@@ -708,7 +712,7 @@ def rerun(
 
     try:
         pipeline_config.execute_pipeline(
-            data_location=str(data_path), dry_run=dry_run
+            data_location=str(data_path), dry_run=dry_run, nolock=nolock
         )
         typer.echo(f"Completed: {run_id}")
     except Exception as e:
