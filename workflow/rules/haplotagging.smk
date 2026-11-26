@@ -4,7 +4,7 @@ rule prepare_haplotag_input_bam:
     Materialise the BAM consumed by haplotag_bams with an @RG SM tag matching the
     sample. whatshap matches VCF sample name <-> BAM SM tag; pooled libraries carry
     the pool name (e.g. embl_9i) instead of the donor (e.g. HG01412).
-      SM correct                     -> hardlink the bam, copy the tiny .bai
+      SM correct                     -> symlink the bam, copy the tiny .bai
       SM wrong + fix_sm_tag: True    -> samtools reheader rewrites SM to {sample}
       SM wrong + fix_sm_tag: False   -> fail loudly, naming both values
     """
@@ -34,18 +34,18 @@ rule prepare_haplotag_input_bam:
         sm=$(samtools view -H {input.bam} | grep -m1 '^@RG' | tr '\t' '\n' | sed -n 's/^SM://p' | head -1)
         echo "cell={wildcards.cell} sample={wildcards.sample} SM=$sm fix={params.fix}"
         if [ "$sm" = "{wildcards.sample}" ]; then
-            # Hardlink the BAM (it can be many GB) but take a real COPY of the tiny .bai.
-            # If both were links they would each share an inode with their input, so
-            # stamping an output would drag the matching input along and the output could
-            # never end up strictly newer - which is exactly how this rule kept failing.
-            # An independent .bai inode breaks that cycle.
-            if cp -l {input.bam} {output.bam} 2>/dev/null; then
-                echo "SM matches sample -> hardlink bam"
-            else
-                echo "SM matches sample -> cross-device, symlink bam"
-                rm -f {output.bam}
-                ln -s "$(readlink -f {input.bam})" {output.bam}
-            fi
+            # SYMLINK the BAM (it can be many GB), never hardlink it. A hardlink shares
+            # its inode with bam/{{cell}}.sort.mdup.bam, so the `touch` below re-dated the
+            # upstream BAM itself; every rule that had consumed it (check_sm_tag, counts,
+            # segmentation, ...) then looked outdated, and any resume after this step
+            # re-ran the whole downstream part (run 2026-11-19: 375/576 BAMs re-dated).
+            # A symlink has its own inode, so `touch -h` stamps the link only. Snakemake
+            # compares link mtimes for the output-older-than-input check and follows the
+            # link (target mtime) for "updated input", so both stay consistent.
+            # Take a real COPY of the tiny .bai: an independent inode, stamped last.
+            echo "SM matches sample -> symlink bam"
+            rm -f {output.bam}
+            ln -s "$(readlink -f {input.bam})" {output.bam}
             cp -L {input.bai} {output.bai}
         elif [ "{params.fix}" = "True" ]; then
             echo "SM mismatch -> reheader SM:$sm to SM:{wildcards.sample}"
@@ -58,13 +58,14 @@ rule prepare_haplotag_input_bam:
             exit 1
         fi
 
-        # A hardlink inherits the source mtime, so stamp the outputs fresh; snakemake
-        # rejects an output older than any input. Order matters: the bam is a hardlink,
-        # so touching it also moves its input, making that input the newest one - the
-        # copied .bai must therefore be stamped LAST to stay >= it. Do not use a
-        # `touch -r` reference file here: mktemp honours $TMPDIR, and on a filesystem
-        # with 1 s timestamp granularity the truncated stamp lands before the inputs.
-        touch {output.bam}
+        # Stamp the outputs fresh; snakemake rejects an output older than any input.
+        # `-h` stamps the symlink itself and never its target, so the upstream BAM
+        # keeps its mtime (on the reheader branch the bam is a regular file and -h is
+        # a plain touch). Stamp the .bai LAST so it is never older than the bam. Do
+        # not use a `touch -r` reference file: mktemp honours $TMPDIR, and on a
+        # filesystem with 1 s timestamp granularity the truncated stamp lands before
+        # the inputs.
+        touch -h {output.bam}
         touch {output.bai}
         """
 
