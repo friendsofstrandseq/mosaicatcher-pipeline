@@ -40,7 +40,9 @@ jobs:
       - uses: mamba-org/setup-micromamba@v3
         with:
           environment-name: snakemake_env
-          create-args: snakemake snakemake-storage-plugin-http
+          # ubuntu-26.04 runners no longer ship conda, and `--sdm conda` calls
+          # `conda info`: install it in the env explicitly.
+          create-args: snakemake snakemake-storage-plugin-http conda
           cache-environment: false
           post-cleanup: 'all'
           init-shell: bash
