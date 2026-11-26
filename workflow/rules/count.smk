@@ -99,7 +99,10 @@ if not config["ashleys_pipeline"]:
             script:
                 "../scripts/utils/handle_input_old_behavior.py"
 
-    else:
+    elif "evas" not in CELL_SELECTION["tools"]:
+        # With cell_selection.tools: [evas], labels.tsv is written by
+        # cell_selection_decision (cell_selection.smk) instead.
+        #
         # touch_labels writes a header-only labels.tsv ("no cell selection: keep
         # every cell that passes mosaic count"). It must never replace an existing
         # labels.tsv, e.g. the selection made by an earlier ashleys-qc run (#119):

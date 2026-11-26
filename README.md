@@ -38,6 +38,7 @@ the workflow goes through the following steps:
 - Usage instructions and command examples
 - Configuration parameters reference
 - Output files documentation
+- Cell selection with ashleys-qc and/or EVAs: [docs/cell_selection.md](docs/cell_selection.md)
 - Development guides (version management, releases, pre-commit hooks)
 
 ## 💂‍♂️ Authors (alphabetical order)

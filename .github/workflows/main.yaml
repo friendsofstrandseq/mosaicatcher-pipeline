@@ -97,6 +97,28 @@ jobs:
             --cores 1 \
             --config list_commands=True
 
+      # EVAs is not installable in CI yet (not on bioconda): dry-runs only
+      - name: Dry-run cell selection modes (EVAs, no install needed)
+        run: |
+          set -e
+          for cs in "{tools: [evas], decision: evas}" "{tools: [evas], decision: none}"; do
+            pixi run snakemake --cores 1 --sdm conda -n \
+              --configfile .tests/config/simple_config_mosaicatcher.yaml \
+              --config "cell_selection=$cs"
+          done
+          for cs in "{tools: [ashleys, evas], decision: union}" "{tools: [ashleys, evas], decision: intersection}" "{tools: [], decision: none}"; do
+            pixi run snakemake --cores 1 --sdm conda -n \
+              --configfile .tests/config/simple_config_ashleys.yaml \
+              --config ashleys_pipeline=True use_light_data=False "cell_selection=$cs"
+          done
+          # Invalid combination must stop with a clear message
+          if pixi run snakemake --cores 1 -n \
+              --configfile .tests/config/simple_config_mosaicatcher.yaml \
+              --config "cell_selection={tools: [evas], decision: union}" > invalid.log 2>&1; then
+            echo "invalid cell_selection was accepted"; exit 1
+          fi
+          grep "Invalid cell_selection configuration" invalid.log
+
       - name: Run workflow (MosaiCatcher v9)
         run: |
           pixi run snakemake \

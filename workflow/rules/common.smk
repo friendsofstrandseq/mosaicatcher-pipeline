@@ -5,6 +5,7 @@ import yaml
 # from scripts.utils import handle_input, make_log_useful, pipeline_aesthetic_start
 from scripts.utils import make_log_useful, pipeline_aesthetic_start
 import os, sys
+import re, shutil
 
 # Solve LC_CTYPE issue
 
@@ -53,6 +54,148 @@ if config["ashleys_pipeline"] is True and config["genecore"] is True:
     config["data_location"] = config["abs_path"].join(
         config["data_location"].split("/")[:-1]
     )
+
+
+# ========================================
+# Cell selection: ashleys-qc and/or EVAs
+# ========================================
+# Settings of the cell_selection config block, validated once here so that the
+# ashleys module, count.smk and cell_selection.smk see the same values.
+# See docs/cell_selection.md.
+
+CELL_SELECTION_TOOLS = ("ashleys", "evas")
+CELL_SELECTION_DECISIONS = ("ashleys", "evas", "union", "intersection", "none")
+# Tools each decision needs
+CELL_SELECTION_NEEDS = {
+    "ashleys": {"ashleys"},
+    "evas": {"evas"},
+    "union": {"ashleys", "evas"},
+    "intersection": {"ashleys", "evas"},
+    "none": set(),
+}
+
+
+def _cell_selection_list(value):
+    if value is None:
+        return []
+    if isinstance(value, str):
+        return [v for v in re.split(r"[\s,;\[\]]+", value) if v]
+    return [str(v) for v in value]
+
+
+def parse_cell_selection(cfg):
+    """Validate config["cell_selection"] and return the effective settings."""
+    cs = dict(cfg.get("cell_selection") or {})
+    tools = [t.lower() for t in _cell_selection_list(cs.get("tools", ["ashleys"]))]
+    decision = str(cs.get("decision", "ashleys")).lower()
+    settings = {
+        "tools": tools,
+        "decision": decision,
+        "evas_borderline_as_pass": bool(cs.get("evas_borderline_as_pass", False)),
+        "evas_env": str(cs.get("evas_env", "") or "").rstrip("/"),
+        "evas_extra_args": str(cs.get("evas_extra_args", "") or ""),
+    }
+    fastq_mode = cfg["ashleys_pipeline"] is True
+    # BAM input without EVAs: historical behaviour, no cell selection (every
+    # cell is kept by touch_labels). ashleys-qc cannot run on BAM input and is
+    # ignored, so that the default config (tools: [ashleys]) keeps working.
+    legacy_bam = not fastq_mode and "evas" not in tools
+
+    errors = []
+    unknown = sorted(set(tools) - set(CELL_SELECTION_TOOLS))
+    if unknown:
+        errors.append(
+            f"tools: unknown tool(s) {unknown}, allowed: {list(CELL_SELECTION_TOOLS)}"
+        )
+    if decision not in CELL_SELECTION_DECISIONS:
+        errors.append(
+            f"decision: '{decision}' is not one of {list(CELL_SELECTION_DECISIONS)}"
+        )
+    missing = sorted(CELL_SELECTION_NEEDS.get(decision, set()) - set(tools))
+    if missing:
+        errors.append(
+            f"decision: '{decision}' needs {missing} in cell_selection.tools "
+            f"(got {tools})"
+        )
+    if not fastq_mode and not legacy_bam and "ashleys" in tools:
+        errors.append(
+            "tools: ashleys-qc needs ashleys_pipeline: True (FASTQ input); "
+            "with BAM input use tools: [evas]"
+        )
+    if fastq_mode and cfg["use_light_data"] is True and tools != ["ashleys"]:
+        errors.append(
+            "use_light_data: True keeps every cell (test mode) and only supports "
+            "the default tools: [ashleys]; set use_light_data: False"
+        )
+    if "evas" in tools:
+        if cfg["input_bam_legacy"] is True:
+            errors.append("EVAs is not supported with input_bam_legacy: True")
+        if int(cfg["window"]) != 200000:
+            errors.append(
+                f"EVAs needs window: 200000 (200 kb counts), got {cfg['window']}"
+            )
+        env = settings["evas_env"]
+        if env and not os.path.isdir(os.path.join(env, "conda-meta")):
+            errors.append(
+                f"evas_env: '{env}' is not a conda environment (no conda-meta/). "
+                "EVAs is not on bioconda yet: install it by hand, see "
+                "docs/cell_selection.md"
+            )
+        if not env and shutil.which("evas") is None:
+            # Not an error here so that dry-runs work without EVAs (CI);
+            # evas_predict fails with the same message if it is still missing.
+            print(
+                "WARNING: EVAs requested but cell_selection.evas_env is empty and "
+                "no 'evas' command is on the PATH; evas_predict will fail. Install "
+                "EVAs by hand (docs/cell_selection.md) and set evas_env.",
+                file=sys.stderr,
+            )
+    if errors:
+        raise ValueError(
+            "Invalid cell_selection configuration:\n  - " + "\n  - ".join(errors)
+        )
+    if legacy_bam:
+        return {**settings, "tools": [], "decision": "none"}
+    return settings
+
+
+CELL_SELECTION = parse_cell_selection(config)
+
+
+def cell_selection_inputs(wildcards):
+    """Inputs of the decision step: mosaicatcher cell list + each tool's output."""
+    prefix = f"{wildcards.folder}/{wildcards.sample}"
+    inputs = {"info": f"{prefix}/counts/{wildcards.sample}.info_raw"}
+    if "ashleys" in CELL_SELECTION["tools"]:
+        inputs["ashleys"] = (
+            f"{prefix}/cell_selection/labels_positive_control_corrected.tsv"
+        )
+    if "evas" in CELL_SELECTION["tools"]:
+        inputs["evas"] = (
+            f"{prefix}/cell_selection/evas/EVAs_{wildcards.sample}/"
+            f"{wildcards.sample}_predictions_with_reasons_and_bins.tsv"
+        )
+    return inputs
+
+
+def cell_selection_active():
+    """True when labels_detailed.tsv is produced (decision step defined)."""
+    if config["ashleys_pipeline"] is True:
+        return config["use_light_data"] is False
+    return "evas" in CELL_SELECTION["tools"]
+
+
+def get_cell_selection_outputs():
+    """labels_detailed.tsv for every sample, plate plot for 96/384-cell samples."""
+    if not cell_selection_active():
+        return []
+    outputs = []
+    for sample in samples:
+        prefix = f"{config['data_location']}/{sample}"
+        outputs.append(f"{prefix}/cell_selection/labels_detailed.tsv")
+        if len(cell_per_sample[sample]) in [96, 384]:
+            outputs.append(f"{prefix}/plots/plate/cell_selection_plate.pdf")
+    return outputs
 
 
 envvars:
@@ -999,6 +1142,11 @@ def get_final_output():
         final_list.extend(get_final_output_scnova())
     # from pprint import pprint
     # pprint(final_list)
+
+    # BAM input with EVAs: cell selection table and plate plot
+    # (FASTQ input: requested by get_ashleys_outputs)
+    if config["ashleys_pipeline"] is False:
+        final_list.extend(get_cell_selection_outputs())
 
     if config["breakpointR_only"] is True:
         final_list = list()

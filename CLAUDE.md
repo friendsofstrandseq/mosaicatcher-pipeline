@@ -117,6 +117,7 @@ Input (BAM/FASTQ) → [ashleys-qc] → Binning → Strand Detection → Segmenta
 | ----------------------------------------------- | ------------------------------------ |
 | `common.smk`                                    | Utility functions, config validation |
 | `count.smk`                                     | Read binning via mosaicatcher        |
+| `cell_selection.smk`                            | EVAs QC, cell selection, plate plot  |
 | `segmentation.smk`                              | Multi-variate segmentation           |
 | `strandphaser.smk`                              | Haplotype resolution                 |
 | `mosaiclassifier.smk`                           | SV classification                    |
@@ -141,6 +142,18 @@ The ashleys-qc-pipeline (located at `../ashleys-qc-pipeline-friendsofstrandseq/`
 - `ashleys_pipeline: False` - Start from pre-made BAM files (skip ashleys)
 
 When ashleys is enabled, its rules are imported with `ashleys_*` prefix.
+
+### Cell selection (ashleys-qc / EVAs)
+
+The `cell_selection` config block (`tools`, `decision`, `evas_borderline_as_pass`,
+`evas_env`) is parsed and validated once in `common.smk` (`CELL_SELECTION`).
+`labels.tsv` is written by the checkpoint `tune_predictions_based_on_threshold`
+(FASTQ input) or `cell_selection_decision` (BAM input + EVAs), both running
+`workflow/scripts/cell_selection/decide_cell_selection.py`, which also writes
+`labels_detailed.tsv` for the plate plot (`plot_plate_cell_selection`).
+EVAs (`evas_predict`, `rules/cell_selection.smk`) is not on bioconda yet: it
+runs from a hand-installed conda env (`evas_env`), outside the container.
+Do not add EVAs code or data to this repository. See `docs/cell_selection.md`.
 
 ### Git Submodules
 
