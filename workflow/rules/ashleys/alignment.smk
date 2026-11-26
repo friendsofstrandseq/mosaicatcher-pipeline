@@ -185,11 +185,25 @@ rule ashleys_mark_duplicates:
         "../../envs/mc_bioinfo_tools.yaml"
     envmodules:
         "sambamba/1.0.1-GCC-12.3.0",
+    # Intermittent markdup failures were previously blamed on CPU architecture
+    # (constraint "milan"), but the bioconda sambamba 1.0.1 binary contains no AVX
+    # instructions at all. Two node-dependent defaults explain them instead:
+    # - no -t: sambamba sizes its pool from the node's cores, not the SLURM
+    #   allocation (measured: 83 threads on a 56-core host for a 1-CPU job);
+    # - no --tmpdir: overflow lists go to the node's shared /tmp, and markdup dies
+    #   with "No space left on device" when it is full (reproduced on el10-env-test).
+    # The log also captures stderr now: "2>&1 > {log}" sent errors to the SLURM
+    # log, which is deleted, so the real failure reason was never kept.
+    threads: 2
     resources:
         mem_mb=get_mem_mb_alignment_group,
         runtime=60,
     shell:
-        "sambamba markdup {input.bam} {output} 2>&1 > {log}"
+        """
+        tmp=$(mktemp -d {wildcards.folder}/{wildcards.sample}/bam/.markdup_tmp_{wildcards.cell}.XXXXXX)
+        trap 'rm -rf "$tmp"' EXIT
+        sambamba markdup -t {threads} --tmpdir "$tmp" {input.bam} {output} > {log} 2>&1
+        """
 
 
 rule ashleys_symlink_bam_ashleys:
