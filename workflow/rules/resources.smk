@@ -313,10 +313,12 @@ runtime_ashleys_features = cells_runtime(10, 0.75)
 runtime_ashleys_predict = cells_runtime(10, 0.15)
 # mosaic_count: 16.4 min (10.3 s/cell)                -> 10 + 0.2/cell: 29 / 90 / 210
 runtime_mosaic_count = cells_runtime(10, 0.2)
-# mergeBams 36.6 / mergeSortBams 26.2 min (25 s/cell) -> 20 + 0.25/cell: 44 / 120 / 270
-runtime_merge_bams = cells_runtime(20, 0.25)
-# index_merged_bam: 10.9 min (6.8 s/cell)             -> 10 + 0.1/cell: 20 / 50 / 110
-runtime_index_merged_bam = cells_runtime(10, 0.1)
+# mergeBams 36.6 / mergeSortBams 26.2 min (25 s/cell); all 2026 jobs p99 58 / 68 min
+#                                                     -> 40 + 0.3/cell: 69 / 160 / 340
+runtime_merge_bams = cells_runtime(40, 0.3)
+# index_merged_bam: 10.9 min (6.8 s/cell); all 2026 jobs p99 22.5 min (848 TIMEOUT
+# at a 5 min limit)                                   -> 15 + 0.15/cell: 29 / 75 / 165
+runtime_index_merged_bam = cells_runtime(15, 0.15)
 # call_SNVs_bcftools_chrom: 59.7 min, but 1,165 TIMEOUT at a 60 min limit
 #                                                     -> 60 + 0.3/cell: 89 / 180 / 360
 runtime_call_snvs = cells_runtime(60, 0.3)
