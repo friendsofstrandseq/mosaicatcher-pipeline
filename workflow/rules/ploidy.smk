@@ -7,9 +7,10 @@ if config["ploidy"] is True:
             "{folder}/{sample}/ploidy/ploidy_detailled.txt",
         log:
             "{folder}/log/estimate_ploidy/{sample}.log",
-        threads: 24
+        threads: 4
         resources:
             mem_mb=get_mem_mb,
+            runtime=runtime_per_sample_light,
         params:
             # TODO move this to config
             merge_window=1000000,

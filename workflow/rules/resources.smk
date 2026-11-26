@@ -94,10 +94,11 @@ def get_mem_mb_create_haplotag_table(wildcards, attempt):
     Empirical data (456 jobs): p95=9,719 MB, max=17,401 MB.
     Run 2026-11-19_AV233002 (70 jobs): peak MaxRSS 5,086 MB (mean 3,446 MB).
     The 8GB default causes active OOM failures; 12 GB was oversized for most
-    runs. Start at 10 GB (covers the historical p95), then 17.5/30/50/60 GB.
+    runs. Oct-Nov 2026 (sacct, 13k jobs): peak MaxRSS 5,840 MB. Start at 7 GB,
+    then 14/21/35/56 GB (5 OOM at 12-18 GB in 2026 are handled by the retries).
     """
-    base_mb = 10000
-    multipliers = [1.0, 1.75, 3.0, 5.0, 6.0]
+    base_mb = 7000
+    multipliers = [1.0, 2.0, 3.0, 5.0, 8.0]
     result = int(base_mb * multipliers[min(attempt - 1, 4)])
     return min(result, 60000)
 
@@ -226,9 +227,11 @@ def get_mem_mb_mosaiclassifier(wildcards, attempt):
     Memory for mosaiClassifier_calc_probs.
 
     Empirical data (18 jobs): p95=1,553 MB, max=2,800 MB.
-    Previous 8GB base was 5x over-provisioned.
+    sacct 2026: 5 OUT_OF_MEMORY at 2,500 MB (Oct-Nov peak 3,050 MB, 96-cell
+    plates). The probabilities table grows with the number of cells:
+    4 GB + 10 MB per cell (96 cells -> ~5 GB, 1000 cells -> 14 GB).
     """
-    base_mb = 2500
+    base_mb = 4000 + 10 * get_n_cells(wildcards)
     multipliers = [1.0, 2.0, 4.0, 8.0, 16.0]
     result = int(base_mb * multipliers[min(attempt - 1, 4)])
     return min(result, 64000)
@@ -243,9 +246,100 @@ def get_mem_mb_strandphaser(wildcards, attempt):
     MaxRSS 4.3 GB, killed) — and the empirical max (5.5 GB) already exceeds
     4 GB, so attempt 1 was doomed to fail for the heaviest jobs. Base raised to
     8 GB so attempt 1 covers the worst observed case with margin; retries scale
-    to 16/32/64 GB.
+    to 16/32/64 GB. sacct 2026: 87 OOM at 4 GB and still 4 OOM at 8 GB, so attempt 1
+    is now 10 GB + 5 MB per cell (one job reads all cells of the sample).
     """
-    base_mb = 8000
+    base_mb = 10000 + 5 * get_n_cells(wildcards)
     multipliers = [1.0, 2.0, 4.0, 8.0]
     result = int(base_mb * multipliers[min(attempt - 1, 3)])
     return min(result, 64000)
+
+
+# ========================================
+# CELL-COUNT-AWARE RUNTIME / MEMORY
+# ========================================
+# Per-sample rules read every cell of the plate, so their cost grows with the
+# number of cells: 10-96 for most plates, 400 to 1000+ for pools. Coefficients
+# come from sacct (all 2026 jobs, 12-366 cells per sample, ~90% at 96): the
+# per-cell slope is the worst elapsed time per cell seen on 96-cell plates, which
+# also contains the fixed start-up cost, so it over-estimates large samples
+# (366-cell pools ran 2-5x faster per cell). Memory grows only mildly with cells.
+# The functions below apply the retry attempt themselves (time x attempt).
+
+DEFAULT_N_CELLS = 96
+MAX_RUNTIME_MIN = 14 * 24 * 60  # MaxTime of htc-el8 / htc-el10 (14 days)
+
+
+def get_n_cells(wildcards):
+    """Number of cells (plate size) of wildcards.sample.
+
+    cell_per_sample comes from the sample's bam/ folder (rules/common.smk) or,
+    in FASTQ mode, from its fastq/ folder (rules/ashleys/common.smk, unique
+    cells). Falls back to 96 when the sample is unknown.
+    """
+    try:
+        n = len(cell_per_sample.get(str(wildcards.sample), []))
+    except (NameError, AttributeError):
+        n = 0
+    return n if n > 0 else DEFAULT_N_CELLS
+
+
+def cells_runtime(base_min, per_cell_min, floor_min=15):
+    """runtime (min) = max(floor, base + per_cell x n_cells) x attempt, capped."""
+
+    def runtime(wildcards, attempt):
+        est = max(floor_min, base_min + per_cell_min * get_n_cells(wildcards))
+        return int(min(round(est) * attempt, MAX_RUNTIME_MIN))
+
+    return runtime
+
+
+def cells_mem_mb(base_mb, per_cell_mb, cap_mb, multipliers=(1, 2, 4, 8, 16)):
+    """mem_mb = (base + per_cell x n_cells) x multiplier[attempt], capped."""
+
+    def mem_mb(wildcards, attempt):
+        est = base_mb + per_cell_mb * get_n_cells(wildcards)
+        mult = multipliers[min(attempt - 1, len(multipliers) - 1)]
+        return int(min(est * mult, cap_mb))
+
+    return mem_mb
+
+
+# Measured worst case on 96-cell plates -> formula at 96 / 400 / 1000 cells
+# (attempt 1, minutes).
+# ashleys_generate_features: 80 min (50 s/cell)      -> 10 + 0.75/cell: 82 / 310 / 760
+runtime_ashleys_features = cells_runtime(10, 0.75)
+# ashleys_predict: 6.9 min (4.3 s/cell)               -> 10 + 0.15/cell: 24 / 70 / 160
+runtime_ashleys_predict = cells_runtime(10, 0.15)
+# mosaic_count: 16.4 min (10.3 s/cell)                -> 10 + 0.2/cell: 29 / 90 / 210
+runtime_mosaic_count = cells_runtime(10, 0.2)
+# mergeBams 36.6 / mergeSortBams 26.2 min (25 s/cell) -> 20 + 0.25/cell: 44 / 120 / 270
+runtime_merge_bams = cells_runtime(20, 0.25)
+# index_merged_bam: 10.9 min (6.8 s/cell)             -> 10 + 0.1/cell: 20 / 50 / 110
+runtime_index_merged_bam = cells_runtime(10, 0.1)
+# call_SNVs_bcftools_chrom: 59.7 min, but 1,165 TIMEOUT at a 60 min limit
+#                                                     -> 60 + 0.3/cell: 89 / 180 / 360
+runtime_call_snvs = cells_runtime(60, 0.3)
+# run_strandphaser_per_chrom: 54 min at 96, 73.5 min at 366 cells
+#                                                     -> 30 + 0.35/cell: 64 / 170 / 380
+runtime_strandphaser = cells_runtime(30, 0.35)
+# combine_strandphaser_output: 11.3 min, 126 TIMEOUT at a 30 min limit
+#                                                     -> 15 + 0.2/cell: 34 / 95 / 215
+runtime_combine_strandphaser = cells_runtime(15, 0.2)
+# Per-sample R/Python steps, <= 9 s/cell (VST, GC plots, populate_counts_GC)
+#                                                     -> 5 + 0.15/cell: 19 / 65 / 155
+runtime_per_sample_medium = cells_runtime(5, 0.15)
+# Per-sample R/Python steps, <= 6.4 s/cell (counts, plots, segmentation, calls)
+#                                                     -> 5 + 0.1/cell: 15 / 45 / 105
+runtime_per_sample_light = cells_runtime(5, 0.1)
+
+# Memory (attempt 1 at 96 / 400 / 1000 cells, GB):
+# populate_counts: 8 OUT_OF_MEMORY at 2 GB in 2026 -> 2 GB + 10 MB/cell: 3 / 6 / 12
+mem_populate_counts = cells_mem_mb(2000, 10, 64000)
+# mosaic_count: MaxRSS 8.1 GB at the 8 GB limit (96 cells)
+#                                                     -> 10 GB + 10 MB/cell: 11 / 14 / 20
+mem_mosaic_count = cells_mem_mb(10000, 10, 256000)
+# ashleys_generate_features: MaxRSS 16.4 GB at the 16 GB limit (96 cells, 12
+# threads; memory follows the threads more than the cells)
+#                                                     -> 24 GB + 10 MB/cell: 25 / 28 / 34
+mem_ashleys_features = cells_mem_mb(24000, 10, 256000, (1, 2, 4, 8, 10))

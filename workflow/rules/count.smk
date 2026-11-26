@@ -50,8 +50,8 @@ checkpoint mosaic_count:
     params:
         window=config["window"],
     resources:
-        mem_mb=get_mem_mb_heavy,
-        runtime=180,
+        mem_mb=mem_mosaic_count,
+        runtime=runtime_mosaic_count,
     shell:
         """
         mosaicatcher count \
@@ -77,7 +77,8 @@ rule populate_counts:
     conda:
         "../envs/mc_base.yaml"
     resources:
-        mem_mb=get_mem_mb,
+        mem_mb=mem_populate_counts,
+        runtime=runtime_per_sample_light,
     script:
         "../scripts/utils/populated_counts_for_qc_plot.py"
 
@@ -193,6 +194,7 @@ checkpoint filter_bad_cells_from_mosaic_count:
         "../envs/mc_base.yaml"
     resources:
         mem_mb=get_mem_mb,
+        runtime=runtime_per_sample_light,
     script:
         "../scripts/utils/filter_bad_cells.py"
 
@@ -278,6 +280,7 @@ if config["blacklist_regions"] is True:
             "../envs/rtools.yaml"
         resources:
             mem_mb=get_mem_mb,
+            runtime=runtime_per_sample_light,
         params:
             normalisation_type=config["hgsvc_based_normalized_counts"],
         shell:
@@ -312,6 +315,7 @@ rule sort_counts:
         "../envs/mc_base.yaml"
     resources:
         mem_mb=get_mem_mb,
+        runtime=runtime_per_sample_light,
     script:
         "../scripts/utils/sort_counts.py"
 
@@ -331,7 +335,7 @@ rule extract_single_cell_counts:
         "../envs/mc_base.yaml"
     resources:
         mem_mb=get_mem_mb_single_cell_group,
-        runtime=lambda wc, attempt: 5 * attempt,
+        runtime=lambda wc, attempt: 15 * attempt,
     container:
         None
     shell:

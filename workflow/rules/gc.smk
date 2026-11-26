@@ -12,6 +12,7 @@ if config["multistep_normalisation"] is True and config["window"] == 200000:
             gc_min_reads=config["multistep_normalisation_options"]["min_reads_cell"],
         resources:
             mem_mb=get_mem_mb,
+            runtime=runtime_per_sample_light,
         conda:
             "../envs/rtools.yaml"
         script:
@@ -44,6 +45,7 @@ if config["multistep_normalisation"] is True and config["window"] == 200000:
             gc_n_subsample=config["multistep_normalisation_options"]["n_subsample"],
         resources:
             mem_mb=get_mem_mb,
+            runtime=runtime_per_sample_light,
         conda:
             "../envs/rtools.yaml"
         script:
@@ -67,6 +69,7 @@ if config["multistep_normalisation"] is True and config["window"] == 200000:
             "{folder}/{sample}/log/VST_correction/{sample}.log",
         resources:
             mem_mb=get_mem_mb,
+            runtime=runtime_per_sample_medium,
         conda:
             "../envs/rtools.yaml"
         script:
@@ -98,6 +101,7 @@ if config["multistep_normalisation"] is True and config["window"] == 200000:
             "../envs/mc_base.yaml"
         resources:
             mem_mb=get_mem_mb,
+            runtime=runtime_per_sample_medium,
         script:
             "../scripts/utils/populated_counts_for_qc_plot.py"
 
@@ -118,6 +122,7 @@ if config["multistep_normalisation"] is True and config["window"] == 200000:
             "../envs/rtools.yaml"
         resources:
             mem_mb=get_mem_mb,
+            runtime=runtime_per_sample_medium,
         shell:
             """
             LC_CTYPE=C Rscript workflow/scripts/plotting/qc.R {input.counts} {input.info} {output} > {log} 2>&1

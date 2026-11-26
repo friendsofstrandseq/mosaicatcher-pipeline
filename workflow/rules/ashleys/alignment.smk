@@ -99,7 +99,7 @@ if config["paired_end"] is True:
             idx_prefix=lambda wildcards, input: input.ref_index[0].rsplit(".", 1)[0],
         resources:
             mem_mb=get_mem_mb_alignment_group,
-            runtime=60,
+            runtime=lambda wildcards, attempt: 30 * attempt,
         conda:
             "../../envs/mc_bioinfo_tools.yaml"
         envmodules:
@@ -140,7 +140,7 @@ else:
             idx_prefix=lambda wildcards, input: input.ref_index[0].rsplit(".", 1)[0],
         resources:
             mem_mb=get_mem_mb_alignment_group,
-            runtime=60,
+            runtime=lambda wildcards, attempt: 30 * attempt,
         conda:
             "../../envs/mc_bioinfo_tools.yaml"
         envmodules:
@@ -165,7 +165,7 @@ rule ashleys_samtools_sort_bam:
     # "alignment_per_cell"
     resources:
         mem_mb=get_mem_mb_alignment_group,
-        runtime=60,
+        runtime=lambda wildcards, attempt: 15 * attempt,
     conda:
         "../../envs/mc_bioinfo_tools.yaml"
     envmodules:
@@ -202,7 +202,7 @@ rule ashleys_mark_duplicates:
     threads: 2
     resources:
         mem_mb=get_mem_mb_alignment_group,
-        runtime=60,
+        runtime=lambda wildcards, attempt: 15 * attempt,
     shell:
         """
         tmp=$(mktemp -d "${{TMPDIR:-/tmp}}/markdup_{wildcards.cell}.XXXXXX")

@@ -14,6 +14,7 @@ rule segmentation:
         "../envs/mc_bioinfo_tools.yaml"
     resources:
         mem_mb=get_mem_mb,
+        runtime=runtime_per_sample_light,
     shell:
         """
         mosaicatcher segment \
@@ -61,7 +62,7 @@ rule segment_one_cell:
         min_num_segs=lambda wc: math.ceil(200000 / float(config["window"])),  # bins to represent 200 kb
     resources:
         mem_mb=get_mem_mb_single_cell_group,
-        runtime=lambda wc, attempt: 5 * attempt,
+        runtime=lambda wc, attempt: 15 * attempt,
     shell:
         """
         mosaicatcher segment \
@@ -105,6 +106,7 @@ rule segmentation_selection:
         "../envs/mc_base.yaml"
     resources:
         mem_mb=get_mem_mb,
+        runtime=runtime_per_sample_light,
     shell:
         """
         PYTHONPATH="" # Issue #1031 (https://bitbucket.org/snakemake/snakemake/issues/1031)

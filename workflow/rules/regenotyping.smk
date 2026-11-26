@@ -15,8 +15,8 @@ rule mergeBams:
     # "merge_bams_per_sample"
     resources:
         mem_mb=get_mem_mb_merge_group,
-        runtime=300,
-    threads: 10
+        runtime=runtime_merge_bams,
+    threads: 4
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     envmodules:
@@ -39,8 +39,8 @@ rule mergeSortBams:
     # "merge_bams_per_sample"
     resources:
         mem_mb=get_mem_mb_merge_group,
-        runtime=300,
-    threads: 10
+        runtime=runtime_merge_bams,
+    threads: 4
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     envmodules:
@@ -67,7 +67,7 @@ rule index_merged_bam:
         "SAMtools/1.21-GCC-13.3.0",
     resources:
         mem_mb=get_mem_mb_merge_group,
-        runtime=180,
+        runtime=runtime_index_merged_bam,
     shell:
         "samtools index {input} > {log} 2>&1"
 
@@ -131,7 +131,7 @@ rule call_SNVs_bcftools_chrom:
         "BCFtools/1.21-GCC-13.3.0",
     resources:
         mem_mb=get_mem_mb_call_snvs,
-        runtime=lambda wc, attempt: 60 * attempt,
+        runtime=runtime_call_snvs,
     shell:
         """
         bcftools mpileup -r {wildcards.chrom} -f {input.fasta} {input.bam} \

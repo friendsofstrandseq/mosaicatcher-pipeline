@@ -13,10 +13,13 @@ config:
 default-resources:
   - mem_mb=500 # Memory in megabytes allocated to each task
   # runtime is in MINUTES for Snakemake/SLURM (the former runtime=600 meant 10 h,
-  # not 10 min). Rules without their own runtime all finish in <10 min; the
-  # limit grows with each retry (60, 120, 180 ... min) so a TIMEOUT is retried
-  # with more time. Short limits let the SLURM backfill scheduler start jobs sooner.
-  - runtime=60*attempt
+  # not 10 min). Rules without their own runtime are short: over all 2026 jobs
+  # (sacct), p99 <= 10 min and almost none above 15 min. The per-cell haplotag/VCF
+  # rules (up to 30+ min) have their own 30*attempt and per-sample rules scale with
+  # the number of cells (rules/resources.smk). The limit grows with each retry (15, 30, 45, 60,
+  # 75 min) so a TIMEOUT is retried with more time; short limits let the SLURM
+  # backfill scheduler start jobs sooner.
+  - runtime=15*attempt
   - constraint='' # SLURM constraints (e.g., specific nodes), empty by default
   # EMBL el8 -> el10 migration (Nov 2026): htc-el8 keeps only a few nodes and is
   # congested; submit to both and let SLURM start each job in the first partition
