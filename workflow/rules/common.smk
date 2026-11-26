@@ -166,7 +166,6 @@ def get_reference_fasta(reference=None):
     return final
 
 
-
 def reference_missing(*paths):
     """True if any of the given reference files does not exist yet.
 
@@ -176,6 +175,7 @@ def reference_missing(*paths):
     schedule a re-download or re-index that would overwrite a shared file.
     """
     return not all(os.path.exists(p) for p in paths)
+
 
 def get_species_id():
     """Get NCBI Taxonomy ID for current genome (e.g., 9606 for human, 10090 for mouse)"""

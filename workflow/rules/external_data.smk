@@ -137,7 +137,10 @@ if config.get("download_prebuilt_indexes", True):
     )
 
     if reference_missing(
-        *[f"{get_reference_fasta()}.{ext}" for ext in ("amb", "ann", "bwt", "pac", "sa")]
+        *[
+            f"{get_reference_fasta()}.{ext}"
+            for ext in ("amb", "ann", "bwt", "pac", "sa")
+        ]
     ):
 
         rule ashleys_download_bwa_indexes:
