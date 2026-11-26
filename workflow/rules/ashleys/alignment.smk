@@ -192,6 +192,9 @@ rule ashleys_mark_duplicates:
     #   allocation (measured: 83 threads on a 56-core host for a 1-CPU job);
     # - no --tmpdir: overflow lists go to the node's shared /tmp, and markdup dies
     #   with "No space left on device" when it is full (reproduced on el10-env-test).
+    #   Use the job's own $TMPDIR instead: the EMBL SLURM prolog sets it to
+    #   /scratch/jobs/$SLURM_JOB_ID on every node (node-local /tmp is only 9 GB,
+    #   shared by all jobs, on milan nodes). Falls back to /tmp elsewhere.
     # The log also captures stderr now: "2>&1 > {log}" sent errors to the SLURM
     # log, which is deleted, so the real failure reason was never kept.
     threads: 2
@@ -200,7 +203,7 @@ rule ashleys_mark_duplicates:
         runtime=60,
     shell:
         """
-        tmp=$(mktemp -d {wildcards.folder}/{wildcards.sample}/bam/.markdup_tmp_{wildcards.cell}.XXXXXX)
+        tmp=$(mktemp -d "${{TMPDIR:-/tmp}}/markdup_{wildcards.cell}.XXXXXX")
         trap 'rm -rf "$tmp"' EXIT
         sambamba markdup -t {threads} --tmpdir "$tmp" {input.bam} {output} > {log} 2>&1
         """
