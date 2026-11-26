@@ -3,7 +3,7 @@ args <- commandArgs(TRUE)
 package <- args[1]
 
 # Check if the package is already available.
-# `package` may be a tarball PATH (e.g. ".../BSgenome.T2T.CHM13.V2_1.0.0.tar.gz") or a plain
+# `package` may be a tarball PATH (e.g. ".../BSgenome.Cfamiliaris.NCBI.canFam4_1.0.0.tar.gz") or a plain
 # package name. Using the tarball path directly with require() never matches an installed
 # package, so derive the real package name first (strip dir + "_<version>.tar.gz").
 pkg_name <- if (grepl("\\.tar\\.gz$", package)) sub("_[0-9].*$", "", basename(package)) else package
@@ -40,8 +40,9 @@ if (!isTRUE(is_package_available)) {
         return(FALSE)
     }
 
-    # Condition 1: Install custom tar.gz Bsgenome package named BSgenome.T2T.CHM13.V2_1.0.0.tar.gz
-    if (grepl("BSgenome.T2T.CHM13.V2_1.0.0.tar.gz", package, fixed = TRUE, perl = FALSE)) {
+    # Condition 1: Install a custom BSgenome source tarball (custom_bsgenome_tarball in
+    # config, e.g. canFam4). Any local .tar.gz is installed from source.
+    if (grepl("\\.tar\\.gz$", package)) {
         install_with_retry(function() {
             BiocManager::install("GenomeInfoDbData", update = FALSE)
             install.packages(package, repos = NULL, type = "source")
@@ -49,7 +50,7 @@ if (!isTRUE(is_package_available)) {
 
         # Condition 2: Install standard BSgenome packages from Bioconductor
     # Matches: BSgenome.<Species>.UCSC.<assembly>
-    # Examples: BSgenome.Hsapiens.UCSC.hg38, BSgenome.Mmusculus.UCSC.mm39, etc.
+    # Examples: BSgenome.Hsapiens.UCSC.hg38, BSgenome.Hsapiens.UCSC.hs1 (T2T), BSgenome.Mmusculus.UCSC.mm39, etc.
     } else if (grepl("^BSgenome\\.[A-Z][a-z]+\\.UCSC\\.", package, perl = TRUE)) {
         install_with_retry(function() {
             BiocManager::install(package, update = FALSE, ask = FALSE)

@@ -1,37 +1,26 @@
 # Assembly-specific Dockerfile for T2T (CHM13v2.0)
-# Extends base image with custom BSgenome tarball from Zenodo
+# Extends base image with BSgenome.Hsapiens.UCSC.hs1 (Bioconductor package for T2T-CHM13v2.0)
 
 FROM mosaicatcher:base
 
 LABEL assembly="T2T"
-LABEL bsgenome="BSgenome.T2T.CHM13.V2"
-LABEL zenodo="https://zenodo.org/record/7697400"
-LABEL org.opencontainers.image.description="MosaiCatcher Pipeline for Human T2T-CHM13v2.0 assembly. Includes custom BSgenome.T2T.CHM13.V2 for structural variant calling from single-cell Strand-seq data."
+LABEL bsgenome="BSgenome.Hsapiens.UCSC.hs1"
+LABEL org.opencontainers.image.description="MosaiCatcher Pipeline for Human T2T-CHM13v2.0 assembly. Includes BSgenome.Hsapiens.UCSC.hs1 for structural variant calling from single-cell Strand-seq data."
 
-# Download custom T2T BSgenome tarball from Zenodo
-RUN wget -q https://zenodo.org/record/7697400/files/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz \
-    -O /tmp/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz
-
-# Find R environment, install dependencies and custom BSgenome
+# Find R environment via Rscript binary and install BSgenome
 RUN echo "=== Finding R environment ===" && \
     RSCRIPT_PATH=$(find /conda-envs -name "Rscript" -type f -path "*/bin/Rscript" -not -path "*/lib/R/*" | head -1) && \
     echo "Found Rscript at: $RSCRIPT_PATH" && \
     RTOOLS_ENV=$(dirname $(dirname "$RSCRIPT_PATH")) && \
     echo "R environment path: $RTOOLS_ENV" && \
     echo "" && \
-    echo "=== Installing GenomeInfoDbData dependency via conda ===" && \
-    /opt/conda/bin/conda install -p "$RTOOLS_ENV" -y -c bioconda bioconductor-genomeinfodb && \
-    echo "" && \
-    echo "=== Installing custom T2T BSgenome from tarball ===" && \
-    "$RSCRIPT_PATH" -e 'install.packages("/tmp/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz", repos = NULL, type = "source")' && \
+    echo "=== Installing BSgenome.Hsapiens.UCSC.hs1 via conda ===" && \
+    /opt/conda/bin/conda install -p "$RTOOLS_ENV" -y -c bioconda bioconductor-bsgenome.hsapiens.ucsc.hs1 && \
     /opt/conda/bin/conda clean --all -y && \
     echo "=== Installation complete ==="
-
-# Clean up tarball
-RUN rm /tmp/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz
 
 # Verify installation
 RUN echo "=== Verifying BSgenome installation ===" && \
     RSCRIPT_PATH=$(find /conda-envs -name "Rscript" -type f | head -1) && \
     echo "Using Rscript at: $RSCRIPT_PATH" && \
-    "$RSCRIPT_PATH" -e 'library(BSgenome.T2T.CHM13.V2); print(BSgenome.T2T.CHM13.V2)'
+    "$RSCRIPT_PATH" -e 'library(BSgenome.Hsapiens.UCSC.hs1); print(BSgenome.Hsapiens.UCSC.hs1)'

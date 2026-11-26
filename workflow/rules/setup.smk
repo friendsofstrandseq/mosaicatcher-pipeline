@@ -64,20 +64,3 @@ rule config_run_summary:
         "../envs/mc_base.yaml"
     script:
         "../scripts/utils/run_summary.py"
-
-
-# rule install_T2T_BSgenome_tarball:
-#     input:
-#         tarball="workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz",
-#     output:
-#         touch("workflow/data/ref_genomes/config/BSgenome_{}.ok".format(config['reference'])),
-#     params:
-#         selected_package = lambda input, wc: wc.input.tarball
-#     log:
-#         "workflow/data/ref_genomes/log/T2T_R_tarball_install.log",
-#     conda:
-#         "../envs/rtools.yaml"
-#     resources:
-#         mem_mb=get_mem_mb_heavy,
-#     script:
-#         "../scripts/utils/install_R_package.R"
