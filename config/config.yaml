@@ -220,8 +220,7 @@ references_data:
   "T2T":
     # Existing fields
     reference_fasta: "workflow/data/ref_genomes/T2T.fa"
-    R_reference: "BSgenome.T2T.CHM13.V2"
-    # R_reference_tarball: "/g/korbel2/weber/MosaiCatcher_files/EXTERNAL_DATA/R_reference//BSgenome.T2T.CHM13.V2_1.0.0.tar.gz"
+    R_reference: "BSgenome.Hsapiens.UCSC.hs1"
     segdups: "workflow/data/segdups/segDups_T2T_UCSCtrack.bed.gz"
     snv_sites_to_genotype: []
     reference_file_location: https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/CHM13/assemblies/analysis_set/chm13v2.0.fa.gz
@@ -270,8 +269,11 @@ references_data:
     supports_arbigent: true
     supports_multistep_normalization: true
 
-    # Custom BSgenome tarball (downloaded from Zenodo by download_T2T_tarball rule)
-    custom_bsgenome_tarball: "workflow/data/ref_genomes/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz"
+    # Custom BSgenome tarball (null if using standard BioConductor package)
+    # BSgenome.Hsapiens.UCSC.hs1 is the Bioconductor package for T2T-CHM13v2.0
+    # (chrN names, same as the analysis-set FASTA); it replaces the former custom
+    # BSgenome.T2T.CHM13.V2 tarball from Zenodo.
+    custom_bsgenome_tarball: null
   "mm10":
     # Existing fields
     reference_fasta: "workflow/data/ref_genomes/mm10.fa"

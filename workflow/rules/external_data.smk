@@ -269,24 +269,6 @@ rule generate_canFam4_gc_matrix:
         """
 
 
-rule download_T2T_tarball:
-    localrule: True
-    output:
-        f"{REF_BASE_DIR}/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz",
-    log:
-        f"{REF_BASE_DIR}/log/T2T_tarball.ok",
-    params:
-        url="https://zenodo.org/record/7697400/files/BSgenome.T2T.CHM13.V2_1.0.0.tar.gz",
-    conda:
-        "../envs/mc_base.yaml"
-    shell:
-        """
-        mkdir -p $(dirname {output}) $(dirname {log})
-        wget -q -O {output} {params.url}
-        touch {log}
-        """
-
-
 rule download_arbigent_mappability_track:
     localrule: True
     output:
