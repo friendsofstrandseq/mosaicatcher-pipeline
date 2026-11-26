@@ -166,6 +166,17 @@ def get_reference_fasta(reference=None):
     return final
 
 
+
+def reference_missing(*paths):
+    """True if any of the given reference files does not exist yet.
+
+    Download/index rules for shared references are only defined when this is
+    True. An existing reference then has no producing rule and is a plain
+    source file for Snakemake, so a changed conda env, code or params can never
+    schedule a re-download or re-index that would overwrite a shared file.
+    """
+    return not all(os.path.exists(p) for p in paths)
+
 def get_species_id():
     """Get NCBI Taxonomy ID for current genome (e.g., 9606 for human, 10090 for mouse)"""
     return get_genome_metadata("species_id")
