@@ -57,13 +57,29 @@ environment stop the pipeline at start-up with an `Invalid cell_selection
 configuration` message. Dry-runs (`-n`), `--lint` and `list_commands` only
 print a warning when EVAs is missing.
 
-### Borderline cells
+### Default decision: strict (EVAs pass only)
 
-`evas_borderline_as_pass: False` (default) removes EVAs borderline cells. When
-EVAs is the deciding tool, a cell is only kept if EVAs passes it; the
-borderline cells stay visible in `labels_detailed.tsv` and on the plate plot,
-so they can be added back by setting the option to `True`. With
-`decision: union`, ashleys-qc can still keep a borderline cell.
+The default keeps a cell only if EVAs passes it: `decision: evas`,
+`evas_borderline_as_pass: False`, no union with ashleys-qc. **Precision is
+preferred over the number of cells**: fewer cells is acceptable, while
+low-quality cells (no clear strand inheritance, wrong BrdU incorporation, low
+depth) degrade the segmentation and the SV calls of the whole sample.
+
+On 10 production samples (960 cells, 2025-2026 runs) this keeps fewer cells
+than ashleys-qc on 8/10 samples: 308 EVAs pass vs 472 ashleys-qc kept, with
+73 % agreement on kept cells. The cells removed by EVAs and kept by ashleys-qc
+mostly fail the BrdU or strandedness criteria; both tools agree on low-depth
+cells (EVAs "under 100.000 reads": 275 cells, 6 of them kept by ashleys-qc).
+`union` would keep 518 cells (all ashleys-qc cells plus 46 EVAs-only) and is not used by
+default.
+
+Borderline cells (EVAs prediction 0.5, 61/960 cells in the same evaluation)
+are removed by default. They stay visible in `labels_detailed.tsv` and on the
+plate plot and can be added back with `evas_borderline_as_pass: True`; with
+`decision: union`, ashleys-qc can still keep them. EVAs results also vary
+between runs for a few cells close to the thresholds (mostly between
+borderline and fail), so keeping borderline cells would make the selection
+less reproducible.
 
 ### Compatibility with the existing options
 
