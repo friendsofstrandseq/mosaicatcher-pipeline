@@ -38,7 +38,9 @@ the workflow goes through the following steps:
 - Usage instructions and command examples
 - Configuration parameters reference
 - Output files documentation
-- Cell selection with ashleys-qc and/or EVAs: [docs/cell_selection.md](docs/cell_selection.md)
+- Cell selection with EVAs (default) and/or ashleys-qc: [docs/cell_selection.md](docs/cell_selection.md).
+  **EVAs is not public yet and must be installed by hand**; to use ashleys-qc instead:
+  `--config "cell_selection={tools: [ashleys], decision: ashleys}"`
 - Development guides (version management, releases, pre-commit hooks)
 
 ## 💂‍♂️ Authors (alphabetical order)

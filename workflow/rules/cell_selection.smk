@@ -64,9 +64,7 @@ if "evas" in CELL_SELECTION["tools"]:
             """
 
 
-cell_selection_samples = [
-    s for s in samples if s not in cell_selection_kept_labels()
-]
+cell_selection_samples = [s for s in samples if s not in cell_selection_kept_labels()]
 if cell_selection_kept_labels():
     print(
         "NOTE: cell_selection: existing labels.tsv kept (EVAs not run) for "
