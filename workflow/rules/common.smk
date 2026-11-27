@@ -183,8 +183,10 @@ def parse_cell_selection(cfg):
         raise ValueError(
             "Invalid cell_selection configuration:\n  - " + "\n  - ".join(errors)
         )
-    n_chrom = len(set(cfg["chromosomes"]) - set(cfg.get("chromosomes_to_exclude", [])))
-    if "evas" in tools and ignored is None and n_chrom < 20:
+    # chromosomes: [] means every chromosome of the reference
+    chroms = set(cfg["chromosomes"] or []) - set(cfg["chromosomes_to_exclude"] or [])
+    n_chrom = len(chroms)
+    if "evas" in tools and ignored is None and cfg["chromosomes"] and n_chrom < 20:
         print(
             f"WARNING: EVAs runs on {n_chrom} chromosome(s) only. It needs "
             ">= 100,000 reads per cell (whole-genome counts): on few chromosomes "
