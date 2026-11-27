@@ -247,16 +247,20 @@ def cell_selection_kept_labels():
 
 
 def get_cell_selection_outputs():
-    """labels_detailed.tsv for every sample, plate plot for 96/384-cell samples."""
+    """labels_detailed.tsv for every sample, plate plot for 96/384-cell samples,
+    multi-plate overview of the data_location."""
     if not cell_selection_active():
         return []
     kept = cell_selection_kept_labels()
+    selected = [s for s in samples if s not in kept]
     outputs = []
-    for sample in [s for s in samples if s not in kept]:
+    for sample in selected:
         prefix = f"{config['data_location']}/{sample}"
         outputs.append(f"{prefix}/cell_selection/labels_detailed.tsv")
         if len(cell_per_sample[sample]) in [96, 384]:
             outputs.append(f"{prefix}/plots/plate/cell_selection_plate.pdf")
+    if selected:
+        outputs.append(f"{config['data_location']}/plots/cell_selection_overview.pdf")
     return outputs
 
 

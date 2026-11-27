@@ -116,9 +116,13 @@ if (
 
 if cell_selection_active():
 
+    # Per-sample plate report: cell selection + MosaiCatcher per-cell metrics
+    # (counts summary, labels used by MosaiCatcher, SV calls if they exist).
     rule plot_plate_cell_selection:
         input:
             detailed="{folder}/{sample}/cell_selection/labels_detailed.tsv",
+            info="{folder}/{sample}/counts/{sample}.info_raw",
+            labels=select_labels,
         output:
             pdf=report(
                 "{folder}/{sample}/plots/plate/cell_selection_plate.pdf",
@@ -133,5 +137,29 @@ if cell_selection_active():
             "../envs/mc_base.yaml"
         params:
             ashleys_threshold=config["ashleys_threshold"],
+            # optional, read only if it already exists (not a dependency)
+            sv_calls=lambda wc: f"{wc.folder}/{wc.sample}/mosaiclassifier/sv_calls/stringent_filterTRUE.tsv",
         script:
             "../scripts/cell_selection/plot_plate_cell_selection.py"
+
+    # Multi-plate overview of the whole data_location
+    rule plot_cell_selection_overview:
+        input:
+            well_tables=lambda wc: expand(
+                "{folder}/{sample}/plots/plate/cell_selection_well_table.tsv",
+                folder=wc.folder,
+                sample=cell_selection_samples,
+            ),
+        output:
+            pdf=report(
+                "{folder}/plots/cell_selection_overview.pdf",
+                category="Cell selection",
+                labels={"Sample": "all", "Plot Type": "Overview"},
+            ),
+            tsv="{folder}/plots/cell_selection_overview.tsv",
+        log:
+            "{folder}/log/plot_cell_selection_overview.log",
+        conda:
+            "../envs/mc_base.yaml"
+        script:
+            "../scripts/cell_selection/plot_cell_selection_overview.py"
