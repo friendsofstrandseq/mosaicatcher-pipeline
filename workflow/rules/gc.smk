@@ -1,5 +1,23 @@
 if config["multistep_normalisation"] is True and config["window"] == 200000:
 
+    # Implementation of the library size, GC and VST steps:
+    #   strandtools: Python, strandtools package (git.embl.org/cosenza/strandtools)
+    #   legacy: the former R scripts
+    # Both read and write the same files: the rules downstream do not change.
+    ms_norm_method = config["multistep_normalisation_options"].get(
+        "method", "strandtools"
+    )
+    assert ms_norm_method in (
+        "strandtools",
+        "legacy",
+    ), f"multistep_normalisation_options.method must be 'strandtools' or 'legacy', got '{ms_norm_method}'"
+    ms_norm_ext = "py" if ms_norm_method == "strandtools" else "R"
+    ms_norm_env = (
+        "../envs/strandtools.yaml"
+        if ms_norm_method == "strandtools"
+        else "../envs/rtools.yaml"
+    )
+
     rule library_size_normalisation:
         input:
             counts="{folder}/{sample}/counts/{sample}.txt.raw.gz",
@@ -13,9 +31,9 @@ if config["multistep_normalisation"] is True and config["window"] == 200000:
         resources:
             mem_mb=get_mem_mb,
         conda:
-            "../envs/rtools.yaml"
+            ms_norm_env
         script:
-            "../scripts/GC/library_size_normalisation.R"
+            f"../scripts/GC/library_size_normalisation.{ms_norm_ext}"
 
     rule GC_correction:
         input:
@@ -42,12 +60,13 @@ if config["multistep_normalisation"] is True and config["window"] == 200000:
             # gc_matrix=ancient("workflow/data/GC/GC_matrix_200000.txt"),
             gc_min_reads=config["multistep_normalisation_options"]["min_reads_bin"],
             gc_n_subsample=config["multistep_normalisation_options"]["n_subsample"],
+            seed=config["multistep_normalisation_options"].get("seed", 42),
         resources:
             mem_mb=get_mem_mb,
         conda:
-            "../envs/rtools.yaml"
+            ms_norm_env
         script:
-            "../scripts/GC/GC_correction.R"
+            f"../scripts/GC/GC_correction.{ms_norm_ext}"
 
     rule VST_correction:
         input:
@@ -65,12 +84,17 @@ if config["multistep_normalisation"] is True and config["window"] == 200000:
             ),
         log:
             "{folder}/{sample}/log/VST_correction/{sample}.log",
+        params:
+            # grid searched for the dispersion (strandtools only)
+            phi_min=0.001,
+            phi_max=1.0,
+            phi_steps=50,
         resources:
             mem_mb=get_mem_mb,
         conda:
-            "../envs/rtools.yaml"
+            ms_norm_env
         script:
-            "../scripts/GC/variance_stabilizing_transformation.R"
+            f"../scripts/GC/variance_stabilizing_transformation.{ms_norm_ext}"
 
     rule reformat_ms_norm:
         input:
