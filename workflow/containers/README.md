@@ -133,11 +133,7 @@ containerized: "docker://ghcr.io/friendsofstrandseq/mosaicatcher-pipeline:hg38-V
 - hg19: `BSgenome.Hsapiens.UCSC.hg19`
 - mm10: `BSgenome.Mmusculus.UCSC.mm10`
 - mm39: `BSgenome.Mmusculus.UCSC.mm39`
-
-### Special Assembly (Custom Tarball)
-- T2T: `BSgenome.Hsapiens.NCBI.T2T.CHM13v2.0` from [Zenodo](https://zenodo.org/record/7697400)
-  - Requires `GenomeInfoDbData` pre-install
-  - Installed from tarball (`repos=NULL, type="source"`)
+- T2T: `BSgenome.Hsapiens.UCSC.hs1` (T2T-CHM13v2.0, `chrN` names)
 
 ## CI/CD Integration
 
