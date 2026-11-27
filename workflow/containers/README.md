@@ -23,6 +23,16 @@ pixi run snakemake \
   --containerize 2>&1 | sed -n '/^FROM condaforge/,$p' > workflow/containers/Dockerfile.base
 ```
 
+`--containerize` only collects the conda envs of the rules declared with the
+given config. Rules behind a config flag (e.g. `multistep_normalisation`, which
+declares the rules using `strandtools.yaml`) must be switched on here, otherwise
+their env is missing from the image. With a containerized image, Snakemake
+does not build a missing env at run time: it stops with
+`WorkflowError: Unable to find environment in container image`. Any change to
+an env yaml changes its hash, so the image must be rebuilt as well.
+The release build (`.github/workflows/build-containers.yaml`) enables
+`multistep_normalisation=True` for this reason.
+
 ## Building Images
 
 ### 1. Build Base Image

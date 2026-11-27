@@ -43,7 +43,10 @@ jobs:
           pixi run snakemake \
             --cores 4 \
             --configfile .tests/config/simple_config_mosaicatcher.yaml \
+            --config multistep_normalisation=True \
             --containerize 2>&1 | sed -n '/^FROM condaforge/,$p' > workflow/containers/Dockerfile.base
+          # multistep_normalisation=True declares the rules using
+          # workflow/envs/strandtools.yaml, so that env is baked into the image
 
       - name: Upload Dockerfile.base artifact
         uses: actions/upload-artifact@v7

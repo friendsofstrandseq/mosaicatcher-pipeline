@@ -2,7 +2,8 @@ if config["multistep_normalisation"] is True and config["window"] == 200000:
 
     # Implementation of the library size, GC and VST steps:
     #   strandtools: Python, strandtools package (git.embl.org/cosenza/strandtools)
-    #   legacy: the former R scripts
+    #   legacy: the former R scripts. DEPRECATED, kept only to compare outputs:
+    #     GC_correction.R amplifies the GC bias instead of correcting it (#140).
     # Both read and write the same files: the rules downstream do not change.
     ms_norm_method = config["multistep_normalisation_options"].get(
         "method", "strandtools"
@@ -11,6 +12,15 @@ if config["multistep_normalisation"] is True and config["window"] == 200000:
         "strandtools",
         "legacy",
     ), f"multistep_normalisation_options.method must be 'strandtools' or 'legacy', got '{ms_norm_method}'"
+    if ms_norm_method == "legacy":
+        from snakemake.logging import logger
+
+        logger.warning(
+            "WARNING: multistep_normalisation_options.method=legacy is deprecated. "
+            "The R GC correction (GC_correction.R) amplifies the GC bias instead of "
+            "correcting it (https://github.com/friendsofstrandseq/mosaicatcher-pipeline/issues/140): "
+            "normalised counts and plots are biased. Use method=strandtools."
+        )
     ms_norm_ext = "py" if ms_norm_method == "strandtools" else "R"
     ms_norm_env = (
         "../envs/strandtools.yaml"
