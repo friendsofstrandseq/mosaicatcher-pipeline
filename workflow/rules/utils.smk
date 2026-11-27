@@ -45,7 +45,7 @@ rule index_haplotag_bam:
         "SAMtools/1.21-GCC-13.3.0",
     resources:
         mem_mb=get_mem_mb_haplotag_group,
-        runtime=lambda wc, attempt: 30 * attempt,
+        runtime=runtime_light_per_cell_bam_unnamed,
     shell:
         "samtools index {input} > {log} 2>&1"
 
@@ -162,6 +162,7 @@ rule index_input_bam:
         "SAMtools/1.21-GCC-13.3.0",
     resources:
         mem_mb=get_mem_mb_index_bam,
+        runtime=runtime_index_bam,
     shell:
         "samtools index {input} > {log} 2>&1"
 

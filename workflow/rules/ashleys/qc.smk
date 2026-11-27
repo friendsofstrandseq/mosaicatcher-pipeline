@@ -16,7 +16,7 @@ rule ashleys_generate_features:
         ),
     resources:
         mem_mb=lambda wildcards, attempt: mem_ashleys_features(wildcards, attempt),
-        runtime=lambda wildcards, attempt: runtime_ashleys_features(wildcards, attempt),
+        runtime=runtime_ashleys_features,
     shell:
         "ashleys -j {threads} features -f {params.folder} -w {params.windows} -o {output} --recursive_collect -e {params.extension}"
 

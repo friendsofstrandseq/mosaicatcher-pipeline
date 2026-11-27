@@ -15,6 +15,7 @@ rule ashleys_fastqc:
     threads: 1
     resources:
         mem_mb=get_mem_mb,
+        runtime=runtime_fastqc,
     conda:
         "../../envs/mc_bioinfo_tools.yaml"
     envmodules:

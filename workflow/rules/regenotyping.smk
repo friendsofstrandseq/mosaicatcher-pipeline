@@ -39,7 +39,7 @@ rule mergeSortBams:
     # "merge_bams_per_sample"
     resources:
         mem_mb=get_mem_mb_merge_group,
-        runtime=runtime_merge_bams,
+        runtime=runtime_merge_sort_bams,
     threads: 4
     conda:
         "../envs/mc_bioinfo_tools.yaml"

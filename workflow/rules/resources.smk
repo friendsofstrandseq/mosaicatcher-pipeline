@@ -41,6 +41,28 @@ def get_mem_mb_alignment_group(wildcards, attempt):
     return min(result, 256000)
 
 
+def get_mem_mb_bwa(wildcards, input, attempt):
+    """bwa mem: the index (.bwt + .sa + .pac) is held in memory, plus per-thread
+    read buffers that depend on the reads.
+
+    mem_mb = 1300 MB per GB of index + 5000 MB, x1.5 per retry. Index sizes:
+    hg38 5.43 GB, T2T 5.46 GB, mm39 4.77 GB -> 12.0 / 12.1 / 11.2 GB at attempt 1
+    for 2026 peaks of 8.54 / 10.13 / 7.96 GiB (>= 16% headroom).
+    The index files are inputs of the rule (ancient), so they exist when this is
+    evaluated at scheduling; 12.5 GB is used if their size cannot be read.
+    """
+    try:
+        prefix = input.ref_index[0].rsplit(".", 1)[0]
+        idx_gb = (
+            sum(os.path.getsize(prefix + ext) for ext in (".bwt", ".sa", ".pac")) / 1e9
+        )
+        base_mb = 1300 * idx_gb + 5000
+    except (OSError, AttributeError, IndexError):
+        base_mb = 12500
+    multipliers = [1.0, 1.5, 2.0, 3.0, 4.0]
+    return int(min(base_mb * multipliers[min(attempt - 1, 4)], 256000))
+
+
 def get_mem_mb_sort_markdup(wildcards, attempt):
     """ashleys_samtools_sort_bam and ashleys_mark_duplicates (one cell each).
 
@@ -341,17 +363,13 @@ def cells_mem_mb(base_mb, per_cell_mb, cap_mb, multipliers=(1, 2, 4, 8, 16)):
 # Measured worst case on 96-cell plates -> formula at 96 / 400 / 1000 cells
 # (attempt 1, minutes).
 # ashleys_generate_features: 80 min (50 s/cell)      -> 10 + 0.75/cell: 82 / 310 / 760
-runtime_ashleys_features = cells_runtime(10, 0.75)
 # ashleys_predict: 6.9 min (4.3 s/cell)               -> 10 + 0.15/cell: 24 / 70 / 160
 runtime_ashleys_predict = cells_runtime(10, 0.15)
 # mosaic_count: 16.4 min (10.3 s/cell)                -> 10 + 0.2/cell: 29 / 90 / 210
-runtime_mosaic_count = cells_runtime(10, 0.2)
 # mergeBams 36.6 / mergeSortBams 26.2 min (25 s/cell); all 2026 jobs p99 58 / 68 min
 #                                                     -> 40 + 0.3/cell: 69 / 160 / 340
-runtime_merge_bams = cells_runtime(40, 0.3)
 # index_merged_bam: 10.9 min (6.8 s/cell); all 2026 jobs p99 22.5 min (848 TIMEOUT
 # at a 5 min limit)                                   -> 15 + 0.15/cell: 29 / 75 / 165
-runtime_index_merged_bam = cells_runtime(15, 0.15)
 # call_SNVs_bcftools_chrom: 59.7 min, but 1,165 TIMEOUT at a 60 min limit
 #                                                     -> 60 + 0.3/cell: 89 / 180 / 360
 runtime_call_snvs = cells_runtime(60, 0.3)
@@ -380,3 +398,99 @@ mem_mosaic_count = cells_mem_mb(10000, 10, 256000)
 # Retries grow x1.5 (21 -> 31 -> 47 -> 71 -> 105 GB at 96 cells) instead of
 # doubling, to keep requests moderate.
 mem_ashleys_features = cells_mem_mb(20000, 10, 256000, (1, 1.5, 2.25, 3.4, 5))
+
+
+# ========================================
+# INPUT-SIZE SCALING
+# ========================================
+# Most plates have cells of a few hundred MB, but a positive control can hold a
+# whole plate's worth of reads in one well: up to 58.7 GB of FASTQ (pair) for a
+# single cell in 2026 (ChiaraCKPMouseOrganoids10hp1PE20396). Neither a fixed
+# limit nor the number of cells covers it, so per-cell rules scale with the size
+# of their data inputs (reference files excluded) and aggregation rules take
+# the max of the cell-count and the input-size estimate. Input-dependent
+# resources are evaluated when the job is scheduled, i.e. once inputs exist.
+SIZE_RUNTIME_CAP_MIN = 24 * 60  # attempt-1 ceiling; retries still multiply
+
+
+def input_gb(input, keys=None):
+    """Total size in GB of the named inputs (all inputs when keys is None)."""
+    if keys is None:
+        files = list(input)
+    else:
+        files = []
+        for k in keys:
+            v = getattr(input, k, None)
+            if v is None:
+                continue
+            files.extend(v if isinstance(v, (list, tuple)) else [v])
+    total = 0
+    for f in files:
+        try:
+            total += os.path.getsize(f)
+        except OSError:
+            pass
+    return total / 1e9
+
+
+def size_runtime(base_min, min_per_gb, floor_min=15, keys=None):
+    """runtime = max(floor, base + slope x input GB), capped at 24 h, x attempt."""
+
+    def runtime(wildcards, input, attempt):
+        est = max(floor_min, base_min + min_per_gb * input_gb(input, keys))
+        est = min(est, SIZE_RUNTIME_CAP_MIN)
+        return int(min(round(est) * attempt, MAX_RUNTIME_MIN))
+
+    return runtime
+
+
+def cells_or_size_runtime(
+    base_min, per_cell_min, size_base_min, min_per_gb, floor_min=15, keys=None
+):
+    """Aggregation rules: max(cell-count estimate, input-size estimate) x attempt."""
+
+    def runtime(wildcards, input, attempt):
+        est = max(
+            floor_min,
+            base_min + per_cell_min * get_n_cells(wildcards),
+            min(
+                size_base_min + min_per_gb * input_gb(input, keys), SIZE_RUNTIME_CAP_MIN
+            ),
+        )
+        return int(min(round(est) * attempt, MAX_RUNTIME_MIN))
+
+    return runtime
+
+
+# Slopes calibrated on all COMPLETED 2026 jobs (min per GB of input, p90):
+# bwa 23.6 (6 threads; 13 on the 58.7 GB control), sort 11.9 / markdup 17.2 on
+# small BAMs where fixed costs dominate, 2.7 / 2.2 on the 50 GB control BAM,
+# index 8.3 (control > 5 min), generate_features 1.7 per GB of sample BAMs.
+runtime_bwa = size_runtime(15, 20, floor_min=30, keys=("mate1", "mate2"))
+runtime_sort_markdup = size_runtime(5, 6)
+runtime_index_bam = size_runtime(5, 2)
+runtime_fastqc = size_runtime(5, 5)
+runtime_haplotag_per_cell = size_runtime(5, 10, keys=("bam",))
+runtime_light_per_cell_bam = size_runtime(5, 5, keys=("bam",))
+runtime_light_per_cell_bam_unnamed = size_runtime(5, 5)
+
+
+def get_mem_mb_sort(wildcards, input, attempt):
+    """samtools sort, one cell: 6 GB + 50 MB per GB of unsorted BAM, x1.5 per retry.
+
+    Peak 4.87 GB on regular cells (2026), 5.13 GB on the 50 GB control BAM
+    (temporary-file merge); the size term keeps headroom for larger wells.
+    """
+    base_mb = 6000 + 50 * input_gb(input)
+    multipliers = [1.0, 1.5, 2.0, 3.0, 4.0]
+    return int(min(base_mb * multipliers[min(attempt - 1, 4)], 256000))
+
+
+# Aggregation rules: max(cells, input size). generate_features p90 1.7 min per GB
+# of sample BAMs (12 threads): the plate with the 58.7 GB control took 80.2 min
+# against 82 min from the cell count alone.
+runtime_ashleys_features = cells_or_size_runtime(10, 0.75, 10, 2.0, keys=("bam",))
+runtime_mosaic_count = cells_or_size_runtime(10, 0.2, 10, 0.5, keys=("bam",))
+runtime_merge_bams = cells_or_size_runtime(40, 0.3, 10, 1.0, keys=("bam",))
+runtime_merge_sort_bams = cells_or_size_runtime(40, 0.3, 10, 1.0)
+runtime_index_merged_bam = cells_or_size_runtime(15, 0.15, 10, 0.5)

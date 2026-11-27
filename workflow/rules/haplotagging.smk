@@ -25,7 +25,7 @@ rule prepare_haplotag_input_bam:
     threads: 1
     resources:
         mem_mb=get_mem_mb_prepare_haplotag,
-        runtime=lambda wc, attempt: 30 * attempt,
+        runtime=runtime_light_per_cell_bam,
     params:
         fix=config.get("fix_sm_tag", False),
     shell:
@@ -96,7 +96,7 @@ rule haplotag_bams:
         ref=config["reference"],
     resources:
         mem_mb=get_mem_mb_haplotag_group,
-        runtime=lambda wc, attempt: 30 * attempt,
+        runtime=runtime_haplotag_per_cell,
     conda:
         "../envs/mc_bioinfo_tools.yaml"
     shell:
@@ -140,7 +140,7 @@ rule create_haplotag_table:
         "../envs/rtools.yaml"
     resources:
         mem_mb=get_mem_mb_create_haplotag_table,
-        runtime=lambda wc, attempt: 30 * attempt,
+        runtime=runtime_haplotag_per_cell,
     script:
         "../scripts/haplotagging_scripts/haplotagTable.snakemake.R"
 
