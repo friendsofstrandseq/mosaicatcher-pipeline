@@ -55,14 +55,20 @@ cell_selection:
   # With BAM input, [] or [ashleys] means no cell selection (every cell kept).
   tools: [evas]
   # Which cells are kept for SV calling:
-  #   evas          EVAs pass (and borderline if evas_borderline_as_pass)
+  #   evas          EVAs pass (borderline cells: see evas_borderline)
   #   ashleys       ashleys-qc probability >= ashleys_threshold
   #   union         kept by ashleys-qc OR EVAs
   #   intersection  kept by ashleys-qc AND EVAs
   #   none          keep every cell; predictions are still computed and reported
   decision: evas
-  # EVAs borderline cells (prediction 0.5): False = removed (default)
-  evas_borderline_as_pass: False
+  # EVAs borderline cells (prediction 0.5). Each one gets a recommendation
+  # (keep / review / discard, labels_detailed.tsv and plots).
+  #   exclude    removed (default: including a non-viable cell is worse
+  #              than losing one)
+  #   recommend  keep the borderline cells recommended "keep"
+  #   include    keep every borderline cell
+  # (old option evas_borderline_as_pass: True = include)
+  evas_borderline: exclude
   # Conda environment where EVAs was installed by hand: env name or path.
   # Empty = use the 'evas' command found on the PATH.
   evas_env: "evas"

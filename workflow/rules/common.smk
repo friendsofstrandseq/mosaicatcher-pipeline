@@ -64,6 +64,7 @@ if config["ashleys_pipeline"] is True and config["genecore"] is True:
 # See docs/cell_selection.md.
 
 CELL_SELECTION_TOOLS = ("ashleys", "evas")
+CELL_SELECTION_BORDERLINE = ("exclude", "recommend", "include")
 CELL_SELECTION_DECISIONS = ("ashleys", "evas", "union", "intersection", "none")
 # Tools each decision needs
 CELL_SELECTION_NEEDS = {
@@ -124,7 +125,9 @@ def parse_cell_selection(cfg):
     settings = {
         "tools": tools,
         "decision": decision,
-        "evas_borderline_as_pass": bool(cs.get("evas_borderline_as_pass", False)),
+        # exclude (default) | recommend (keep the borderline cells recommended
+        # "keep") | include
+        "evas_borderline": str(cs.get("evas_borderline") or "exclude").lower(),
         "evas_env": str(cs.get("evas_env", "evas") or "").rstrip("/"),
         "evas_extra_args": str(cs.get("evas_extra_args", "") or ""),
     }
@@ -148,6 +151,26 @@ def parse_cell_selection(cfg):
     if unknown:
         errors.append(
             f"tools: unknown tool(s) {unknown}, allowed: {list(CELL_SELECTION_TOOLS)}"
+        )
+    # Old option evas_borderline_as_pass: True means evas_borderline: include
+    # (--config passes nested values as strings: "True")
+    if str(cs.get("evas_borderline_as_pass", False)).lower() in ("true", "1", "yes"):
+        if settings["evas_borderline"] == "recommend":
+            errors.append(
+                "evas_borderline_as_pass: True (old option, = include) contradicts "
+                "evas_borderline: recommend; set evas_borderline only"
+            )
+        else:
+            settings["evas_borderline"] = "include"
+            print(
+                "WARNING: cell_selection.evas_borderline_as_pass is deprecated, "
+                "use evas_borderline: include",
+                file=sys.stderr,
+            )
+    if settings["evas_borderline"] not in CELL_SELECTION_BORDERLINE:
+        errors.append(
+            f"evas_borderline: '{settings['evas_borderline']}' is not one of "
+            f"{list(CELL_SELECTION_BORDERLINE)}"
         )
     if decision not in CELL_SELECTION_DECISIONS:
         errors.append(
@@ -182,6 +205,18 @@ def parse_cell_selection(cfg):
     if errors:
         raise ValueError(
             "Invalid cell_selection configuration:\n  - " + "\n  - ".join(errors)
+        )
+    if (
+        settings["evas_borderline"] == "recommend"
+        and "evas" in tools
+        and "ashleys" not in tools
+        and ignored is None
+    ):
+        print(
+            "WARNING: evas_borderline: recommend needs ashleys-qc to recommend "
+            "'keep' (tools: [ashleys, evas]); without it the borderline cells are "
+            "only marked review or discard and none is kept.",
+            file=sys.stderr,
         )
     # chromosomes: [] means every chromosome of the reference
     chroms = set(cfg["chromosomes"] or []) - set(cfg["chromosomes_to_exclude"] or [])

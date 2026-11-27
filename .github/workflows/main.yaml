@@ -132,6 +132,19 @@ jobs:
             echo "invalid cell_selection was accepted"; exit 1
           fi
           grep "Invalid cell_selection configuration" invalid.log
+          if pixi run snakemake --cores 1 -n \
+              --configfile .tests/config/simple_config_mosaicatcher.yaml \
+              --config "cell_selection={evas_borderline: maybe}" > invalid_bl.log 2>&1; then
+            echo "invalid evas_borderline was accepted"; exit 1
+          fi
+          grep "evas_borderline: 'maybe' is not one of" invalid_bl.log
+          # Borderline modes are accepted (old option: deprecation warning)
+          for cs in "{evas_borderline: recommend}" "{evas_borderline: include}" "{evas_borderline_as_pass: True}"; do
+            pixi run snakemake --cores 1 -n \
+              --configfile .tests/config/simple_config_mosaicatcher.yaml \
+              --config "cell_selection=$cs" > bl.log 2>&1 || { cat bl.log; exit 1; }
+          done
+          grep "evas_borderline_as_pass is deprecated" bl.log
           # The CI configuration never runs EVAs
           for cf in simple_config_mosaicatcher.yaml simple_config_ashleys.yaml; do
             pixi run snakemake --cores 1 --sdm conda -n \

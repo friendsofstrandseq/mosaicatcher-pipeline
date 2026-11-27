@@ -109,7 +109,8 @@ if (
         params:
             decision=CELL_SELECTION["decision"],
             ashleys_threshold=config["ashleys_threshold"],
-            evas_borderline_as_pass=CELL_SELECTION["evas_borderline_as_pass"],
+            evas_borderline=CELL_SELECTION["evas_borderline"],
+            evas_extra_args=CELL_SELECTION["evas_extra_args"],
         script:
             "../scripts/cell_selection/decide_cell_selection.py"
 
@@ -135,6 +136,9 @@ if cell_selection_active():
             "{folder}/log/plot_plate_cell_selection/{sample}.log",
         conda:
             "../envs/mc_base.yaml"
+        resources:
+            mem_mb=get_mem_mb,
+            runtime=30,
         params:
             ashleys_threshold=config["ashleys_threshold"],
             # optional, read only if it already exists (not a dependency)
@@ -161,5 +165,8 @@ if cell_selection_active():
             "{folder}/log/plot_cell_selection_overview.log",
         conda:
             "../envs/mc_base.yaml"
+        resources:
+            mem_mb=get_mem_mb,
+            runtime=30,
         script:
             "../scripts/cell_selection/plot_cell_selection_overview.py"

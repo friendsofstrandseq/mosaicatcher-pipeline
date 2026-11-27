@@ -160,6 +160,50 @@ def not_run(ax, title, n_rows, n_cols, fontsize=9, ticks=True, text="not run"):
 UNPLACED = "no well number\nin the cell names"
 
 
+BORDER_MARK = {"keep": "K", "review": "R", "discard": "D"}
+BORDER_COLORS = {"keep": "#1a9850", "review": "#fdae61", "discard": "#d7301f"}
+
+
+def borderline_rows(df):
+    """Borderline cells with their recommendation, for the report tables."""
+    if "borderline_recommendation" not in df.columns:
+        return df.iloc[0:0]
+    b = df.loc[df["evas_status"] == "borderline"].copy()
+    order = {"keep": 0, "review": 1, "discard": 2}
+    return b.sort_values(
+        by=["borderline_recommendation", "cell"],
+        key=lambda c: c.map(order) if c.name == "borderline_recommendation" else c,
+    )
+
+
+def table_pages(pdf, plt, header, rows, title, colors=None, per_page=28, widths=None):
+    """Draw a long table over as many pages as needed (rows = lists of str)."""
+    for start in range(0, max(len(rows), 1), per_page):
+        chunk = rows[start : start + per_page]
+        fig, ax = plt.subplots(figsize=(16, 0.32 * (len(chunk) + 3) + 0.6))
+        ax.axis("off")
+        if chunk:
+            t = ax.table(
+                cellText=chunk,
+                colLabels=header,
+                loc="upper center",
+                cellLoc="left",
+                colWidths=widths,
+            )
+            t.auto_set_font_size(False)
+            t.set_fontsize(6.5)
+            t.scale(1, 1.25)
+            if colors:
+                for i, col in enumerate(colors[start : start + per_page]):
+                    if col:
+                        t[(i + 1, header.index("recommendation"))].set_facecolor(col)
+        page = f" ({start // per_page + 1})" if len(rows) > per_page else ""
+        ax.set_title(title + page, fontsize=10)
+        fig.tight_layout()
+        pdf.savefig(fig)
+        plt.close(fig)
+
+
 def summarise(df):
     """One summary row for a sample from its well table."""
     has_ashleys = "ashleys_prediction" in df.columns
@@ -177,6 +221,14 @@ def summarise(df):
             int((df["evas_status"] == "borderline").sum()) if has_evas else np.nan
         ),
         "evas_fail": int((df["evas_status"] == "fail").sum()) if has_evas else np.nan,
+        **{
+            f"borderline_{k}": (
+                int((df["borderline_recommendation"] == k).sum())
+                if "borderline_recommendation" in df.columns
+                else np.nan
+            )
+            for k in ("keep", "review", "discard")
+        },
         "union": int((a | e).sum()) if has_ashleys and has_evas else np.nan,
         "intersection": int((a & e).sum()) if has_ashleys and has_evas else np.nan,
         "used_by_mosaicatcher": (

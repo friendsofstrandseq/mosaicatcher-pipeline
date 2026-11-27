@@ -161,8 +161,24 @@ with PdfPages(snakemake.output.pdf) as pdf:
             axes[1],
             "evas_category",
             colors,
-            f"EVAs status ({int(df['evas_selected'].sum())}/{len(df)} selected)",
+            f"EVAs status ({int(df['evas_selected'].sum())}/{len(df)} selected)"
+            + (
+                "\nborderline: K keep / R review / D discard (recommendation)"
+                if "borderline_recommendation" in df.columns
+                else ""
+            ),
         )
+        if "borderline_recommendation" in df.columns:
+            for _, r in placed.loc[placed["evas_status"] == "borderline"].iterrows():
+                axes[1].text(
+                    r["col"],
+                    r["row"],
+                    pl.BORDER_MARK.get(r["borderline_recommendation"], "?"),
+                    ha="center",
+                    va="center",
+                    fontsize=5 if small else 7,
+                    fontweight="bold",
+                )
     else:
         pl.not_run(axes[1], "EVAs status", n_rows, n_cols)
     disagree = (
@@ -320,11 +336,48 @@ with PdfPages(snakemake.output.pdf) as pdf:
         pdf.savefig(fig)
         plt.close(fig)
 
+    # Page 4: EVAs borderline cells and their recommendation, to review
+    border = pl.borderline_rows(df)
+    if len(border):
+        header = [
+            "well",
+            "cell",
+            "ashleys",
+            "noisy fr.",
+            "reads",
+            "recommendation",
+            "rationale",
+        ]
+        rows = [
+            [
+                r["well"],
+                pl.cell_key(r["cell"]),
+                f"{r['ashleys_probability']:.2f}" if has_ashleys else "-",
+                f"{r['evas_noisy_fraction']:.3f}",
+                f"{r['evas_tot_count']:,.0f}",
+                r["borderline_recommendation"],
+                str(r["borderline_rationale"]).replace(" | ", "\n", 1)[:300],
+            ]
+            for _, r in border.iterrows()
+        ]
+        pl.table_pages(
+            pdf,
+            plt,
+            header,
+            rows,
+            f"{sample} | EVAs borderline cells ({len(rows)}): recommendation "
+            f"(applied only with evas_borderline: recommend)",
+            colors=[pl.BORDER_COLORS.get(r[5]) for r in rows],
+            per_page=12,
+            widths=[0.04, 0.17, 0.05, 0.06, 0.07, 0.08, 0.53],
+        )
+
 cols = ["cell", "sample", "well", "well_number", "prediction", "decision"]
 cols += [
     c
     for c in df.columns
-    if c.startswith(("ashleys_", "evas_", "mc_")) and c != "mc_pass1_label"
+    if c.startswith(("ashleys_", "evas_", "mc_", "borderline_"))
+    and c not in ("mc_pass1_label", "evas_category")
 ]
 df[cols].sort_values("well_number").to_csv(
     snakemake.output.well_table, sep="\t", index=False

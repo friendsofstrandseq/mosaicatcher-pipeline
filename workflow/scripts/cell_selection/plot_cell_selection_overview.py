@@ -122,6 +122,9 @@ with PdfPages(snakemake.output.pdf) as pdf:
         ("EVAs pass", "evas_pass", 0),
         ("border", "evas_borderline", 0),
         ("fail", "evas_fail", 0),
+        ("BL keep", "borderline_keep", 0),
+        ("BL review", "borderline_review", 0),
+        ("BL discard", "borderline_discard", 0),
         ("union", "union", 0),
         ("inter.", "intersection", 0),
         ("decision", "decision", None),
@@ -219,5 +222,51 @@ with PdfPages(snakemake.output.pdf) as pdf:
         )
         pdf.savefig(fig)
         plt.close(fig)
+
+    # Borderline cells of every sample with their recommendation, to review
+    border = (
+        pd.concat([pl.borderline_rows(t) for t in ordered])
+        if ordered
+        else pd.DataFrame()
+    )
+    if len(border):
+        header = [
+            "sample",
+            "cell",
+            "ashleys",
+            "noisy fr.",
+            "recommendation",
+            "rationale",
+        ]
+        rows = [
+            [
+                str(r["sample"]),
+                pl.cell_key(r["cell"]).replace(str(r["sample"]), "…"),
+                (
+                    f"{r['ashleys_probability']:.2f}"
+                    if pd.notna(r.get("ashleys_probability"))
+                    else "-"
+                ),
+                f"{r['evas_noisy_fraction']:.3f}",
+                r["borderline_recommendation"],
+                str(r["borderline_rationale"]).split(" | ")[0],
+            ]
+            for _, r in border.iterrows()
+        ]
+        counts = border["borderline_recommendation"].value_counts()
+        pl.table_pages(
+            pdf,
+            plt,
+            header,
+            rows,
+            "EVAs borderline cells to review: "
+            + ", ".join(
+                f"{k} {counts.get(k, 0)}" for k in ("keep", "review", "discard")
+            )
+            + " (details in each plate report)",
+            colors=[pl.BORDER_COLORS.get(r[4]) for r in rows],
+            per_page=30,
+            widths=[0.22, 0.12, 0.06, 0.07, 0.09, 0.44],
+        )
 
 print(summary.to_string(index=False))

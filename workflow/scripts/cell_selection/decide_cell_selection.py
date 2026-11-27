@@ -9,13 +9,18 @@ snakemake.input:
 snakemake.output:
     labels    same format as before (cell, prediction, probability, sample); the
               rest of the pipeline keeps the cells with prediction == 1
-    detailed  one row per cell: final prediction, decision mode, and the columns
-              of each tool (ashleys_*, evas_*)
+    detailed  one row per cell: final prediction, decision mode, the columns
+              of each tool (ashleys_*, evas_*) and, for EVAs borderline cells,
+              borderline_recommendation (keep / review / discard) and
+              borderline_rationale (borderline.py)
 """
 
 import sys
 
 import pandas as pd
+
+sys.path.insert(0, snakemake.scriptdir)
+import borderline  # noqa: E402
 
 SUFFIX = ".sort.mdup.bam"
 
@@ -24,7 +29,7 @@ sys.stderr = sys.stdout = open(snakemake.log[0], "w")
 sample = snakemake.wildcards.sample
 decision = snakemake.params.decision
 threshold = float(snakemake.params.ashleys_threshold)
-borderline_as_pass = bool(snakemake.params.evas_borderline_as_pass)
+borderline_mode = snakemake.params.evas_borderline  # exclude | recommend | include
 inputs = dict(snakemake.input.items())
 
 
@@ -104,12 +109,34 @@ if "evas" in inputs:
         detail["evas_reason"] = ""
     detail["evas_reason"] = detail["evas_reason"].fillna("")
     detail.loc[detail["evas_status"] == "missing", "evas_reason"] = "not in EVAs output"
-    passing = {"pass", "borderline"} if borderline_as_pass else {"pass"}
-    detail["evas_selected"] = detail["evas_status"].isin(passing).astype(int)
+    mc = info.assign(cell=info["cell"].map(with_suffix))
+    rec, why = borderline.recommend(
+        detail,
+        mc,
+        ashleys_threshold=threshold,
+        extra_args=snakemake.params.evas_extra_args,
+    )
+    detail["borderline_recommendation"] = rec.values
+    detail["borderline_rationale"] = why.values
+    selected = detail["evas_status"] == "pass"
+    is_border = detail["evas_status"] == "borderline"
+    if borderline_mode == "include":
+        selected |= is_border
+    elif borderline_mode == "recommend":
+        selected |= is_border & (detail["borderline_recommendation"] == "keep")
+    detail["evas_selected"] = selected.astype(int)
+    detail["evas_borderline_mode"] = borderline_mode
     print(
         "EVAs: "
         + ", ".join(f"{k}={v}" for k, v in detail["evas_status"].value_counts().items())
-        + f" (borderline counted as {'pass' if borderline_as_pass else 'fail'})"
+        + f"; borderline recommendations: "
+        + ", ".join(
+            f"{k}={v}"
+            for k, v in detail.loc[is_border, "borderline_recommendation"]
+            .value_counts()
+            .items()
+        )
+        + f"; evas_borderline={borderline_mode}"
     )
 
 if decision == "ashleys":

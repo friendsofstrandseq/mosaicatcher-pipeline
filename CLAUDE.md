@@ -147,7 +147,7 @@ When ashleys is enabled, its rules are imported with `ashleys_*` prefix.
 
 Default: EVAs (`tools: [evas]`, `decision: evas`, `evas_env: evas`). Revert to
 ashleys-qc with `--config "cell_selection={tools: [ashleys], decision: ashleys}"`.
-The `cell_selection` config block (`tools`, `decision`, `evas_borderline_as_pass`,
+The `cell_selection` config block (`tools`, `decision`, `evas_borderline`,
 `evas_env`) is parsed and validated once in `common.smk` (`CELL_SELECTION`);
 it is ignored with `use_light_data: True` (FASTQ) and `input_bam_legacy: True`.
 `labels.tsv` is written by the checkpoint `tune_predictions_based_on_threshold`

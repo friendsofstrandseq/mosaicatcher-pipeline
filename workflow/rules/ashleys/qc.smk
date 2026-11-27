@@ -91,7 +91,8 @@ if config["use_light_data"] is False:
         params:
             decision=CELL_SELECTION["decision"],
             ashleys_threshold=config["ashleys_threshold"],
-            evas_borderline_as_pass=CELL_SELECTION["evas_borderline_as_pass"],
+            evas_borderline=CELL_SELECTION["evas_borderline"],
+            evas_extra_args=CELL_SELECTION["evas_extra_args"],
         script:
             "../../scripts/cell_selection/decide_cell_selection.py"
 
