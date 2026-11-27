@@ -100,6 +100,31 @@ so they can be added back by setting the option to `True`. With
 | `{sample}/plots/plate/cell_selection_well_table.tsv`        | Well position of each cell with the columns above.                                                     |
 | `{sample}/plots/plate/ashleys_plate_*.pdf`                  | Unchanged ashleys-qc plate plots (when ashleys-qc runs).                                               |
 
+## When EVAs can be used (minimal conditions)
+
+EVAs only normalises and passes cells with **at least 100,000 reads** in the
+counts it receives, and flags population outliers (interquartile range over
+the cells of the sample). Tested on a 96-cell plate (FrankckAML0127WGDp1, hg38,
+36 pass / 9-10 borderline / 50-51 fail on the whole genome):
+
+| Input given to EVAs                       | Result                                                                                              |
+| ----------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| whole genome, 3 repeated runs             | same 36 cells kept each time; 1-3 cells move between borderline and fail (random subsampling in EVAs) |
+| 48 / 24 / 10 random cells (3 seeds each) | kept cells identical to the 96-cell run in 8/9 subsets, 1 cell lost in 1 subset (agreement >= 97.9 %) |
+| chr1 only                                 | 0 cells kept: 93/96 cells "under 100.000 reads"                                                     |
+| chr17 only (also the `.tests` dataset)    | EVAs stops with an error: no cell reaches 100,000 reads                                             |
+
+So:
+
+- run EVAs on **whole-genome counts** (default `chromosomes`). With fewer than
+  20 chromosomes the pipeline prints a warning at start-up, and
+  `evas_predict` stops with an explicit message if no cell has 100,000
+  reads. For such runs (e.g. the chr17 test data) use
+  `cell_selection={tools: [], decision: none}`, or ashleys-qc;
+- the population size has little effect from 10 cells upwards; smaller
+  samples were not tested;
+- cells need about 100,000 reads or more to pass, whatever their quality.
+
 ## Installing EVAs (manual, until the bioconda package exists)
 
 EVAs is developed at EMBL (Korbel group, internal repository

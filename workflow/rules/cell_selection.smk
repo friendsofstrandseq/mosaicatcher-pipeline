@@ -34,6 +34,7 @@ if "evas" in CELL_SELECTION["tools"]:
         params:
             out_dir=lambda wc: f"{wc.folder}/{wc.sample}/cell_selection/evas",
             extra=CELL_SELECTION["evas_extra_args"],
+            chromosomes=",".join(config["chromosomes"]),
         container:
             None
         conda:
@@ -49,6 +50,20 @@ if "evas" in CELL_SELECTION["tools"]:
                 echo "EVAs is not on bioconda yet: install it by hand (docs/cell_selection.md)"
                 echo "and set cell_selection: evas_env: <conda env name or path>, or go back"
                 echo "to ashleys-qc: --config 'cell_selection={{tools: [ashleys], decision: ashleys}}'"
+                exit 1
+            fi
+            # EVAs only normalises cells with >= 100,000 reads and stops with an
+            # unclear error when there is none (e.g. single-chromosome counts)
+            n=$(zcat {input.counts} | awk -F'\t' \
+                'NR==1{{for(i=1;i<=NF;i++)h[$i]=i;next}} {{t[$h["cell"]]+=$h["c"]+$h["w"]}}
+                 END{{n=0;for(c in t)if(t[c]>=100000)n++;print n"/"length(t)}}')
+            echo "cells with >= 100,000 reads in the counts: $n"
+            if [ "${{n%%/*}}" -eq 0 ]; then
+                echo "ERROR: no cell has >= 100,000 reads in {input.counts}"
+                echo "(chromosomes: {params.chromosomes}). EVAs needs whole-genome counts of"
+                echo "Strand-seq libraries: cells under 100,000 reads fail and EVAs cannot run"
+                echo "without any cell above. Run on all chromosomes, or skip EVAs:"
+                echo "--config 'cell_selection={{tools: [], decision: none}}' (keep every cell)"
                 exit 1
             fi
             mkdir -p {params.out_dir}
