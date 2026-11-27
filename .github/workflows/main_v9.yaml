@@ -60,5 +60,5 @@ jobs:
       - name: Run workflow
         shell: bash -el {0}
         run: |
-          snakemake --cores 1 --sdm conda --configfile .tests/config/simple_config_mosaicatcher.yaml \
+          snakemake --cores 1 --sdm conda --configfile .tests/config/simple_config_mosaicatcher.yaml .github/ci/cell_selection_ci.yaml \
           --conda-frontend mamba -p --verbose --debug --snakefile workflow/Snakefile

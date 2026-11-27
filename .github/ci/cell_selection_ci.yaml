@@ -1,0 +1,9 @@
+# Cell selection used by every CI run that executes the workflow.
+# The default cell selection tool, EVAs, cannot be installed in CI (private
+# repository, not on bioconda yet), so CI runs pin a selection that needs no QC
+# tool: with BAM input every cell is kept (touch_labels), with use_light_data
+# the fixed test labels are used. This is the CI behaviour before EVAs became
+# the default. The EVAs default itself is covered by dry-runs (main.yaml).
+cell_selection:
+  tools: []
+  decision: none

@@ -76,7 +76,7 @@ jobs:
           pixi run snakemake \
             --cores 1 \
             --sdm conda apptainer \
-            --configfile .tests/config/simple_config_mosaicatcher.yaml \
+            --configfile .tests/config/simple_config_mosaicatcher.yaml .github/ci/cell_selection_ci.yaml \
             --apptainer-args "--bind /tmp:/tmp --bind $PWD:$PWD" \
             --apptainer-prefix .snakemake/apptainer \
             -p \

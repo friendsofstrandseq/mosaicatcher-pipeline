@@ -4,8 +4,12 @@
 # in common.smk (CELL_SELECTION). Where labels.tsv is written:
 #   - FASTQ input (ashleys_pipeline: True): checkpoint
 #     tune_predictions_based_on_threshold (rules/ashleys/qc.smk)
-#   - BAM input with tools: [evas]: rule cell_selection_decision below
-#   - BAM input otherwise: touch_labels (count.smk), every cell kept, as before
+#   - BAM input with tools: [evas] (default): rule cell_selection_decision below,
+#     except for samples that already have a labels.tsv from another step
+#     (cell_selection_kept_labels in common.smk), which keep it
+#   - BAM input without EVAs: touch_labels (count.smk), every cell kept
+#   - input_bam_legacy: selected_cells (count.smk); use_light_data (FASTQ):
+#     ashleys_dev_all_cells_correct (fixed test labels)
 # Both decision steps run scripts/cell_selection/decide_cell_selection.py and
 # also write labels_detailed.tsv (per-tool columns), used by the plate plot.
 
@@ -13,7 +17,8 @@
 if "evas" in CELL_SELECTION["tools"]:
 
     # EVAs is not on bioconda yet: it runs from a conda environment installed by
-    # hand (cell_selection.evas_env), or from the PATH when evas_env is empty.
+    # hand (cell_selection.evas_env: env name or path, default "evas"), or from
+    # the PATH when evas_env is empty.
     # It runs outside the pipeline container, which does not include it.
     # EVAs reads {parent-dir}/{sample}/counts/{sample}.txt.raw.gz, i.e. the raw
     # mosaicatcher counts, and a 200 kb GC matrix with a "GC" column: the
@@ -40,9 +45,10 @@ if "evas" in CELL_SELECTION["tools"]:
             """
             exec > {log} 2>&1
             if ! command -v evas > /dev/null 2>&1; then
-                echo "ERROR: 'evas' command not found. EVAs is not on bioconda yet:"
-                echo "install it by hand (docs/cell_selection.md) and set"
-                echo "cell_selection: evas_env: /path/to/conda/env"
+                echo "ERROR: 'evas' command not found (default cell selection tool)."
+                echo "EVAs is not on bioconda yet: install it by hand (docs/cell_selection.md)"
+                echo "and set cell_selection: evas_env: <conda env name or path>, or go back"
+                echo "to ashleys-qc: --config 'cell_selection={{tools: [ashleys], decision: ashleys}}'"
                 exit 1
             fi
             mkdir -p {params.out_dir}
@@ -58,9 +64,26 @@ if "evas" in CELL_SELECTION["tools"]:
             """
 
 
-if config["ashleys_pipeline"] is False and "evas" in CELL_SELECTION["tools"]:
+cell_selection_samples = [
+    s for s in samples if s not in cell_selection_kept_labels()
+]
+if cell_selection_kept_labels():
+    print(
+        "NOTE: cell_selection: existing labels.tsv kept (EVAs not run) for "
+        f"{cell_selection_kept_labels()}; delete cell_selection/labels.tsv to "
+        "select the cells with EVAs.",
+        file=sys.stderr,
+    )
+
+if (
+    config["ashleys_pipeline"] is False
+    and "evas" in CELL_SELECTION["tools"]
+    and cell_selection_samples
+):
 
     rule cell_selection_decision:
+        wildcard_constraints:
+            sample="|".join(re.escape(s) for s in cell_selection_samples),
         input:
             unpack(cell_selection_inputs),
         output:

@@ -45,25 +45,28 @@ MultiQC: False
 bypass_ashleys: False
 
 # Per-cell QC and cell selection (docs/cell_selection.md)
+# Default: EVAs. EVAs is not public/on bioconda yet and must be installed by
+# hand (see evas_env). To go back to ashleys-qc:
+#   --config "cell_selection={tools: [ashleys], decision: ashleys}"
 cell_selection:
   # QC tools to run: [] (none), [ashleys], [evas] or [ashleys, evas].
-  # ashleys-qc needs FASTQ input (ashleys_pipeline: True). With BAM input
-  # (ashleys_pipeline: False) only [evas] does something; otherwise every
-  # cell is kept, as before.
-  tools: [ashleys]
+  # ashleys-qc needs FASTQ input (ashleys_pipeline: True) and costs ~45 min /
+  # ~20 GB per 96-cell plate (feature generation): add it only to compare.
+  # With BAM input, [] or [ashleys] means no cell selection (every cell kept).
+  tools: [evas]
   # Which cells are kept for SV calling:
-  #   ashleys       ashleys-qc probability >= ashleys_threshold
   #   evas          EVAs pass (and borderline if evas_borderline_as_pass)
+  #   ashleys       ashleys-qc probability >= ashleys_threshold
   #   union         kept by ashleys-qc OR EVAs
   #   intersection  kept by ashleys-qc AND EVAs
   #   none          keep every cell; predictions are still computed and reported
-  decision: ashleys
+  decision: evas
   # EVAs borderline cells (prediction 0.5): False = removed (default)
   evas_borderline_as_pass: False
-  # EVAs is not on bioconda yet: path of the conda environment where it was
-  # installed by hand. Empty = use the 'evas' command found on the PATH.
-  evas_env: ""
-  # Extra arguments passed to the evas command line, e.g. "--no-plot"
+  # Conda environment where EVAs was installed by hand: env name or path.
+  # Empty = use the 'evas' command found on the PATH.
+  evas_env: "evas"
+  # Extra arguments passed to the evas command line
   evas_extra_args: ""
 # Rewrite @RG SM tag to the sample name when it mismatches (pooled libraries).
 # False = fail loudly on mismatch instead of fixing it.

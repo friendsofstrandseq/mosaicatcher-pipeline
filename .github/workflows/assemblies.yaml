@@ -187,7 +187,7 @@ jobs:
             --cores 1 \
             --sdm conda \
             --local-storage-prefix $GITHUB_WORKSPACE \
-            --config reference=${{ matrix.genome }} data_location=${{ matrix.data_location }} use_light_data=True chromosomes=[${{ matrix.chromosome }}] ashleys_pipeline=${{ matrix.ashleys_pipeline }} hgsvc_based_normalized_counts=${{ matrix.hgsvc_based_normalized_counts }} ploidy=${{ matrix.ploidy }} \
+            --config reference=${{ matrix.genome }} data_location=${{ matrix.data_location }} use_light_data=True chromosomes=[${{ matrix.chromosome }}] ashleys_pipeline=${{ matrix.ashleys_pipeline }} hgsvc_based_normalized_counts=${{ matrix.hgsvc_based_normalized_counts }} ploidy=${{ matrix.ploidy }} "cell_selection={tools: [], decision: none}" \
             --conda-cleanup-pkgs cache \
             ${{ matrix.extra_args }} \
             -p \

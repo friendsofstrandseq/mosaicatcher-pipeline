@@ -53,7 +53,7 @@ jobs:
           pixi run snakemake \
             --cores 1 \
             --sdm conda \
-            --configfile .tests/config/simple_config_mosaicatcher.yaml \
+            --configfile .tests/config/simple_config_mosaicatcher.yaml .github/ci/cell_selection_ci.yaml \
             --config breakpointR=True breakpointR_only=True \
             --conda-cleanup-pkgs cache \
             -p \
@@ -99,7 +99,7 @@ jobs:
           pixi run snakemake \
             --cores 1 \
             --sdm conda \
-            --configfile .tests/config/simple_config_mosaicatcher.yaml \
+            --configfile .tests/config/simple_config_mosaicatcher.yaml .github/ci/cell_selection_ci.yaml \
             --config whatshap_only=True \
             --conda-cleanup-pkgs cache \
             -p \
@@ -145,7 +145,7 @@ jobs:
           pixi run snakemake \
             --cores 1 \
             --sdm conda \
-            --configfile .tests/config/simple_config_ashleys.yaml \
+            --configfile .tests/config/simple_config_ashleys.yaml .github/ci/cell_selection_ci.yaml \
             --config multistep_normalisation=True \
             --conda-cleanup-pkgs cache \
             -p \
@@ -191,7 +191,7 @@ jobs:
           pixi run snakemake \
             --cores 1 \
             --sdm conda \
-            --configfile .tests/config/simple_config_ashleys.yaml \
+            --configfile .tests/config/simple_config_ashleys.yaml .github/ci/cell_selection_ci.yaml \
             --config MultiQC=True \
             --conda-cleanup-pkgs cache \
             -p \
@@ -237,7 +237,7 @@ jobs:
           pixi run snakemake \
             --cores 1 \
             --sdm conda \
-            --configfile .tests/config/simple_config_ashleys.yaml \
+            --configfile .tests/config/simple_config_ashleys.yaml .github/ci/cell_selection_ci.yaml \
             --config ashleys_pipeline=True ashleys_pipeline_only=False use_light_data=True \
             --forceall \
             --conda-cleanup-pkgs cache \
@@ -284,7 +284,7 @@ jobs:
           pixi run snakemake \
             --cores 1 \
             --sdm conda \
-            --configfile .tests/config/simple_config_mosaicatcher.yaml \
+            --configfile .tests/config/simple_config_mosaicatcher.yaml .github/ci/cell_selection_ci.yaml \
             --config ploidy=True \
             --conda-cleanup-pkgs cache \
             -p \
@@ -330,7 +330,7 @@ jobs:
           pixi run snakemake \
             --cores 1 \
             --sdm conda \
-            --configfile .tests/config/simple_config_mosaicatcher.yaml \
+            --configfile .tests/config/simple_config_mosaicatcher.yaml .github/ci/cell_selection_ci.yaml \
             --config ploidy=False \
             --conda-cleanup-pkgs cache \
             -p \
