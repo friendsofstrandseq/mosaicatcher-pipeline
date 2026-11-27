@@ -1,0 +1,21 @@
+name: strandtools
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  # strandtools' setup.py declares no dependencies: they are pinned here,
+  # following its requirements.txt, and pip installs strandtools alone.
+  - python=3.11
+  - pip
+  - matplotlib=3.9.1
+  - numpy=2.0.1
+  - pandas=2.2.2
+  - scipy=1.14.0
+  - seaborn=0.13.2
+  - statsmodels=0.14.2
+  - tqdm=4.66.4
+  - pip:
+      # Public repository (git.embl.org/cosenza/strandtools), pinned to the
+      # commit EVAS uses. Installed from the commit archive so that no git
+      # client is needed (container build).
+      - strandtools @ https://git.embl.org/cosenza/strandtools/-/archive/73b38f3362ebe5e4bcb675df8529c09cec3ee2ef/strandtools-73b38f3362ebe5e4bcb675df8529c09cec3ee2ef.tar.gz

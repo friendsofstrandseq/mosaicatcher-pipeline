@@ -192,8 +192,9 @@ Ashleys modules can be activated using `--config` flag overrides. Key module fla
 
 _Ashleys-specific modules:_
 
-- `multistep_normalisation=True` - Enable GC/VST normalization (requires `window=200000`)
-  - Activates: `ashleys_library_size_normalisation`, `ashleys_GC_correction`, `ashleys_VST_correction`, `ashleys_reformat_ms_norm`, `ashleys_populate_counts_GC`, `ashleys_plot_mosaic_gc_norm_counts`
+- `multistep_normalisation=True` - Enable library size / GC / VST normalization (requires `window=200000`)
+  - Activates: `library_size_normalisation`, `GC_correction`, `VST_correction`, `reformat_ms_norm`, `populate_counts_GC`, `plot_mosaic_gc_norm_counts` (`workflow/rules/gc.smk`)
+  - `multistep_normalisation_options.method`: `strandtools` (default; Python scripts `workflow/scripts/GC/*.py` built on [strandtools](https://git.embl.org/cosenza/strandtools), env `strandtools.yaml`) or `legacy` (former R scripts, **deprecated**: `GC_correction.R` amplifies the GC bias instead of correcting it, issue #140; kept only to compare outputs, a warning is logged when used)
 - `use_light_data=False` - Enable QC with positive/negative controls
   - Activates: `ashleys_positive_negative_control_bypass`, `ashleys_plot_plate`
 - `genecore=True` - Enable Genecore symlinks (requires `genecore_date_folder`)
@@ -253,5 +254,8 @@ Three main environments in `workflow/envs/`:
 - `mc_base.yaml` - Core Python (pandas, pysam, samtools)
 - `mc_bioinfo_tools.yaml` - Bioinformatics (mosaicatcher, R/Bioconductor, StrandPhaseR)
 - `rtools.yaml` - R packages for analysis/plotting
+- `strandtools.yaml` - strandtools (multistep normalisation), installed by pip from a pinned commit archive of git.embl.org/cosenza/strandtools; its dependencies are pinned in the yaml because strandtools' `setup.py` declares none
+
+Every env used by a rule must be in the container image (`snakemake --containerize`, see `workflow/containers/README.md`): in apptainer mode, Snakemake stops with "Unable to find environment in container image" otherwise.
 
 Use conda-forge and bioconda channels only (avoid anaconda/defaults).

@@ -534,9 +534,15 @@ multistep_normalisation: False
 
 # Advanced parameters for multi-step normalisation
 multistep_normalisation_options:
+  # "strandtools" (Python, git.embl.org/cosenza/strandtools) or "legacy" (former R scripts).
+  # WARNING: "legacy" is deprecated and kept only to compare outputs: its GC
+  # correction amplifies the GC bias instead of correcting it (issue #140).
+  method: strandtools
   min_reads_bin: 5
   n_subsample: 1000
   min_reads_cell: 100000
+  # Seed for the random subsample of the GC fit (strandtools only)
+  seed: 42
 
 # Normalize or not mosaic counts using HGSVC-based reference file
 hgsvc_based_normalized_counts: True
