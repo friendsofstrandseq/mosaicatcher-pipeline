@@ -153,7 +153,7 @@ rule plot_clustering_chromosome:
     conda:
         "../envs/mc_base.yaml"
     resources:
-        mem_mb=get_mem_mb,
+        mem_mb=get_mem_mb_2gb,
         runtime=runtime_per_sample_light,
     script:
         "../scripts/plotting/plot-clustering-scale.py"

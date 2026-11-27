@@ -161,7 +161,7 @@ rule index_input_bam:
     envmodules:
         "SAMtools/1.21-GCC-13.3.0",
     resources:
-        mem_mb=get_mem_mb_alignment_group,
+        mem_mb=get_mem_mb_index_bam,
     shell:
         "samtools index {input} > {log} 2>&1"
 

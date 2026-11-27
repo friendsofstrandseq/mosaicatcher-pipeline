@@ -29,16 +29,37 @@ def get_mem_mb_alignment_group(wildcards, attempt):
     Snakemake takes MAX for sequential jobs.
     BWA and MarkDup are both heavy, so use their requirement.
     """
-    # Measured (run 2026-11-19_AV233002, 576 cells): bwa peak MaxRSS 8,270 MB,
-    # mean 7,140 MB; sort/markdup/index stay below 5 GB. 8 GB was slightly
-    # under the bwa peak, so attempt 1 starts at 9 GB.
+    # Now used by bwa only (sort/markdup/index have their own ladders below).
+    # Measured: bwa peak MaxRSS 8,270 MB on run 2026-11-19_AV233002 and 8.54 GB
+    # over all 2026 jobs (82% of the former 9 GB request) -> 10 GB at attempt 1.
     # Scale with attempt for OOM retry
-    base_mb = 9000
+    base_mb = 10000
     multipliers = [1.0, 1.5, 2.0, 3.0, 4.0]
     result = int(base_mb * multipliers[min(attempt - 1, 4)])
 
     # Cap at EMBL htc partition limit
     return min(result, 256000)
+
+
+def get_mem_mb_sort_markdup(wildcards, attempt):
+    """ashleys_samtools_sort_bam and ashleys_mark_duplicates (one cell each).
+
+    Max MaxRSS over all 2026 jobs: sort 4.87 GB, markdup 3.75 GB (they used to
+    request the 9 GB bwa ladder) -> 6 GB at attempt 1, x1.5 per retry.
+    """
+    base_mb = 6000
+    multipliers = [1.0, 1.5, 2.0, 3.0, 4.0]
+    return min(int(base_mb * multipliers[min(attempt - 1, 4)]), 256000)
+
+
+def get_mem_mb_index_bam(wildcards, attempt):
+    """index_input_bam (samtools index of one cell BAM).
+
+    Max MaxRSS over all 2026 jobs: 1.37 GB (it used to request 9 GB)
+    -> 2 GB at attempt 1, doubling per retry.
+    """
+    mem_avail = [2, 4, 8, 16, 32]
+    return mem_avail[min(attempt - 1, 4)] * 1000
 
 
 def get_mem_mb_merge_group(wildcards, attempt):
@@ -162,6 +183,18 @@ def get_mem_mb(wildcards, attempt):
     and keep their own get_mem_mb from rules/ashleys/common.smk.
     """
     mem_avail = [1, 2, 4, 16, 64]
+    return mem_avail[min(attempt - 1, 4)] * 1000
+
+
+def get_mem_mb_2gb(wildcards, attempt):
+    """Per-sample R/Python steps that peak above 1 GB.
+
+    GC_correction 1.57 GB, VST_correction 1.25 GB, plot_clustering_chromosome
+    1.49 GB (2026 max); all three hit OUT_OF_MEMORY at 1 GB on attempt 1 in the
+    test of 2026-11-26. populate_counts_GC peaked at 0.88 GB (90% of 1 GB).
+    -> 2 GB at attempt 1, then 4 -> 8 -> 16 -> 64 GB.
+    """
+    mem_avail = [2, 4, 8, 16, 64]
     return mem_avail[min(attempt - 1, 4)] * 1000
 
 

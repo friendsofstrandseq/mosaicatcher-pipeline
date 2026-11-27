@@ -161,6 +161,9 @@ rule symlink_selected_bam:
         "../envs/mc_base.yaml"
     container:
         None
+    resources:
+        # Peak 0.44 GB against the 500 MB profile default (2026 jobs) -> 1 GB ladder.
+        mem_mb=get_mem_mb,
     script:
         "../scripts/utils/symlink_selected_bam.py"
 

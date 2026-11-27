@@ -164,7 +164,7 @@ rule ashleys_samtools_sort_bam:
     # group:
     # "alignment_per_cell"
     resources:
-        mem_mb=get_mem_mb_alignment_group,
+        mem_mb=get_mem_mb_sort_markdup,
         runtime=lambda wildcards, attempt: 15 * attempt,
     conda:
         "../../envs/mc_bioinfo_tools.yaml"
@@ -201,7 +201,7 @@ rule ashleys_mark_duplicates:
     # log, which is deleted, so the real failure reason was never kept.
     threads: 2
     resources:
-        mem_mb=get_mem_mb_alignment_group,
+        mem_mb=get_mem_mb_sort_markdup,
         runtime=lambda wildcards, attempt: 15 * attempt,
     shell:
         """
