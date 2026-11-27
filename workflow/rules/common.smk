@@ -5,6 +5,7 @@ import yaml
 # from scripts.utils import handle_input, make_log_useful, pipeline_aesthetic_start
 from scripts.utils import make_log_useful, pipeline_aesthetic_start
 import os, sys
+import re, shutil
 
 # Solve LC_CTYPE issue
 
@@ -53,6 +54,249 @@ if config["ashleys_pipeline"] is True and config["genecore"] is True:
     config["data_location"] = config["abs_path"].join(
         config["data_location"].split("/")[:-1]
     )
+
+
+# ========================================
+# Cell selection: ashleys-qc and/or EVAs
+# ========================================
+# Settings of the cell_selection config block, validated once here so that the
+# ashleys module, count.smk and cell_selection.smk see the same values.
+# See docs/cell_selection.md.
+
+CELL_SELECTION_TOOLS = ("ashleys", "evas")
+CELL_SELECTION_BORDERLINE = ("exclude", "recommend", "include")
+CELL_SELECTION_DECISIONS = ("ashleys", "evas", "union", "intersection", "none")
+# Tools each decision needs
+CELL_SELECTION_NEEDS = {
+    "ashleys": {"ashleys"},
+    "evas": {"evas"},
+    "union": {"ashleys", "evas"},
+    "intersection": {"ashleys", "evas"},
+    "none": set(),
+}
+
+
+def _cell_selection_list(value):
+    if value is None:
+        return []
+    if isinstance(value, str):
+        return [v for v in re.split(r"[\s,;\[\]]+", value) if v]
+    return [str(v) for v in value]
+
+
+EVAS_HELP = """EVAs is not on bioconda yet and must be installed by hand:
+    git clone git@git.embl.org:grp-korbel/strandseq-qc-eva.git
+    mamba create -n evas -c conda-forge python=3.11 pip git
+    conda activate evas && cd strandseq-qc-eva && pip install .
+  then set cell_selection: evas_env: evas (env name) or /path/to/env.
+  Or go back to ashleys-qc (FASTQ input) / no selection (BAM input):
+    --config "cell_selection={tools: [ashleys], decision: ashleys}"
+  See docs/cell_selection.md."""
+
+
+def _is_dry_run():
+    """True for dry-runs and lint (snakemake 9 does not expose it to the workflow)."""
+    for arg in sys.argv[1:]:
+        if arg in ("--dry-run", "--dryrun", "--lint", "--list-rules", "-l"):
+            return True
+        if re.fullmatch(r"-[a-zA-Z]*n[a-zA-Z]*", arg):
+            return True
+    return False
+
+
+def _conda_env_found(env):
+    """True/False if the env can be checked, None if conda cannot be located."""
+    if "/" in env:
+        return os.path.isdir(os.path.join(env, "conda-meta"))
+    conda_exe = os.environ.get("CONDA_EXE") or shutil.which("conda")
+    if not conda_exe:
+        return None
+    base = os.path.dirname(os.path.dirname(os.path.realpath(conda_exe)))
+    dirs = [os.path.join(base, "envs"), os.path.expanduser("~/.conda/envs")]
+    dirs += [d for d in os.environ.get("CONDA_ENVS_PATH", "").split(":") if d]
+    return any(os.path.isdir(os.path.join(d, env, "conda-meta")) for d in dirs)
+
+
+def parse_cell_selection(cfg):
+    """Validate config["cell_selection"] and return the effective settings."""
+    cs = dict(cfg.get("cell_selection") or {})
+    tools = [t.lower() for t in _cell_selection_list(cs.get("tools", ["evas"]))]
+    decision = str(cs.get("decision", "evas")).lower()
+    settings = {
+        "tools": tools,
+        "decision": decision,
+        # exclude (default) | recommend (keep the borderline cells recommended
+        # "keep") | include
+        "evas_borderline": str(cs.get("evas_borderline") or "exclude").lower(),
+        "evas_env": str(cs.get("evas_env", "evas") or "").rstrip("/"),
+        "evas_extra_args": str(cs.get("evas_extra_args", "") or ""),
+    }
+    fastq_mode = cfg["ashleys_pipeline"] is True
+
+    # Modes where the cells are selected by other means: cell_selection is
+    # ignored (no QC tool runs), as before this block existed.
+    ignored = None
+    if fastq_mode and cfg["use_light_data"] is True:
+        ignored = "use_light_data: True (fixed test labels, every cell kept)"
+    elif not fastq_mode and cfg["input_bam_legacy"] is True:
+        ignored = "input_bam_legacy: True (cells taken from the selected/ folder)"
+    elif not fastq_mode and "evas" not in tools:
+        # BAM input without EVAs: no cell selection (touch_labels keeps every
+        # cell). ashleys-qc cannot run on BAM input, so tools: [ashleys] is
+        # accepted here and means "no selection", as before EVAs.
+        ignored = "BAM input without EVAs (every cell kept)"
+
+    errors = []
+    unknown = sorted(set(tools) - set(CELL_SELECTION_TOOLS))
+    if unknown:
+        errors.append(
+            f"tools: unknown tool(s) {unknown}, allowed: {list(CELL_SELECTION_TOOLS)}"
+        )
+    # Old option evas_borderline_as_pass: True means evas_borderline: include
+    # (--config passes nested values as strings: "True")
+    if str(cs.get("evas_borderline_as_pass", False)).lower() in ("true", "1", "yes"):
+        if settings["evas_borderline"] == "recommend":
+            errors.append(
+                "evas_borderline_as_pass: True (old option, = include) contradicts "
+                "evas_borderline: recommend; set evas_borderline only"
+            )
+        else:
+            settings["evas_borderline"] = "include"
+            print(
+                "WARNING: cell_selection.evas_borderline_as_pass is deprecated, "
+                "use evas_borderline: include",
+                file=sys.stderr,
+            )
+    if settings["evas_borderline"] not in CELL_SELECTION_BORDERLINE:
+        errors.append(
+            f"evas_borderline: '{settings['evas_borderline']}' is not one of "
+            f"{list(CELL_SELECTION_BORDERLINE)}"
+        )
+    if decision not in CELL_SELECTION_DECISIONS:
+        errors.append(
+            f"decision: '{decision}' is not one of {list(CELL_SELECTION_DECISIONS)}"
+        )
+    missing = sorted(CELL_SELECTION_NEEDS.get(decision, set()) - set(tools))
+    if missing:
+        errors.append(
+            f"decision: '{decision}' needs {missing} in cell_selection.tools "
+            f"(got {tools})"
+        )
+    if not fastq_mode and ignored is None and "ashleys" in tools:
+        errors.append(
+            "tools: ashleys-qc needs ashleys_pipeline: True (FASTQ input); "
+            "with BAM input use tools: [evas]"
+        )
+    if "evas" in tools and ignored is None:
+        if int(cfg["window"]) != 200000:
+            errors.append(
+                f"EVAs needs window: 200000 (200 kb counts), got {cfg['window']}"
+            )
+        env = settings["evas_env"]
+        found = _conda_env_found(env) if env else shutil.which("evas") is not None
+        if found is False:
+            where = f"conda env '{env}'" if env else "'evas' command on the PATH"
+            msg = f"EVAs (default cell selection tool) not found: no {where}."
+            if _is_dry_run() or cfg["list_commands"] is True:
+                # dry-runs, lint and list_commands work without EVAs (CI)
+                print(f"WARNING: {msg}\n  {EVAS_HELP}", file=sys.stderr)
+            else:
+                errors.append(f"{msg}\n  {EVAS_HELP}")
+    if errors:
+        raise ValueError(
+            "Invalid cell_selection configuration:\n  - " + "\n  - ".join(errors)
+        )
+    if (
+        settings["evas_borderline"] == "recommend"
+        and "evas" in tools
+        and "ashleys" not in tools
+        and ignored is None
+    ):
+        print(
+            "WARNING: evas_borderline: recommend needs ashleys-qc to recommend "
+            "'keep' (tools: [ashleys, evas]); without it the borderline cells are "
+            "only marked review or discard and none is kept.",
+            file=sys.stderr,
+        )
+    # chromosomes: [] means every chromosome of the reference
+    chroms = set(cfg["chromosomes"] or []) - set(cfg["chromosomes_to_exclude"] or [])
+    n_chrom = len(chroms)
+    if "evas" in tools and ignored is None and cfg["chromosomes"] and n_chrom < 20:
+        print(
+            f"WARNING: EVAs runs on {n_chrom} chromosome(s) only. It needs "
+            ">= 100,000 reads per cell (whole-genome counts): on few chromosomes "
+            "most or all cells fail, and evas_predict stops if no cell reaches "
+            "100,000 reads. See docs/cell_selection.md.",
+            file=sys.stderr,
+        )
+    if ignored is not None:
+        if tools and (tools, decision) != (["ashleys"], "ashleys"):
+            print(f"NOTE: cell_selection is ignored with {ignored}.", file=sys.stderr)
+        return {**settings, "tools": [], "decision": "none", "ignored": ignored}
+    return {**settings, "ignored": None}
+
+
+CELL_SELECTION = parse_cell_selection(config)
+
+
+def cell_selection_inputs(wildcards):
+    """Inputs of the decision step: mosaicatcher cell list + each tool's output."""
+    prefix = f"{wildcards.folder}/{wildcards.sample}"
+    inputs = {"info": f"{prefix}/counts/{wildcards.sample}.info_raw"}
+    if "ashleys" in CELL_SELECTION["tools"]:
+        inputs["ashleys"] = (
+            f"{prefix}/cell_selection/labels_positive_control_corrected.tsv"
+        )
+    if "evas" in CELL_SELECTION["tools"]:
+        inputs["evas"] = (
+            f"{prefix}/cell_selection/evas/EVAs_{wildcards.sample}/"
+            f"{wildcards.sample}_predictions_with_reasons_and_bins.tsv"
+        )
+    return inputs
+
+
+def cell_selection_active():
+    """True when labels_detailed.tsv is produced (decision step defined)."""
+    if config["ashleys_pipeline"] is True:
+        return config["use_light_data"] is False
+    return "evas" in CELL_SELECTION["tools"]
+
+
+def cell_selection_kept_labels():
+    """BAM input + EVAs: samples whose labels.tsv was made outside this step.
+
+    A labels.tsv without labels_detailed.tsv next to it comes from an earlier
+    run (ashleys-qc selection, touch_labels...). Like touch_labels (#119), the
+    decision step must not replace it: these samples keep their labels and EVAs
+    is not run for them. Delete the file to select the cells with EVAs.
+    """
+    if config["ashleys_pipeline"] is True or "evas" not in CELL_SELECTION["tools"]:
+        return []
+    prefix = f"{config['data_location']}/{{}}/cell_selection"
+    return [
+        s
+        for s in samples
+        if os.path.exists(f"{prefix.format(s)}/labels.tsv")
+        and not os.path.exists(f"{prefix.format(s)}/labels_detailed.tsv")
+    ]
+
+
+def get_cell_selection_outputs():
+    """labels_detailed.tsv for every sample, plate plot for 96/384-cell samples,
+    multi-plate overview of the data_location."""
+    if not cell_selection_active():
+        return []
+    kept = cell_selection_kept_labels()
+    selected = [s for s in samples if s not in kept]
+    outputs = []
+    for sample in selected:
+        prefix = f"{config['data_location']}/{sample}"
+        outputs.append(f"{prefix}/cell_selection/labels_detailed.tsv")
+        if len(cell_per_sample[sample]) in [96, 384]:
+            outputs.append(f"{prefix}/plots/plate/cell_selection_plate.pdf")
+    if selected:
+        outputs.append(f"{config['data_location']}/plots/cell_selection_overview.pdf")
+    return outputs
 
 
 envvars:
@@ -999,6 +1243,11 @@ def get_final_output():
         final_list.extend(get_final_output_scnova())
     # from pprint import pprint
     # pprint(final_list)
+
+    # BAM input with EVAs: cell selection table and plate plot
+    # (FASTQ input: requested by get_ashleys_outputs)
+    if config["ashleys_pipeline"] is False:
+        final_list.extend(get_cell_selection_outputs())
 
     if config["breakpointR_only"] is True:
         final_list = list()

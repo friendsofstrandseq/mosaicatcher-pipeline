@@ -97,12 +97,67 @@ jobs:
             --cores 1 \
             --config list_commands=True
 
+      # EVAs (default cell selection tool) cannot be installed in CI (private
+      # repository, not on bioconda): the EVAs modes are covered by dry-runs, and
+      # every executed CI run pins .github/ci/cell_selection_ci.yaml (no QC tool).
+      - name: Dry-run cell selection modes (EVAs default, no install needed)
+        run: |
+          set -e
+          plans() { grep -qE "^$1 +[0-9]+" "$2"; }
+          # Default config (EVAs), BAM and FASTQ input: EVAs must be planned
+          pixi run snakemake --cores 1 --sdm conda -n \
+            --configfile .tests/config/simple_config_mosaicatcher.yaml > default_bam.log 2>&1
+          plans evas_predict default_bam.log
+          plans cell_selection_decision default_bam.log
+          pixi run snakemake --cores 1 --sdm conda -n \
+            --configfile .tests/config/simple_config_ashleys.yaml \
+            --config ashleys_pipeline=True use_light_data=False > default_fastq.log 2>&1
+          plans evas_predict default_fastq.log
+          plans tune_predictions_based_on_threshold default_fastq.log
+          # Other modes
+          for cs in "{tools: [evas], decision: none}" "{tools: [ashleys], decision: ashleys}"; do
+            pixi run snakemake --cores 1 --sdm conda -n \
+              --configfile .tests/config/simple_config_mosaicatcher.yaml \
+              --config "cell_selection=$cs"
+          done
+          for cs in "{tools: [ashleys, evas], decision: union}" "{tools: [ashleys, evas], decision: intersection}" "{tools: [ashleys], decision: ashleys}" "{tools: [], decision: none}"; do
+            pixi run snakemake --cores 1 --sdm conda -n \
+              --configfile .tests/config/simple_config_ashleys.yaml \
+              --config ashleys_pipeline=True use_light_data=False "cell_selection=$cs"
+          done
+          # Invalid combination must stop with a clear message
+          if pixi run snakemake --cores 1 -n \
+              --configfile .tests/config/simple_config_mosaicatcher.yaml \
+              --config "cell_selection={tools: [evas], decision: union}" > invalid.log 2>&1; then
+            echo "invalid cell_selection was accepted"; exit 1
+          fi
+          grep "Invalid cell_selection configuration" invalid.log
+          if pixi run snakemake --cores 1 -n \
+              --configfile .tests/config/simple_config_mosaicatcher.yaml \
+              --config "cell_selection={evas_borderline: maybe}" > invalid_bl.log 2>&1; then
+            echo "invalid evas_borderline was accepted"; exit 1
+          fi
+          grep "evas_borderline: 'maybe' is not one of" invalid_bl.log
+          # Borderline modes are accepted (old option: deprecation warning)
+          for cs in "{evas_borderline: recommend}" "{evas_borderline: include}" "{evas_borderline_as_pass: True}"; do
+            pixi run snakemake --cores 1 -n \
+              --configfile .tests/config/simple_config_mosaicatcher.yaml \
+              --config "cell_selection=$cs" > bl.log 2>&1 || { cat bl.log; exit 1; }
+          done
+          grep "evas_borderline_as_pass is deprecated" bl.log
+          # The CI configuration never runs EVAs
+          for cf in simple_config_mosaicatcher.yaml simple_config_ashleys.yaml; do
+            pixi run snakemake --cores 1 --sdm conda -n \
+              --configfile .tests/config/$cf .github/ci/cell_selection_ci.yaml > ci_$cf.log 2>&1
+            if plans evas_predict ci_$cf.log; then echo "CI run $cf would run EVAs"; exit 1; fi
+          done
+
       - name: Run workflow (MosaiCatcher v9)
         run: |
           pixi run snakemake \
             --cores 1 \
             --sdm conda \
-            --configfile .tests/config/simple_config_mosaicatcher.yaml \
+            --configfile .tests/config/simple_config_mosaicatcher.yaml .github/ci/cell_selection_ci.yaml \
             --conda-cleanup-pkgs cache \
             -p \
             --snakefile workflow/Snakefile
@@ -154,7 +209,7 @@ jobs:
           pixi run snakemake \
             --cores 1 \
             --sdm conda \
-            --configfile .tests/config/simple_config_ashleys.yaml \
+            --configfile .tests/config/simple_config_ashleys.yaml .github/ci/cell_selection_ci.yaml \
             --conda-cleanup-pkgs cache \
             -p \
             --snakefile workflow/Snakefile

@@ -76,17 +76,25 @@ if config["use_light_data"] is False:
         script:
             "../../scripts/ashleys/utils/positive_negative_control_bypass.py"
 
+    # Final cell selection: ashleys-qc threshold and/or EVAs, combined according
+    # to cell_selection.decision (default: ashleys-qc only, as before).
     checkpoint tune_predictions_based_on_threshold:
         input:
-            "{folder}/{sample}/cell_selection/labels_positive_control_corrected.tsv",
+            unpack(cell_selection_inputs),
         output:
-            "{folder}/{sample}/cell_selection/labels.tsv",
+            labels="{folder}/{sample}/cell_selection/labels.tsv",
+            detailed="{folder}/{sample}/cell_selection/labels_detailed.tsv",
         log:
             "{folder}/log/cp_predictions/{sample}.log",
         conda:
             "../../envs/mc_base.yaml"
+        params:
+            decision=CELL_SELECTION["decision"],
+            ashleys_threshold=config["ashleys_threshold"],
+            evas_borderline=CELL_SELECTION["evas_borderline"],
+            evas_extra_args=CELL_SELECTION["evas_extra_args"],
         script:
-            "../../scripts/ashleys/utils/tune_predictions_based_on_threshold.py"
+            "../../scripts/cell_selection/decide_cell_selection.py"
 
 elif config["use_light_data"] is True:
 
@@ -194,10 +202,16 @@ def get_ashleys_outputs():
             )
         )
 
-    # Plate plots if applicable
+    # Cell selection table + plate plot (ashleys-qc / EVAs / decision)
+    final_list.extend(get_cell_selection_outputs())
+
+    # ashleys-qc plate plots if applicable
     for sample in samples:
         if len(cell_per_sample[sample]) in [96, 384]:
-            if config["use_light_data"] is False:
+            if (
+                config["use_light_data"] is False
+                and "ashleys" in CELL_SELECTION["tools"]
+            ):
                 final_list.extend(
                     [
                         "{folder}/{sample}/plots/plate/ashleys_plate_predictions.pdf".format(

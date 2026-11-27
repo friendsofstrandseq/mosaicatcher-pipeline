@@ -42,7 +42,7 @@ jobs:
         run: |
           pixi run snakemake \
             --cores 4 \
-            --configfile .tests/config/simple_config_mosaicatcher.yaml \
+            --configfile .tests/config/simple_config_mosaicatcher.yaml .github/ci/cell_selection_ci.yaml \
             --containerize 2>&1 | sed -n '/^FROM condaforge/,$p' > workflow/containers/Dockerfile.base
 
       - name: Upload Dockerfile.base artifact
@@ -280,7 +280,7 @@ jobs:
           pixi run snakemake \
             --cores 1 \
             --sdm conda apptainer \
-            --configfile .tests/config/simple_config_mosaicatcher.yaml \
+            --configfile .tests/config/simple_config_mosaicatcher.yaml .github/ci/cell_selection_ci.yaml \
             --apptainer-args "--bind /tmp:/tmp --bind $PWD:$PWD" \
             --apptainer-prefix .snakemake/apptainer \
             -p \
