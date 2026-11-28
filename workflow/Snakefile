@@ -105,3 +105,8 @@ if config["list_commands"] is False:
 
         onerror:
             onerror_fct(log)
+
+
+# Last: the preflight report looks at every rule (software of rules that run
+# outside the container).
+include: "rules/preflight.smk"

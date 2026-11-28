@@ -8,6 +8,11 @@ version: 2.5.1
 # Email for notifications about the pipeline's status
 email: ""
 
+# Preflight check printed at start (reference, container, conda envs, BSgenome,
+# disk space), with what would be downloaded or built before the first job.
+# "warn": print only; "strict": stop if anything must be downloaded/built; "off"
+preflight: "warn"
+
 # List of samples to process if multiple are specified
 samples_to_process: []
 
