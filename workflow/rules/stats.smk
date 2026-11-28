@@ -10,6 +10,8 @@ rule summary_statistics:
         tsv="{folder}/{sample}/stats/{method}_filter{filter}.tsv",
     log:
         "{folder}/log/summary_statistics/{sample}/{method}_filter{filter}.log",
+    resources:
+        runtime=runtime_per_sample_light,
     conda:
         "../envs/mc_base.yaml"
     script:

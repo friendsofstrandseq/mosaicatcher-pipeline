@@ -45,6 +45,7 @@ rule index_haplotag_bam:
         "SAMtools/1.21-GCC-13.3.0",
     resources:
         mem_mb=get_mem_mb_haplotag_group,
+        runtime=runtime_light_per_cell_bam_unnamed,
     shell:
         "samtools index {input} > {log} 2>&1"
 
@@ -102,6 +103,7 @@ rule compress_indiv_strandphaser_vcf:
         "HTSlib/1.21-GCC-13.3.0",
     resources:
         mem_mb=get_mem_mb,
+        runtime=lambda wc, attempt: 30 * attempt,
     shell:
         "bgzip {input.vcf} > {log} 2>&1"
 
@@ -121,6 +123,7 @@ rule index_indiv_strandphaser_vcf:
         "HTSlib/1.21-GCC-13.3.0",
     resources:
         mem_mb=get_mem_mb,
+        runtime=lambda wc, attempt: 30 * attempt,
     shell:
         "tabix -p vcf {input.vcf} > {log} 2>&1"
 
@@ -158,7 +161,8 @@ rule index_input_bam:
     envmodules:
         "SAMtools/1.21-GCC-13.3.0",
     resources:
-        mem_mb=get_mem_mb_alignment_group,
+        mem_mb=get_mem_mb_index_bam,
+        runtime=runtime_index_bam,
     shell:
         "samtools index {input} > {log} 2>&1"
 
@@ -195,7 +199,7 @@ if not config["download_prebuilt_indexes"] and reference_missing(
         cache: True
         resources:
             mem_mb=get_mem_mb_heavy,
-            runtime=30,
+            runtime=lambda wc, attempt: 30 * attempt,
         shell:
             "samtools faidx {input}"
 

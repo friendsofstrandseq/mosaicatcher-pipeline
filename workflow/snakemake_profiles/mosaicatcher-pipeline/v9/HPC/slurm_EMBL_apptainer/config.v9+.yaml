@@ -12,25 +12,41 @@ config:
 # Default resources: These are the baseline resources allocated to each rule if not overridden by set-resources.
 default-resources:
   - mem_mb=500 # Memory in megabytes allocated to each task
-  - runtime=600 # Runtime in seconds for each task (= 10 min default)
+  # runtime is in MINUTES for Snakemake/SLURM (the former runtime=600 meant 10 h,
+  # not 10 min). Rules without their own runtime are short: over all 2026 jobs
+  # (sacct), p99 <= 10 min and almost none above 15 min. The per-cell haplotag/VCF
+  # rules (up to 30+ min) have their own 30*attempt and per-sample rules scale with
+  # the number of cells (rules/resources.smk). The limit grows with each retry (15, 30, 45, 60,
+  # 75 min) so a TIMEOUT is retried with more time; short limits let the SLURM
+  # backfill scheduler start jobs sooner.
+  - runtime=15*attempt
   - constraint='' # SLURM constraints (e.g., specific nodes), empty by default
+  # EMBL el8 -> el10 migration (Nov 2026): htc-el8 keeps only a few nodes and is
+  # congested; submit to both and let SLURM start each job in the first partition
+  # with free resources. Without this the SLURM plugin falls back to the cluster
+  # default partition (htc-el8).
+  - slurm_partition="htc-el8,htc-el10"
 
 # Resource overrides for specific rules
 # NOTE: all rules in the alignment_per_cell group (bwa + samtools_sort +
 # mark_duplicates + index_input_bam) share one SLURM submission and must have
-# identical string resources. The whole group requires milan nodes because
-# sambamba (mark_duplicates) requires AVX2 instructions only on milan nodes.
+# identical string resources. The constraint below is a safety net covering every
+# htc node family on el8 and el10 (Zen3 milan, Zen4 genoa/bergamo). A plain "milan"
+# is rejected at submission since htc-el8 no longer exposes that feature
+# ("Requested node configuration is not available"). sambamba itself (bioconda
+# 1.0.1) contains no AVX/AVX2/AVX-512 instructions (disassembled binary), so it is
+# not tied to a CPU family; markdup ran successfully on genoa/bergamo nodes.
 # Splitting the group is not possible: bam.sort is temp() and gets deleted by
 # the downstream job before the upstream group's postprocessing can check it.
 set-resources:
   ashleys_bwa_strandseq_to_reference_alignment:
-    constraint: "milan"
+    constraint: "milan|genoa|bergamo"
   ashleys_samtools_sort_bam:
-    constraint: "milan"
+    constraint: "milan|genoa|bergamo"
   ashleys_mark_duplicates:
-    constraint: "milan"
+    constraint: "milan|genoa|bergamo"
   index_input_bam:
-    constraint: "milan"
+    constraint: "milan|genoa|bergamo"
 
 # Throttling to prevent overloading the scheduler
 max-status-checks-per-second: 10 # Maximum number of job status checks per second

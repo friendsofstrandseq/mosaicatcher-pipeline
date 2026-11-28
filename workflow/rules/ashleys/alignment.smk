@@ -98,8 +98,8 @@ if config["paired_end"] is True:
         params:
             idx_prefix=lambda wildcards, input: input.ref_index[0].rsplit(".", 1)[0],
         resources:
-            mem_mb=get_mem_mb_alignment_group,
-            runtime=60,
+            mem_mb=get_mem_mb_bwa,
+            runtime=runtime_bwa,
         conda:
             "../../envs/mc_bioinfo_tools.yaml"
         envmodules:
@@ -139,8 +139,8 @@ else:
         params:
             idx_prefix=lambda wildcards, input: input.ref_index[0].rsplit(".", 1)[0],
         resources:
-            mem_mb=get_mem_mb_alignment_group,
-            runtime=60,
+            mem_mb=get_mem_mb_bwa,
+            runtime=runtime_bwa,
         conda:
             "../../envs/mc_bioinfo_tools.yaml"
         envmodules:
@@ -164,8 +164,8 @@ rule ashleys_samtools_sort_bam:
     # group:
     # "alignment_per_cell"
     resources:
-        mem_mb=get_mem_mb_alignment_group,
-        runtime=60,
+        mem_mb=get_mem_mb_sort,
+        runtime=runtime_sort_markdup,
     conda:
         "../../envs/mc_bioinfo_tools.yaml"
     envmodules:
@@ -187,11 +187,28 @@ rule ashleys_mark_duplicates:
         "../../envs/mc_bioinfo_tools.yaml"
     envmodules:
         "sambamba/1.0.1-GCC-12.3.0",
+    # Intermittent markdup failures were previously blamed on CPU architecture
+    # (constraint "milan"), but the bioconda sambamba 1.0.1 binary contains no AVX
+    # instructions at all. Two node-dependent defaults explain them instead:
+    # - no -t: sambamba sizes its pool from the node's cores, not the SLURM
+    #   allocation (measured: 83 threads on a 56-core host for a 1-CPU job);
+    # - no --tmpdir: overflow lists go to the node's shared /tmp, and markdup dies
+    #   with "No space left on device" when it is full (reproduced on el10-env-test).
+    #   Use the job's own $TMPDIR instead: the EMBL SLURM prolog sets it to
+    #   /scratch/jobs/$SLURM_JOB_ID on every node (node-local /tmp is only 9 GB,
+    #   shared by all jobs, on milan nodes). Falls back to /tmp elsewhere.
+    # The log also captures stderr now: "2>&1 > {log}" sent errors to the SLURM
+    # log, which is deleted, so the real failure reason was never kept.
+    threads: 2
     resources:
-        mem_mb=get_mem_mb_alignment_group,
-        runtime=60,
+        mem_mb=get_mem_mb_sort_markdup,
+        runtime=runtime_sort_markdup,
     shell:
-        "sambamba markdup {input.bam} {output} 2>&1 > {log}"
+        """
+        tmp=$(mktemp -d "${{TMPDIR:-/tmp}}/markdup_{wildcards.cell}.XXXXXX")
+        trap 'rm -rf "$tmp"' EXIT
+        sambamba markdup -t {threads} --tmpdir "$tmp" {input.bam} {output} > {log} 2>&1
+        """
 
 
 rule ashleys_symlink_bam_ashleys:

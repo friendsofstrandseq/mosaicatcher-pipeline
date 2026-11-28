@@ -58,7 +58,7 @@ rule run_strandphaser_per_chrom:
         "../envs/rtools.yaml"
     resources:
         mem_mb=get_mem_mb_strandphaser,
-        runtime=120,
+        runtime=runtime_strandphaser,
     params:
         input_bam=lambda wc: "{}/{}/selected".format(config["data_location"], wc.sample),
         output=lambda wc: "{}/{}/strandphaser/StrandPhaseR_analysis.{}".format(
@@ -91,7 +91,7 @@ rule merge_strandphaser_vcfs:
         "BCFtools/1.21-GCC-13.3.0",
     resources:
         mem_mb=get_mem_mb,
-        runtime=30,
+        runtime=runtime_per_sample_light,
     shell:
         """
         (
@@ -137,7 +137,7 @@ rule combine_strandphaser_output:
         "{folder}/log/combine_strandphaser_output/{sample}.log",
     resources:
         mem_mb=get_mem_mb,
-        runtime=30,
+        runtime=runtime_combine_strandphaser,
     conda:
         "../envs/mc_base.yaml"
     script:

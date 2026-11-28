@@ -29,14 +29,59 @@ def get_mem_mb_alignment_group(wildcards, attempt):
     Snakemake takes MAX for sequential jobs.
     BWA and MarkDup are both heavy, so use their requirement.
     """
-    # Base: 8GB for typical cell (20-50GB FASTQ → 5-10GB BAM)
+    # Now used by bwa only (sort/markdup/index have their own ladders below).
+    # Measured: bwa peak MaxRSS 8,270 MB on run 2026-11-19_AV233002 and 8.54 GB
+    # over all 2026 jobs (82% of the former 9 GB request) -> 10 GB at attempt 1.
     # Scale with attempt for OOM retry
-    base_mb = 8000
+    base_mb = 10000
     multipliers = [1.0, 1.5, 2.0, 3.0, 4.0]
     result = int(base_mb * multipliers[min(attempt - 1, 4)])
 
     # Cap at EMBL htc partition limit
     return min(result, 256000)
+
+
+def get_mem_mb_bwa(wildcards, input, attempt):
+    """bwa mem: the index (.bwt + .sa + .pac) is held in memory, plus per-thread
+    read buffers that depend on the reads.
+
+    mem_mb = 1300 MB per GB of index + 5000 MB, x1.5 per retry. Index sizes:
+    hg38 5.43 GB, T2T 5.46 GB, mm39 4.77 GB -> 12.0 / 12.1 / 11.2 GB at attempt 1
+    for 2026 peaks of 8.54 / 10.13 / 7.96 GiB (>= 16% headroom).
+    The index files are inputs of the rule (ancient), so they exist when this is
+    evaluated at scheduling; 12.5 GB is used if their size cannot be read.
+    """
+    try:
+        prefix = input.ref_index[0].rsplit(".", 1)[0]
+        idx_gb = (
+            sum(os.path.getsize(prefix + ext) for ext in (".bwt", ".sa", ".pac")) / 1e9
+        )
+        base_mb = 1300 * idx_gb + 5000
+    except (OSError, AttributeError, IndexError):
+        base_mb = 12500
+    multipliers = [1.0, 1.5, 2.0, 3.0, 4.0]
+    return int(min(base_mb * multipliers[min(attempt - 1, 4)], 256000))
+
+
+def get_mem_mb_sort_markdup(wildcards, attempt):
+    """ashleys_samtools_sort_bam and ashleys_mark_duplicates (one cell each).
+
+    Max MaxRSS over all 2026 jobs: sort 4.87 GB, markdup 3.75 GB (they used to
+    request the 9 GB bwa ladder) -> 6 GB at attempt 1, x1.5 per retry.
+    """
+    base_mb = 6000
+    multipliers = [1.0, 1.5, 2.0, 3.0, 4.0]
+    return min(int(base_mb * multipliers[min(attempt - 1, 4)]), 256000)
+
+
+def get_mem_mb_index_bam(wildcards, attempt):
+    """index_input_bam (samtools index of one cell BAM).
+
+    Max MaxRSS over all 2026 jobs: 1.37 GB (it used to request 9 GB)
+    -> 2 GB at attempt 1, doubling per retry.
+    """
+    mem_avail = [2, 4, 8, 16, 32]
+    return mem_avail[min(attempt - 1, 4)] * 1000
 
 
 def get_mem_mb_merge_group(wildcards, attempt):
@@ -54,9 +99,10 @@ def get_mem_mb_merge_group(wildcards, attempt):
     # Each cell contributes ~50-100MB to merged BAM
     # For 100 cells: ~5-10GB merged BAM needs ~15-30GB to merge/sort
 
-    # Conservative base: 16GB (good for ~100 cells)
-    # Scale up for retries
-    base_mb = 16000
+    # Measured (run 2026-11-19_AV233002): mergeBams peak MaxRSS 16,776 MB and
+    # mergeSortBams 16,776 MB, i.e. above the former 16 GB request.
+    # Base raised to 20 GB; scale up for retries
+    base_mb = 20000
     multipliers = [1.0, 1.5, 2.0, 3.0, 4.0]
     result = int(base_mb * multipliers[min(attempt - 1, 4)])
 
@@ -72,9 +118,13 @@ def get_mem_mb_haplotag_group(wildcards, attempt):
     - index_haplotag_bam (light, <1GB)
 
     Haplotag dominates memory requirement.
+
+    Measured (run 2026-11-19_AV233002, 273 jobs): haplotag_bams peak MaxRSS
+    1,898 MB (mean 1,103 MB); index_haplotag_bam peak 1,049 MB. The former 4 GB
+    base was ~2x over-provisioned; retries double the request on OOM.
     """
-    base_mb = 4000
-    multipliers = [1.0, 1.5, 2.0, 3.0, 5.0]
+    base_mb = 2500
+    multipliers = [1.0, 2.0, 4.0, 8.0, 16.0]
     result = int(base_mb * multipliers[min(attempt - 1, 4)])
 
     return min(result, 256000)
@@ -85,11 +135,13 @@ def get_mem_mb_create_haplotag_table(wildcards, attempt):
     Memory for create_haplotag_table (standalone R script).
 
     Empirical data (456 jobs): p95=9,719 MB, max=17,401 MB.
-    The 8GB default causes active OOM failures.
-    Start at 12GB, scale aggressively for retries.
+    Run 2026-11-19_AV233002 (70 jobs): peak MaxRSS 5,086 MB (mean 3,446 MB).
+    The 8GB default causes active OOM failures; 12 GB was oversized for most
+    runs. Oct-Nov 2026 (sacct, 13k jobs): peak MaxRSS 5,840 MB. Start at 7 GB,
+    then 14/21/35/56 GB (5 OOM at 12-18 GB in 2026 are handled by the retries).
     """
-    base_mb = 12000
-    multipliers = [1.0, 1.5, 2.5, 4.0, 5.0]
+    base_mb = 7000
+    multipliers = [1.0, 2.0, 3.0, 5.0, 8.0]
     result = int(base_mb * multipliers[min(attempt - 1, 4)])
     return min(result, 60000)
 
@@ -145,7 +197,25 @@ def get_mem_mb_check_sm_tag(wildcards, input, attempt):
 
 
 def get_mem_mb(wildcards, attempt):
-    """Original function - preserved for ungrouped rules."""
+    """Default ladder for ungrouped MosaiCatcher rules (GB per attempt).
+
+    Light rules (e.g. compress/index_indiv_strandphaser_vcf) peak at ~0.45 GB
+    (run 2026-11-19_AV233002), so attempt 1 starts at 1 GB and OOM retries climb
+    1 -> 2 -> 4 -> 16 -> 64 GB. Note: ashleys rules are included before this file
+    and keep their own get_mem_mb from rules/ashleys/common.smk.
+    """
+    mem_avail = [1, 2, 4, 16, 64]
+    return mem_avail[min(attempt - 1, 4)] * 1000
+
+
+def get_mem_mb_2gb(wildcards, attempt):
+    """Per-sample R/Python steps that peak above 1 GB.
+
+    GC_correction 1.57 GB, VST_correction 1.25 GB, plot_clustering_chromosome
+    1.49 GB (2026 max); all three hit OUT_OF_MEMORY at 1 GB on attempt 1 in the
+    test of 2026-11-26. populate_counts_GC peaked at 0.88 GB (90% of 1 GB).
+    -> 2 GB at attempt 1, then 4 -> 8 -> 16 -> 64 GB.
+    """
     mem_avail = [2, 4, 8, 16, 64]
     return mem_avail[min(attempt - 1, 4)] * 1000
 
@@ -181,6 +251,19 @@ def get_mem_mb_regenotype(wildcards, input, attempt):
     return min(est_mb * attempt, 256000)
 
 
+def get_mem_mb_prepare_haplotag(wildcards, attempt):
+    """
+    Memory for prepare_haplotag_input_bam (hardlink/copy or samtools reheader).
+
+    Measured (run 2026-11-19_AV233002, 375 jobs): peak MaxRSS 448 MB (mean
+    315 MB). Previously a fixed 2,000 MB with no retry growth.
+    """
+    base_mb = 1000
+    multipliers = [1.0, 2.0, 4.0, 8.0, 16.0]
+    result = int(base_mb * multipliers[min(attempt - 1, 4)])
+    return min(result, 16000)
+
+
 def get_mem_mb_call_snvs(wildcards, attempt):
     """
     Memory for call_SNVs_bcftools_chrom.
@@ -199,9 +282,11 @@ def get_mem_mb_mosaiclassifier(wildcards, attempt):
     Memory for mosaiClassifier_calc_probs.
 
     Empirical data (18 jobs): p95=1,553 MB, max=2,800 MB.
-    Previous 8GB base was 5x over-provisioned.
+    sacct 2026: 5 OUT_OF_MEMORY at 2,500 MB (Oct-Nov peak 3,050 MB, 96-cell
+    plates). The probabilities table grows with the number of cells:
+    4 GB + 10 MB per cell (96 cells -> ~5 GB, 1000 cells -> 14 GB).
     """
-    base_mb = 2500
+    base_mb = 4000 + 10 * get_n_cells(wildcards)
     multipliers = [1.0, 2.0, 4.0, 8.0, 16.0]
     result = int(base_mb * multipliers[min(attempt - 1, 4)])
     return min(result, 64000)
@@ -216,9 +301,196 @@ def get_mem_mb_strandphaser(wildcards, attempt):
     MaxRSS 4.3 GB, killed) — and the empirical max (5.5 GB) already exceeds
     4 GB, so attempt 1 was doomed to fail for the heaviest jobs. Base raised to
     8 GB so attempt 1 covers the worst observed case with margin; retries scale
-    to 16/32/64 GB.
+    to 16/32/64 GB. sacct 2026: 87 OOM at 4 GB and still 4 OOM at 8 GB, so attempt 1
+    is now 10 GB + 5 MB per cell (one job reads all cells of the sample).
     """
-    base_mb = 8000
+    base_mb = 10000 + 5 * get_n_cells(wildcards)
     multipliers = [1.0, 2.0, 4.0, 8.0]
     result = int(base_mb * multipliers[min(attempt - 1, 3)])
     return min(result, 64000)
+
+
+# ========================================
+# CELL-COUNT-AWARE RUNTIME / MEMORY
+# ========================================
+# Per-sample rules read every cell of the plate, so their cost grows with the
+# number of cells: 10-96 for most plates, 400 to 1000+ for pools. Coefficients
+# come from sacct (all 2026 jobs, 12-366 cells per sample, ~90% at 96): the
+# per-cell slope is the worst elapsed time per cell seen on 96-cell plates, which
+# also contains the fixed start-up cost, so it over-estimates large samples
+# (366-cell pools ran 2-5x faster per cell). Memory grows only mildly with cells.
+# The functions below apply the retry attempt themselves (time x attempt).
+
+DEFAULT_N_CELLS = 96
+MAX_RUNTIME_MIN = 14 * 24 * 60  # MaxTime of htc-el8 / htc-el10 (14 days)
+
+
+def get_n_cells(wildcards):
+    """Number of cells (plate size) of wildcards.sample.
+
+    cell_per_sample comes from the sample's bam/ folder (rules/common.smk) or,
+    in FASTQ mode, from its fastq/ folder (rules/ashleys/common.smk, unique
+    cells). Falls back to 96 when the sample is unknown.
+    """
+    try:
+        n = len(cell_per_sample.get(str(wildcards.sample), []))
+    except (NameError, AttributeError):
+        n = 0
+    return n if n > 0 else DEFAULT_N_CELLS
+
+
+def cells_runtime(base_min, per_cell_min, floor_min=15):
+    """runtime (min) = max(floor, base + per_cell x n_cells) x attempt, capped."""
+
+    def runtime(wildcards, attempt):
+        est = max(floor_min, base_min + per_cell_min * get_n_cells(wildcards))
+        return int(min(round(est) * attempt, MAX_RUNTIME_MIN))
+
+    return runtime
+
+
+def cells_mem_mb(base_mb, per_cell_mb, cap_mb, multipliers=(1, 2, 4, 8, 16)):
+    """mem_mb = (base + per_cell x n_cells) x multiplier[attempt], capped."""
+
+    def mem_mb(wildcards, attempt):
+        est = base_mb + per_cell_mb * get_n_cells(wildcards)
+        mult = multipliers[min(attempt - 1, len(multipliers) - 1)]
+        return int(min(est * mult, cap_mb))
+
+    return mem_mb
+
+
+# Measured worst case on 96-cell plates -> formula at 96 / 400 / 1000 cells
+# (attempt 1, minutes).
+# ashleys_generate_features: 80 min (50 s/cell)      -> 10 + 0.75/cell: 82 / 310 / 760
+# ashleys_predict: 6.9 min (4.3 s/cell)               -> 10 + 0.15/cell: 24 / 70 / 160
+runtime_ashleys_predict = cells_runtime(10, 0.15)
+# mosaic_count: 16.4 min (10.3 s/cell)                -> 10 + 0.2/cell: 29 / 90 / 210
+# mergeBams 36.6 / mergeSortBams 26.2 min (25 s/cell); all 2026 jobs p99 58 / 68 min
+#                                                     -> 40 + 0.3/cell: 69 / 160 / 340
+# index_merged_bam: 10.9 min (6.8 s/cell); all 2026 jobs p99 22.5 min (848 TIMEOUT
+# at a 5 min limit)                                   -> 15 + 0.15/cell: 29 / 75 / 165
+# call_SNVs_bcftools_chrom: 59.7 min, but 1,165 TIMEOUT at a 60 min limit
+#                                                     -> 60 + 0.3/cell: 89 / 180 / 360
+runtime_call_snvs = cells_runtime(60, 0.3)
+# run_strandphaser_per_chrom: 54 min at 96, 73.5 min at 366 cells
+#                                                     -> 30 + 0.35/cell: 64 / 170 / 380
+runtime_strandphaser = cells_runtime(30, 0.35)
+# combine_strandphaser_output: 11.3 min, 126 TIMEOUT at a 30 min limit
+#                                                     -> 15 + 0.2/cell: 34 / 95 / 215
+runtime_combine_strandphaser = cells_runtime(15, 0.2)
+# Per-sample R/Python steps, <= 9 s/cell (VST, GC plots, populate_counts_GC)
+#                                                     -> 5 + 0.15/cell: 19 / 65 / 155
+runtime_per_sample_medium = cells_runtime(5, 0.15)
+# Per-sample R/Python steps, <= 6.4 s/cell (counts, plots, segmentation, calls)
+#                                                     -> 5 + 0.1/cell: 15 / 45 / 105
+runtime_per_sample_light = cells_runtime(5, 0.1)
+
+# Memory (attempt 1 at 96 / 400 / 1000 cells, GB):
+# populate_counts: 8 OUT_OF_MEMORY at 2 GB in 2026 -> 2 GB + 10 MB/cell: 3 / 6 / 12
+mem_populate_counts = cells_mem_mb(2000, 10, 64000)
+# mosaic_count: MaxRSS 8.1 GB at the 8 GB limit (96 cells)
+#                                                     -> 10 GB + 10 MB/cell: 11 / 14 / 20
+mem_mosaic_count = cells_mem_mb(10000, 10, 256000)
+# ashleys_generate_features: MaxRSS 16.4 GB at the 16 GB limit (96 cells, 12
+# threads; memory follows the threads more than the cells)
+#                                                     -> 20 GB + 10 MB/cell: 21 / 24 / 30
+# Retries grow x1.5 (21 -> 31 -> 47 -> 71 -> 105 GB at 96 cells) instead of
+# doubling, to keep requests moderate.
+mem_ashleys_features = cells_mem_mb(20000, 10, 256000, (1, 1.5, 2.25, 3.4, 5))
+
+
+# ========================================
+# INPUT-SIZE SCALING
+# ========================================
+# Most plates have cells of a few hundred MB, but a positive control can hold a
+# whole plate's worth of reads in one well: up to 58.7 GB of FASTQ (pair) for a
+# single cell in 2026 (ChiaraCKPMouseOrganoids10hp1PE20396). Neither a fixed
+# limit nor the number of cells covers it, so per-cell rules scale with the size
+# of their data inputs (reference files excluded) and aggregation rules take
+# the max of the cell-count and the input-size estimate. Input-dependent
+# resources are evaluated when the job is scheduled, i.e. once inputs exist.
+SIZE_RUNTIME_CAP_MIN = 24 * 60  # attempt-1 ceiling; retries still multiply
+
+
+def input_gb(input, keys=None):
+    """Total size in GB of the named inputs (all inputs when keys is None)."""
+    if keys is None:
+        files = list(input)
+    else:
+        files = []
+        for k in keys:
+            v = getattr(input, k, None)
+            if v is None:
+                continue
+            files.extend(v if isinstance(v, (list, tuple)) else [v])
+    total = 0
+    for f in files:
+        try:
+            total += os.path.getsize(f)
+        except OSError:
+            pass
+    return total / 1e9
+
+
+def size_runtime(base_min, min_per_gb, floor_min=15, keys=None):
+    """runtime = max(floor, base + slope x input GB), capped at 24 h, x attempt."""
+
+    def runtime(wildcards, input, attempt):
+        est = max(floor_min, base_min + min_per_gb * input_gb(input, keys))
+        est = min(est, SIZE_RUNTIME_CAP_MIN)
+        return int(min(round(est) * attempt, MAX_RUNTIME_MIN))
+
+    return runtime
+
+
+def cells_or_size_runtime(
+    base_min, per_cell_min, size_base_min, min_per_gb, floor_min=15, keys=None
+):
+    """Aggregation rules: max(cell-count estimate, input-size estimate) x attempt."""
+
+    def runtime(wildcards, input, attempt):
+        est = max(
+            floor_min,
+            base_min + per_cell_min * get_n_cells(wildcards),
+            min(
+                size_base_min + min_per_gb * input_gb(input, keys), SIZE_RUNTIME_CAP_MIN
+            ),
+        )
+        return int(min(round(est) * attempt, MAX_RUNTIME_MIN))
+
+    return runtime
+
+
+# Slopes calibrated on all COMPLETED 2026 jobs (min per GB of input, p90):
+# bwa 23.6 (6 threads; 13 on the 58.7 GB control), sort 11.9 / markdup 17.2 on
+# small BAMs where fixed costs dominate, 2.7 / 2.2 on the 50 GB control BAM,
+# index 8.3 (control > 5 min), generate_features 1.7 per GB of sample BAMs.
+runtime_bwa = size_runtime(15, 20, floor_min=30, keys=("mate1", "mate2"))
+runtime_sort_markdup = size_runtime(5, 6)
+runtime_index_bam = size_runtime(5, 2)
+runtime_fastqc = size_runtime(5, 5)
+runtime_haplotag_per_cell = size_runtime(5, 10, keys=("bam",))
+runtime_light_per_cell_bam = size_runtime(5, 5, keys=("bam",))
+runtime_light_per_cell_bam_unnamed = size_runtime(5, 5)
+
+
+def get_mem_mb_sort(wildcards, input, attempt):
+    """samtools sort, one cell: 6 GB + 50 MB per GB of unsorted BAM, x1.5 per retry.
+
+    Peak 4.87 GB on regular cells (2026), 5.13 GB on the 50 GB control BAM
+    (temporary-file merge); the size term keeps headroom for larger wells.
+    """
+    base_mb = 6000 + 50 * input_gb(input)
+    multipliers = [1.0, 1.5, 2.0, 3.0, 4.0]
+    return int(min(base_mb * multipliers[min(attempt - 1, 4)], 256000))
+
+
+# Aggregation rules: max(cells, input size). generate_features p90 1.7 min per GB
+# of sample BAMs (12 threads): the plate with the 58.7 GB control took 80.2 min
+# against 82 min from the cell count alone.
+runtime_ashleys_features = cells_or_size_runtime(10, 0.75, 10, 2.0, keys=("bam",))
+runtime_mosaic_count = cells_or_size_runtime(10, 0.2, 10, 0.5, keys=("bam",))
+runtime_merge_bams = cells_or_size_runtime(40, 0.3, 10, 1.0, keys=("bam",))
+runtime_merge_sort_bams = cells_or_size_runtime(40, 0.3, 10, 1.0)
+runtime_index_merged_bam = cells_or_size_runtime(15, 0.15, 10, 0.5)

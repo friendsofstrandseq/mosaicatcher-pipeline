@@ -15,8 +15,8 @@ rule ashleys_generate_features:
             input.bam[0].split("bam_ashleys")[0]
         ),
     resources:
-        mem_mb=get_mem_mb_heavy,
-        runtime=60,
+        mem_mb=lambda wildcards, attempt: mem_ashleys_features(wildcards, attempt),
+        runtime=runtime_ashleys_features,
     shell:
         "ashleys -j {threads} features -f {params.folder} -w {params.windows} -o {output} --recursive_collect -e {params.extension}"
 
@@ -35,7 +35,7 @@ rule ashleys_predict:
         model_stringent="./workflow/ashleys_models/svc_stringent.pkl",
     resources:
         mem_mb=get_mem_mb,
-        runtime=3600,
+        runtime=lambda wildcards, attempt: runtime_ashleys_predict(wildcards, attempt),
     shell:
         "ashleys predict -p {input.folder} -o {output} -m {params.model_default}"
 

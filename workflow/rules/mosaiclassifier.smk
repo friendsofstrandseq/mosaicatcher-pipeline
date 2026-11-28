@@ -14,7 +14,7 @@ if config["arbigent"] is False:
             "../envs/rtools.yaml"
         resources:
             mem_mb=get_mem_mb_mosaiclassifier,
-            runtime=60,
+            runtime=runtime_per_sample_light,
         script:
             "../scripts/mosaiclassifier_scripts/mosaiClassifier.snakemake.R"
 
@@ -31,6 +31,7 @@ rule create_haplotag_likelihoods:
         "../envs/rtools.yaml"
     resources:
         mem_mb=get_mem_mb_heavy,
+        runtime=runtime_per_sample_light,
     script:
         "../scripts/mosaiclassifier_scripts/haplotagProbs.snakemake.R"
 
@@ -55,6 +56,7 @@ rule mosaiClassifier_make_call:
         filter=lambda wc: config["methods"][wc.method]["filter"],
     resources:
         mem_mb=get_mem_mb_heavy,
+        runtime=runtime_per_sample_light,
     script:
         "../scripts/mosaiclassifier_scripts/mosaiClassifier_call.snakemake.R"
 
