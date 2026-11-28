@@ -1,3 +1,6 @@
+# DEVELOPMENT ONLY: conda environments without container. Users run
+# slurm_EMBL_apptainer (every tool is in the release image); the preflight report
+# flags this profile.
 # Executor configuration
 executor: slurm
 

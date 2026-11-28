@@ -132,7 +132,7 @@ When ashleys is enabled, its rules are imported with `ashleys_*` prefix.
 ### Git Submodules
 ```bash
 # Initialize/update submodules
-git submodule update --remote --recursive --init
+git submodule update --init --recursive   # commits pinned by the checked-out tag; never --remote
 ```
 - `workflow/snakemake_profiles` - Execution profiles for local/HPC
 - `workflow/data` - Reference data

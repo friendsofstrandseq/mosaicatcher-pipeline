@@ -12,7 +12,6 @@ GROUP="korbel"
 
 DIRS=(
     "/scratch/korbel/shared/apptainer_cache"   # Apptainer blobs + .simg files
-    "/scratch_cached/korbel/references"         # Reference genomes + BWA indexes
     "/g/korbel2/shared/conda_envs"              # Conda environments
 )
 
@@ -27,5 +26,13 @@ for DIR in "${DIRS[@]}"; do
     echo "  OK  $DIR"
 done
 
+# Reference genomes: written by maintainers only, files made read-only (chmod a-w)
+# once complete, so that no run can overwrite or re-index them.
+REF_DIR="/scratch/korbel/shared/references"
+mkdir -p "$REF_DIR"
+chgrp "$GROUP" "$REF_DIR"
+chmod 2755 "$REF_DIR"
+echo "  OK  $REF_DIR (read-only for the group)"
+
 echo ""
-echo "Done. Verify with: ls -la /scratch/korbel/shared/ /scratch_cached/korbel/ /g/korbel2/shared/"
+echo "Done. Verify with: ls -la /scratch/korbel/shared/ /g/korbel2/shared/"
