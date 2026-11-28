@@ -7,8 +7,8 @@ genome, building a bwa index, creating a conda environment or pulling an image.
 | Resource | Location | Used by | Who writes |
 |---|---|---|---|
 | Reference genomes (FASTA, `.fai`, bwa index) | `/scratch/korbel/shared/references` (read-only files) | both profiles | maintainers |
-| Container images (`<md5 of image URL>.simg`) | `/scratch/korbel/shared/apptainer_cache` (`apptainer-prefix`) | apptainer profile | maintainers, or the first run of a group member |
-| Conda environments | `/g/korbel2/shared/conda_envs` (`conda-prefix`) | conda profile | first run of a group member |
+| Container images (`<md5 of image URL>.simg`) | `/scratch/korbel/shared/apptainer_cache` (`apptainer-prefix`) | every run | nightly job of the maintainer (`nightly_pull_images.sh`) |
+| Conda environments `mc_base`, `mc_bioinfo_tools` | `/g/korbel2/shared/conda_envs` (`conda-prefix`) | the four rules that run outside the container | maintainers |
 
 ## For users
 
@@ -33,9 +33,12 @@ snakemake --profile workflow/snakemake_profiles/mosaicatcher-pipeline/v9/HPC/slu
   `--config reference=<asm> reference_base_dir=/scratch/korbel/shared/references allow_reference_build=True`
   and the reference files as targets, then `chmod a-w` the new files and update
   `README.md` in that directory (source, date, md5 of the `.fai`).
-- New release: `bash workflow/scripts/toolbox/pull_containers.sh <version>`
-  pulls the five assembly images into the shared `apptainer-prefix`.
-- Conda profile: after a change of `workflow/envs/rtools.yaml`, install the
-  BSgenome packages into the new environment once (see the preflight report).
+- New release: the nightly job (`nightly_pull_images.sh`, see
+  `docs/updating.md`) pulls the five assembly images into the shared
+  `apptainer-prefix` the night after the release.
+- Host conda envs: rules with `container: None` run in `mc_base` /
+  `mc_bioinfo_tools` from `conda-prefix`; after a change of those env files,
+  build them there once (the preflight report shows `TODO Host envs`).
+- `slurm_EMBL_conda` (no container) is for pipeline development, not for users.
 - Permissions: shared directories are `korbel` group, setgid (`2775`); images
   and environments must stay group-readable (`chmod -R g+rX`).

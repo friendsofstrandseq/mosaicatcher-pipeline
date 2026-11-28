@@ -173,9 +173,9 @@ cat <<EOF
 
 Updated to ${NEW_VERSION}. Release notes: ${RELEASES}/tag/${TAG}
 - Going back: bash workflow/scripts/toolbox/update.sh ${current_version}
-- Re-running an existing output folder: new code or parameters make Snakemake
-  re-run finished steps. To only complete missing outputs, add
-  --rerun-triggers mtime (check first with -n).
+- Output folders of the previous version: use a new data_location (recommended).
+  A run on an old folder stops and explains how to continue on purpose
+  (--config allow_version_change=True).
 EOF
 
 fi  # CHECKONLY
