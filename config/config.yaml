@@ -76,6 +76,12 @@ min_snps_for_phasing: 5
 # (default) they fail with a clear message and are effectively excluded.
 allow_empty_phasing: False
 
+# Each output folder records the version that produced it
+# (<sample>/config/pipeline_version). A run of another version on that folder
+# stops at start; set True to continue on purpose (the stamp is updated and the
+# previous one kept in config/pipeline_version.history).
+allow_version_change: False
+
 # --------------------------------------------------------
 # GENECORE Configuration
 # --------------------------------------------------------

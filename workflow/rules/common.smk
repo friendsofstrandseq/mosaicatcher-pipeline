@@ -66,6 +66,7 @@ if config["list_commands"] is True:
 # Start with aesthetic pipeline config presentation
 onstart:
     pipeline_aesthetic_start.pipeline_aesthetic_start(config)
+    write_version_stamps()
     # subprocess.Popen(
     #     "rsync --ignore-existing -avzh config/config.yaml {folder_path}/config".format(
     #         folder_path=config["data_location"]

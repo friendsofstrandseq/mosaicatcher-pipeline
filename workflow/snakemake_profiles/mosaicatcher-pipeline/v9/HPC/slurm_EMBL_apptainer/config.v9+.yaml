@@ -91,6 +91,14 @@ jobs: 150 # Maximum number of concurrent jobs (increased for better throughput)
 # Fault tolerance
 keep-going: True # Continue with independent jobs even if some jobs fail
 rerun-incomplete: True # Rerun jobs that were started but didn't complete
+# Re-run a finished step only when its output is missing or older than its
+# input, not when code, params or the container image changed: relaunching an
+# existing output folder after an update completes it instead of recomputing it.
+# Mixing versions in one folder is blocked by the version stamp
+# (allow_version_change). After changing a parameter on an existing folder, use a
+# new folder or --forcerun <rule>; --rerun-triggers mtime params input code
+# software-env restores the Snakemake default.
+rerun-triggers: mtime
 retries: 4 # Retry failed jobs up to 4 times (leverages attempt-based memory scaling)
 
 # Software deployment settings
