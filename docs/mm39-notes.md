@@ -68,9 +68,14 @@ The following reference files are **NOT currently available** for mm39:
 - **Workaround**: Use default 200 kb window size only
 
 #### Binning BED File
-- **Missing**: `mm39.bin_200kb_all.bed` (for plotting/analysis)
-- **Available**: `mm10.bin_200kb_all.bed` can be used as reference
-- **Impact**: Minor - mainly affects standardized plotting
+- **Generated**: `bin_bed_file: "auto"` builds the bins from `mm39.fa.fai` with the
+  configured window (rule `generate_bin_bed`), into `<data_location>/config/bins/`
+- **Grid**: identical to `mosaicatcher count` and to `workflow/data/GC/mm39.GC_matrix.txt.gz`
+  (13,626 bins at 200 kb)
+- **Before**: `mm10.bin_200kb_all.bed` was used. Its chromosome ends are mm10 ends, so the
+  populated count tables (QC count plots) and the chromosome-scaled SV clustering plot had
+  45 empty bins at mm10 positions; counts, normalisation, segmentation and SV calls were
+  not affected
 
 ## Usage Recommendations
 
