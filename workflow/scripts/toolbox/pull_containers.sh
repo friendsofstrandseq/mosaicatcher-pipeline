@@ -20,12 +20,12 @@
 #
 # Override defaults via env vars:
 #   STABLE_BASE           where the tagged release is cloned
-#   APPTAINER_CACHEDIR    apptainer cache directory
-#   APPTAINER_OUTDIR      where .sif images are written
+#   APPTAINER_CACHEDIR    apptainer layer cache (per user, not read by Snakemake)
+#   APPTAINER_OUTDIR      Snakemake apptainer prefix the images are written to, as
+#                         <md5 of the image URL>.simg (the name Snakemake looks up)
 #   TMPDIR                apptainer build tmp directory
 #   SNAKEMAKE_BIN         snakemake executable for the validation run (default: from PATH)
 #   REFERENCE_BASE_DIR    shared reference genome directory used by the validation run
-#   SNAKEMAKE_OUTPUT_CACHE  shared snakemake output cache
 #
 #SBATCH --mem=8G
 #SBATCH --time=4:00:00
@@ -53,13 +53,15 @@ REGISTRY="ghcr.io/friendsofstrandseq/mosaicatcher-pipeline"
 REMOTE_URL="https://github.com/friendsofstrandseq/mosaicatcher-pipeline"
 STABLE_BASE="${STABLE_BASE:-/g/korbel2/${USER}/workspace/StrandSeq_workspace/STABLE}"
 
-CACHE_DIR="${APPTAINER_CACHEDIR:-/scratch_cached/${USER}/apptainer/cache}"
-OUT_DIR="${APPTAINER_OUTDIR:-${CACHE_DIR}}"
+CACHE_DIR="${APPTAINER_CACHEDIR:-/scratch/${USER}/apptainer_cache}"
+# Same directory as `apptainer-prefix` in the EMBL apptainer profile, so the
+# pipeline finds the images and never pulls them at run time.
+OUT_DIR="${APPTAINER_OUTDIR:-/scratch/korbel/shared/apptainer_cache}"
 TMPDIR="${TMPDIR:-/tmp}"
 
 # Validation run (step 3) settings
 SNAKEMAKE_BIN="${SNAKEMAKE_BIN:-snakemake}"
-REFERENCE_BASE_DIR="${REFERENCE_BASE_DIR:-/scratch_cached/korbel/references}"
+REFERENCE_BASE_DIR="${REFERENCE_BASE_DIR:-/scratch/korbel/shared/references}"
 
 # ---------------------------------------------------------------------------
 # Parse arguments
@@ -191,7 +193,7 @@ SUBMITTED_TAGS=()
 for ASSEMBLY in "${ASSEMBLIES[@]}"; do
     TAG="${ASSEMBLY}-${GIT_TAG}"
     IMAGE_URI="docker://${REGISTRY}:${TAG}"
-    SIF_FILE="${OUT_DIR}/mosaicatcher-pipeline_${TAG}.sif"
+    SIF_FILE="${OUT_DIR}/$(printf '%s' "${IMAGE_URI}" | md5sum | cut -d' ' -f1).simg"
     echo ""
     if [[ -f "${SIF_FILE}" ]]; then
         echo "  Already exists, skipping: ${SIF_FILE}"
@@ -199,7 +201,7 @@ for ASSEMBLY in "${ASSEMBLIES[@]}"; do
     fi
     echo "  Submitting SLURM pull: ${IMAGE_URI}"
     srun --mem=16G --time=2:00:00 --job-name="apptainer-pull-${TAG}" \
-        bash -c "mkdir -p '${OUT_DIR}' && apptainer pull --dir '${OUT_DIR}' '${IMAGE_URI}'" &
+        bash -c "mkdir -p '${OUT_DIR}' && apptainer pull '${SIF_FILE}.partial' '${IMAGE_URI}' && mv -n '${SIF_FILE}.partial' '${SIF_FILE}' && chmod 0664 '${SIF_FILE}'" &
     PIDS+=($!)
     SUBMITTED_TAGS+=("${TAG}")
 done
@@ -262,9 +264,6 @@ if ! command -v "${SNAKEMAKE_BIN}" >/dev/null 2>&1 && [[ ! -x "${SNAKEMAKE_BIN}"
 fi
 
 cd "${CLONE_DIR}"
-
-export SNAKEMAKE_OUTPUT_CACHE="${SNAKEMAKE_OUTPUT_CACHE:-/scratch_cached/korbel/shared/snakemake_cache}"
-mkdir -p "${SNAKEMAKE_OUTPUT_CACHE}"
 
 "${SNAKEMAKE_BIN}" \
     --cores 1 \
