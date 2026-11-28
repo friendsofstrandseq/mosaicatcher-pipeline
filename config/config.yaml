@@ -8,6 +8,11 @@ version: 2.5.1
 # Email for notifications about the pipeline's status
 email: ""
 
+# Preflight check printed at start (reference, container, conda envs, BSgenome,
+# disk space), with what would be downloaded or built before the first job.
+# "warn": print only; "strict": stop if anything must be downloaded/built; "off"
+preflight: "warn"
+
 # List of samples to process if multiple are specified
 samples_to_process: []
 
@@ -96,11 +101,6 @@ reference: "hg38"
 # Leave unset to use workflow/data/ref_genomes (default fallback in external_data.smk)
 # Multi-user HPC: set to "/scratch_cached/korbel/references" via profile or --config reference_base_dir=...
 # reference_base_dir: ""
-
-# Preflight check printed at start (reference, container, conda envs, BSgenome,
-# disk space), with what would be downloaded or built before the first job.
-# "warn": print only; "strict": stop if anything must be downloaded/built; "off"
-preflight: "warn"
 
 # Download pre-built BWA indexes from iGenomes (if available) instead of building locally
 # True: Try to download pre-built indexes from AWS iGenomes (faster, requires internet)
