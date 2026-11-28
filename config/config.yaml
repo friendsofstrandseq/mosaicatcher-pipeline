@@ -206,7 +206,9 @@ references_data:
       - chrY
 
     # Genome-specific data files
-    bin_bed_file: "workflow/data/bin_200kb_all.bed"
+    # "auto": bins generated from the hg19 .fai (rule generate_bin_bed).
+    # bin_200kb_all.bed is the hg38 grid: its chromosome ends differ from hg19.
+    bin_bed_file: "auto"
     gc_matrix_file: "workflow/data/GC/hg19.GC_matrix.txt.gz"
 
     # Module compatibility flags
@@ -260,7 +262,9 @@ references_data:
       - chrY
 
     # Genome-specific data files
-    bin_bed_file: "workflow/data/bin_200kb_all.bed"
+    # "auto": bins generated from the T2T .fai (rule generate_bin_bed).
+    # bin_200kb_all.bed is the hg38 grid: its chromosome ends differ from T2T.
+    bin_bed_file: "auto"
     gc_matrix_file: "workflow/data/GC/T2T.GC_matrix.txt.gz"
 
     # Module compatibility flags
@@ -365,7 +369,9 @@ references_data:
       - chrY
 
     # Genome-specific data files
-    bin_bed_file: "workflow/data/mm10.bin_200kb_all.bed"
+    # "auto": bins generated from the mm39 .fai (rule generate_bin_bed). The mm10
+    # BED used before has mm10 chromosome ends, which differ from mm39.
+    bin_bed_file: "auto"
     gc_matrix_file: "workflow/data/GC/mm39.GC_matrix.txt.gz"
 
     # Module compatibility flags

@@ -230,6 +230,31 @@ if reference_missing(f"{REF_BASE_DIR}/canFam4.fa"):
             """
 
 
+# Bin BED for references with bin_bed_file: "auto" (see get_bin_bed_file).
+# Built from the reference .fai on the grid of `mosaicatcher count` (fixed window,
+# last bin truncated at the chromosome end), so populated counts and plots line up
+# with the counts. Written in the run folder, never next to the shared reference.
+if get_genome_metadata("bin_bed_file") == "auto":
+
+    rule generate_bin_bed:
+        localrule: True
+        input:
+            fai=ancient(f"{get_reference_fasta()}.fai"),
+        output:
+            bed=get_auto_bin_bed_file(),
+        log:
+            "{}/log/generate_bin_bed/{}.bin_{}.log".format(
+                config["data_location"], config["reference"], config["window"]
+            ),
+        params:
+            window=config["window"],
+            chromosomes=get_genome_metadata("chromosomes"),
+        conda:
+            "../envs/mc_base.yaml"
+        script:
+            "../scripts/utils/generate_bin_bed_from_fai.py"
+
+
 rule generate_canFam3_bin_bed:
     input:
         fasta=f"{REF_BASE_DIR}/canFam3.fa",
