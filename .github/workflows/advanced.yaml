@@ -30,7 +30,7 @@ jobs:
 
       - name: Git Submodule Update
         run: |
-          git submodule update --remote --recursive --force --init
+          git submodule update --init --recursive
 
       - name: Setup Pixi
         uses: prefix-dev/setup-pixi@v0.11.3
@@ -76,7 +76,7 @@ jobs:
 
       - name: Git Submodule Update
         run: |
-          git submodule update --remote --recursive --force --init
+          git submodule update --init --recursive
 
       - name: Setup Pixi
         uses: prefix-dev/setup-pixi@v0.11.3
@@ -122,7 +122,7 @@ jobs:
 
       - name: Git Submodule Update
         run: |
-          git submodule update --remote --recursive --force --init
+          git submodule update --init --recursive
 
       - name: Setup Pixi
         uses: prefix-dev/setup-pixi@v0.11.3
@@ -168,7 +168,7 @@ jobs:
 
       - name: Git Submodule Update
         run: |
-          git submodule update --remote --recursive --force --init
+          git submodule update --init --recursive
 
       - name: Setup Pixi
         uses: prefix-dev/setup-pixi@v0.11.3
@@ -214,7 +214,7 @@ jobs:
 
       - name: Git Submodule Update
         run: |
-          git submodule update --remote --recursive --force --init
+          git submodule update --init --recursive
 
       - name: Setup Pixi
         uses: prefix-dev/setup-pixi@v0.11.3
@@ -261,7 +261,7 @@ jobs:
 
       - name: Git Submodule Update
         run: |
-          git submodule update --remote --recursive --force --init
+          git submodule update --init --recursive
 
       - name: Setup Pixi
         uses: prefix-dev/setup-pixi@v0.11.3
@@ -307,7 +307,7 @@ jobs:
 
       - name: Git Submodule Update
         run: |
-          git submodule update --remote --recursive --force --init
+          git submodule update --init --recursive
 
       - name: Setup Pixi
         uses: prefix-dev/setup-pixi@v0.11.3

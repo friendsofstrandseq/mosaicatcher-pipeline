@@ -31,7 +31,7 @@ snakefmt = "*"
 
 # Feature: linting only
 [feature.lint.dependencies]
-snakemake = ">=9.0"
+snakemake = ">=9.0,<10"
 snakemake-storage-plugin-http = "*"
 snakemake-storage-plugin-fs = "*"
 pandas = "*"

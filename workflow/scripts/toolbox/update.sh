@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
-# update.sh: move this MosaiCatcher checkout to a released version.
+# update.sh: move this MosaiCatcher checkout to a released version, then check it.
 #
-#   bash workflow/scripts/toolbox/update.sh --status            # current vs latest release
-#   bash workflow/scripts/toolbox/update.sh latest              # newest stable release
-#   bash workflow/scripts/toolbox/update.sh 2.5.2 \
-#        --configfile my_run.yaml \                              # check your config keys
-#        --pull hg38,mm39 \                                      # pre-pull container images
-#        --check "--profile workflow/snakemake_profiles/mosaicatcher-pipeline/v9/HPC/slurm_EMBL_apptainer --configfile my_run.yaml"
+#   pixi run update latest                     # or: bash workflow/scripts/toolbox/update.sh latest
+#   pixi run update <version> --configfile my_run.yaml [--profile <dir>] [--pull hg38,mm39]
+#   pixi run update --status                   # installed vs latest release
+#   pixi run update --check-only --configfile my_run.yaml   # check only, no update
 #
-# Steps: refuse local edits to tracked files, fetch tags, compare config keys
-# between the current and the target version (and against --configfile files),
-# check out the tag (detached), update the submodules, optionally pull the
-# container images into the Snakemake apptainer prefix, and optionally run a
-# dry-run whose preflight report shows what would still be downloaded or built.
+# Steps: refuse local edits to tracked files; fetch tags; compare config keys
+# between the current and the target version (and your --configfile files);
+# check out the tag; update the submodules to the commits pinned by the tag
+# (never --remote); optionally pull the container images into the Snakemake
+# apptainer prefix; then run a dry-run (preflight report + job table) with
+# --profile (default at EMBL: slurm_EMBL_apptainer) and your --configfile
+# files (default: the .tests config). --no-check skips it.
 # Going back is the same command with the previous version.
 
 set -euo pipefail
@@ -38,7 +38,7 @@ G=(git -c filter.lfs.process= -c filter.lfs.smudge= -c filter.lfs.clean= -c filt
 
 usage() { sed -n '2,17p' "$0" | sed 's/^# \{0,1\}//'; exit "${1:-0}"; }
 
-TARGET=""; STATUS=0; FORCE=0; PULL=""; CHECK=""; PREFIX=""
+TARGET=""; STATUS=0; FORCE=0; PULL=""; CHECK=""; PREFIX=""; PROFILE=""; NOCHECK=0; CHECKONLY=0
 CONFIGFILES=()
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -49,6 +49,9 @@ while [[ $# -gt 0 ]]; do
         --apptainer-prefix) PREFIX="$2"; shift ;;
         --configfile) CONFIGFILES+=("$2"); shift ;;
         --check) CHECK="$2"; shift ;;
+        --profile) PROFILE="$2"; shift ;;
+        --no-check) NOCHECK=1 ;;
+        --check-only) CHECKONLY=1 ;;
         -*) echo "Unknown option $1" >&2; usage 1 ;;
         *) TARGET="$1" ;;
     esac
@@ -71,6 +74,9 @@ if [[ "${STATUS}" -eq 1 ]]; then
         && echo "Update    : bash workflow/scripts/toolbox/update.sh ${latest#v}"
     exit 0
 fi
+if [[ "${CHECKONLY}" -eq 1 ]]; then
+    echo "MosaiCatcher ${current_version} (git: ${current_ref})"
+else
 [[ -n "${TARGET}" ]] || usage 1
 
 # 1. Local edits to tracked files would be lost or block the checkout.
@@ -172,18 +178,36 @@ Updated to ${NEW_VERSION}. Release notes: ${RELEASES}/tag/${TAG}
   --rerun-triggers mtime (check first with -n).
 EOF
 
-# 6. Optional dry-run: prints the preflight report and the job counts.
-if [[ -n "${CHECK}" ]]; then
+fi  # CHECKONLY
+
+# 6. Dry-run: prints the preflight report and the job table.
+if [[ -z "${CHECK}" && "${NOCHECK}" -eq 0 ]]; then
+    if [[ -z "${PROFILE}" && -d /scratch/korbel/shared ]]; then
+        PROFILE="$(dirname "${EMBL_PROFILE}")"
+    fi
+    [[ -n "${PROFILE}" ]] && CHECK="--profile ${PROFILE}"
+    if [[ ${#CONFIGFILES[@]} -gt 0 ]]; then
+        CHECK="${CHECK} --configfile ${CONFIGFILES[*]}"
+    else
+        CHECK="${CHECK} --configfile .tests/config/simple_config_mosaicatcher.yaml"
+    fi
+fi
+if [[ -n "${CHECK}" && "${NOCHECK}" -eq 0 ]]; then
+    if ! command -v snakemake >/dev/null 2>&1; then
+        echo "snakemake not found: skipping the check. Run: snakemake -n ${CHECK}"
+        exit 0
+    fi
     echo ""
-    echo "Dry-run: snakemake -n ${CHECK}"
+    echo "Check (dry-run): snakemake -n ${CHECK}"
     log="$(mktemp "${TMPDIR:-/tmp}/mc_update_check.XXXXXX")"
     rc=0
     # shellcheck disable=SC2086
     snakemake -n ${CHECK} > "${log}" 2>&1 || rc=$?
+    # Preflight report (from 2.5.2 on), printed before the job graph is built.
+    awk '/^Preflight check/{p=1; print; next} p && /^  /{print; next} {p=0}' "${log}"
     if [[ "${rc}" -eq 0 ]]; then
-        # Preflight report (releases >= 2.5.2) and the job table.
-        awk '/^Preflight check/{p=1; print; next} p && /^  /{print; next} {p=0}' "${log}"
-        sed -n '/^Job stats:/,/^total/p' "${log}" | head -60
+        # Snakemake prints the job table twice: keep the first one.
+        awk '/^Job stats:/{p=1} p{print} p && /^total/{exit}' "${log}"
     else
         echo "Dry-run failed (exit ${rc}):"
         tail -25 "${log}"

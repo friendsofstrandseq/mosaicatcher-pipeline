@@ -4,27 +4,35 @@
 
 ```bash
 cd mosaicatcher-pipeline
-bash workflow/scripts/toolbox/update.sh --status          # installed vs latest release
-bash workflow/scripts/toolbox/update.sh 2.5.2 \
-    --configfile my_run.yaml \
-    --pull hg38 \
-    --check "--profile workflow/snakemake_profiles/mosaicatcher-pipeline/v9/HPC/slurm_EMBL_apptainer --configfile my_run.yaml"
+pixi run update latest --configfile my_run.yaml
 ```
 
-The script:
+Without pixi: `bash workflow/scripts/toolbox/update.sh latest --configfile my_run.yaml`.
+`pixi run update --status` shows the installed and latest versions;
+`pixi run update --check-only --configfile my_run.yaml` only runs the check.
+
+The command:
 
 1. stops if tracked files are modified (keep run settings in your own
    `--configfile`, never in `config/config.yaml` or in the profiles);
 2. fetches the tags and checks out the release tag;
-3. updates the `workflow/data` and `.tests` submodules;
+3. updates `workflow/data` and `.tests` to the commits pinned by the tag
+   (`git submodule update --init --recursive`; never `--remote`, which takes
+   the latest commit of each submodule instead);
 4. lists config keys added or removed by the release, and keys of your
    `--configfile` files that the release does not know;
-5. with `--pull`, downloads the container images into the directory Snakemake
-   reads them from (`apptainer-prefix`), so the first run does not pull;
-6. with `--check`, runs a dry-run: its preflight report shows anything that
-   would still be downloaded or built.
+5. with `--pull hg38,mm39`, downloads the container images into the directory
+   Snakemake reads them from (`apptainer-prefix`), so the first run does not
+   pull;
+6. runs a dry-run with `--profile` (default at EMBL: `slurm_EMBL_apptainer`)
+   and your `--configfile` (default: the `.tests` config): the preflight
+   report shows anything that would still be downloaded or built.
+   `--no-check` skips it.
 
-Going back: `bash workflow/scripts/toolbox/update.sh <previous version>`.
+Going back: `pixi run update <previous version>`.
+
+From 2.5.1 or older (no `update` task yet), once:
+`git fetch --tags origin && git checkout v<version> && pixi run update <version> --configfile my_run.yaml`.
 
 The script disables the git-lfs filter for its own git calls: on the EMBL login
 nodes `git-lfs` is not installed, and a `~/.gitconfig` written by
@@ -60,8 +68,10 @@ checkout.
    apptainer prefix, `.tests` validation run on SLURM):
 
    ```bash
-   bash workflow/scripts/toolbox/pull_containers.sh 2.5.2
-   # -> /g/korbel2/weber/workspace/StrandSeq_workspace/STABLE/mosaicatcher-pipeline-v2.5.2
+   # default STABLE_BASE is /g/korbel2/$USER/...: set it to the production directory
+   STABLE_BASE=/g/korbel2/weber/workspace/StrandSeq_workspace/STABLE \
+       bash workflow/scripts/toolbox/pull_containers.sh <version>
+   # -> /g/korbel2/weber/workspace/StrandSeq_workspace/STABLE/mosaicatcher-pipeline-v<version>
    ```
 
 2. Dry-run the watcher on a past run with the new directory and compare the
@@ -90,9 +100,9 @@ checkout.
 ### Release notes template
 
 ```markdown
-## MosaiCatcher 2.5.2
+## MosaiCatcher <version>
 
-**Update:** `bash workflow/scripts/toolbox/update.sh 2.5.2`
+**Update:** `pixi run update <version> --configfile my_run.yaml`
 
 ### Action required
 - None. / - Rename `old_key` to `new_key` in your config.
