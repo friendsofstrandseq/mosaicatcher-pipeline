@@ -4,10 +4,17 @@ executor: slurm
 # ============================================================
 # Multi-User Configuration Overrides
 # ============================================================
-# Override config values for shared HPC environment
-# Users can still override these via command line: --config key=value
+# Override config values for shared HPC environment.
+# Any --config on the command line replaces this whole block: pass
+# reference_base_dir=/scratch/korbel/shared/references with your other --config values.
+#
+# Shared references (fasta, .fai, bwa index) of the korbel group. Existing files
+# are read-only inputs (never re-downloaded or re-indexed). /scratch_cached is the
+# same BeeGFS file system with client page caching, not a separate copy:
+# /scratch_cached/korbel/references is an older directory holding hg38 only
+# (no .fai), so the pipeline would download and index other genomes there.
 config:
-  reference_base_dir: "/scratch_cached/korbel/references"
+  reference_base_dir: "/scratch/korbel/shared/references"
 
 # Default resources: These are the baseline resources allocated to each rule if not overridden by set-resources.
 default-resources:
