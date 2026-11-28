@@ -76,10 +76,12 @@ set-resources:
 # fails ("step creation temporarily disabled", "Unable to create step ...
 # Connection reset by peer").
 #
-# Submission rate: at most 5 jobs per 10 s (30/min, bursts of 5). NOTE: the former
+# Submission rate: at most 10 jobs per 10 s (60/min, bursts of 10). This fills
+# 150 slots in ~2.5 min, well under the ~6 min median queue wait, so it does
+# not slow runs down; it only flattens the 80-100+/min bursts. NOTE: the former
 # `max-jobs-per-second: 10` was silently IGNORED by the CLI, because
 # --max-jobs-per-timespan defaults to "100/1s" and takes precedence.
-max-jobs-per-timespan: "5/10s"
+max-jobs-per-timespan: "10/10s"
 # Status checks: the plugin queries `sacct --name <run_uuid>` once per cycle; the
 # cycle restarts at slurm-init-seconds-before-status-checks (default 40 s) whenever
 # a job finished and grows by 10 s (up to 180 s) otherwise. 60 s halves the
@@ -119,11 +121,13 @@ local-storage-prefix: /tmp/snakemake/local-storage
 # symlinks, text merges): 4 parallel ones are plenty.
 local-cores: 4
 latency-wait: 60 # Time in seconds to wait for filesystems to catch up (GPFS / BeeGFS)
-# Jobs in flight (pending + running) per run. The EMBL backfill scheduler only
-# considers 50 jobs per user and partition (bf_max_job_user_part=50), i.e. 100
-# over htc-el8 + htc-el10: more pending jobs do not start sooner. With several
-# runs in parallel, lower this (e.g. --jobs 50) so that the total stays ~100-150.
-jobs: 100
+# Jobs in flight (pending + running) per run. The backfill scheduler only looks
+# at 50 jobs per user and partition (bf_max_job_user_part=50, i.e. 100 over
+# htc-el8 + htc-el10); the main scheduler can start a few more, and 2-plate runs
+# with jobs: 150 peaked at 124-150 running. Beyond that, extra jobs only wait in
+# the queue. With several runs in parallel, lower this (e.g. --jobs 75) so that
+# the total stays ~150.
+jobs: 150
 
 # Fault tolerance
 keep-going: True # Continue with independent jobs even if some jobs fail

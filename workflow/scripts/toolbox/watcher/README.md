@@ -99,7 +99,7 @@ python watcher.py status
 
 - Submission rate, status-check cadence, `jobs` and `local-cores` come from the
   profile (`max-jobs-per-timespan`, `slurm-init-seconds-before-status-checks`,
-  ...). Missing keys fall back to safe values (5 jobs/10 s, 100 jobs, 4 local
+  ...). Missing keys fall back to safe values (10 jobs/10 s, 150 jobs, 4 local
   cores), never to the unlimited API defaults.
 - Run slots: at most `--max-concurrent-runs` pipelines (default 2) submit to
   SLURM at the same time, counted over every `watch` and `rerun` process of the

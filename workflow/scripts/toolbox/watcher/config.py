@@ -20,9 +20,9 @@ logger = logging.getLogger(__name__)
 
 # SLURM load safety defaults, used when the profile does not set the key
 # (see "Being nice to SLURM" in the docs and the EMBL v9 profiles).
-SAFE_JOBS = 100
+SAFE_JOBS = 150
 SAFE_LOCAL_CORES = 4
-SAFE_MAX_JOBS_PER_TIMESPAN = "5/10s"
+SAFE_MAX_JOBS_PER_TIMESPAN = "10/10s"
 SAFE_MAX_STATUS_CHECKS_PER_SECOND = 0.1
 SAFE_INIT_SECONDS_BEFORE_STATUS_CHECKS = 60
 
