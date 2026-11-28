@@ -11,6 +11,19 @@ from snakemake.exceptions import WorkflowError
 from scripts.utils import preflight as _pf
 
 
+def _host_conda_envs():
+    """{conda env file: {rule names}} for rules of this run that bypass the container."""
+    envs = {}
+    for r in workflow.rules:
+        if r.container_img or not r.conda_env:
+            continue
+        env = str(r.conda_env)
+        if not os.path.isabs(env):
+            env = os.path.normpath(os.path.join(os.path.dirname(r.snakefile), env))
+        envs.setdefault(env, set()).add(r.name)
+    return envs
+
+
 def _preflight_items():
     methods = {m.name for m in workflow.deployment_settings.deployment_method}
     use_apptainer = "APPTAINER" in methods
@@ -44,7 +57,30 @@ def _preflight_items():
             bs = _pf.check_bsgenome_image(bsgenome, image)
             if bs:
                 items.append(bs)
+        # Rules with `container: None` run on the host, in a conda env of
+        # conda-prefix (shared and pre-built at EMBL).
+        host_envs = _host_conda_envs()
+        if host_envs and use_conda:
+            env_items = _pf.check_conda_envs(
+                sorted(host_envs), workflow.deployment_settings.conda_prefix
+            )
+            for i in env_items:
+                i.name = "Host envs"
+                i.detail += " (rules outside the container: {})".format(
+                    ", ".join(sorted(set().union(*host_envs.values())))
+                )
+            items += env_items
     elif use_conda:
+        items.append(
+            _pf.Item(
+                "Profile",
+                "warn",
+                "conda without container: for pipeline development only",
+                hints=[
+                    "users: --profile workflow/snakemake_profiles/mosaicatcher-pipeline/v9/HPC/slurm_EMBL_apptainer"
+                ],
+            )
+        )
         prefix = workflow.deployment_settings.conda_prefix
         items += _pf.check_conda_envs(env_files, prefix)
         if bsgenome:
