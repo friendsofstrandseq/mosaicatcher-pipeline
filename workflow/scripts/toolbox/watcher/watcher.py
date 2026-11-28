@@ -30,6 +30,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 from logging.handlers import RotatingFileHandler
 
+# Before anything imports numpy (Snakemake does): OpenBLAS would otherwise start
+# one idle thread per core of the login node (~130 per process), against a
+# per-user limit of 1000 tasks. Snakemake still sets the thread count per job.
+os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")
+
 from config import PipelineConfig
 
 logger = logging.getLogger("aviti_watcher")
@@ -111,6 +116,11 @@ class AvitiWatcher:
     """Watches for new AVITI sequencing runs and launches the pipeline."""
 
     MAX_RETRIES = 3
+    # Wait before retrying a failed run: 1 h, then 2 h, then 4 h. A run that fails
+    # for a systematic reason (bad partition, broken environment, ...) used to be
+    # relaunched at the next poll; on 2026-11-23 three back-to-back launches of
+    # the same run submitted 8,622 jobs that all failed within 85 min.
+    RETRY_BACKOFF_SECONDS = 3600
 
     def __init__(self, config: PipelineConfig):
         self.config = config
@@ -141,6 +151,10 @@ class AvitiWatcher:
             )
             """
         )
+        # Databases created before the retry backoff lack this column.
+        columns = {r["name"] for r in self._conn.execute("PRAGMA table_info(runs)")}
+        if "failed_at" not in columns:
+            self._conn.execute("ALTER TABLE runs ADD COLUMN failed_at TEXT")
         self._conn.commit()
         self._recover_stale_runs()
 
@@ -424,8 +438,27 @@ class AvitiWatcher:
                 "failed",
                 error=str(e),
                 retry_count=retry_count,
+                failed_at=datetime.now(timezone.utc).isoformat(),
             )
             return False
+
+    def _retry_due(self, row) -> bool:
+        """True when a failed run has waited long enough to be retried."""
+        if row["status"] != "failed" or not row["failed_at"]:
+            return True
+        wait = self.RETRY_BACKOFF_SECONDS * 2 ** max(row["retry_count"] - 1, 0)
+        failed_at = datetime.fromisoformat(row["failed_at"])
+        elapsed = (datetime.now(timezone.utc) - failed_at).total_seconds()
+        if elapsed < wait:
+            logger.info(
+                "Run %s failed %d min ago: next retry in %d min (retry_count=%d)",
+                row["run_id"],
+                elapsed // 60,
+                (wait - elapsed) // 60,
+                row["retry_count"],
+            )
+            return False
+        return True
 
     # --- Main loop ----------------------------------------------------------
 
@@ -475,11 +508,13 @@ class AvitiWatcher:
                 # Re-process runs that need retry: crashes (reset to 'detected' by
                 # _recover_stale_runs) and failed runs that are still under the retry cap.
                 recovered = self._conn.execute(
-                    "SELECT run_id, folder_name, source_path, status, retry_count FROM runs "
+                    "SELECT run_id, folder_name, source_path, status, retry_count, "
+                    "failed_at FROM runs "
                     "WHERE status = 'detected' "
                     "   OR (status = 'failed' AND retry_count < ?)",
                     (self.MAX_RETRIES,),
                 ).fetchall()
+                recovered = [row for row in recovered if self._retry_due(row)]
                 for row in recovered:
                     info = RunInfo(
                         folder_name=row["folder_name"],
@@ -599,6 +634,7 @@ def watch(
     poll_interval: Annotated[int, typer.Option(help="Seconds between scan cycles.")] = _defaults.poll_interval,
     state_db: Annotated[Path, typer.Option(help="SQLite state database path.")] = _defaults.state_db,
     config: Annotated[Optional[list[str]], typer.Option(help="Pipeline config override KEY=VALUE (repeatable).")] = None,
+    max_concurrent_runs: Annotated[int, typer.Option(help="Pipelines allowed to submit to SLURM at once, over all watch/rerun processes of this user (0: no limit).")] = _defaults.max_concurrent_runs,
 ):
     """Monitor for new AVITI runs and launch the pipeline."""
     pipeline_config = PipelineConfig(
@@ -610,6 +646,7 @@ def watch(
         year=year,
         poll_interval=poll_interval,
         state_db=state_db,
+        max_concurrent_runs=max_concurrent_runs,
     )
 
     if config:
@@ -639,6 +676,7 @@ def rerun(
     exclude_samples: Annotated[Optional[list[str]], typer.Option(help="Samples to exclude (repeatable).")] = None,
     config: Annotated[Optional[list[str]], typer.Option(help="Pipeline config override KEY=VALUE (repeatable).")] = None,
     nolock: Annotated[bool, typer.Option("--nolock", help="Do not lock the working directory (resume after a killed run left a stale lock). Make sure no other Snakemake run writes the same files.")] = False,
+    max_concurrent_runs: Annotated[int, typer.Option(help="Pipelines allowed to submit to SLURM at once, over all watch/rerun processes of this user (0: no limit).")] = _defaults.max_concurrent_runs,
 ):
     """Re-run the pipeline for a specific data_location with custom config.
 
@@ -664,6 +702,7 @@ def rerun(
         profile=profile,
         configfile=configfile,
         state_db=state_db,
+        max_concurrent_runs=max_concurrent_runs,
     )
 
     if config:

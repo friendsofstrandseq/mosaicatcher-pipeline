@@ -5,7 +5,10 @@ remains the single source of truth. Only watcher-specific settings and
 pipeline config overrides live here.
 """
 
+import fcntl
 import os
+import time
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
 from datetime import datetime
@@ -14,6 +17,58 @@ import logging
 import yaml
 
 logger = logging.getLogger(__name__)
+
+# SLURM load safety defaults, used when the profile does not set the key
+# (see "Being nice to SLURM" in the docs and the EMBL v9 profiles).
+SAFE_JOBS = 150
+SAFE_LOCAL_CORES = 4
+SAFE_MAX_JOBS_PER_TIMESPAN = "10/10s"
+SAFE_MAX_STATUS_CHECKS_PER_SECOND = 0.1
+SAFE_INIT_SECONDS_BEFORE_STATUS_CHECKS = 60
+
+
+@contextmanager
+def run_slot(slots_dir: Path, max_runs: int, poll_seconds: int = 60):
+    """Hold one of `max_runs` per-user run slots while Snakemake runs.
+
+    Every `watch` and `rerun` process of the same user shares `slots_dir`, so at
+    most `max_runs` SLURM-executing controllers run at once; the next one waits.
+    The slots are flock()ed files: the kernel releases them when the process
+    exits, even after a crash or `kill -9`, so a slot can never stay stuck.
+    """
+    if max_runs <= 0:  # 0 disables the guard
+        yield None
+        return
+    slots_dir.mkdir(parents=True, exist_ok=True)
+    waited = 0
+    while True:
+        for i in range(max_runs):
+            fh = open(slots_dir / f"slot-{i}.lock", "a+")
+            try:
+                fcntl.flock(fh, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except OSError:
+                fh.close()
+                continue
+            fh.seek(0)
+            fh.truncate()
+            fh.write(f"pid={os.getpid()} since={datetime.now().isoformat()}\n")
+            fh.flush()
+            logger.info("Acquired run slot %d/%d (%s)", i + 1, max_runs, slots_dir)
+            try:
+                yield i
+            finally:
+                fcntl.flock(fh, fcntl.LOCK_UN)
+                fh.close()
+            return
+        if waited % 600 == 0:
+            logger.info(
+                "All %d run slots busy (%s): waiting for a running pipeline to "
+                "finish before submitting to SLURM",
+                max_runs,
+                slots_dir,
+            )
+        time.sleep(poll_seconds)
+        waited += poll_seconds
 
 
 def _expand_user_vars(value):
@@ -86,6 +141,14 @@ class PipelineConfig:
     # --- State tracking ---
     state_db: Path = Path.home() / ".mosaicatcher-watcher" / "watcher.db"
 
+    # --- SLURM load safety ---
+    # Maximum number of pipelines that submit to SLURM at the same time, over all
+    # `watch` and `rerun` processes of this user (they share the slot files below).
+    # Each controller polls sacct, submits jobs and starts local rules on the
+    # login node; 0 disables the limit.
+    max_concurrent_runs: int = 2
+    run_slots_dir: Path = Path.home() / ".mosaicatcher-watcher" / "run_slots"
+
     def fetch_overrides(self, run_id: str) -> dict:
         """Override in subclass to connect to LIMS/API for per-run config."""
         return {}
@@ -113,12 +176,28 @@ class PipelineConfig:
             RemoteExecutionSettings,
             StorageSettings,
         )
+        from snakemake.settings.types import MaxJobsPerTimespan
         from snakemake_executor_plugin_slurm import (
             ExecutorSettings as SlurmExecutorSettings,
         )
 
         # Load profile
         prof = _load_profile(self.profile_path)
+
+        # --- SLURM load safety ---
+        # Unlike the CLI, the API has no default submission limit (None means
+        # unlimited), so always pass one. "max-jobs-per-timespan" wins over the
+        # deprecated "max-jobs-per-second", as on the command line.
+        if "max-jobs-per-timespan" in prof:
+            max_jobs_per_timespan = MaxJobsPerTimespan.parse_choice(
+                str(prof["max-jobs-per-timespan"])
+            )
+        elif "max-jobs-per-second" in prof:
+            max_jobs_per_timespan = MaxJobsPerTimespan(int(prof["max-jobs-per-second"]))
+        else:
+            max_jobs_per_timespan = MaxJobsPerTimespan.parse_choice(
+                SAFE_MAX_JOBS_PER_TIMESPAN
+            )
 
         # --- Config ---
         # Start with profile's config section, layer our overrides, then per-run
@@ -158,13 +237,15 @@ class PipelineConfig:
             self.profile_path,
         )
 
-        with SnakemakeApi(
+        # A dry run submits nothing: it does not need a run slot.
+        max_runs = 0 if dry_run else self.max_concurrent_runs
+        with run_slot(self.run_slots_dir, max_runs), SnakemakeApi(
             OutputSettings(verbose=False, show_failed_logs=True, dryrun=dry_run)
         ) as api:
             workflow_api = api.workflow(
                 resource_settings=ResourceSettings(
-                    nodes=prof.get("jobs", 150),
-                    local_cores=prof.get("local-cores", 32),
+                    nodes=prof.get("jobs", SAFE_JOBS),
+                    local_cores=prof.get("local-cores", SAFE_LOCAL_CORES),
                     default_resources=DefaultResources(default_resources_list),
                     overwrite_resources=overwrite_resources,
                 ),
@@ -211,14 +292,19 @@ class PipelineConfig:
                     lock=not nolock,
                 ),
                 scheduling_settings=SchedulingSettings(
-                    max_jobs_per_second=prof.get("max-jobs-per-second", 10),
+                    max_jobs_per_timespan=max_jobs_per_timespan,
                 ),
                 remote_execution_settings=RemoteExecutionSettings(
                     max_status_checks_per_second=prof.get(
-                        "max-status-checks-per-second", 10
+                        "max-status-checks-per-second",
+                        SAFE_MAX_STATUS_CHECKS_PER_SECOND,
                     ),
                 ),
                 executor_settings=SlurmExecutorSettings(
+                    init_seconds_before_status_checks=prof.get(
+                        "slurm-init-seconds-before-status-checks",
+                        SAFE_INIT_SECONDS_BEFORE_STATUS_CHECKS,
+                    ),
                     logdir=Path(_expand_user_vars(prof.get("slurm-logdir", ""))),
                     keep_successful_logs=prof.get("slurm-keep-successful-logs", False),
                     delete_logfiles_older_than=prof.get(
