@@ -177,6 +177,98 @@ def reference_missing(*paths):
     return not all(os.path.exists(p) for p in paths)
 
 
+# ========================================
+# Reference directory resolution
+# ========================================
+# The EMBL profiles set reference_base_dir in their `config:` block, but any
+# `--config key=value` on the command line replaces that whole block (and a
+# profile `configfile:` is replaced by any `--configfile`). reference_base_dir
+# then fell back to workflow/data/ref_genomes and the genome was downloaded and
+# bwa-indexed again (1-2 h) next to the pipeline. The directory is therefore
+# resolved here, from the config files, independently of the command line.
+
+REPO_REFERENCE_DIR = "workflow/data/ref_genomes"
+
+
+def needed_reference_files(base_dir, reference):
+    """FASTA, .fai and, when reads are aligned, the bwa index."""
+    fasta = f"{base_dir}/{reference}.fa"
+    exts = [".fai"]
+    if config.get("ashleys_pipeline") is True:
+        exts += [".amb", ".ann", ".bwt", ".pac", ".sa"]
+    return [fasta] + [fasta + ext for ext in exts]
+
+
+def reference_complete(base_dir, reference):
+    return all(os.path.exists(p) for p in needed_reference_files(base_dir, reference))
+
+
+def find_shared_reference_dir(reference):
+    """First directory of shared_reference_dirs with a complete copy, or None."""
+    for d in config.get("shared_reference_dirs") or []:
+        if d and reference_complete(os.path.normpath(d), reference):
+            return os.path.normpath(d)
+    return None
+
+
+def resolve_reference_base_dir():
+    """Return (directory or None, how it was chosen).
+
+    1. reference_base_dir from the config (config file, --config or profile).
+    2. A shared copy (shared_reference_dirs), only when the selected reference
+       still uses the in-repo default path and that copy is not complete.
+    3. None: references_data.<reference>.reference_fasta is used as is.
+    """
+    reference = config["reference"]
+    explicit = config.get("reference_base_dir")
+    if explicit:
+        return os.path.normpath(explicit), "config"
+    fasta = config["references_data"][reference].get("reference_fasta", "")
+    if os.path.dirname(fasta) == REPO_REFERENCE_DIR and not reference_complete(
+        REPO_REFERENCE_DIR, reference
+    ):
+        shared = find_shared_reference_dir(reference)
+        if shared:
+            return shared, "shared copy found in shared_reference_dirs"
+    return None, "references_data.{}.reference_fasta".format(reference)
+
+
+_ref_dir, _ref_dir_source = resolve_reference_base_dir()
+if _ref_dir:
+    config["reference_base_dir"] = _ref_dir
+
+# Refuse to download or re-index a reference when a complete shared copy exists:
+# that is a 1-2 h detour, and the target is often a directory other users cannot
+# write to. Set allow_reference_build=True to build it anyway.
+if _ref_dir and not reference_complete(_ref_dir, config["reference"]):
+    _shared = find_shared_reference_dir(config["reference"])
+    if (
+        _shared
+        and os.path.realpath(_shared) != os.path.realpath(_ref_dir)
+        and not config.get("allow_reference_build", False)
+    ):
+        _missing = [
+            os.path.basename(p)
+            for p in needed_reference_files(_ref_dir, config["reference"])
+            if not os.path.exists(p)
+        ]
+        raise ValueError(
+            f"Reference '{config['reference']}' is incomplete in "
+            f"reference_base_dir={_ref_dir} (missing: {', '.join(_missing)}), so it "
+            f"would be downloaded and/or bwa-indexed there (up to 1-2 h), while a "
+            f"complete copy exists in {_shared}.\n"
+            f"Use it with: --config reference_base_dir={_shared}\n"
+            f"or remove reference_base_dir from your config/command line (the shared "
+            f"copy is then found automatically).\n"
+            f"To build the reference in {_ref_dir} anyway: --config allow_reference_build=True"
+        )
+
+if workflow.is_main_process:
+    logger.info(
+        "Reference genome: {} (from {})".format(get_reference_fasta(), _ref_dir_source)
+    )
+
+
 def get_species_id():
     """Get NCBI Taxonomy ID for current genome (e.g., 9606 for human, 10090 for mouse)"""
     return get_genome_metadata("species_id")
