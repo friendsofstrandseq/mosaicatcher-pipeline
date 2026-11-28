@@ -24,6 +24,7 @@ containerized: docker_container
 
 # Load common utilities first (needed by other rules)
 include: "rules/common.smk"
+include: "rules/preflight.smk"
 
 
 if config["ashleys_pipeline"] is True:

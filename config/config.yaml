@@ -97,6 +97,11 @@ reference: "hg38"
 # Multi-user HPC: set to "/scratch_cached/korbel/references" via profile or --config reference_base_dir=...
 # reference_base_dir: ""
 
+# Preflight check printed at start (reference, container, conda envs, BSgenome,
+# disk space), with what would be downloaded or built before the first job.
+# "warn": print only; "strict": stop if anything must be downloaded/built; "off"
+preflight: "warn"
+
 # Download pre-built BWA indexes from iGenomes (if available) instead of building locally
 # True: Try to download pre-built indexes from AWS iGenomes (faster, requires internet)
 # False: Always build indexes locally from FASTA (slower, works offline)
