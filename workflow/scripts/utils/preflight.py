@@ -61,8 +61,11 @@ def check_reference(fasta, needs_bwa):
     base = os.path.dirname(fasta) or "."
     missing = []
     cost = 0
-    if not os.path.exists(fasta):
-        missing.append("FASTA")
+    if not os.path.exists(fasta) and os.path.exists(fasta + ".gz"):
+        missing.append("FASTA (from .gz)")
+        cost += 1
+    elif not os.path.exists(fasta):
+        missing.append("FASTA (download)")
         cost += COST_MINUTES["download_fasta"]
     elif not os.access(fasta, os.R_OK):
         items.append(Item("Reference", "fail", f"{fasta} is not readable"))
