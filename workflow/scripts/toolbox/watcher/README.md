@@ -30,6 +30,7 @@ python watcher.py watch [OPTIONS]
 | `--config KEY=VALUE` | — | Override pipeline config (repeatable) |
 | `--dry-run` | `False` | Run Snakemake in dry-run mode |
 | `--once` | `False` | Single scan cycle then exit |
+| `--max-concurrent-runs` | `2` | Pipelines submitting to SLURM at once, over all `watch`/`rerun` processes of the user (`0`: no limit) |
 | `-v` / `--verbose` | `False` | Debug logging |
 
 ### `rerun` — Re-run pipeline for a specific data_location
@@ -46,6 +47,7 @@ python watcher.py rerun DATA_LOCATION [OPTIONS]
 | `--configfile` | `config/config.yaml` | Pipeline config, relative to pipeline-dir |
 | `--config KEY=VALUE` | — | Override pipeline config (repeatable) |
 | `--dry-run` | `False` | Run Snakemake in dry-run mode |
+| `--max-concurrent-runs` | `2` | Same limit as for `watch` (shared slots) |
 | `-v` / `--verbose` | `False` | Debug logging |
 
 ### `status` — Show tracked runs
@@ -92,6 +94,20 @@ python watcher.py status
 3. Reorganises FASTQs into `{dest-base}/{run_id}/` via symlinks
 4. Launches pipeline via Snakemake Python API (blocks until SLURM jobs finish)
 5. Processes runs sequentially; state tracked in SQLite
+
+## SLURM load safety
+
+- Submission rate, status-check cadence, `jobs` and `local-cores` come from the
+  profile (`max-jobs-per-timespan`, `slurm-init-seconds-before-status-checks`,
+  ...). Missing keys fall back to safe values (5 jobs/10 s, 100 jobs, 4 local
+  cores), never to the unlimited API defaults.
+- Run slots: at most `--max-concurrent-runs` pipelines (default 2) submit to
+  SLURM at the same time, counted over every `watch` and `rerun` process of the
+  user (flock()ed files in `~/.mosaicatcher-watcher/run_slots/`, released by the
+  kernel even if a process is killed). A further `rerun` waits for a free slot.
+  Dry runs do not take a slot.
+- Failed runs are retried after 1 h, 2 h, then 4 h (`MAX_RETRIES = 3`), not at
+  the next poll.
 
 ## State
 

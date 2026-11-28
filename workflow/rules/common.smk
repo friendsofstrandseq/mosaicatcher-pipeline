@@ -10,6 +10,25 @@ import os, sys
 
 os.environ["LC_CTYPE"] = "C"
 
+# Snakemake imports numpy, whose OpenBLAS starts one idle thread per host core
+# when the controller starts: ~135 threads per controller on a 128-core login
+# node, where a user may hold 1000 tasks in total. A handful of parallel runs then
+# makes login1 refuse to fork ("fork: Resource temporarily unavailable"). The
+# threads exist before this file is read, so only the environment can prevent them.
+if (
+    "SLURM_JOB_ID" not in os.environ
+    and "OPENBLAS_NUM_THREADS" not in os.environ
+    and (os.cpu_count() or 1) > 32
+):
+    from snakemake.logging import logger
+
+    logger.warning(
+        f"OpenBLAS started ~{os.cpu_count()} idle threads in this Snakemake "
+        "process (one per core). Start Snakemake with "
+        "`export OPENBLAS_NUM_THREADS=1` to spare the login node's per-user "
+        "task limit (fork failures)."
+    )
+
 
 # Helper Functions
 
