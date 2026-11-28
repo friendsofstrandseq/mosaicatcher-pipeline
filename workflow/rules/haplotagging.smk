@@ -16,6 +16,8 @@ rule prepare_haplotag_input_bam:
         bai=temp("{folder}/{sample}/haplotag/input/{cell}.bam.bai"),
     log:
         "{folder}/log/prepare_haplotag_input_bam/{sample}/{cell}.log",
+    group:
+        "haplotag_per_cell"
     container:
         None
     conda:
@@ -90,8 +92,8 @@ rule haplotag_bams:
         "{folder}/{sample}/haplotag/bam/{cell}.bam.htg",
     log:
         "{folder}/log/haplotag_bams/{sample}/{cell}.log",
-    # group:
-    # "haplotagging_per_cell"
+    group:
+        "haplotag_per_cell"
     params:
         ref=config["reference"],
     resources:
@@ -136,6 +138,8 @@ rule create_haplotag_table:
         tsv="{folder}/{sample}/haplotag/table/by-cell/{cell}.tsv",
     log:
         "{folder}/log/create_haplotag_table/{sample}.{cell}.log",
+    group:
+        "haplotag_per_cell"
     conda:
         "../envs/rtools.yaml"
     resources:

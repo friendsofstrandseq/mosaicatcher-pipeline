@@ -147,8 +147,9 @@ rule copy_labels:
 
 
 rule symlink_selected_bam:
-    # # group:
-    #     "symlink_operations"
+    # Two `ln -s` per cell: a SLURM job cost ~100 s elapsed + minutes of queue
+    # for this; on the controller host it takes milliseconds.
+    localrule: True
     input:
         bam="{folder}/{sample}/bam/{cell}.sort.mdup.bam",
         bai="{folder}/{sample}/bam/{cell}.sort.mdup.bam.bai",
@@ -337,7 +338,8 @@ rule sort_counts:
 
 
 rule extract_single_cell_counts:
-    localrule: True
+    # Runs in the SLURM job of segment_one_cell (one submission per cell): as a
+    # local rule, every cell re-read the whole sample count table on the login node.
     input:
         info="{folder}/{sample}/counts/{sample}.info",
         counts="{folder}/{sample}/counts/{sample}.txt.gz",
@@ -345,8 +347,8 @@ rule extract_single_cell_counts:
         "{folder}/{sample}/counts/counts-per-cell/{cell}.txt.percell.gz",
     log:
         "{folder}/log/counts/{sample}/counts-per-cell/{cell}.log",
-    # group:
-    # "single_cell_analysis"
+    group:
+        "segment_per_cell"
     conda:
         "../envs/mc_base.yaml"
     resources:

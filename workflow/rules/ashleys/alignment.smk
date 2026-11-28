@@ -161,8 +161,8 @@ rule ashleys_samtools_sort_bam:
         temp("{folder}/{sample}/bam/{cell}.bam.sort"),
     log:
         "{folder}/{sample}/log/samtools_sort/{cell}.log",
-    # group:
-    # "alignment_per_cell"
+    group:
+        "postalign_per_cell"
     resources:
         mem_mb=get_mem_mb_sort,
         runtime=runtime_sort_markdup,
@@ -181,8 +181,8 @@ rule ashleys_mark_duplicates:
         "{folder}/{sample}/bam/{cell}.sort.mdup.bam",
     log:
         "{folder}/{sample}/log/markdup/{cell}.log",
-    # group:
-    # "alignment_per_cell"
+    group:
+        "postalign_per_cell"
     conda:
         "../../envs/mc_bioinfo_tools.yaml"
     envmodules:
@@ -212,8 +212,8 @@ rule ashleys_mark_duplicates:
 
 
 rule ashleys_symlink_bam_ashleys:
-    # group:
-    # "symlink_operations"
+    group:
+        "postalign_per_cell"
     input:
         bam="{folder}/{sample}/bam/{cell}.sort.mdup.bam",
         bai="{folder}/{sample}/bam/{cell}.sort.mdup.bam.bai",
